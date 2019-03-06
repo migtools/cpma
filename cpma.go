@@ -1,17 +1,21 @@
 package main
 
 import (
+	"github.com/fusor/cpma/cmd"
 	"github.com/fusor/cpma/sftpclient"
+	"github.com/spf13/viper"
 )
 
 func main() {
-	//config := setup.LoadConfiguration(configFileName)
+	cmd.Execute()
 
-	cluster := "mars8.ddns.net"
-	user := "qwerty66"
-	keyfile := "/home/gildub/.ssh/test_user"
 	srcFilePath := "./essay/config.yaml"
 	dstFilePath := "./data/config.yaml"
 
-	sftpclient.GetFile(cluster, user, keyfile, srcFilePath, dstFilePath)
+	sftpclient.GetFile(
+		viper.GetString("source.hostname"),
+		viper.GetString("source.username"),
+		viper.GetString("source.sshkey"),
+		srcFilePath, dstFilePath,
+	)
 }
