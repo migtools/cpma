@@ -1,17 +1,28 @@
 package main
 
 import (
+	"log"
+
+	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/sftpclient"
 )
 
-func main() {
-	//config := setup.LoadConfiguration(configFileName)
+var (
+	configFile = "config.yaml"
+)
 
-	cluster := "mars8.ddns.net"
-	user := "qwerty66"
-	keyfile := "/home/gildub/.ssh/test_user"
+func main() {
+	cfg, err := env.LoadConfig(configFile)
+	if err != nil {
+		log.Fatalf("unable to read configuration file: %v", err)
+	}
+
 	srcFilePath := "./essay/config.yaml"
 	dstFilePath := "./data/config.yaml"
-
-	sftpclient.GetFile(cluster, user, keyfile, srcFilePath, dstFilePath)
+	sftpclient.GetFile(
+		cfg.Source.HostName,
+		cfg.Source.UserName,
+		cfg.Source.SSHKey,
+		srcFilePath, dstFilePath,
+	)
 }
