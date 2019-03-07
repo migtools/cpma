@@ -2,6 +2,7 @@ package sftpclient
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -10,16 +11,26 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/crypto/ssh"
-
 	"github.com/pkg/sftp"
+	"github.com/spf13/viper"
+	"golang.org/x/crypto/ssh"
 )
 
-func GetFile(host string, user string, keyfile string, srcFilePath string, dstFilePath string) {
-	// get host public key
-	hostKey := getHostKey(host)
+type Info struct {
+	HostName string `mapstructure:"HostName"`
+	UserName string `mapstructure:"UserName"`
+	SSHKey   string `mapstructure:"SSHKey"`
+}
 
-	key, err := ioutil.ReadFile(keyfile)
+type Client struct {
+	*sftp.Client
+}
+
+// NewClient creates a new SFTP client
+func (c *Info) NewClient() *Client {
+	hostKey := getHostKey(c.HostName)
+
+	key, err := ioutil.ReadFile(c.SSHKey)
 	if err != nil {
 		log.Fatalf("unable to read private key: %v", err)
 	}
@@ -31,7 +42,7 @@ func GetFile(host string, user string, keyfile string, srcFilePath string, dstFi
 	}
 
 	sshConfig := &ssh.ClientConfig{
-		User: user,
+		User: c.UserName,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
@@ -42,34 +53,35 @@ func GetFile(host string, user string, keyfile string, srcFilePath string, dstFi
 		Timeout: 10 * time.Second,
 	}
 
-	connection, err := ssh.Dial("tcp", host+":"+"22", sshConfig)
+	addr := fmt.Sprintf("%s:22", c.HostName)
+	connection, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer connection.Close()
 
 	// create new SFTP client
 	client, err := sftp.NewClient(connection)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Close()
 
-	// create destination file
-	srcFile, err := client.Open(srcFilePath)
+	return &Client{client}
+}
+
+// GetFile copies source file to destination file
+func (c *Client) GetFile(srcFilePath string, dstFilePath string) {
+	srcFile, err := c.Open(srcFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer srcFile.Close()
 
-	// create source file
 	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer dstFile.Close()
 
-	// copy source file to destination file
 	bytes, err := io.Copy(dstFile, srcFile)
 	if err != nil {
 		log.Fatal(err)
@@ -80,7 +92,7 @@ func GetFile(host string, user string, keyfile string, srcFilePath string, dstFi
 func getHostKey(host string) ssh.PublicKey {
 	// parse OpenSSH known_hosts file
 	// ssh or use ssh-keyscan to get initial key
-	file, err := os.Open(filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts"))
+	file, err := os.Open(filepath.Join(viper.GetString("home"), ".ssh", "known_hosts"))
 	if err != nil {
 		log.Fatal(err)
 	}
