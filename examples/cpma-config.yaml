@@ -1,0 +1,4 @@
+Source:
+  UserName: "quicklab"
+  HostName: "mars8.ddns.net"
+  SSHKey: "/point/to/your/.ssh/private.id_rsa"
