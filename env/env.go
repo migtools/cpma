@@ -9,7 +9,8 @@ import (
 
 // Info structures the application settings.
 type Info struct {
-	SFTP sftpclient.Info `mapstructure:"Source"`
+	SFTP       sftpclient.Info `mapstructure:"Source"`
+	OutputPath string          `mapstructure:"outputPath"`
 }
 
 // New returns a instance of the application settings.
