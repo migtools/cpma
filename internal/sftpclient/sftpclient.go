@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"time"
 
@@ -76,6 +77,7 @@ func (c *Client) GetFile(srcFilePath string, dstFilePath string) {
 	}
 	defer srcFile.Close()
 
+	os.MkdirAll(path.Dir(dstFilePath), 0755)
 	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
 		log.Fatal(err)

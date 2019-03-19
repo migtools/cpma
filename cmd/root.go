@@ -48,6 +48,9 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
+
+	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
+	viper.BindPFlag("outputPath", rootCmd.Flags().Lookup("output-dir"))
 }
 
 // initConfig reads in config file and ENV variables if set.
