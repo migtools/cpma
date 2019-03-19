@@ -1,4 +1,5 @@
+---
 Source:
-  UserName: "quicklab"
-  HostName: "mars8.ddns.net"
-  SSHKey: "/point/to/your/.ssh/private.id_rsa"
+  UserName: "root"
+  HostName: "master-0.gildub1.lab.pnq2.cee.redhat.com"
+  SSHKey: "/home/gildub/.ssh/quicklab"
