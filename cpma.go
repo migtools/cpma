@@ -14,12 +14,20 @@ func main() {
 	sftpclient := config.SFTP.NewClient()
 	defer sftpclient.Close()
 
-	srcFilePath := "/etc/origin/master/master-config.yaml"
-	dstFilePath := "./master-config.yaml"
-	sftpclient.GetFile(srcFilePath, filepath.Join(config.OutputPath, dstFilePath))
+	configfiles := map[string]map[string]string{
+		"master": map[string]string{
+			"name": "master-config.yaml",
+			"path": "/etc/origin/master",
+		},
+		"node": map[string]string{
+			"name": "node-config.yaml",
+			"path": "/etc/origin/node",
+		},
+	}
 
-	srcFilePath = "/etc/origin/node/node-config.yaml"
-	dstFilePath = "./node-config.yaml"
-	sftpclient.GetFile(srcFilePath, filepath.Join(config.OutputPath, dstFilePath))
-
+	for _, data := range configfiles {
+		srcFilePath := data["path"] + "/" + data["name"]
+		dstFilePath := "data" + srcFilePath
+		sftpclient.GetFile(srcFilePath, filepath.Join(config.OutputPath, dstFilePath))
+	}
 }
