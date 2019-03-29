@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/fusor/cpma/cmd"
@@ -14,19 +15,11 @@ func main() {
 	sftpclient := config.SFTP.NewClient()
 	defer sftpclient.Close()
 
-	configfiles := map[string]map[string]string{
-		"master": map[string]string{
-			"name": "master-config.yaml",
-			"path": "/etc/origin/master",
-		},
-		"node": map[string]string{
-			"name": "node-config.yaml",
-			"path": "/etc/origin/node",
-		},
-	}
+	fmt.Println(config)
+	fmt.Println()
 
-	for _, data := range configfiles {
-		srcFilePath := data["path"] + "/" + data["name"]
+	for _, cluster := range config.Cluster {
+		srcFilePath := cluster.Path + "/" + cluster.FileName
 		dstFilePath := "data" + srcFilePath
 		sftpclient.GetFile(srcFilePath, filepath.Join(config.OutputPath, dstFilePath))
 	}
