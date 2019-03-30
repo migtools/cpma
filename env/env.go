@@ -18,6 +18,12 @@ type NodeConfig struct {
 	Path     string
 }
 
+type Cmd interface {
+	setSFTP() int
+	fetch() int        //SFTP       sftpclient.Info
+	getConfig() string // -> OutputPath
+}
+
 type Info struct {
 	Cluster    Clusters        `mapstructure:"cluster"`
 	SFTP       sftpclient.Info `mapstructure:"Source"`
@@ -36,6 +42,7 @@ func (cluster *Clusters) load(list [][]string) {
 		cluster.addNode(nc[0], nc[1], nc[2])
 	}
 }
+
 func (config *NodeConfig) setConfig(filename, path string) {
 	config.FileName = filename
 	config.Path = path
