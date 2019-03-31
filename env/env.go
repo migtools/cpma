@@ -2,6 +2,7 @@ package env
 
 import (
 	"log"
+	"path/filepath"
 
 	"github.com/fusor/cpma/internal/sftpclient"
 	"github.com/spf13/viper"
@@ -20,7 +21,7 @@ type NodeConfig struct {
 
 type Cmd interface {
 	setSFTP() int
-	fetch() int        //SFTP       sftpclient.Info
+	Fetch() int        //SFTP       sftpclient.Info
 	getConfig() string // -> OutputPath
 }
 
@@ -28,6 +29,18 @@ type Info struct {
 	Cluster    Clusters        `mapstructure:"cluster"`
 	SFTP       sftpclient.Info `mapstructure:"Source"`
 	OutputPath string          `mapstructure:"outputPath"`
+}
+
+func (config *Info) Fetch() int {
+	sftpclient := config.SFTP.NewClient()
+	defer sftpclient.Close()
+
+	for _, cluster := range config.Cluster {
+		srcFilePath := cluster.Path + "/" + cluster.FileName
+		dstFilePath := "data" + srcFilePath
+		sftpclient.GetFile(srcFilePath, filepath.Join(config.OutputPath, dstFilePath))
+	}
+	return 0
 }
 
 func (cluster Clusters) addNode(name, file, path string) int {
