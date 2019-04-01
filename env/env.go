@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"strings"
 
 	"github.com/fusor/cpma/internal/sftpclient"
 	"github.com/spf13/viper"
@@ -12,6 +13,7 @@ import (
 
 type ClusterCMD interface {
 	addNode(name, file, path string) int
+	Show() string
 }
 
 type Clusters map[string]NodeConfig
@@ -24,7 +26,7 @@ type NodeConfig struct {
 
 type Cmd interface {
 	FetchSrc() int
-	Show() int
+	Show() string
 }
 
 type Info struct {
@@ -73,19 +75,26 @@ func (config *NodeConfig) setConfig(filename, path string) {
 	config.Path = path
 }
 
-func (info *Info) Show() int {
+func (srcluster *Clusters) Show() string {
 	var payload = ""
-	for name, nodeconfig := range info.SrCluster {
+	som := make([]string, 100)
+
+	for name, nodeconfig := range *srcluster {
 		if nodeconfig.Payload != "" {
 			payload = "loaded"
 		}
-		fmt.Printf("info.SrcCluster:(Name:%s File: %s Payload: %s)\n", name, nodeconfig.Path+nodeconfig.FileName, payload)
+		som = append(som, fmt.Sprintf("info.SrcCluster:(Name:%s File: %s Payload: %s)\n", name, nodeconfig.Path+nodeconfig.FileName, payload))
 	}
-	fmt.Printf("%#v\n", info.DsCluster)
-	fmt.Printf("%#v\n", info.SFTP)
-	fmt.Printf("%#v\n", info.OutputPath)
-	fmt.Printf("\n")
-	return 0
+	return strings.Join(som, "")
+}
+
+func (info *Info) Show() string {
+	return fmt.Sprintf("\nCPAM info:\n") +
+		info.SrCluster.Show() +
+		fmt.Sprintf("%#v\n", info.DsCluster) +
+		fmt.Sprintf("%#v\n", info.SFTP) +
+		fmt.Sprintf("%#v\n", info.OutputPath) +
+		fmt.Sprintf("\n")
 }
 
 // New returns a instance of the application settings.
