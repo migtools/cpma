@@ -10,6 +10,5 @@ import (
 func main() {
 	cmd.Execute()
 	config := env.New()
-	config.FetchSrc()
 	fmt.Println(config.Show())
 }
