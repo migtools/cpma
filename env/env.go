@@ -42,7 +42,7 @@ func (config *Info) FetchSrc() int {
 
 	for key, nodeconfig := range config.SrCluster {
 		srcFilePath := nodeconfig.Path + "/" + nodeconfig.FileName
-		dstFilePath := filepath.Join(config.OutputPath, "data"+srcFilePath)
+		dstFilePath := filepath.Join(config.OutputPath, srcFilePath)
 		sftpclient.GetFile(srcFilePath, dstFilePath)
 
 		payload, err := ioutil.ReadFile(dstFilePath)
@@ -83,7 +83,7 @@ func (srcluster *Clusters) Show() string {
 		if nodeconfig.Payload != "" {
 			payload = "loaded"
 		}
-		som = append(som, fmt.Sprintf("info.SrcCluster:(Name:%s File: %s Payload: %s)\n", name, nodeconfig.Path+nodeconfig.FileName, payload))
+		som = append(som, fmt.Sprintf("Src Cluster:{Name:%s File: %s Payload: %s}\n", name, nodeconfig.Path+nodeconfig.FileName, payload))
 	}
 	return strings.Join(som, "")
 }
@@ -91,10 +91,9 @@ func (srcluster *Clusters) Show() string {
 func (info *Info) Show() string {
 	return fmt.Sprintf("\nCPAM info:\n") +
 		info.SrCluster.Show() +
-		fmt.Sprintf("%#v\n", info.DsCluster) +
+		fmt.Sprintf("Dst Cluster:{%s}\n", info.DsCluster) +
 		fmt.Sprintf("%#v\n", info.SFTP) +
-		fmt.Sprintf("%#v\n", info.OutputPath) +
-		fmt.Sprintf("\n")
+		fmt.Sprintf("Output Path:%s\n", info.OutputPath)
 }
 
 // New returns a instance of the application settings.
@@ -112,6 +111,6 @@ func New() *Info {
 
 	info.SrCluster = make(Clusters)
 	info.SrCluster.load(list)
-
+	info.FetchSrc()
 	return &info
 }
