@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"path"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -51,6 +52,7 @@ func init() {
 
 	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
 	viper.BindPFlag("outputPath", rootCmd.Flags().Lookup("output-dir"))
+	viper.SetDefault("outputPath", path.Dir(""))
 }
 
 // initConfig reads in config file and ENV variables if set.

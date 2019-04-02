@@ -41,7 +41,7 @@ func (config *Info) FetchSrc() int {
 	defer sftpclient.Close()
 
 	for key, nodeconfig := range config.SrCluster {
-		srcFilePath := nodeconfig.Path + "/" + nodeconfig.FileName
+		srcFilePath := filepath.Join(nodeconfig.Path, nodeconfig.FileName)
 		dstFilePath := filepath.Join(config.OutputPath, srcFilePath)
 		sftpclient.GetFile(srcFilePath, dstFilePath)
 
