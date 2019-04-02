@@ -8,21 +8,20 @@ import (
 	"strings"
 
 	"github.com/fusor/cpma/internal/sftpclient"
+	"github.com/ghodss/yaml"
+	v1 "github.com/openshift/origin/pkg/cmd/server/apis/config/v1"
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
+
 	"github.com/spf13/viper"
 )
 
-type ClusterCMD interface {
-	addNode(name, file, path string) int
-	Show() string
-}
 type Cluster struct {
 	Nodes map[string]NodeConfig
 }
 
-type NodeConfig struct {
-	FileName string
-	Path     string
-	Payload  string
+type ClusterCMD interface {
+	addNode(name, file, path string) int
+	Show() string
 }
 
 type Cmd interface {
@@ -35,6 +34,25 @@ type Info struct {
 	DsCluster  Cluster         `mapstructure:"dscluster"`
 	SFTP       sftpclient.Info `mapstructure:"Source"`
 	OutputPath string          `mapstructure:"outputPath"`
+}
+
+type NodeConfig struct {
+	FileName  string
+	Path      string
+	Payload   []byte
+	MstConfig V1MasterConfig
+	NdeConfig V1NodeConfig
+}
+
+type V1MasterConfig v1.MasterConfig
+
+type V1NodeConfig v1.NodeConfig
+
+func addNode(filename, path string) *NodeConfig {
+	x := NodeConfig{}
+	x.FileName = filename
+	x.Path = path
+	return &x
 }
 
 func (config *Info) FetchSrc() int {
@@ -52,17 +70,11 @@ func (config *Info) FetchSrc() int {
 		}
 
 		src := config.SrCluster.Nodes[key]
-		src.Payload = string(payload)
+		src.Payload = payload
 		config.SrCluster.Nodes[key] = src
+		return 1
 	}
 	return 0
-}
-
-func addNode(filename, path string) *NodeConfig {
-	x := NodeConfig{}
-	x.FileName = filename
-	x.Path = path
-	return &x
 }
 
 func (cluster *Cluster) load(list [][]string) {
@@ -71,12 +83,53 @@ func (cluster *Cluster) load(list [][]string) {
 	}
 }
 
+func (config *Info) Parse() {
+	for key, _ := range config.SrCluster.Nodes {
+		if key == "master" {
+			delete(config.SrCluster.Nodes, "master")
+			var newnode = NodeConfig{}
+			newnode.ParseMaster(*config)
+			config.SrCluster.Nodes["master"] = newnode
+			//fmt.Println(fmt.Sprintf("%v", newnode.MstConfig.OAuthConfig.AssetPublicURL))
+			//fmt.Println(fmt.Sprintf("%v", newnode.MstConfig.OAuthConfig.IdentityProviders[0].Provider))
+		} else if key == "node" {
+			config.DsCluster.ParseNode(*config)
+		}
+	}
+}
+
+func (node *NodeConfig) ParseMaster(config Info) {
+	sftpclient := config.SFTP.NewClient()
+	defer sftpclient.Close()
+
+	jsonData, err := kyaml.ToJSON(node.Payload)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var mstconfig = V1MasterConfig{}
+
+	error := mstconfig.UnmarshMaster(jsonData)
+	if error != nil {
+		fmt.Printf("err was %s", err)
+	}
+	node.MstConfig = mstconfig
+}
+
+func (cluster *Cluster) ParseNode(config Info) int {
+	for _, nodeconfig := range cluster.Nodes {
+		fmt.Println(fmt.Sprintf("%v", nodeconfig))
+		return 1
+	}
+	return 0
+}
+
 func (srcluster Cluster) Show() string {
-	var payload = ""
+	var payload = "not loaded"
 	som := make([]string, 100)
 
 	for name, nodeconfig := range srcluster.Nodes {
-		if nodeconfig.Payload != "" {
+		if len(nodeconfig.Payload) > 0 {
 			payload = "loaded"
 		}
 		som = append(som, fmt.Sprintf("Src Cluster:{Name:%s File: %s Payload: %s}\n", name, nodeconfig.Path+nodeconfig.FileName, payload))
@@ -85,7 +138,7 @@ func (srcluster Cluster) Show() string {
 }
 
 func (info *Info) Show() string {
-	return fmt.Sprintf("\nCPAM info:\n") +
+	return fmt.Sprintf("CPAM info:\n") +
 		info.SrCluster.Show() +
 		fmt.Sprintf("Dst Cluster:{%s}\n", info.DsCluster) +
 		fmt.Sprintf("%#v\n", info.SFTP) +
@@ -109,5 +162,14 @@ func New() *Info {
 	info.SrCluster.Nodes = make(map[string]NodeConfig)
 	info.SrCluster.load(list)
 	info.FetchSrc()
+	//info.Parse()
 	return &info
+}
+
+func (c *V1MasterConfig) UnmarshMaster(data []byte) error {
+	return yaml.Unmarshal(data, c)
+}
+
+func (c *V1NodeConfig) UnmarshNode(data []byte) error {
+	return yaml.Unmarshal(data, c)
 }
