@@ -15,8 +15,9 @@ type ClusterCMD interface {
 	addNode(name, file, path string) int
 	Show() string
 }
-
-type Clusters map[string]NodeConfig
+type Cluster struct {
+	Nodes map[string]NodeConfig
+}
 
 type NodeConfig struct {
 	FileName string
@@ -30,8 +31,8 @@ type Cmd interface {
 }
 
 type Info struct {
-	SrCluster  Clusters        `mapstructure:"srcluster"`
-	DsCluster  Clusters        `mapstructure:"dscluster"`
+	SrCluster  Cluster         `mapstructure:"srcluster"`
+	DsCluster  Cluster         `mapstructure:"dscluster"`
 	SFTP       sftpclient.Info `mapstructure:"Source"`
 	OutputPath string          `mapstructure:"outputPath"`
 }
@@ -40,8 +41,8 @@ func (config *Info) FetchSrc() int {
 	sftpclient := config.SFTP.NewClient()
 	defer sftpclient.Close()
 
-	for key, nodeconfig := range config.SrCluster {
-		srcFilePath := filepath.Join(nodeconfig.Path, nodeconfig.FileName)
+	for key, nodeconfig := range config.SrCluster.Nodes {
+		srcFilePath := nodeconfig.Path + "/" + nodeconfig.FileName
 		dstFilePath := filepath.Join(config.OutputPath, srcFilePath)
 		sftpclient.GetFile(srcFilePath, dstFilePath)
 
@@ -50,36 +51,31 @@ func (config *Info) FetchSrc() int {
 			log.Fatal(err)
 		}
 
-		src := config.SrCluster[key]
+		src := config.SrCluster.Nodes[key]
 		src.Payload = string(payload)
-		config.SrCluster[key] = src
+		config.SrCluster.Nodes[key] = src
 	}
 	return 0
 }
 
-func (cluster Clusters) addNode(name, file, path string) int {
+func addNode(filename, path string) *NodeConfig {
 	x := NodeConfig{}
-	x.setConfig(file, path)
-	cluster[name] = x
-	return 0
+	x.FileName = filename
+	x.Path = path
+	return &x
 }
 
-func (cluster *Clusters) load(list [][]string) {
+func (cluster *Cluster) load(list [][]string) {
 	for _, nc := range list {
-		cluster.addNode(nc[0], nc[1], nc[2])
+		cluster.Nodes[nc[0]] = *addNode(nc[1], nc[2])
 	}
 }
 
-func (config *NodeConfig) setConfig(filename, path string) {
-	config.FileName = filename
-	config.Path = path
-}
-
-func (srcluster *Clusters) Show() string {
+func (srcluster Cluster) Show() string {
 	var payload = ""
 	som := make([]string, 100)
 
-	for name, nodeconfig := range *srcluster {
+	for name, nodeconfig := range srcluster.Nodes {
 		if nodeconfig.Payload != "" {
 			payload = "loaded"
 		}
@@ -109,7 +105,8 @@ func New() *Info {
 	list[0] = []string{"master", "master-config.yaml", "/etc/origin/master"}
 	list[1] = []string{"node", "node-config.yaml", "/etc/origin/node"}
 
-	info.SrCluster = make(Clusters)
+	info.SrCluster = Cluster{}
+	info.SrCluster.Nodes = make(map[string]NodeConfig)
 	info.SrCluster.load(list)
 	info.FetchSrc()
 	return &info
