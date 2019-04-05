@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -21,10 +22,14 @@ func main() {
 	cmd.Execute()
 
 	config := env.New()
+	config.FetchSrc()
+	config.Parse()
 
-	//x := config.SrCluster.Nodes["master"].MstConfig.OAuthConfig.AssetPublicURL
-	//z := fmt.Sprintf("%s", x)
-	//fmt.Println(z)
+	fmt.Printf("%+v\n", config.SrCluster.Nodes["master"])
+
+	fmt.Printf("%+v\n", config.SrCluster.Nodes["master"].MstConfig.ServingInfo.BindAddress)
+	fmt.Printf("%+v\n", config.SrCluster.Nodes["master"].MstConfig.OAuthConfig)
 
 	log.Print(config.Show())
+	log.Print("CPMA finished")
 }

@@ -1,6 +1,7 @@
 package env
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -8,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/fusor/cpma/internal/sftpclient"
-	"github.com/ghodss/yaml"
 	v1 "github.com/openshift/origin/pkg/cmd/server/apis/config/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 
@@ -86,12 +86,8 @@ func (cluster *Cluster) load(list [][]string) {
 func (config *Info) Parse() {
 	for key, _ := range config.SrCluster.Nodes {
 		if key == "master" {
-			delete(config.SrCluster.Nodes, "master")
-			var newnode = NodeConfig{}
-			newnode.ParseMaster(*config)
-			config.SrCluster.Nodes["master"] = newnode
-			//fmt.Println(fmt.Sprintf("%v", newnode.MstConfig.OAuthConfig.AssetPublicURL))
-			//fmt.Println(fmt.Sprintf("%v", newnode.MstConfig.OAuthConfig.IdentityProviders[0].Provider))
+			src := config.SrCluster.Nodes[key]
+			src.ParseMaster(*config)
 		} else if key == "node" {
 			config.DsCluster.ParseNode(*config)
 		}
@@ -107,13 +103,14 @@ func (node *NodeConfig) ParseMaster(config Info) {
 		log.Fatal(err)
 	}
 
-	var mstconfig = V1MasterConfig{}
-
-	error := mstconfig.UnmarshMaster(jsonData)
+	error := json.Unmarshal(jsonData, &node.MstConfig)
 	if error != nil {
-		fmt.Printf("err was %s", err)
+		fmt.Printf("err was %v", err)
 	}
-	node.MstConfig = mstconfig
+
+	fmt.Printf("%+v\n", node.MstConfig.ServingInfo.BindAddress)
+	fmt.Printf("%+v\n", node.MstConfig.OAuthConfig)
+	return node
 }
 
 func (cluster *Cluster) ParseNode(config Info) int {
@@ -161,15 +158,13 @@ func New() *Info {
 	info.SrCluster = Cluster{}
 	info.SrCluster.Nodes = make(map[string]NodeConfig)
 	info.SrCluster.load(list)
-	info.FetchSrc()
-	//info.Parse()
 	return &info
 }
 
 func (c *V1MasterConfig) UnmarshMaster(data []byte) error {
-	return yaml.Unmarshal(data, c)
+	return json.Unmarshal(data, c)
 }
 
 func (c *V1NodeConfig) UnmarshNode(data []byte) error {
-	return yaml.Unmarshal(data, c)
+	return json.Unmarshal(data, c)
 }
