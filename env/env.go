@@ -6,10 +6,11 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/fusor/cpma/internal/sftpclient"
-	v1 "github.com/openshift/origin/pkg/cmd/server/apis/config"
+	v1 "github.com/openshift/origin/pkg/cmd/server/apis/config/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 
 	"github.com/spf13/viper"
@@ -41,17 +42,25 @@ type Info struct {
 }
 
 type NodeConfig struct {
-	Name      string
-	FileName  string
-	Path      string
-	Payload   []byte
-	MstConfig *V1MasterConfig
-	NdeConfig *V1NodeConfig
+	Name         string
+	FileName     string
+	Path         string
+	Payload      []byte
+	MstConfig    *V1MasterConfig
+	NdeConfig    *V1NodeConfig
+	PlugProvider ProviderInfo
 }
 
 type V1MasterConfig v1.MasterConfig
 
 type V1NodeConfig v1.NodeConfig
+
+type ProviderInfo struct {
+	APIVersion   string `json:"apiVersion"`
+	ClientID     string `json:"clientID"`
+	ClientSecret string `json:"clientSecret"`
+	Kind         string `json:"kind"`
+}
 
 func addNode(name, filename, path string) *NodeConfig {
 	x := NodeConfig{}
@@ -75,8 +84,6 @@ func (config *Info) FetchSrc() int {
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		//fmt.Println(fmt.Sprintf("#%s", payload))
 		config.SrCluster.Nodes[i].Payload = payload
 	}
 	return 1
@@ -89,10 +96,22 @@ func (cluster *Cluster) load(list [][]string) {
 }
 
 func (config *Info) Parse() {
-
 	for i := range config.SrCluster.Nodes {
 		if config.SrCluster.Nodes[i].Name == "master" {
 			config.SrCluster.Nodes[i].MstConfig = config.SrCluster.Nodes[i].ParseMaster(config)
+
+			// WorkAround: until context for plugin extension
+			for j := range config.SrCluster.Nodes[i].MstConfig.OAuthConfig.IdentityProviders {
+				if fmt.Sprint(reflect.TypeOf(config.SrCluster.Nodes[i].MstConfig.OAuthConfig.IdentityProviders[j].Provider)) == "runtime.RawExtension" {
+					foo := string(config.SrCluster.Nodes[i].MstConfig.OAuthConfig.IdentityProviders[j].Provider.Raw)
+
+					// TODO: Replace PlugProvider with []IdentityProviders
+					error := json.Unmarshal([]byte(foo), &config.SrCluster.Nodes[i].PlugProvider)
+					if error != nil {
+						fmt.Printf("Unmarshall to ProviderInfo failed: %v", error)
+					}
+				}
+			}
 		} else if config.SrCluster.Nodes[i].Name == "node" {
 			config.DsCluster.ParseNode(*config)
 		}
@@ -102,7 +121,7 @@ func (config *Info) Parse() {
 func (node NodeConfig) ParseMaster(config *Info) *V1MasterConfig {
 	sftpclient := config.SFTP.NewClient()
 	defer sftpclient.Close()
-	var mstconf = V1MasterConfig{}
+	var mstconf V1MasterConfig
 
 	jsonData, err := kyaml.ToJSON(node.Payload)
 	if err != nil {
@@ -132,7 +151,7 @@ func (cluster Cluster) Show() string {
 		if len(cluster.Nodes[i].Payload) > 0 {
 			payload = "loaded"
 		}
-		som = append(som, fmt.Sprintf("Cluster:{Name:%s File: %s Payload: %s}\n",
+		som = append(som, fmt.Sprintf("Src Cluster:{Name:%s File: %s Payload: %s}\n",
 			cluster.Nodes[i].Name, cluster.Nodes[i].Path+cluster.Nodes[i].FileName, payload))
 	}
 	return strings.Join(som, "")
@@ -162,12 +181,4 @@ func New() *Info {
 	info.SrCluster = Cluster{}
 	info.SrCluster.load(list)
 	return &info
-}
-
-func (c *V1MasterConfig) UnmarshMaster(data []byte) error {
-	return json.Unmarshal(data, c)
-}
-
-func (c *V1NodeConfig) UnmarshNode(data []byte) error {
-	return json.Unmarshal(data, c)
 }

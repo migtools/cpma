@@ -29,9 +29,10 @@ func main() {
 	for i := range config.SrCluster.Nodes {
 		fmt.Println(fmt.Sprintf("%s", config.SrCluster.Nodes[i].FileName))
 		if config.SrCluster.Nodes[i].MstConfig != nil {
-			fmt.Printf("%+v\n", config.SrCluster.Nodes[i].MstConfig.ServingInfo.BindAddress)
-			fmt.Printf("%+v\n", config.SrCluster.Nodes[i].MstConfig.OAuthConfig.MasterPublicURL)
-			fmt.Printf("%+v\n", config.SrCluster.Nodes[i].MstConfig.OAuthConfig.IdentityProviders)
+			fmt.Println("===>")
+			fmt.Println(fmt.Sprintf("%s", config.SrCluster.Nodes[i].MstConfig.ServingInfo.BindAddress))
+			fmt.Println(fmt.Sprintf("%s", config.SrCluster.Nodes[i].MstConfig.OAuthConfig.MasterPublicURL))
+			fmt.Println(fmt.Sprintf("%s", config.SrCluster.Nodes[i].PlugProvider.ClientSecret))
 		}
 	}
 	log.Print(config.Show())
