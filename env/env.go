@@ -9,7 +9,7 @@ import (
 
 	"github.com/fusor/cpma/internal/sftpclient"
 	"github.com/ghodss/yaml"
-	v1 "github.com/openshift/origin/pkg/cmd/server/apis/config/v1"
+	v1 "github.com/openshift/origin/pkg/cmd/server/apis/config"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 
 	"github.com/spf13/viper"
@@ -84,7 +84,7 @@ func (cluster *Cluster) load(list [][]string) {
 }
 
 func (config *Info) Parse() {
-	for key, _ := range config.SrCluster.Nodes {
+	for key := range config.SrCluster.Nodes {
 		if key == "master" {
 			delete(config.SrCluster.Nodes, "master")
 			var newnode = NodeConfig{}
