@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -22,9 +23,17 @@ func main() {
 
 	config := env.New()
 
-	//x := config.SrCluster.Nodes["master"].MstConfig.OAuthConfig.AssetPublicURL
-	//z := fmt.Sprintf("%s", x)
-	//fmt.Println(z)
+	config.FetchSrc()
+	config.Parse()
 
+	for i := range config.SrCluster.Nodes {
+		fmt.Println(fmt.Sprintf("%s", config.SrCluster.Nodes[i].FileName))
+		if config.SrCluster.Nodes[i].MstConfig != nil {
+			fmt.Printf("%+v\n", config.SrCluster.Nodes[i].MstConfig.ServingInfo.BindAddress)
+			fmt.Printf("%+v\n", config.SrCluster.Nodes[i].MstConfig.OAuthConfig.MasterPublicURL)
+			fmt.Printf("%+v\n", config.SrCluster.Nodes[i].MstConfig.OAuthConfig.IdentityProviders)
+		}
+	}
 	log.Print(config.Show())
+	log.Print("CPMA finished")
 }
