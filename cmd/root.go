@@ -53,4 +53,8 @@ func init() {
 	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
 	config.Config().BindPFlag("outputPath", rootCmd.Flags().Lookup("output-dir"))
 	config.Config().SetDefault("outputPath", path.Dir(""))
+
+	rootCmd.Flags().BoolP("local-only", "l", false, "do not fetch files, use only local files.")
+	config.Config().BindPFlag("localOnly", rootCmd.Flags().Lookup("local-only"))
+	config.Config().SetDefault("localOnly", false)
 }
