@@ -2,7 +2,6 @@ package log
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -29,8 +28,9 @@ func init() {
 		log.Fatalf("error opening file: %v", err)
 	}
 
-	mw := io.MultiWriter(os.Stdout, f)
-	log.SetOutput(mw)
+	// TODO: Replace with flag
+	//mw := io.MultiWriter(os.Stdout, f)
+	log.SetOutput(f)
 	log.SetLevel(log.InfoLevel)
 	log.SetFormatter(&customFormatter{})
 }
