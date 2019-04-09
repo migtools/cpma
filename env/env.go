@@ -75,7 +75,7 @@ func (config *Info) FetchSrc() int {
 	defer sftpclient.Close()
 
 	for i := range config.SrCluster.Nodes {
-		srcFilePath := config.SrCluster.Nodes[i].Path + "/" + config.SrCluster.Nodes[i].FileName
+		srcFilePath := filepath.Join(config.SrCluster.Nodes[i].Path, config.SrCluster.Nodes[i].FileName)
 		dstFilePath := filepath.Join(config.OutputPath, srcFilePath)
 
 		sftpclient.GetFile(srcFilePath, dstFilePath)
@@ -86,6 +86,7 @@ func (config *Info) FetchSrc() int {
 		}
 		config.SrCluster.Nodes[i].Payload = payload
 	}
+
 	return 1
 }
 
@@ -106,9 +107,8 @@ func (config *Info) Parse() {
 					foo := string(config.SrCluster.Nodes[i].MstConfig.OAuthConfig.IdentityProviders[j].Provider.Raw)
 
 					// TODO: Replace PlugProvider with []IdentityProviders
-					error := json.Unmarshal([]byte(foo), &config.SrCluster.Nodes[i].PlugProvider)
-					if error != nil {
-						fmt.Printf("Unmarshall to ProviderInfo failed: %v", error)
+					if err := json.Unmarshal([]byte(foo), &config.SrCluster.Nodes[i].PlugProvider); err != nil {
+						fmt.Printf("unmarshal to ProviderInfo failed: %v", err)
 					}
 				}
 			}
@@ -128,16 +128,15 @@ func (node NodeConfig) ParseMaster(config *Info) *V1MasterConfig {
 		log.Fatal(err)
 	}
 
-	error := json.Unmarshal(jsonData, &mstconf)
-	if error != nil {
-		log.Println("Unamarshall error %v", err)
+	if err := json.Unmarshal(jsonData, &mstconf); err != nil {
+		log.Printf("unmarshal error %v", err)
 	}
 	return &mstconf
 }
 
 func (cluster *Cluster) ParseNode(config Info) int {
 	for i := range cluster.Nodes {
-		fmt.Println(fmt.Sprintf("ParseNode: %v", cluster.Nodes[i].FileName))
+		fmt.Printf("ParseNode: %v", cluster.Nodes[i].FileName)
 		return 1
 	}
 	return 0
@@ -151,14 +150,15 @@ func (cluster Cluster) Show() string {
 		if len(cluster.Nodes[i].Payload) > 0 {
 			payload = "loaded"
 		}
-		som = append(som, fmt.Sprintf("Src Cluster:{Name:%s File: %s Payload: %s}\n",
+		som = append(som, fmt.Sprintf("Src Cluster: {Name:%s File: %s Payload: %s}\n",
 			cluster.Nodes[i].Name, cluster.Nodes[i].Path+cluster.Nodes[i].FileName, payload))
 	}
+
 	return strings.Join(som, "")
 }
 
 func (info *Info) Show() string {
-	return fmt.Sprintf("CPAM info:\n") +
+	return fmt.Sprintf("CPMA info:\n") +
 		info.SrCluster.Show() +
 		fmt.Sprintf("Dst Cluster:{%s}\n", info.DsCluster) +
 		fmt.Sprintf("%#v\n", info.SFTP) +
