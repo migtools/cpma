@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 	"reflect"
 	"strings"
 
 	"github.com/fusor/cpma/internal/sftpclient"
 	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/log"
 	v1 "github.com/openshift/origin/pkg/cmd/server/apis/config/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )

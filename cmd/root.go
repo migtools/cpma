@@ -15,19 +15,25 @@
 package cmd
 
 import (
-	"log"
 	"path"
 
 	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/log"
 	"github.com/spf13/cobra"
 )
+
+var debugLogLevel bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "cpma",
 	Short: "Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x",
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
-	Run:   func(cmd *cobra.Command, args []string) {},
+	Run: func(cmd *cobra.Command, args []string) {
+		if debugLogLevel {
+			log.SetDebugLogLevel()
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -41,6 +47,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(config.InitConfig)
 	rootCmd.PersistentFlags().StringVar(&config.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
+	rootCmd.PersistentFlags().BoolVar(&debugLogLevel, "debug", false, "set log level to debug")
 
 	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
 	config.Config().BindPFlag("outputPath", rootCmd.Flags().Lookup("output-dir"))
