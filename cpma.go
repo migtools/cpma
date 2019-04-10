@@ -5,7 +5,8 @@ import (
 
 	"github.com/fusor/cpma/cmd"
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/pkg/log"
+	_ "github.com/fusor/cpma/pkg/log"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {

@@ -18,7 +18,8 @@ import (
 	"path"
 
 	"github.com/fusor/cpma/pkg/config"
-	"github.com/fusor/cpma/pkg/log"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +32,7 @@ var rootCmd = &cobra.Command{
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if debugLogLevel {
-			log.SetDebugLogLevel()
+			log.SetLevel(log.DebugLevel)
 		}
 	},
 }

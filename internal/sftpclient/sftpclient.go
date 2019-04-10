@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/fusor/cpma/pkg/config"
-	"github.com/fusor/cpma/pkg/log"
 	"github.com/pkg/sftp"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	kh "golang.org/x/crypto/ssh/knownhosts"
 )
