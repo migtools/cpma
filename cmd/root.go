@@ -15,16 +15,12 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"path"
 
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
-
-var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -43,41 +39,10 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
+	cobra.OnInitialize(config.InitConfig)
+	rootCmd.PersistentFlags().StringVar(&config.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
 
 	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
-	viper.BindPFlag("outputPath", rootCmd.Flags().Lookup("output-dir"))
-	viper.SetDefault("outputPath", path.Dir(""))
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Search config in home directory with name ".cpma" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".cpma")
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Using config file:", viper.ConfigFileUsed())
+	config.Config().BindPFlag("outputPath", rootCmd.Flags().Lookup("output-dir"))
+	config.Config().SetDefault("outputPath", path.Dir(""))
 }

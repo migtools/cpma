@@ -10,10 +10,9 @@ import (
 	"strings"
 
 	"github.com/fusor/cpma/internal/sftpclient"
+	"github.com/fusor/cpma/pkg/config"
 	v1 "github.com/openshift/origin/pkg/cmd/server/apis/config/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
-
-	"github.com/spf13/viper"
 )
 
 type Cluster struct {
@@ -169,7 +168,7 @@ func (info *Info) Show() string {
 func New() *Info {
 	var info Info
 
-	if err := viper.Unmarshal(&info); err != nil {
+	if err := config.Config().Unmarshal(&info); err != nil {
 		log.Fatalf("unable to parse configuration: %v", err)
 	}
 

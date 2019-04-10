@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/pkg/sftp"
-	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh"
 	kh "golang.org/x/crypto/ssh/knownhosts"
 )
@@ -39,7 +39,7 @@ func (c *Info) NewClient() *Client {
 		log.Fatalf("unable to parse private key: %v", err)
 	}
 
-	hostKeyCallback, err := kh.New(filepath.Join(viper.GetString("home"), ".ssh", "known_hosts"))
+	hostKeyCallback, err := kh.New(filepath.Join(config.Config().GetString("home"), ".ssh", "known_hosts"))
 	if err != nil {
 		log.Fatal(err)
 	}

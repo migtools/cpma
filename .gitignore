@@ -9,7 +9,6 @@
 *.dylib
 
 # Standard and 3rd party lib ignored - use go tool to regenerate
-/pkg/
 /src/*.*/
 
 # Test binary, build with `go test -c`
