@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/fusor/cpma/internal/sftpclient"
 	"github.com/fusor/cpma/pkg/config"
 	v1 "github.com/openshift/origin/pkg/cmd/server/apis/config/v1"
+	log "github.com/sirupsen/logrus"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 

@@ -2,23 +2,16 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
 
 	"github.com/fusor/cpma/cmd"
 	"github.com/fusor/cpma/env"
+	_ "github.com/fusor/cpma/pkg/log"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	log.Print("CPMA started")
-	f, err := os.OpenFile("cpma.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-	}
-	defer f.Close()
+	log.Println("CPMA started")
 
-	log.SetOutput(f)
-	log.Println("CPMA Log started")
 	cmd.Execute()
 
 	config := env.New()
@@ -36,5 +29,5 @@ func main() {
 		}
 	}
 	log.Print(config.Show())
-	log.Print("CPMA finished")
+	log.Println("CPMA finished")
 }
