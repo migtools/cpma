@@ -17,7 +17,7 @@ package cmd
 import (
 	"path"
 
-	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/internal/config"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
