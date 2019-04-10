@@ -10,8 +10,6 @@ import (
 )
 
 func main() {
-	log.Println("CPMA started")
-
 	cmd.Execute()
 
 	config := env.New()
@@ -22,12 +20,10 @@ func main() {
 	for i := range config.SrCluster.Nodes {
 		fmt.Println(fmt.Sprintf("%s", config.SrCluster.Nodes[i].FileName))
 		if config.SrCluster.Nodes[i].MstConfig != nil {
-			fmt.Println("===>")
-			fmt.Println(fmt.Sprintf("%s", config.SrCluster.Nodes[i].MstConfig.ServingInfo.BindAddress))
-			fmt.Println(fmt.Sprintf("%s", config.SrCluster.Nodes[i].MstConfig.OAuthConfig.MasterPublicURL))
-			fmt.Println(fmt.Sprintf("%s", config.SrCluster.Nodes[i].PlugProvider.ClientSecret))
+			log.Println(config.SrCluster.Nodes[i].MstConfig.ServingInfo.BindAddress)
+			log.Println(config.SrCluster.Nodes[i].MstConfig.OAuthConfig.MasterPublicURL)
+			log.Println(config.SrCluster.Nodes[i].PlugProvider.ClientSecret)
 		}
 	}
 	log.Print(config.Show())
-	log.Println("CPMA finished")
 }
