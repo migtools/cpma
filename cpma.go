@@ -5,7 +5,7 @@ import (
 
 	"github.com/fusor/cpma/cmd"
 	"github.com/fusor/cpma/env"
-	_ "github.com/fusor/cpma/pkg/log"
+	_ "github.com/fusor/cpma/internal/log"
 	log "github.com/sirupsen/logrus"
 )
 
