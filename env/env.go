@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/fusor/cpma/internal/sftpclient"
 	"github.com/fusor/cpma/internal/config"
+	"github.com/fusor/cpma/internal/sftpclient"
 	v1 "github.com/openshift/origin/pkg/cmd/server/apis/config/v1"
 	log "github.com/sirupsen/logrus"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
