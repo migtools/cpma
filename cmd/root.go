@@ -17,6 +17,7 @@ package cmd
 import (
 	"path"
 
+	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/internal/config"
 	log "github.com/sirupsen/logrus"
 
@@ -31,9 +32,27 @@ var rootCmd = &cobra.Command{
 	Short: "Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x",
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Set loglevel to debug
 		if debugLogLevel {
 			log.SetLevel(log.DebugLevel)
 		}
+
+		err := config.InitConfig()
+		if err != nil {
+			log.Fatal(err, "\n")
+		}
+
+		envConfig := env.New()
+
+		if envConfig.LocalOnly {
+			envConfig.LoadSrc()
+		} else {
+			envConfig.FetchSrc()
+		}
+
+		envConfig.Parse()
+
+		log.Print(envConfig.Show())
 	},
 }
 
@@ -46,7 +65,7 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(config.InitConfig)
+	cobra.OnInitialize()
 	rootCmd.PersistentFlags().StringVar(&config.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
 	rootCmd.PersistentFlags().BoolVar(&debugLogLevel, "debug", false, "set log level to debug")
 

@@ -1,9 +1,6 @@
 package config
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
@@ -19,12 +16,11 @@ func Config() *viper.Viper {
 }
 
 // InitConfig initialize config
-func InitConfig() {
+func InitConfig() error {
 	// Find home directory.
 	home, err := homedir.Dir()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 	defaultConfig.Set("home", home)
 
@@ -41,9 +37,10 @@ func InitConfig() {
 
 	// If a config file is found, read it in.
 	if err := defaultConfig.ReadInConfig(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }
 
 func init() {
