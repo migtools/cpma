@@ -112,7 +112,8 @@ func (config *Info) CROAuthGoogle(identityProvider IdentityProviders) {
 }
 
 func (config *Info) CROAuthGithub(identityProvider IdentityProviders) {
-	const templ1 = `apiVersion: config.openshift.io/v1
+	const templ1 = `---
+apiVersion: config.openshift.io/v1
 kind: OAuth
 metadata:
 	name: cluster
@@ -134,16 +135,17 @@ spec:
 			{{- if .Provider.Hostname}} hostname: {{.Provider.Hostname}}{{end}}
 			{{- if .Provider.Organizations }}
 			organizations:
-				{{- range .Provider.Organizations}}
-				- {{.}}
-				{{- end}}
+			{{- range .Provider.Organizations}}
+			- {{.}}
+			{{- end}}
 			{{- end}}
 			{{- if .Provider.Teams }}
 			teams:
-				{{- range .Provider.Teams}}
-				- {{.}}
-				{{- end}}
-			{{- end}}`
+			{{- range .Provider.Teams}}
+			- {{.}}
+			{{- end}}
+			{{- end}}
+	`
 
 	var manifest1 = template.Must(template.New("OAuthCRGithub1").Parse(templ1))
 	result := new(CRManifest)
@@ -167,7 +169,8 @@ spec:
 }
 
 func (config *Info) CROAuthHTPasswd(identityProvider IdentityProviders) {
-	const templ1 = `apiVersion: config.openshift.io/v1
+	const templ1 = `---
+apiVersion: config.openshift.io/v1
 kind: OAuth
 metadata:
   name: cluster
@@ -180,7 +183,8 @@ spec:
     type: HTPasswd
     htpasswd:
       fileData:
-        name: htpass-secret`
+				name: htpass-secret
+`
 
 	var manifest1 = template.Must(template.New("OAuthCR").Parse(templ1))
 
