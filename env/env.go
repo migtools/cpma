@@ -298,7 +298,7 @@ func (cluster ClusterV4) Show() string {
 	som := make([]string, 100)
 
 	for i := range cluster.CRManifests {
-		som = append(som, fmt.Sprintf("qDst Cluster: %s\n", *cluster.CRManifests[i]))
+		som = append(som, fmt.Sprintf("Dst Cluster: %s\n", *cluster.CRManifests[i]))
 	}
 
 	return strings.Join(som, "")
