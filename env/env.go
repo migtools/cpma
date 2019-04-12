@@ -316,8 +316,8 @@ func (cluster ClusterV3) Show() string {
 		if len(cluster.Nodes[i].Payload) > 0 {
 			payload = "loaded"
 		}
-		som = append(som, fmt.Sprintf("Src Cluster: {Name:%s File: %s Payload: %s}\n",
-			cluster.Nodes[i].Name, cluster.Nodes[i].Path+cluster.Nodes[i].FileName, payload))
+		som = append(som, fmt.Sprintf("Src Cluster: {Name: %s, File: %s, Payload: %s}\n",
+			cluster.Nodes[i].Name, filepath.Join(cluster.Nodes[i].Path, cluster.Nodes[i].FileName), payload))
 	}
 
 	return strings.Join(som, "")
