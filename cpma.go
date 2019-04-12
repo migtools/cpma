@@ -19,6 +19,7 @@ func main() {
 	}
 
 	config.Parse()
+	config.CROAuth()
 
 	log.Print(config.Show())
 }
