@@ -1,11 +1,12 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
+	_ "github.com/fusor/cpma/internal/log"
+	"github.com/fusor/cpma/ocp4crd/oauth"
 
 	"github.com/fusor/cpma/cmd"
 	"github.com/fusor/cpma/env"
-	_ "github.com/fusor/cpma/internal/log"
+
 	ocp3 "github.com/fusor/cpma/ocp3config"
 )
 
@@ -19,5 +20,5 @@ func main() {
 
 	m := ocp3config.ParseMaster()
 
-	log.Println(m)
+	oauth.Generate(m)
 }
