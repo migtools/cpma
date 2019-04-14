@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -18,7 +19,8 @@ func (f *customFormatter) Format(entry *log.Entry) ([]byte, error) {
 	time := entry.Time.Format("04/10 15:04:05")
 	level := strings.ToUpper(entry.Level.String())
 
-	str := fmt.Sprintf("%s %5s %s", time, level, entry.Message)
+	// TODO: handle newline?
+	str := fmt.Sprintf("%s %5s %s\n", time, level, entry.Message)
 	return []byte(str), err
 }
 
@@ -29,8 +31,8 @@ func init() {
 	}
 
 	// TODO: Replace with flag
-	//mw := io.MultiWriter(os.Stdout, f)
-	log.SetOutput(f)
+	mw := io.MultiWriter(os.Stdout, f)
+	log.SetOutput(mw)
 	log.SetLevel(log.InfoLevel)
 	log.SetFormatter(&customFormatter{})
 }
