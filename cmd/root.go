@@ -19,7 +19,7 @@ import (
 
 	"github.com/fusor/cpma/env"
 	ocp3 "github.com/fusor/cpma/ocp3config"
-	"github.com/fusor/cpma/ocp4crd/oauth"
+	"github.com/fusor/cpma/ocp4"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -49,13 +49,9 @@ var rootCmd = &cobra.Command{
 
 		m := ocp3config.ParseMaster()
 
-		// TODO: Change Generate() to Translate() or Convert(), it'll say more to
-		// developer. Pass just a part of required structure instead of full master config.
-		crd, err := oauth.Generate(m)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", m.OAuthConfig)
-		}
-		oauth.PrintCRD(crd)
+		clusterV4 := ocp4.Cluster{}
+		clusterV4.Translate(m)
+		clusterV4.PrintCRD()
 	},
 }
 

@@ -9,13 +9,13 @@ import (
 	ocp3 "github.com/fusor/cpma/ocp3config"
 )
 
-func TestGenerateMasterConfig(t *testing.T) {
+func TestTranslateMasterConfig(t *testing.T) {
 	testConfig := ocp3.Config{
 		Masterf: "../../test/oauth/bulk-test-master-config.yaml",
 	}
 	masterConfig := testConfig.ParseMaster()
 
-	resCrd, err := Generate(masterConfig)
+	resCrd, _, err := Translate(masterConfig)
 	require.NoError(t, err)
 	assert.Equal(t, resCrd.Spec.IdentityProviders[0].(identityProviderHTPasswd).Type, "HTPasswd")
 	assert.Equal(t, resCrd.Spec.IdentityProviders[1].(identityProviderGitHub).Type, "GitHub")

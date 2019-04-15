@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
@@ -30,54 +31,73 @@ func init() {
 // TODO: figure out the OKD terminology
 
 // Shared CRD part, present in all types of OAuth CRDs
-type v4OAuthCRD struct {
-	APIVersion string `yaml:"apiVersion"`
-	Kind       string `yaml:"kind"`
-	MetaData   struct {
-		Name string `yaml:"name"`
-	} `yaml:"metadata"`
-	Spec struct {
+type OAuthCRD struct {
+	APIVersion string   `yaml:"apiVersion"`
+	Kind       string   `yaml:"kind"`
+	MetaData   Metadata `yaml:"metaData"`
+	Spec       struct {
 		IdentityProviders []interface{} `yaml:"identityProviders"`
 	} `yaml:"spec"`
 }
 
-// Generate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Generate(masterconfig configv1.MasterConfig) (*v4OAuthCRD, error) {
+type Secret struct {
+	ClientSecret string `yaml:"clientSecret`
+}
+
+type SecretLiteral struct {
+	ApiVersion string   `yaml:"apiVersion"`
+	Data       Secret   `yaml:"data"`
+	Kind       string   `yaml:"kind"`
+	MetaData   Metadata `yaml:"metaData"`
+}
+
+type Metadata struct {
+	Name      string `yaml:"name"`
+	Namespace string `yaml:"namespace"`
+}
+
+var APIVersion = "config.openshift.io/v1"
+
+// Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
+func Translate(masterconfig configv1.MasterConfig) (*OAuthCRD, []secrets.Secret, error) {
 	var auth = masterconfig.OAuthConfig.DeepCopy()
 	var err error
 
-	var crd v4OAuthCRD
-	crd.APIVersion = "config.openshift.io/v1"
-	crd.Kind = "OAuth"
-	crd.MetaData.Name = "cluster"
+	var oauthCrd OAuthCRD
+	oauthCrd.APIVersion = APIVersion
+	oauthCrd.Kind = "OAuth"
+	oauthCrd.MetaData.Name = "cluster"
+	var secrets []secrets.Secret
 
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	for _, p := range auth.IdentityProviders {
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		switch kind := p.Provider.Object.GetObjectKind().GroupVersionKind().Kind; kind {
 		case "HTPasswdPasswordIdentityProvider":
-			idP := buildHTPasswdIP(serializer, p)
-			crd.Spec.IdentityProviders = append(crd.Spec.IdentityProviders, idP)
+			idP, secret := buildHTPasswdIP(serializer, p)
+			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
+			secrets = append(secrets, secret)
 		case "GitHubIdentityProvider":
-			idP := buildGitHubIP(serializer, p)
-			crd.Spec.IdentityProviders = append(crd.Spec.IdentityProviders, idP)
+			idP, secret := buildGitHubIP(serializer, p)
+			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
+			secrets = append(secrets, secret)
 		default:
 			logrus.Print("can't handle: ", kind)
 		}
 	}
 
-	return &crd, nil
+	return &oauthCrd, secrets, nil
 }
 
 // PrintCRD Print generated CRD
-func PrintCRD(crd *v4OAuthCRD) {
-	yamlBytes, err := yaml.Marshal(&crd)
+func (oauth *OAuthCRD) PrintCRD() string {
+	yamlBytes, err := yaml.Marshal(&oauth)
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	logrus.Print(string(yamlBytes))
+	return string(yamlBytes)
 }
