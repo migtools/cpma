@@ -1,27 +1,48 @@
 package env
 
 import (
-	"github.com/davecgh/go-spew/spew"
-	"github.com/fusor/cpma/internal/config"
-	"github.com/fusor/cpma/internal/sftpclient"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/mitchellh/go-homedir"
+	"github.com/spf13/viper"
 )
 
-// Info describes application environment and configuration
-type Info struct {
-	Source    string          `mapstructure:"Source"`
-	SSH       sftpclient.Info `mapstructure:"SSHCreds"`
-	OutputDir string          `mapstructure:"OutputDir"`
+var viperConfig *viper.Viper
+
+// ConfigFile Path to config file
+var ConfigFile string
+
+// Config returns viper config
+func Config() *viper.Viper {
+	return viperConfig
 }
 
-// New returns a instance of the application settings.
-func New() *Info {
-	var info Info
+// InitConfig initialize config
+func InitConfig() {
+	// Find home directory.
+	home, err := homedir.Dir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	viperConfig.Set("home", home)
 
-	if err := config.Config().Unmarshal(&info); err != nil {
-		log.Fatalf("unable to parse configuration: %v", err)
+	if ConfigFile != "" {
+		// Use config file from the flag.
+		viperConfig.SetConfigFile(ConfigFile)
+	} else {
+		// Search config in home directory with name ".cpma" (without extension).
+		viperConfig.AddConfigPath(home)
+		viperConfig.SetConfigName(".cpma")
 	}
 
-	log.Debugln(spew.Sdump(info))
-	return &info
+	viper.AutomaticEnv() // read in environment variables that match
+
+	// If a config file is found, read it in.
+	if err := viperConfig.ReadInConfig(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func init() {
+	viperConfig = viper.New()
 }

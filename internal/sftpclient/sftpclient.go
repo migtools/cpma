@@ -9,25 +9,31 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fusor/cpma/internal/config"
+	"github.com/fusor/cpma/env"
 	"github.com/pkg/sftp"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	kh "golang.org/x/crypto/ssh/knownhosts"
 )
 
-type Info struct {
-	Login      string `mapstructure:"Login"`
-	PrivateKey string `mapstructure:"PrivateKey"`
-}
-
+// Client Wrapper around sftp.Client
 type Client struct {
 	*sftp.Client
 }
 
+var globalClient Client
+
+// GlobalClient returns global client
+func GlobalClient() Client {
+	return globalClient
+}
+
 // NewClient creates a new SFTP client
-func (c *Info) NewClient(hostname string) (*Client, error) {
-	key, err := ioutil.ReadFile(c.PrivateKey)
+func NewClient() {
+	source := env.Config().GetString("Source")
+	sshCreds := env.Config().GetStringMapString("SSHCreds")
+
+	key, err := ioutil.ReadFile(sshCreds["privatekey"])
 	if err != nil {
 		log.Fatalf("unable to read private key: %v", err)
 	}
@@ -38,13 +44,13 @@ func (c *Info) NewClient(hostname string) (*Client, error) {
 		log.Fatalf("unable to parse private key: %v", err)
 	}
 
-	hostKeyCallback, err := kh.New(filepath.Join(config.Config().GetString("home"), ".ssh", "known_hosts"))
+	hostKeyCallback, err := kh.New(filepath.Join(env.Config().GetString("home"), ".ssh", "known_hosts"))
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 
 	sshConfig := &ssh.ClientConfig{
-		User: c.Login,
+		User: sshCreds["login"],
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
@@ -54,19 +60,19 @@ func (c *Info) NewClient(hostname string) (*Client, error) {
 	}
 
 	// TODO: accept custom port
-	addr := fmt.Sprintf("%s:22", hostname)
+	addr := fmt.Sprintf("%s:22", source)
 	connection, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 
 	// create new SFTP client
 	client, err := sftp.NewClient(connection)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 
-	return &Client{client}, err
+	globalClient = Client{client}
 }
 
 // GetFile copies source file to destination file
