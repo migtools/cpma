@@ -17,7 +17,10 @@ package cmd
 import (
 	"path"
 
-	"github.com/fusor/cpma/internal/config"
+	"github.com/fusor/cpma/env"
+	"github.com/fusor/cpma/internal/sftpclient"
+	ocp3 "github.com/fusor/cpma/ocp3config"
+	"github.com/fusor/cpma/ocp4crd/oauth"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -34,6 +37,17 @@ var rootCmd = &cobra.Command{
 		if debugLogLevel {
 			log.SetLevel(log.DebugLevel)
 		}
+
+		env.InitConfig()
+		sftpclient.NewClient()
+
+		// TODO: Passing *e.Info here is not exactly nice. Fix?
+		ocp3config := ocp3.New()
+		ocp3config.Fetch()
+
+		m := ocp3config.ParseMaster()
+
+		oauth.Generate(m)
 	},
 }
 
@@ -46,11 +60,11 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(config.InitConfig)
-	rootCmd.PersistentFlags().StringVar(&config.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
+	cobra.OnInitialize()
+	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
 	rootCmd.PersistentFlags().BoolVar(&debugLogLevel, "debug", false, "show debug ouput")
 
 	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
-	config.Config().BindPFlag("OutputDir", rootCmd.Flags().Lookup("output-dir"))
-	config.Config().SetDefault("OutputDir", path.Dir(""))
+	env.Config().BindPFlag("OutputDir", rootCmd.Flags().Lookup("output-dir"))
+	env.Config().SetDefault("OutputDir", path.Dir(""))
 }

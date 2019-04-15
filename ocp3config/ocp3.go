@@ -55,21 +55,24 @@ func (c *Config) ParseMaster() configv1.MasterConfig {
 
 // Fetch checks whether OCP3 configuration is available and retrieves
 // it in case it is not.
-func (c *Config) Fetch(e *env.Info) {
+func (c *Config) Fetch() {
 	// TODO: this function must get all the files referred from master-config
 	// and node-config as well
-
-	var sftpclient *sftpclient.Client
 	var src, dst string
 	var err error
 
-	src = filepath.Join(e.Source, c.masterf)
+	source := env.Config().GetString("Source")
+	outputDir := env.Config().GetString("OutputDir")
+
+	client := sftpclient.GlobalClient()
+
+	src = filepath.Join(source, c.masterf)
 	if _, err = os.Stat(src); os.IsNotExist(err) {
 		goto fetch
 	}
 	c.masterf = src
 
-	src = filepath.Join(e.Source, c.nodef)
+	src = filepath.Join(source, c.nodef)
 	if _, err = os.Stat(src); os.IsNotExist(err) {
 		goto fetch
 	}
@@ -82,20 +85,15 @@ fetch:
 	// given by e.Source, thus we think it is fqdn.
 	// TODO: Rework logic or we may want to prompt user here.
 
-	log.Debugln("unable to locate configuration, attempt to fetch from ", e.Source)
+	log.Debugln("unable to locate configuration, attempt to fetch from ", source)
+	defer client.Close()
 
-	sftpclient, err = e.SSH.NewClient(e.Source)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer sftpclient.Close()
-
-	dst = filepath.Join(e.OutputDir, c.masterf)
-	sftpclient.GetFile(c.masterf, dst)
+	dst = filepath.Join(outputDir, c.masterf)
+	client.GetFile(c.masterf, dst)
 	c.masterf = dst
 
-	dst = filepath.Join(e.OutputDir, c.nodef)
-	sftpclient.GetFile(c.nodef, dst)
+	dst = filepath.Join(outputDir, c.nodef)
+	client.GetFile(c.nodef, dst)
 	c.nodef = dst
 
 out:
