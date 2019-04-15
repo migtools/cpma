@@ -65,19 +65,20 @@ func (c *Config) Fetch(e *env.Info) {
 
 	src = filepath.Join(e.Source, c.masterf)
 	if _, err = os.Stat(src); os.IsNotExist(err) {
-		goto fetch
+		fetch()
 	}
 	c.masterf = src
 
 	src = filepath.Join(e.Source, c.nodef)
 	if _, err = os.Stat(src); os.IsNotExist(err) {
-		goto fetch
+		fetch()
 	}
 	c.nodef = src
 
-	goto out
+	return
+}
 
-fetch:
+func fetch() {
 	// We weren't successfull in locating configuration in directory
 	// given by e.Source, thus we think it is fqdn.
 	// TODO: Rework logic or we may want to prompt user here.
@@ -97,9 +98,6 @@ fetch:
 	dst = filepath.Join(e.OutputDir, c.nodef)
 	sftpclient.GetFile(c.nodef, dst)
 	c.nodef = dst
-
-out:
-	return
 }
 
 // New instantiate Config structure that represents OCP3 configuration
