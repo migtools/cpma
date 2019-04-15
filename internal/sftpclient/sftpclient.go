@@ -17,9 +17,8 @@ import (
 )
 
 type Info struct {
-	HostName string `mapstructure:"HostName"`
-	UserName string `mapstructure:"UserName"`
-	SSHKey   string `mapstructure:"SSHKey"`
+	Login      string `mapstructure:"Login"`
+	PrivateKey string `mapstructure:"PrivateKey"`
 }
 
 type Client struct {
@@ -27,8 +26,8 @@ type Client struct {
 }
 
 // NewClient creates a new SFTP client
-func (c *Info) NewClient() *Client {
-	key, err := ioutil.ReadFile(c.SSHKey)
+func (c *Info) NewClient(hostname string) (*Client, error) {
+	key, err := ioutil.ReadFile(c.PrivateKey)
 	if err != nil {
 		log.Fatalf("unable to read private key: %v", err)
 	}
@@ -41,11 +40,11 @@ func (c *Info) NewClient() *Client {
 
 	hostKeyCallback, err := kh.New(filepath.Join(config.Config().GetString("home"), ".ssh", "known_hosts"))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	sshConfig := &ssh.ClientConfig{
-		User: c.UserName,
+		User: c.Login,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
@@ -54,19 +53,20 @@ func (c *Info) NewClient() *Client {
 		Timeout: 10 * time.Second,
 	}
 
-	addr := fmt.Sprintf("%s:22", c.HostName)
+	// TODO: accept custom port
+	addr := fmt.Sprintf("%s:22", hostname)
 	connection, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// create new SFTP client
 	client, err := sftp.NewClient(connection)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return &Client{client}
+	return &Client{client}, err
 }
 
 // GetFile copies source file to destination file

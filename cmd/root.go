@@ -48,13 +48,9 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(config.InitConfig)
 	rootCmd.PersistentFlags().StringVar(&config.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
-	rootCmd.PersistentFlags().BoolVar(&debugLogLevel, "debug", false, "set log level to debug")
+	rootCmd.PersistentFlags().BoolVar(&debugLogLevel, "debug", false, "show debug ouput")
 
 	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
-	config.Config().BindPFlag("outputPath", rootCmd.Flags().Lookup("output-dir"))
-	config.Config().SetDefault("outputPath", path.Dir(""))
-
-	rootCmd.Flags().BoolP("local-only", "l", false, "do not fetch files, use only local files.")
-	config.Config().BindPFlag("localOnly", rootCmd.Flags().Lookup("local-only"))
-	config.Config().SetDefault("localOnly", false)
+	config.Config().BindPFlag("OutputDir", rootCmd.Flags().Lookup("output-dir"))
+	config.Config().SetDefault("OutputDir", path.Dir(""))
 }

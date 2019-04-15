@@ -1,6 +1,6 @@
 ---
-Source:
-  UserName: "root"
-  HostName: "master-0.gildub1.lab.pnq2.cee.redhat.com"
-  SSHKey: "/home/gildub/.ssh/quicklab"
-outputPath: "./data"
+Source: "master-0.gildub1.lab.pnq2.cee.redhat.com" # can also point to directory
+SSHCreds:
+  Login: "root"
+  PrivateKey: "/home/gildub/.ssh/quicklab"
+OutputDir: "./data"
