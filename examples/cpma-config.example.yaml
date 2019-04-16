@@ -3,4 +3,5 @@ Source: "master-0.gildub1.lab.pnq2.cee.redhat.com" # can also point to directory
 SSHCreds:
   Login: "root"
   PrivateKey: "/home/gildub/.ssh/quicklab"
+  Port: 22
 OutputDir: "./data"
