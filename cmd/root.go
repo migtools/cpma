@@ -37,7 +37,6 @@ var rootCmd = &cobra.Command{
 		if debugLogLevel {
 			log.SetLevel(log.DebugLevel)
 		}
-
 		env.InitConfig()
 		sftpclient.NewClient()
 
@@ -51,14 +50,6 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
-	}
-}
-
 func init() {
 	cobra.OnInitialize()
 	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
@@ -67,4 +58,10 @@ func init() {
 	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
 	env.Config().BindPFlag("OutputDir", rootCmd.Flags().Lookup("output-dir"))
 	env.Config().SetDefault("OutputDir", path.Dir(""))
+
+	// Execute adds all child commands to the root command and sets flags appropriately.
+	// It only needs to happen once.
+	if err := rootCmd.Execute(); err != nil {
+		log.Fatal(err)
+	}
 }
