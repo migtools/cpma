@@ -9,7 +9,7 @@ import (
 
 func TestConfigParseMaster(t *testing.T) {
 	testConfig := Config{
-		Masterf: "../examples/source/etc/origin/master/master-config.yaml",
+		Masterf: "../test/test-master-config.yaml",
 	}
 
 	expectedMasterConfig := configv1.MasterConfig{

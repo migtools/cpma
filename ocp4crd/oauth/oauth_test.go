@@ -11,7 +11,7 @@ import (
 
 func TestGenerateMasterConfig(t *testing.T) {
 	testConfig := ocp3.Config{
-		Masterf: "../../examples/source/etc/origin/master/master-config.yaml",
+		Masterf: "../../test/test-master-config.yaml",
 	}
 	masterConfig := testConfig.ParseMaster()
 
