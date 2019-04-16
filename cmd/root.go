@@ -46,7 +46,13 @@ var rootCmd = &cobra.Command{
 
 		m := ocp3config.ParseMaster()
 
-		oauth.Generate(m)
+		crd, err := oauth.Generate(m)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		oauth.PrintCRD(crd)
 	},
 }
 

@@ -24,10 +24,10 @@ import (
 // Config represents OCP3 configuration
 type Config struct {
 	master  configv1.MasterConfig
-	masterf string
+	Masterf string
 
 	node  configv1.NodeConfig
-	nodef string
+	Nodef string
 }
 
 // TODO: rework the prototype code below
@@ -40,7 +40,7 @@ func init() {
 func (c *Config) ParseMaster() configv1.MasterConfig {
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 
-	f, err := ioutil.ReadFile(c.masterf)
+	f, err := ioutil.ReadFile(c.Masterf)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -66,17 +66,17 @@ func (c *Config) Fetch() {
 
 	client := sftpclient.GlobalClient()
 
-	src = filepath.Join(source, c.masterf)
+	src = filepath.Join(source, c.Masterf)
 	if _, err = os.Stat(src); os.IsNotExist(err) {
 		goto fetch
 	}
-	c.masterf = src
+	c.Masterf = src
 
-	src = filepath.Join(source, c.nodef)
+	src = filepath.Join(source, c.Nodef)
 	if _, err = os.Stat(src); os.IsNotExist(err) {
 		goto fetch
 	}
-	c.nodef = src
+	c.Nodef = src
 
 	goto out
 
@@ -88,13 +88,13 @@ fetch:
 	log.Debugln("unable to locate configuration, attempt to fetch from ", source)
 	defer client.Close()
 
-	dst = filepath.Join(outputDir, c.masterf)
-	client.GetFile(c.masterf, dst)
-	c.masterf = dst
+	dst = filepath.Join(outputDir, c.Masterf)
+	client.GetFile(c.Masterf, dst)
+	c.Masterf = dst
 
-	dst = filepath.Join(outputDir, c.nodef)
-	client.GetFile(c.nodef, dst)
-	c.nodef = dst
+	dst = filepath.Join(outputDir, c.Nodef)
+	client.GetFile(c.Nodef, dst)
+	c.Nodef = dst
 
 out:
 	return
@@ -103,7 +103,7 @@ out:
 // New instantiate Config structure that represents OCP3 configuration
 func New() *Config {
 	return &Config{
-		masterf: "/etc/origin/master/master-config.yaml",
-		nodef:   "/etc/origin/node/node-config.yaml",
+		Masterf: "/etc/origin/master/master-config.yaml",
+		Nodef:   "/etc/origin/node/node-config.yaml",
 	}
 }

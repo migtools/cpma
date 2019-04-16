@@ -1,0 +1,218 @@
+admissionConfig:
+  pluginConfig:
+    BuildDefaults:
+      configuration:
+        apiVersion: v1
+        env: []
+        kind: BuildDefaultsConfig
+        resources:
+          limits: {}
+          requests: {}
+    BuildOverrides:
+      configuration:
+        apiVersion: v1
+        kind: BuildOverridesConfig
+    openshift.io/ImagePolicy:
+      configuration:
+        apiVersion: v1
+        executionRules:
+        - matchImageAnnotations:
+          - key: images.openshift.io/deny-execution
+            value: 'true'
+          name: execution-denied
+          onResources:
+          - resource: pods
+          - resource: builds
+          reject: true
+          skipOnResolutionFailure: true
+        kind: ImagePolicyConfig
+aggregatorConfig:
+  proxyClientInfo:
+    certFile: aggregator-front-proxy.crt
+    keyFile: aggregator-front-proxy.key
+apiLevels:
+- v1
+apiVersion: v1
+authConfig:
+  requestHeader:
+    clientCA: front-proxy-ca.crt
+    clientCommonNames:
+    - aggregator-front-proxy
+    extraHeaderPrefixes:
+    - X-Remote-Extra-
+    groupHeaders:
+    - X-Remote-Group
+    usernameHeaders:
+    - X-Remote-User
+controllerConfig:
+  election:
+    lockName: openshift-master-controllers
+  serviceServingCert:
+    signer:
+      certFile: service-signer.crt
+      keyFile: service-signer.key
+controllers: '*'
+corsAllowedOrigins:
+- (?i)//127\.0\.0\.1(:|\z)
+- (?i)//localhost(:|\z)
+- (?i)//10\.74\.177\.50(:|\z)
+- (?i)//kubernetes\.default(:|\z)
+- (?i)//kubernetes\.default\.svc\.cluster\.local(:|\z)
+- (?i)//kubernetes(:|\z)
+- (?i)//openshift\.default(:|\z)
+- (?i)//master\-0\.gildub2\.lab\.pnq2\.cee\.redhat\.com(:|\z)
+- (?i)//openshift\.internal\.gildub2\.lab\.pnq2\.cee\.redhat\.com(:|\z)
+- (?i)//openshift\.default\.svc(:|\z)
+- (?i)//172\.30\.0\.1(:|\z)
+- (?i)//openshift\.gildub2\.lab\.pnq2\.cee\.redhat\.com(:|\z)
+- (?i)//openshift\.default\.svc\.cluster\.local(:|\z)
+- (?i)//kubernetes\.default\.svc(:|\z)
+- (?i)//openshift(:|\z)
+dnsConfig:
+  bindAddress: 0.0.0.0:8053
+  bindNetwork: tcp4
+etcdClientInfo:
+  ca: master.etcd-ca.crt
+  certFile: master.etcd-client.crt
+  keyFile: master.etcd-client.key
+  urls:
+  - https://master-0.gildub2.lab.pnq2.cee.redhat.com:2379
+etcdStorageConfig:
+  kubernetesStoragePrefix: kubernetes.io
+  kubernetesStorageVersion: v1
+  openShiftStoragePrefix: openshift.io
+  openShiftStorageVersion: v1
+imageConfig:
+  format: registry.redhat.io/openshift3/ose-${component}:${version}
+  latest: false
+imagePolicyConfig:
+  internalRegistryHostname: docker-registry.default.svc:5000
+kind: MasterConfig
+kubeletClientInfo:
+  ca: ca-bundle.crt
+  certFile: master.kubelet-client.crt
+  keyFile: master.kubelet-client.key
+  port: 10250
+kubernetesMasterConfig:
+  apiServerArguments:
+    storage-backend:
+    - etcd3
+    storage-media-type:
+    - application/vnd.kubernetes.protobuf
+  controllerArguments:
+    cluster-signing-cert-file:
+    - /etc/origin/master/ca.crt
+    cluster-signing-key-file:
+    - /etc/origin/master/ca.key
+    pv-recycler-pod-template-filepath-hostpath:
+    - /etc/origin/master/recycler_pod.yaml
+    pv-recycler-pod-template-filepath-nfs:
+    - /etc/origin/master/recycler_pod.yaml
+  masterCount: 1
+  masterIP: 10.74.177.50
+  podEvictionTimeout: null
+  proxyClientInfo:
+    certFile: master.proxy-client.crt
+    keyFile: master.proxy-client.key
+  schedulerArguments: null
+  schedulerConfigFile: /etc/origin/master/scheduler.json
+  servicesNodePortRange: ''
+  servicesSubnet: 172.30.0.0/16
+  staticNodeNames: []
+masterClients:
+  externalKubernetesClientConnectionOverrides:
+    acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
+    burst: 400
+    contentType: application/vnd.kubernetes.protobuf
+    qps: 200
+  externalKubernetesKubeConfig: ''
+  openshiftLoopbackClientConnectionOverrides:
+    acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
+    burst: 600
+    contentType: application/vnd.kubernetes.protobuf
+    qps: 300
+  openshiftLoopbackKubeConfig: openshift-master.kubeconfig
+masterPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com:443
+networkConfig:
+  clusterNetworks:
+  - cidr: 10.128.0.0/14
+    hostSubnetLength: 9
+  externalIPNetworkCIDRs:
+  - 0.0.0.0/0
+  networkPluginName: redhat/openshift-ovs-subnet
+  serviceNetworkCIDR: 172.30.0.0/16
+oauthConfig:
+  assetPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com/console/
+  grantConfig:
+    method: auto
+  identityProviders:
+  - challenge: true
+    login: true
+    mappingMethod: claim
+    name: htpasswd_auth
+    provider:
+      apiVersion: v1
+      file: /etc/origin/master/htpasswd
+      kind: HTPasswdPasswordIdentityProvider
+  - name: github123456789
+    challenge: false
+    login: true
+    mappingMethod: claim
+    provider:
+      apiVersion: v1
+      kind: GitHubIdentityProvider
+      ca: github.crt
+      clientID: 2d85ea3f45d6777bffd7
+      clientSecret: e16a59ad33d7c29fd4354f46059f0950c609a7ea
+      hostname: test.example.com
+      organizations:
+      - myorganization1
+      - myorganization2
+      teams:
+      - myorganization1/team-a
+      - myorganization2/team-b
+  masterCA: ca-bundle.crt
+  masterPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com:443
+  masterURL: https://openshift.internal.gildub2.lab.pnq2.cee.redhat.com:443
+  sessionConfig:
+    sessionMaxAgeSeconds: 3600
+    sessionName: ssn
+    sessionSecretsFile: /etc/origin/master/session-secrets.yaml
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 86400
+    authorizeTokenMaxAgeSeconds: 500
+pauseControllers: false
+policyConfig:
+  bootstrapPolicyFile: /etc/origin/master/policy.json
+  openshiftInfrastructureNamespace: openshift-infra
+  openshiftSharedResourcesNamespace: openshift
+projectConfig:
+  defaultNodeSelector: node-role.kubernetes.io/compute=true
+  projectRequestMessage: ''
+  projectRequestTemplate: ''
+  securityAllocator:
+    mcsAllocatorRange: s0:/2
+    mcsLabelsPerProject: 5
+    uidAllocatorRange: 1000000000-1999999999/10000
+routingConfig:
+  subdomain: apps.gildub2.lab.pnq2.cee.redhat.com
+serviceAccountConfig:
+  limitSecretReferences: false
+  managedNames:
+  - default
+  - builder
+  - deployer
+  masterCA: ca-bundle.crt
+  privateKeyFile: serviceaccounts.private.key
+  publicKeyFiles:
+  - serviceaccounts.public.key
+servingInfo:
+  bindAddress: 0.0.0.0:443
+  bindNetwork: tcp4
+  certFile: master.server.crt
+  clientCA: ca.crt
+  keyFile: master.server.key
+  maxRequestsInFlight: 500
+  requestTimeoutSeconds: 3600
+volumeConfig:
+  dynamicProvisioningEnabled: true
