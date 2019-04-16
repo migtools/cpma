@@ -59,8 +59,16 @@ func NewClient() {
 		Timeout: 10 * time.Second,
 	}
 
-	// TODO: accept custom port
-	addr := fmt.Sprintf("%s:22", source)
+	port := sshCreds["port"]
+
+	log.Debugln("Using port: ", port)
+
+	if port == "" {
+		port = "22"
+	}
+
+	addr := fmt.Sprintf("%s:%s", source, port)
+
 	connection, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
 		log.Fatal(err)
