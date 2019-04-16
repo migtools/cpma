@@ -87,48 +87,58 @@ func Generate(masterconfig configv1.MasterConfig) (*v4OAuthCRD, error) {
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	for _, p := range auth.IdentityProviders {
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
+		if err != nil {
+			return nil, err
+		}
 
 		switch kind := p.Provider.Object.GetObjectKind().GroupVersionKind().Kind; kind {
 		case "HTPasswdPasswordIdentityProvider":
-
-	return &crd, nil
-}
-
-			var idP identityProviderHTPasswd
-			var htpasswd configv1.HTPasswdPasswordIdentityProvider
-			_, _, _ = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
-
-			idP.Type = "HTPasswd"
-			idP.Challenge = p.UseAsChallenger
-			idP.Login = p.UseAsLogin
-			idP.MappingMethod = p.MappingMethod
-			idP.HTPasswd.FileData.Name = htpasswd.File
-
+			idP := buildHTPasswdIP(serializer, p)
 			crd.Spec.IdentityProviders = append(crd.Spec.IdentityProviders, idP)
 		case "GitHubIdentityProvider":
-			var idP identityProviderGitHub
-			var github configv1.GitHubIdentityProvider
-			_, _, _ = serializer.Decode(p.Provider.Raw, nil, &github)
-
-			idP.Type = "GitHub"
-			idP.Name = p.Name
-			idP.Challenge = p.UseAsChallenger
-			idP.Login = p.UseAsLogin
-			idP.MappingMethod = p.MappingMethod
-			idP.GitHub.HostName = github.Hostname
-			idP.GitHub.CA.Name = github.CA
-			idP.GitHub.ClientID = github.ClientID
-			idP.GitHub.Organizations = github.Organizations
-			idP.GitHub.Teams = github.Teams
-			// TODO: Learn how to handle secrets
-			idP.GitHub.ClientSecret.Name = github.ClientSecret.Value
-
+			idP := buildGitHubIP(serializer, p)
 			crd.Spec.IdentityProviders = append(crd.Spec.IdentityProviders, idP)
 		default:
 			log.Println("can't handle: ", kind)
 		}
 
 	}
+
+	return &crd, nil
+}
+
+func buildHTPasswdIP(serializer *json.Serializer, p configv1.IdentityProvider) identityProviderHTPasswd {
+	var idP identityProviderHTPasswd
+	var htpasswd configv1.HTPasswdPasswordIdentityProvider
+	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
+
+	idP.Type = "HTPasswd"
+	idP.Challenge = p.UseAsChallenger
+	idP.Login = p.UseAsLogin
+	idP.MappingMethod = p.MappingMethod
+	idP.HTPasswd.FileData.Name = htpasswd.File
+	return idP
+}
+
+func buildGitHubIP(serializer *json.Serializer, p configv1.IdentityProvider) identityProviderGitHub {
+	var idP identityProviderGitHub
+	var github configv1.GitHubIdentityProvider
+	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &github)
+
+	idP.Type = "GitHub"
+	idP.Name = p.Name
+	idP.Challenge = p.UseAsChallenger
+	idP.Login = p.UseAsLogin
+	idP.MappingMethod = p.MappingMethod
+	idP.GitHub.HostName = github.Hostname
+	idP.GitHub.CA.Name = github.CA
+	idP.GitHub.ClientID = github.ClientID
+	idP.GitHub.Organizations = github.Organizations
+	idP.GitHub.Teams = github.Teams
+	// TODO: Learn how to handle secrets
+	idP.GitHub.ClientSecret.Name = github.ClientSecret.Value
+	return idP
+}
 
 // PrintCRD Print generated CRD
 func PrintCRD(crd *v4OAuthCRD) {
