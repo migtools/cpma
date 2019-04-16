@@ -20,7 +20,7 @@ build:
 clean:
 	@test ! -e bin/${BIN_NAME} || rm bin/${BIN_NAME}
 
-ci: build
+ci: build test
 
 test:
 	go test ./...

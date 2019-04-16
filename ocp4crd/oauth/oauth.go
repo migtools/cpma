@@ -75,7 +75,7 @@ type v4OAuthCRD struct {
 }
 
 // Generate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Generate(masterconfig configv1.MasterConfig) error {
+func Generate(masterconfig configv1.MasterConfig) (*v4OAuthCRD, error) {
 	var auth = masterconfig.OAuthConfig
 	var err error
 
@@ -90,6 +90,10 @@ func Generate(masterconfig configv1.MasterConfig) error {
 
 		switch kind := p.Provider.Object.GetObjectKind().GroupVersionKind().Kind; kind {
 		case "HTPasswdPasswordIdentityProvider":
+
+	return &crd, nil
+}
+
 			var idP identityProviderHTPasswd
 			var htpasswd configv1.HTPasswdPasswordIdentityProvider
 			_, _, _ = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
@@ -126,10 +130,11 @@ func Generate(masterconfig configv1.MasterConfig) error {
 
 	}
 
+// PrintCRD Print generated CRD
+func PrintCRD(crd *v4OAuthCRD) {
 	yamlBytes, err := yaml.Marshal(&crd)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println(string(yamlBytes))
-	return err
 }
