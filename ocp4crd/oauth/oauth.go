@@ -12,6 +12,8 @@ import (
 )
 
 func init() {
+	// TODO: Is this line needed at all? It may be superflous to
+	// ocp3.go/init()/configv1.InstallLegacy(scheme.Scheme)
 	oauthv1.Install(scheme.Scheme)
 }
 
