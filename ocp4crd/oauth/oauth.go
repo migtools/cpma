@@ -1,14 +1,14 @@
 package oauth
 
 import (
-	"log"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"gopkg.in/yaml.v2"
 
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {

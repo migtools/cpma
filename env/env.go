@@ -1,10 +1,10 @@
 package env
 
 import (
-	log "github.com/sirupsen/logrus"
-
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var viperConfig *viper.Viper
