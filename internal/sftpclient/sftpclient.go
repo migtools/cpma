@@ -7,13 +7,15 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/fusor/cpma/env"
 	"github.com/pkg/sftp"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	kh "golang.org/x/crypto/ssh/knownhosts"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Client Wrapper around sftp.Client
@@ -52,15 +54,16 @@ func NewClient() Client {
 		Timeout: 10 * time.Second,
 	}
 
-	port := sshCreds["port"]
-
-	log.Debugln("Using port: ", port)
-
-	if port == "" {
-		port = "22"
+	port := 22
+	if p := sshCreds["port"]; p != "" {
+		port, err = strconv.Atoi(p)
+		if err != nil || port > 65535 {
+			log.Fatalln("fix erroneous config variable Port:", p)
+		}
 	}
 
-	addr := fmt.Sprintf("%s:%s", source, port)
+	addr := fmt.Sprintf("%s:%d", source, port)
+	log.Debugln("Connecting to", addr)
 
 	connection, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {

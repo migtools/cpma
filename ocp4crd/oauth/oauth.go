@@ -1,17 +1,19 @@
 package oauth
 
 import (
-	"log"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"gopkg.in/yaml.v2"
 
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
+	// TODO: Is this line needed at all? It may be superflous to
+	// ocp3.go/init()/configv1.InstallLegacy(scheme.Scheme)
 	oauthv1.Install(scheme.Scheme)
 }
 

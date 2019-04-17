@@ -20,12 +20,22 @@ import (
 	"github.com/fusor/cpma/env"
 	ocp3 "github.com/fusor/cpma/ocp3config"
 	"github.com/fusor/cpma/ocp4crd/oauth"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var debugLogLevel bool
+
+func init() {
+	cobra.OnInitialize()
+	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
+	rootCmd.PersistentFlags().BoolVar(&debugLogLevel, "debug", false, "show debug ouput")
+
+	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
+	env.Config().BindPFlag("OutputDir", rootCmd.Flags().Lookup("output-dir"))
+	env.Config().SetDefault("OutputDir", path.Dir(""))
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -54,18 +64,10 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	cobra.OnInitialize()
-	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
-	rootCmd.PersistentFlags().BoolVar(&debugLogLevel, "debug", false, "show debug ouput")
-
-	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
-	env.Config().BindPFlag("OutputDir", rootCmd.Flags().Lookup("output-dir"))
-	env.Config().SetDefault("OutputDir", path.Dir(""))
-
-	// Execute adds all child commands to the root command and sets flags appropriately.
-	// It only needs to happen once.
+// Execute adds all child commands to the root command and sets flags appropriately.
+// It only needs to happen once.
+func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 }
