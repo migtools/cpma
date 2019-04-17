@@ -48,7 +48,6 @@ func (c *Config) ParseMaster() configv1.MasterConfig {
 	if err != nil {
 		logrus.Fatal(err)
 	}
-
 	return c.master
 }
 

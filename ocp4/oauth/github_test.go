@@ -9,13 +9,13 @@ import (
 	ocp3 "github.com/fusor/cpma/ocp3config"
 )
 
-func TestGenerateMasterConfigGithub(t *testing.T) {
+func TestTranslateMasterConfigGithub(t *testing.T) {
 	testConfig := ocp3.Config{
 		Masterf: "../../test/oauth/github-test-master-config.yaml",
 	}
 	masterConfig := testConfig.ParseMaster()
 
-	var expectedCrd v4OAuthCRD
+	var expectedCrd OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.MetaData.Name = "cluster"
@@ -31,10 +31,10 @@ func TestGenerateMasterConfigGithub(t *testing.T) {
 	githubIDP.GitHub.ClientID = "2d85ea3f45d6777bffd7"
 	githubIDP.GitHub.Organizations = []string{"myorganization1", "myorganization2"}
 	githubIDP.GitHub.Teams = []string{"myorganization1/team-a", "myorganization2/team-b"}
-	githubIDP.GitHub.ClientSecret.Name = "e16a59ad33d7c29fd4354f46059f0950c609a7ea"
+	githubIDP.GitHub.ClientSecret.Name = "github123456789-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, githubIDP)
 
-	resCrd, err := Generate(masterConfig)
+	resCrd, _, err := Translate(masterConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }
