@@ -6,17 +6,23 @@ import (
 	"github.com/spf13/viper"
 )
 
-var viperConfig *viper.Viper
+var (
+	viperConfig *viper.Viper
 
-// ConfigFile Path to config file
-var ConfigFile string
+	// ConfigFile - keeps full path to the configuration file
+	ConfigFile string
+)
 
-// Config returns viper config
+func init() {
+	viperConfig = viper.New()
+}
+
+// Config returns pointer to the viper config
 func Config() *viper.Viper {
 	return viperConfig
 }
 
-// InitConfig initialize config
+// InitConfig initializes config
 func InitConfig() {
 	// Find home directory.
 	home, err := homedir.Dir()
@@ -40,8 +46,4 @@ func InitConfig() {
 	if err := viperConfig.ReadInConfig(); err != nil {
 		logrus.Fatal(err)
 	}
-}
-
-func init() {
-	viperConfig = viper.New()
 }

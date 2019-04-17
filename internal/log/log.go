@@ -13,7 +13,6 @@ func init() {
 		logrus.Fatalf("error opening file: %v", err)
 	}
 
-	// TODO: Replace with flag
 	mw := io.MultiWriter(os.Stdout, f)
 	logrus.SetOutput(mw)
 	logrus.SetLevel(logrus.InfoLevel)

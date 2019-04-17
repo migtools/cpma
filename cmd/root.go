@@ -48,12 +48,13 @@ var rootCmd = &cobra.Command{
 		}
 		env.InitConfig()
 
-		// TODO: Passing *e.Info here is not exactly nice. Fix?
 		ocp3config := ocp3.New()
 		ocp3config.Fetch()
 
 		m := ocp3config.ParseMaster()
 
+		// TODO: Change Generate() to Translate() or Convert(), it'll say more to
+		// developer. Pass just a part of required structure instead of full master config.
 		crd, err := oauth.Generate(m)
 		if err != nil {
 			logrus.WithError(err).Fatalf("unable to generate OAuth CRD from %+v", m.OAuthConfig)
