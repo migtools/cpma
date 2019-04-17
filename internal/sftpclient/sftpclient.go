@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/fusor/cpma/env"
@@ -52,15 +53,13 @@ func NewClient() Client {
 		Timeout: 10 * time.Second,
 	}
 
-	port := sshCreds["port"]
-
-	log.Debugln("Using port: ", port)
-
-	if port == "" {
-		port = "22"
+	port := 22
+	if p := sshCreds["port"]; p != "" {
+		port, _ = strconv.Atoi(p)
 	}
 
-	addr := fmt.Sprintf("%s:%s", source, port)
+	addr := fmt.Sprintf("%s:%d", source, port)
+	log.Debugln("Connecting to", addr)
 
 	connection, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
