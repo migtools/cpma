@@ -2,9 +2,8 @@ package env
 
 import (
 	"github.com/mitchellh/go-homedir"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var viperConfig *viper.Viper
@@ -22,7 +21,7 @@ func InitConfig() {
 	// Find home directory.
 	home, err := homedir.Dir()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	viperConfig.Set("home", home)
 
@@ -39,7 +38,7 @@ func InitConfig() {
 
 	// If a config file is found, read it in.
 	if err := viperConfig.ReadInConfig(); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 }
 

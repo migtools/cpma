@@ -20,9 +20,8 @@ import (
 	"github.com/fusor/cpma/env"
 	ocp3 "github.com/fusor/cpma/ocp3config"
 	"github.com/fusor/cpma/ocp4crd/oauth"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var debugLogLevel bool
@@ -44,7 +43,8 @@ var rootCmd = &cobra.Command{
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if debugLogLevel {
-			log.SetLevel(log.DebugLevel)
+			logrus.SetLevel(logrus.DebugLevel)
+			logrus.Debug("CPMA is running in debug mode")
 		}
 		env.InitConfig()
 
@@ -55,9 +55,8 @@ var rootCmd = &cobra.Command{
 		m := ocp3config.ParseMaster()
 
 		crd, err := oauth.Generate(m)
-
 		if err != nil {
-			log.Fatal(err)
+			logrus.WithError(err).Fatalf("unable to generate OAuth CRD from %+v", m.OAuthConfig)
 		}
 
 		oauth.PrintCRD(crd)
@@ -68,6 +67,6 @@ var rootCmd = &cobra.Command{
 // It only needs to happen once.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatalln(err)
+		logrus.Fatal(err)
 	}
 }

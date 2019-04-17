@@ -12,10 +12,9 @@ import (
 
 	"github.com/fusor/cpma/env"
 	"github.com/pkg/sftp"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	kh "golang.org/x/crypto/ssh/knownhosts"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // Client Wrapper around sftp.Client
@@ -30,18 +29,18 @@ func NewClient() Client {
 
 	key, err := ioutil.ReadFile(sshCreds["privatekey"])
 	if err != nil {
-		log.Fatalf("unable to read private key: %v", err)
+		logrus.Fatalf("unable to read private key: %v", err)
 	}
 
 	// Create the Signer for this private key.
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		log.Fatalf("unable to parse private key: %v", err)
+		logrus.Fatalf("unable to parse private key: %v", err)
 	}
 
 	hostKeyCallback, err := kh.New(filepath.Join(env.Config().GetString("home"), ".ssh", "known_hosts"))
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	sshConfig := &ssh.ClientConfig{
@@ -58,22 +57,22 @@ func NewClient() Client {
 	if p := sshCreds["port"]; p != "" {
 		port, err = strconv.Atoi(p)
 		if err != nil || port > 65535 {
-			log.Fatalln("fix erroneous config variable Port:", p)
+			logrus.Fatal("fix erroneous config variable Port:", p)
 		}
 	}
 
 	addr := fmt.Sprintf("%s:%d", source, port)
-	log.Debugln("Connecting to", addr)
+	logrus.Debug("Connecting to", addr)
 
 	connection, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	// create new SFTP client
 	client, err := sftp.NewClient(connection)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	return Client{client}
@@ -83,20 +82,20 @@ func NewClient() Client {
 func (c *Client) GetFile(srcFilePath string, dstFilePath string) {
 	srcFile, err := c.Open(srcFilePath)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	defer srcFile.Close()
 
 	os.MkdirAll(path.Dir(dstFilePath), 0755)
 	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	defer dstFile.Close()
 
 	bytes, err := io.Copy(dstFile, srcFile)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
-	log.Printf("File %s: %d bytes copied\n", srcFilePath, bytes)
+	logrus.Printf("File %s: %d bytes copied\n", srcFilePath, bytes)
 }

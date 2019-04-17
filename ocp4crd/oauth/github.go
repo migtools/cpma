@@ -1,8 +1,9 @@
 package oauth
 
 import (
-	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+
+	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
 type identityProviderGitHub struct {
