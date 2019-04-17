@@ -17,8 +17,7 @@ type Master struct {
 }
 
 func (cluster *Cluster) Translate(masterconfig configv1.MasterConfig) {
-	// TODO: Pass just a part of required structure instead of full master config.
-	oauth, secrets, err := oauth.Translate(masterconfig)
+	oauth, secrets, err := oauth.Translate(masterconfig.OAuthConfig)
 	if err != nil {
 		logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", masterconfig.OAuthConfig)
 	}

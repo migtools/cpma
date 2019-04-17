@@ -47,10 +47,9 @@ var rootCmd = &cobra.Command{
 		ocp3config := ocp3.New()
 		ocp3config.Fetch()
 
-		m := ocp3config.ParseMaster()
-
+		mc := ocp3config.ParseMaster()
 		clusterV4 := ocp4.Cluster{}
-		clusterV4.Translate(m)
+		clusterV4.Translate(mc)
 		clusterV4.PrintCRD()
 	},
 }

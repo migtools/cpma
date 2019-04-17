@@ -29,7 +29,7 @@ func TestTranslateMasterConfigHtpasswd(t *testing.T) {
 	htpasswdIDP.HTPasswd.FileData.Name = "htpasswd_auth-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, htpasswdIDP)
 
-	resCrd, _, err := Translate(masterConfig)
+	resCrd, _, err := Translate(masterConfig.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

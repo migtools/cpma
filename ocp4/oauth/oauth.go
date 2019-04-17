@@ -48,8 +48,8 @@ type Metadata struct {
 var APIVersion = "config.openshift.io/v1"
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(masterconfig configv1.MasterConfig) (*OAuthCRD, []secrets.Secret, error) {
-	var auth = masterconfig.OAuthConfig.DeepCopy()
+func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, error) {
+	var auth = oauthconfig.DeepCopy()
 	var err error
 
 	var oauthCrd OAuthCRD
@@ -76,7 +76,7 @@ func Translate(masterconfig configv1.MasterConfig) (*OAuthCRD, []secrets.Secret,
 			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 			secrets = append(secrets, secret)
 		default:
-			logrus.Print("can't handle: ", kind)
+			logrus.Printf("Can't handle %s OAuth kind", kind)
 		}
 	}
 
