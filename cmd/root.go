@@ -53,7 +53,7 @@ var rootCmd = &cobra.Command{
 		// developer. Pass just a part of required structure instead of full master config.
 		crd, err := oauth.Generate(m)
 		if err != nil {
-			logrus.WithError(err).Fatalf("unable to generate OAuth CRD from %+v", m.OAuthConfig)
+			logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", m.OAuthConfig)
 		}
 		oauth.PrintCRD(crd)
 	},
@@ -63,6 +63,6 @@ var rootCmd = &cobra.Command{
 // It only needs to happen once.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logrus.WithError(err).Fatal("something went terribly wrong!")
+		logrus.WithError(err).Fatal("Something went terribly wrong!")
 	}
 }

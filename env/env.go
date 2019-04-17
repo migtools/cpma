@@ -37,7 +37,7 @@ func InitConfig() {
 	// Find home directory.
 	home, err := homedir.Dir()
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.WithError(err).Fatal("Can't detect home user directory")
 	}
 	viperConfig.Set("home", home)
 
@@ -45,12 +45,14 @@ func InitConfig() {
 		// Use config file from the flag.
 		viperConfig.SetConfigFile(ConfigFile)
 	} else {
+		// TODO: Do we want default config file at all?
 		// Search config in home directory with name ".cpma" (without extension).
 		viperConfig.AddConfigPath(home)
 		viperConfig.SetConfigName(".cpma")
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
+	// Fill in environment variables that match
+	viper.AutomaticEnv()
 
 	// If a config file is found, read it in.
 	if err := viperConfig.ReadInConfig(); err != nil {

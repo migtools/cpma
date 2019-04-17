@@ -29,18 +29,19 @@ func NewClient() Client {
 
 	key, err := ioutil.ReadFile(sshCreds["privatekey"])
 	if err != nil {
-		logrus.Fatalf("unable to read private key: %v", err)
+		logrus.WithError(err).Fatalf("Unable to read private key: %s", sshCreds["privatekey"])
 	}
 
 	// Create the Signer for this private key.
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		logrus.Fatalf("unable to parse private key: %v", err)
+		logrus.Fatalf("Unable to parse private key: %v", err)
 	}
 
-	hostKeyCallback, err := kh.New(filepath.Join(env.Config().GetString("home"), ".ssh", "known_hosts"))
+	knownHostsFile := filepath.Join(env.Config().GetString("home"), ".ssh", "known_hosts")
+	hostKeyCallback, err := kh.New(knownHostsFile)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.WithError(err).Fatalf("Unable to get hostkey in %s", knownHostsFile)
 	}
 
 	sshConfig := &ssh.ClientConfig{
@@ -56,8 +57,8 @@ func NewClient() Client {
 	port := 22
 	if p := sshCreds["port"]; p != "" {
 		port, err = strconv.Atoi(p)
-		if err != nil || port > 65535 {
-			logrus.Fatal("fix erroneous config variable Port:", p)
+		if err != nil || port < 1 || port > 65535 {
+			logrus.Fatalf("Port number (%s) is wrong.", p)
 		}
 	}
 
@@ -66,7 +67,7 @@ func NewClient() Client {
 
 	connection, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.WithError(err).Fatalf("Cannot connect to %s", addr)
 	}
 
 	// create new SFTP client
@@ -97,5 +98,5 @@ func (c *Client) GetFile(srcFilePath string, dstFilePath string) {
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	logrus.Printf("File %s: %d bytes copied\n", srcFilePath, bytes)
+	logrus.Printf("File %s: %d bytes copied", srcFilePath, bytes)
 }

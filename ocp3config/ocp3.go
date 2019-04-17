@@ -76,6 +76,7 @@ func (c *Config) Fetch() {
 	}
 	c.Nodef = src
 
+	logrus.Debug("Local copy of configuration files has been found, skip ssh fetch.")
 	goto out
 
 fetch:
@@ -83,7 +84,7 @@ fetch:
 	// given by e.Source, thus we think it is fqdn.
 	// TODO: Rework logic or we may want to prompt user here.
 
-	logrus.Debug("unable to locate configuration, attempt to fetch from ", source)
+	logrus.Debug("Unable to locate configuration, attempt to fetch from ", source)
 	client = sftpclient.NewClient()
 	defer client.Close()
 
