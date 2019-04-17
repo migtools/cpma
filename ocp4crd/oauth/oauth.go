@@ -28,38 +28,6 @@ func init() {
 
 // Structures defining custom resource definitions / manifests / yamls
 // TODO: figure out the OKD terminology
-type identityProviderGitHub struct {
-	Name          string `yaml:"name"`
-	Challenge     bool   `yaml:"challenge"`
-	Login         bool   `yaml:"login"`
-	MappingMethod string `yaml:"mappingMethod"`
-	Type          string `yaml:"type"`
-	GitHub        struct {
-		HostName string `yaml:"hostname"`
-		CA       struct {
-			Name string `yaml:"name"`
-		} `yaml:"ca"`
-		ClientID     string `yaml:"clientID"`
-		ClientSecret struct {
-			Name string `yaml:"name"`
-		} `yaml:"clientSecret"`
-		Organizations []string `yaml:"organizations"`
-		Teams         []string `yaml:"teams"`
-	} `yaml:"github"`
-}
-
-type identityProviderHTPasswd struct {
-	Name          string `yaml:"name"`
-	Challenge     bool   `yaml:"challenge"`
-	Login         bool   `yaml:"login"`
-	MappingMethod string `yaml:"mappingMethod"`
-	Type          string `yaml:"type"`
-	HTPasswd      struct {
-		FileData struct {
-			Name string `yaml:"name"`
-		} `yaml:"fileData"`
-	} `yaml:"htpasswd"`
-}
 
 // Shared CRD part, present in all types of OAuth CRDs
 type v4OAuthCRD struct {
@@ -104,39 +72,6 @@ func Generate(masterconfig configv1.MasterConfig) (*v4OAuthCRD, error) {
 	}
 
 	return &crd, nil
-}
-
-func buildHTPasswdIP(serializer *json.Serializer, p configv1.IdentityProvider) identityProviderHTPasswd {
-	var idP identityProviderHTPasswd
-	var htpasswd configv1.HTPasswdPasswordIdentityProvider
-	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
-
-	idP.Type = "HTPasswd"
-	idP.Challenge = p.UseAsChallenger
-	idP.Login = p.UseAsLogin
-	idP.MappingMethod = p.MappingMethod
-	idP.HTPasswd.FileData.Name = htpasswd.File
-	return idP
-}
-
-func buildGitHubIP(serializer *json.Serializer, p configv1.IdentityProvider) identityProviderGitHub {
-	var idP identityProviderGitHub
-	var github configv1.GitHubIdentityProvider
-	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &github)
-
-	idP.Type = "GitHub"
-	idP.Name = p.Name
-	idP.Challenge = p.UseAsChallenger
-	idP.Login = p.UseAsLogin
-	idP.MappingMethod = p.MappingMethod
-	idP.GitHub.HostName = github.Hostname
-	idP.GitHub.CA.Name = github.CA
-	idP.GitHub.ClientID = github.ClientID
-	idP.GitHub.Organizations = github.Organizations
-	idP.GitHub.Teams = github.Teams
-	// TODO: Learn how to handle secrets
-	idP.GitHub.ClientSecret.Name = github.ClientSecret.Value
-	return idP
 }
 
 // PrintCRD Print generated CRD
