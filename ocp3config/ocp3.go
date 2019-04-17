@@ -60,11 +60,10 @@ func (c *Config) Fetch() {
 	// and node-config as well
 	var src, dst string
 	var err error
+	var client sftpclient.Client
 
 	source := env.Config().GetString("Source")
 	outputDir := env.Config().GetString("OutputDir")
-
-	client := sftpclient.GlobalClient()
 
 	src = filepath.Join(source, c.Masterf)
 	if _, err = os.Stat(src); os.IsNotExist(err) {
@@ -86,6 +85,7 @@ fetch:
 	// TODO: Rework logic or we may want to prompt user here.
 
 	log.Debugln("unable to locate configuration, attempt to fetch from ", source)
+	client = sftpclient.NewClient()
 	defer client.Close()
 
 	dst = filepath.Join(outputDir, c.Masterf)

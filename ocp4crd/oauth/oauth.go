@@ -12,7 +12,6 @@ import (
 )
 
 func init() {
-	configv1.InstallLegacy(scheme.Scheme)
 	oauthv1.Install(scheme.Scheme)
 }
 
@@ -76,7 +75,7 @@ type v4OAuthCRD struct {
 
 // Generate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
 func Generate(masterconfig configv1.MasterConfig) (*v4OAuthCRD, error) {
-	var auth = masterconfig.OAuthConfig
+	var auth = masterconfig.OAuthConfig.DeepCopy()
 	var err error
 
 	var crd v4OAuthCRD
