@@ -18,7 +18,6 @@ import (
 	"path"
 
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/internal/sftpclient"
 	ocp3 "github.com/fusor/cpma/ocp3config"
 	"github.com/fusor/cpma/ocp4crd/oauth"
 	log "github.com/sirupsen/logrus"
@@ -38,7 +37,6 @@ var rootCmd = &cobra.Command{
 			log.SetLevel(log.DebugLevel)
 		}
 		env.InitConfig()
-		sftpclient.NewClient()
 
 		// TODO: Passing *e.Info here is not exactly nice. Fix?
 		ocp3config := ocp3.New()

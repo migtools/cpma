@@ -21,15 +21,8 @@ type Client struct {
 	*sftp.Client
 }
 
-var globalClient Client
-
-// GlobalClient returns global client
-func GlobalClient() Client {
-	return globalClient
-}
-
 // NewClient creates a new SFTP client
-func NewClient() {
+func NewClient() Client {
 	source := env.Config().GetString("Source")
 	sshCreds := env.Config().GetStringMapString("SSHCreds")
 
@@ -80,7 +73,7 @@ func NewClient() {
 		log.Fatal(err)
 	}
 
-	globalClient = Client{client}
+	return Client{client}
 }
 
 // GetFile copies source file to destination file
