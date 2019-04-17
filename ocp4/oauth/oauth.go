@@ -67,6 +67,7 @@ func Translate(masterconfig configv1.MasterConfig) (*OAuthCRD, []secrets.Secret,
 	oauthCrd.APIVersion = APIVersion
 	oauthCrd.Kind = "OAuth"
 	oauthCrd.MetaData.Name = "cluster"
+	oauthCrd.MetaData.Namespace = "openshift-config"
 	var secrets []secrets.Secret
 
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
