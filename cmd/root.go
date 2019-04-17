@@ -24,16 +24,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var debugLogLevel bool
-
 func init() {
 	cobra.OnInitialize()
 	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
-	rootCmd.PersistentFlags().BoolVar(&debugLogLevel, "debug", false, "show debug ouput")
 
-	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
+	rootCmd.Flags().Bool("debug", false, "show debug ouput")
+	env.Config().BindPFlag("Debug", rootCmd.Flags().Lookup("debug"))
+
+	rootCmd.Flags().StringP("output-dir", "o", path.Dir(""), "set the directory to store extracted configuration.")
 	env.Config().BindPFlag("OutputDir", rootCmd.Flags().Lookup("output-dir"))
-	env.Config().SetDefault("OutputDir", path.Dir(""))
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -42,12 +41,8 @@ var rootCmd = &cobra.Command{
 	Short: "Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x",
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if debugLogLevel {
-			logrus.SetLevel(logrus.DebugLevel)
-			logrus.SetReportCaller(true)
-			logrus.Debug("CPMA is running in debug mode")
-		}
 		env.InitConfig()
+		env.InitLogger()
 
 		ocp3config := ocp3.New()
 		ocp3config.Fetch()
@@ -60,7 +55,6 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			logrus.WithError(err).Fatalf("unable to generate OAuth CRD from %+v", m.OAuthConfig)
 		}
-
 		oauth.PrintCRD(crd)
 	},
 }
@@ -69,6 +63,6 @@ var rootCmd = &cobra.Command{
 // It only needs to happen once.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logrus.Fatal(err)
+		logrus.WithError(err).Fatal("something went terribly wrong!")
 	}
 }
