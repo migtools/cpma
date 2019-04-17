@@ -20,21 +20,19 @@ import (
 	"github.com/fusor/cpma/env"
 	ocp3 "github.com/fusor/cpma/ocp3config"
 	"github.com/fusor/cpma/ocp4crd/oauth"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-
-	log "github.com/sirupsen/logrus"
 )
-
-var debugLogLevel bool
 
 func init() {
 	cobra.OnInitialize()
 	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
-	rootCmd.PersistentFlags().BoolVar(&debugLogLevel, "debug", false, "show debug ouput")
 
-	rootCmd.Flags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
+	rootCmd.Flags().Bool("debug", false, "show debug ouput")
+	env.Config().BindPFlag("Debug", rootCmd.Flags().Lookup("debug"))
+
+	rootCmd.Flags().StringP("output-dir", "o", path.Dir(""), "set the directory to store extracted configuration.")
 	env.Config().BindPFlag("OutputDir", rootCmd.Flags().Lookup("output-dir"))
-	env.Config().SetDefault("OutputDir", path.Dir(""))
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -43,23 +41,20 @@ var rootCmd = &cobra.Command{
 	Short: "Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x",
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if debugLogLevel {
-			log.SetLevel(log.DebugLevel)
-		}
 		env.InitConfig()
+		env.InitLogger()
 
-		// TODO: Passing *e.Info here is not exactly nice. Fix?
 		ocp3config := ocp3.New()
 		ocp3config.Fetch()
 
 		m := ocp3config.ParseMaster()
 
+		// TODO: Change Generate() to Translate() or Convert(), it'll say more to
+		// developer. Pass just a part of required structure instead of full master config.
 		crd, err := oauth.Generate(m)
-
 		if err != nil {
-			log.Fatal(err)
+			logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", m.OAuthConfig)
 		}
-
 		oauth.PrintCRD(crd)
 	},
 }
@@ -68,6 +63,6 @@ var rootCmd = &cobra.Command{
 // It only needs to happen once.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatalln(err)
+		logrus.WithError(err).Fatal("Something went terribly wrong!")
 	}
 }

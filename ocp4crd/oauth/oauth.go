@@ -3,12 +3,10 @@ package oauth
 import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
-
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -68,9 +66,8 @@ func Generate(masterconfig configv1.MasterConfig) (*v4OAuthCRD, error) {
 			idP := buildGitHubIP(serializer, p)
 			crd.Spec.IdentityProviders = append(crd.Spec.IdentityProviders, idP)
 		default:
-			log.Println("can't handle: ", kind)
+			logrus.Print("can't handle: ", kind)
 		}
-
 	}
 
 	return &crd, nil
@@ -80,7 +77,7 @@ func Generate(masterconfig configv1.MasterConfig) (*v4OAuthCRD, error) {
 func PrintCRD(crd *v4OAuthCRD) {
 	yamlBytes, err := yaml.Marshal(&crd)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
-	log.Println(string(yamlBytes))
+	logrus.Print(string(yamlBytes))
 }

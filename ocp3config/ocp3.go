@@ -7,13 +7,12 @@ import (
 
 	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/internal/sftpclient"
-
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	log "github.com/sirupsen/logrus"
+	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
 // reference:
@@ -42,12 +41,12 @@ func (c *Config) ParseMaster() configv1.MasterConfig {
 
 	f, err := ioutil.ReadFile(c.Masterf)
 	if err != nil {
-		log.Fatalln(err)
+		logrus.Fatal(err)
 	}
 
 	_, _, err = serializer.Decode(f, nil, &c.master)
 	if err != nil {
-		log.Fatalln(err)
+		logrus.Fatal(err)
 	}
 
 	return c.master
@@ -77,6 +76,7 @@ func (c *Config) Fetch() {
 	}
 	c.Nodef = src
 
+	logrus.Debug("Local copy of configuration files has been found, skip ssh fetch.")
 	goto out
 
 fetch:
@@ -84,7 +84,7 @@ fetch:
 	// given by e.Source, thus we think it is fqdn.
 	// TODO: Rework logic or we may want to prompt user here.
 
-	log.Debugln("unable to locate configuration, attempt to fetch from ", source)
+	logrus.Debug("Unable to locate configuration, attempt to fetch from ", source)
 	client = sftpclient.NewClient()
 	defer client.Close()
 
