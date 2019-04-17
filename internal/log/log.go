@@ -16,5 +16,5 @@ func init() {
 	mw := io.MultiWriter(os.Stdout, f)
 	logrus.SetOutput(mw)
 	logrus.SetLevel(logrus.InfoLevel)
-	logrus.SetReportCaller(true)
+
 }

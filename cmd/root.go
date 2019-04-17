@@ -44,6 +44,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if debugLogLevel {
 			logrus.SetLevel(logrus.DebugLevel)
+			logrus.SetReportCaller(true)
 			logrus.Debug("CPMA is running in debug mode")
 		}
 		env.InitConfig()
