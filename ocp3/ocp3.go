@@ -29,8 +29,6 @@ type Config struct {
 	Nodef string
 }
 
-// TODO: rework the prototype code below
-
 func init() {
 	configv1.InstallLegacy(scheme.Scheme)
 }
@@ -48,6 +46,7 @@ func (c *Config) ParseMaster() configv1.MasterConfig {
 	if err != nil {
 		logrus.Fatal(err)
 	}
+
 	return c.master
 }
 
@@ -99,7 +98,7 @@ out:
 	return
 }
 
-// New instantiate Config structure that represents OCP3 configuration
+// New instantiates and returns Config structure that represents OCP3 configuration
 func New() *Config {
 	return &Config{
 		Masterf: "/etc/origin/master/master-config.yaml",
