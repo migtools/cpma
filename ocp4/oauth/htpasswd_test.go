@@ -19,7 +19,7 @@ func TestTranslateMasterConfigHtpasswd(t *testing.T) {
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.MetaData.Name = "cluster"
-	expectedCrd.MetaData.Namespace = "openshift-config"
+	expectedCrd.MetaData.NameSpace = "openshift-config"
 
 	var htpasswdIDP identityProviderHTPasswd
 	htpasswdIDP.Type = "HTPasswd"

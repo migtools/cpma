@@ -1,28 +1,30 @@
 package secrets
 
 import (
-	"log"
-
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
+
+// TODO: Comment exported functions and structures.
+// We may want to unexport some...
 
 type FileSecret struct {
 	HTPasswd string `yaml:"htpasswd"`
 }
 
 type LiteralSecret struct {
-	ClientSecret string `yaml:"clientSecret`
+	ClientSecret string `yaml:"clientSecret"`
 }
 
 type Secret struct {
-	ApiVersion string      `yaml:"apiVersion"`
+	APIVersion string      `yaml:"apiVersion"`
 	Kind       string      `yaml:"kind"`
-	Type       string      `yam:"type"`
-	MetaData   Metadata    `yaml:"metaData"`
+	Type       string      `yaml:"type"`
+	MetaData   MetaData    `yaml:"metaData"`
 	Data       interface{} `yaml:"data"`
 }
 
-type Metadata struct {
+type MetaData struct {
 	Name      string `yaml:"name"`
 	Namespace string `yaml:"namespace"`
 }
@@ -31,11 +33,11 @@ var APIVersion = "v1"
 
 func GenSecretFile(name string, encodedSecret string, namespace string) *Secret {
 	var secret = Secret{
-		ApiVersion: APIVersion,
+		APIVersion: APIVersion,
 		Data:       FileSecret{HTPasswd: encodedSecret},
 		Kind:       "Secret",
 		Type:       "Opaque",
-		MetaData: Metadata{
+		MetaData: MetaData{
 			Name:      name,
 			Namespace: namespace,
 		},
@@ -45,11 +47,11 @@ func GenSecretFile(name string, encodedSecret string, namespace string) *Secret 
 
 func GenSecretLiteral(name string, clientSecret string, namespace string) *Secret {
 	var secret = Secret{
-		ApiVersion: APIVersion,
+		APIVersion: APIVersion,
 		Data:       LiteralSecret{ClientSecret: clientSecret},
 		Kind:       "Secret",
 		Type:       "Opaque",
-		MetaData: Metadata{
+		MetaData: MetaData{
 			Name:      name,
 			Namespace: namespace,
 		},
@@ -57,10 +59,12 @@ func GenSecretLiteral(name string, clientSecret string, namespace string) *Secre
 	return &secret
 }
 
+// FIXME: The name of the function is misleading
 func (secret *Secret) PrintCRD() string {
 	yamlBytes, err := yaml.Marshal(&secret)
 	if err != nil {
-		log.Fatal(err)
+		logrus.WithError(err).Fatal("Cannot generate CRD")
+		logrus.Debugf("%+v", secret)
 	}
 	return string(yamlBytes)
 }
