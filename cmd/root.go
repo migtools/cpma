@@ -18,8 +18,6 @@ import (
 	"path"
 
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/ocp3"
-	"github.com/fusor/cpma/ocp4"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -43,14 +41,6 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		env.InitConfig()
 		env.InitLogger()
-
-		ocp3config := ocp3.New()
-		ocp3config.Fetch()
-
-		mc := ocp3config.ParseMaster()
-		clusterV4 := ocp4.Cluster{}
-		clusterV4.Translate(mc)
-		clusterV4.GenYAML()
 	},
 }
 
