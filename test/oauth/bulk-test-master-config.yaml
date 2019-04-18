@@ -31,6 +31,16 @@ oauthConfig:
       url: https://gitlab.com/
       clientID: fake-id
       clientSecret: fake-secret
+  - name: google123456789123456789
+    challenge: false
+    login: true
+    mappingMethod: claim
+    provider:
+      apiVersion: v1
+      kind: GoogleIdentityProvider
+      clientID: 82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com
+      clientSecret: e16a59ad33d7c29fd4354f46059f0950c609a7ea
+      hostedDomain: test.example.com
   - challenge: true
     login: true
     mappingMethod: claim

@@ -68,6 +68,10 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 			idP, secret := buildGitLabIP(serializer, p)
 			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 			secrets = append(secrets, secret)
+		case "GoogleIdentityProvider":
+			idP, secret := buildGoogleIP(serializer, p)
+			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
+			secrets = append(secrets, secret)
 		case "HTPasswdPasswordIdentityProvider":
 			idP, secret := buildHTPasswdIP(serializer, p)
 			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
