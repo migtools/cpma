@@ -20,11 +20,11 @@ type Secret struct {
 	APIVersion string      `yaml:"apiVersion"`
 	Kind       string      `yaml:"kind"`
 	Type       string      `yaml:"type"`
-	MetaData   Metadata    `yaml:"metaData"`
+	MetaData   MetaData    `yaml:"metaData"`
 	Data       interface{} `yaml:"data"`
 }
 
-type Metadata struct {
+type MetaData struct {
 	Name      string `yaml:"name"`
 	Namespace string `yaml:"namespace"`
 }
@@ -37,7 +37,7 @@ func GenSecretFile(name string, encodedSecret string, namespace string) *Secret 
 		Data:       FileSecret{HTPasswd: encodedSecret},
 		Kind:       "Secret",
 		Type:       "Opaque",
-		MetaData: Metadata{
+		MetaData: MetaData{
 			Name:      name,
 			Namespace: namespace,
 		},
@@ -51,7 +51,7 @@ func GenSecretLiteral(name string, clientSecret string, namespace string) *Secre
 		Data:       LiteralSecret{ClientSecret: clientSecret},
 		Kind:       "Secret",
 		Type:       "Opaque",
-		MetaData: Metadata{
+		MetaData: MetaData{
 			Name:      name,
 			Namespace: namespace,
 		},

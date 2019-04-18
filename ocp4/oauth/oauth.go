@@ -16,10 +16,6 @@ func init() {
 	oauthv1.Install(scheme.Scheme)
 }
 
-// TODO: Generated yamls are results of pure imagination. Structure and consistency
-// must be reviewed and fixed. I guess this code can be simplified once we know
-// how the output should look exactly.
-
 // reference:
 //   [v3] OCPv3:
 //   - [1] https://docs.openshift.com/container-platform/3.11/install_config/configuring_authentication.html#identity_providers_master_config
@@ -27,22 +23,19 @@ func init() {
 //   - [2] htpasswd: https://docs.openshift.com/container-platform/4.0/authentication/understanding-identity-provider.html
 //   - [3] github: https://docs.openshift.com/container-platform/4.0/authentication/identity_providers/configuring-github-identity-provider.html
 
-// Structures defining custom resource definitions / manifests / yamls
-// TODO: figure out the OKD terminology
-
 // Shared CRD part, present in all types of OAuth CRDs
 type OAuthCRD struct {
 	APIVersion string   `yaml:"apiVersion"`
 	Kind       string   `yaml:"kind"`
-	MetaData   Metadata `yaml:"metaData"`
+	MetaData   MetaData `yaml:"metaData"`
 	Spec       struct {
 		IdentityProviders []interface{} `yaml:"identityProviders"`
 	} `yaml:"spec"`
 }
 
-type Metadata struct {
+type MetaData struct {
 	Name      string `yaml:"name"`
-	Namespace string `yaml:"namespace"`
+	NameSpace string `yaml:"namespace"`
 }
 
 var APIVersion = "config.openshift.io/v1"
@@ -56,7 +49,7 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 	oauthCrd.APIVersion = APIVersion
 	oauthCrd.Kind = "OAuth"
 	oauthCrd.MetaData.Name = "cluster"
-	oauthCrd.MetaData.Namespace = "openshift-config"
+	oauthCrd.MetaData.NameSpace = "openshift-config"
 	var secrets []secrets.Secret
 
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
@@ -76,7 +69,7 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 			secrets = append(secrets, secret)
 		default:
-			logrus.Printf("Can't handle %s OAuth kind", kind)
+			logrus.Infof("Can't handle %s OAuth kind", kind)
 		}
 	}
 
@@ -84,10 +77,12 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 }
 
 // PrintCRD Print generated CRD
+// FIXME: the name of the function is misleading
 func (oauth *OAuthCRD) PrintCRD() string {
 	yamlBytes, err := yaml.Marshal(&oauth)
 	if err != nil {
 		logrus.Fatal(err)
 	}
+
 	return string(yamlBytes)
 }
