@@ -13,7 +13,7 @@ const (
 	AppName = "CPMA"
 
 	// logFile - keeps full path to the logging file
-	logFile = "cpma.log" // TODO: we may want this configurable
+	logFile = "cpma.log.json" // TODO: we may want this configurable
 )
 
 var (

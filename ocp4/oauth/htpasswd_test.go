@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	ocp3 "github.com/fusor/cpma/ocp3config"
+	"github.com/fusor/cpma/ocp3"
 )
 
 func TestTranslateMasterConfigHtpasswd(t *testing.T) {
@@ -29,7 +29,7 @@ func TestTranslateMasterConfigHtpasswd(t *testing.T) {
 	htpasswdIDP.HTPasswd.FileData.Name = "htpasswd_auth-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, htpasswdIDP)
 
-	resCrd, _, err := Translate(masterConfig)
+	resCrd, _, err := Translate(masterConfig.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

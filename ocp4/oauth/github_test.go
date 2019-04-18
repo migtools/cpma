@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	ocp3 "github.com/fusor/cpma/ocp3config"
+	"github.com/fusor/cpma/ocp3"
 )
 
 func TestTranslateMasterConfigGithub(t *testing.T) {
@@ -35,7 +35,7 @@ func TestTranslateMasterConfigGithub(t *testing.T) {
 	githubIDP.GitHub.ClientSecret.Name = "github123456789-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, githubIDP)
 
-	resCrd, _, err := Translate(masterConfig)
+	resCrd, _, err := Translate(masterConfig.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }
