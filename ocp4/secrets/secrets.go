@@ -59,8 +59,8 @@ func GenSecretLiteral(name string, clientSecret string, namespace string) *Secre
 	return &secret
 }
 
-// FIXME: The name of the function is misleading
-func (secret *Secret) PrintCRD() string {
+// GenYAML returns a YAML of the OAuthCRD
+func (secret *Secret) GenYAML() string {
 	yamlBytes, err := yaml.Marshal(&secret)
 	if err != nil {
 		logrus.WithError(err).Fatal("Cannot generate CRD")

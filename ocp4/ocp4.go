@@ -25,12 +25,12 @@ func (cluster *Cluster) Translate(masterconfig configv1.MasterConfig) {
 	cluster.Master.Secrets = secrets
 }
 
-// PrintCRD Prints translated CRDs
-func (cluster *Cluster) PrintCRD() {
-	oauthCRD := cluster.Master.OAuth.PrintCRD()
+// GenYAML Generate the translated CRDs
+func (cluster *Cluster) GenYAML() {
+	oauthCRD := cluster.Master.OAuth.GenYAML()
 	logrus.Print(oauthCRD)
 
 	for _, secret := range cluster.Master.Secrets {
-		logrus.Print(secret.PrintCRD())
+		logrus.Print(secret.GenYAML())
 	}
 }

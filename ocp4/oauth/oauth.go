@@ -80,9 +80,8 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 	return &oauthCrd, secrets, nil
 }
 
-// PrintCRD Print generated CRD
-// FIXME: the name of the function is misleading
-func (oauth *OAuthCRD) PrintCRD() string {
+// GenYAML returns a YAML of the OAuthCRD
+func (oauth *OAuthCRD) GenYAML() string {
 	yamlBytes, err := yaml.Marshal(&oauth)
 	if err != nil {
 		logrus.Fatal(err)
