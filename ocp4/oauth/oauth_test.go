@@ -17,6 +17,7 @@ func TestTranslateMasterConfig(t *testing.T) {
 
 	resCrd, _, err := Translate(masterConfig.OAuthConfig)
 	require.NoError(t, err)
-	assert.Equal(t, resCrd.Spec.IdentityProviders[0].(identityProviderHTPasswd).Type, "HTPasswd")
-	assert.Equal(t, resCrd.Spec.IdentityProviders[1].(identityProviderGitHub).Type, "GitHub")
+	assert.Equal(t, resCrd.Spec.IdentityProviders[0].(identityProviderGitHub).Type, "GitHub")
+	assert.Equal(t, resCrd.Spec.IdentityProviders[1].(identityProviderGitLab).Type, "GitLab")
+	assert.Equal(t, resCrd.Spec.IdentityProviders[2].(identityProviderHTPasswd).Type, "HTPasswd")
 }
