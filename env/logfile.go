@@ -22,7 +22,6 @@ type LogFileHook struct {
 }
 
 // NewLogFileHook instantiates hook and implements Hook interface
-// TODO: raise error when unable to write to file
 func NewLogFileHook(config LogFileConfig) (logrus.Hook, error) {
 	hook := LogFileHook{
 		Config: config,

@@ -75,7 +75,6 @@ func InitLogger() {
 	logrus.SetLevel(logLevel)
 	logrus.Debugf("%s is running in debug mode", AppName)
 
-	// TODO: implement err check, and NewLogFileHook to report an error
 	fileHook, _ := NewLogFileHook(
 		LogFileConfig{
 			Filename: logFile,
@@ -86,6 +85,5 @@ func InitLogger() {
 			},
 		},
 	)
-	// TODO: don't do, if err != nil
 	logrus.AddHook(fileHook)
 }
