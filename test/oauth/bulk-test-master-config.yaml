@@ -3,14 +3,6 @@ oauthConfig:
   grantConfig:
     method: auto
   identityProviders:
-  - challenge: true
-    login: true
-    mappingMethod: claim
-    name: htpasswd_auth
-    provider:
-      apiVersion: v1
-      file: /etc/origin/master/htpasswd
-      kind: HTPasswdPasswordIdentityProvider
   - name: github123456789
     challenge: false
     login: true
@@ -39,6 +31,14 @@ oauthConfig:
       url: https://gitlab.com/
       clientID: fake-id
       clientSecret: fake-secret
+  - challenge: true
+    login: true
+    mappingMethod: claim
+    name: htpasswd_auth
+    provider:
+      apiVersion: v1
+      file: /etc/origin/master/htpasswd
+      kind: HTPasswdPasswordIdentityProvider
   masterCA: ca-bundle.crt
   masterPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com:443
   masterURL: https://openshift.internal.gildub2.lab.pnq2.cee.redhat.com:443
