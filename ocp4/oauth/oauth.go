@@ -68,6 +68,10 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 			idP, secret := buildGitHubIP(serializer, p)
 			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 			secrets = append(secrets, secret)
+		case "GitLabIdentityProvider":
+			idP, secret := buildGitLabIP(serializer, p)
+			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
+			secrets = append(secrets, secret)
 		default:
 			logrus.Infof("Can't handle %s OAuth kind", kind)
 		}
