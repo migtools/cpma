@@ -3,31 +3,6 @@ oauthConfig:
   grantConfig:
     method: auto
   identityProviders:
-  - challenge: true
-    login: true
-    mappingMethod: claim
-    name: htpasswd_auth
-    provider:
-      apiVersion: v1
-      file: /etc/origin/master/htpasswd
-      kind: HTPasswdPasswordIdentityProvider
-  - name: github123456789
-    challenge: false
-    login: true
-    mappingMethod: claim
-    provider:
-      apiVersion: v1
-      kind: GitHubIdentityProvider
-      ca: github.crt
-      clientID: 2d85ea3f45d6777bffd7
-      clientSecret: e16a59ad33d7c29fd4354f46059f0950c609a7ea
-      hostname: test.example.com
-      organizations:
-      - myorganization1
-      - myorganization2
-      teams:
-      - myorganization1/team-a
-      - myorganization2/team-b
   - name: gitlab123456789
     challenge: true
     login: true
@@ -35,6 +10,7 @@ oauthConfig:
     provider:
       apiVersion: v1
       kind: GitLabIdentityProvider
+      ca: gitlab.crt
       legacy: true
       url: https://gitlab.com/
       clientID: fake-id
