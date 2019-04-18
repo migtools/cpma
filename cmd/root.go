@@ -50,7 +50,7 @@ var rootCmd = &cobra.Command{
 		mc := ocp3config.ParseMaster()
 		clusterV4 := ocp4.Cluster{}
 		clusterV4.Translate(mc)
-		clusterV4.PrintCRD()
+		clusterV4.GenYAML()
 	},
 }
 
