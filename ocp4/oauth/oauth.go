@@ -40,17 +40,6 @@ type OAuthCRD struct {
 	} `yaml:"spec"`
 }
 
-type Secret struct {
-	ClientSecret string `yaml:"clientSecret`
-}
-
-type SecretLiteral struct {
-	ApiVersion string   `yaml:"apiVersion"`
-	Data       Secret   `yaml:"data"`
-	Kind       string   `yaml:"kind"`
-	MetaData   Metadata `yaml:"metaData"`
-}
-
 type Metadata struct {
 	Name      string `yaml:"name"`
 	Namespace string `yaml:"namespace"`
