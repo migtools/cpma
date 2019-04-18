@@ -50,6 +50,19 @@ func (c *Config) ParseMaster() configv1.MasterConfig {
 	return c.master
 }
 
+func FetchFile(src string, dst string) string {
+	var err error
+	var client sftpclient.Client
+
+	if _, err = os.Stat(dst); os.IsNotExist(err) {
+		client = sftpclient.NewClient()
+		defer client.Close()
+
+		client.GetFile(src, dst)
+	}
+	return dst
+}
+
 // Fetch checks whether OCP3 configuration is available and retrieves
 // it in case it is not.
 func (c *Config) Fetch() {

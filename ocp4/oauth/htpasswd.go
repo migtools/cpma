@@ -2,7 +2,10 @@ package oauth
 
 import (
 	"encoding/base64"
+	"path/filepath"
 
+	"github.com/fusor/cpma/env"
+	"github.com/fusor/cpma/ocp3"
 	"github.com/fusor/cpma/ocp4/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
@@ -35,10 +38,13 @@ func buildHTPasswdIP(serializer *json.Serializer, p configv1.IdentityProvider) (
 
 	secretName := p.Name + "-secret"
 	idP.HTPasswd.FileData.Name = secretName
-	// Retrieve file
-	//htpasswdFile := Fetch_File(htpasswd.File)
-	htpasswdFile := "This is pretend content"
-	encoded := base64.StdEncoding.EncodeToString([]byte(htpasswdFile))
+
+	outputDir := env.Config().GetString("OutputDir")
+	srcPath := filepath.Join(htpasswd.File)
+	dstPath := filepath.Join(outputDir, htpasswd.File)
+	ocp3.FetchFile(srcPath, dstPath)
+
+	encoded := base64.StdEncoding.EncodeToString([]byte(dstPath))
 	secret := secrets.GenSecretFile(secretName, encoded, "openshift-config")
 
 	return idP, *secret
