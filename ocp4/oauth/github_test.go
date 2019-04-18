@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	ocp3 "github.com/fusor/cpma/ocp3config"
+	"github.com/fusor/cpma/ocp3"
 )
 
 func TestTranslateMasterConfigGithub(t *testing.T) {
