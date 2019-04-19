@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"path"
+	"time"
 
 	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/ocp3"
@@ -33,6 +34,10 @@ func init() {
 
 	rootCmd.Flags().StringP("output-dir", "o", path.Dir(""), "set the directory to store extracted configuration.")
 	env.Config().BindPFlag("OutputDir", rootCmd.Flags().Lookup("output-dir"))
+
+	// Default timeout is 10s
+	rootCmd.Flags().DurationP("timeout", "t", 10000000000, "Set timeout, unit must be provided, i.e. '-t 20s'.")
+	env.Config().BindPFlag("TimeOut", rootCmd.Flags().Lookup("timeout"))
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -44,13 +49,18 @@ var rootCmd = &cobra.Command{
 		env.InitConfig()
 		env.InitLogger()
 
-		ocp3config := ocp3.New()
-		ocp3config.Fetch()
-
-		mc := ocp3config.ParseMaster()
-		clusterV4 := ocp4.Cluster{}
-		clusterV4.Translate(mc)
-		clusterV4.GenYAML()
+		startTime := time.Now()
+		// Event loop to be interrupted by TimeOut flag or Ctrl+C
+		for elapsed := time.Duration(0); elapsed < env.Config().GetDuration("TimeOut"); elapsed = time.Now().Sub(startTime) {
+			logrus.Printf("Timeout in %s (Ctrl+C to stop)", env.Config().GetDuration("TimeOut")-elapsed)
+			// TODO: add survey to handle UI
+			ocp3config := ocp3.New()
+			ocp3config.Fetch()
+			mc := ocp3config.ParseMaster()
+			clusterV4 := ocp4.Cluster{}
+			clusterV4.Translate(mc)
+			clusterV4.GenYAML()
+		}
 	},
 }
 
