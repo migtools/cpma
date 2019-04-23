@@ -7,12 +7,8 @@ import (
 )
 
 type identityProviderRequestHeader struct {
-	Name          string `yaml:"name"`
-	Challenge     bool   `yaml:"challenge"`
-	Login         bool   `yaml:"login"`
-	MappingMethod string `yaml:"mappingMethod"`
-	Type          string `yaml:"type"`
-	RequestHeader struct {
+	identityProviderCommon `yaml:",inline"`
+	RequestHeader          struct {
 		ChallengeURL string `yaml:"challengeURL"`
 		LoginURL     string `yaml:"loginURL"`
 		CA           struct {

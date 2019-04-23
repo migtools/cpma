@@ -33,6 +33,14 @@ type OAuthCRD struct {
 	} `yaml:"spec"`
 }
 
+type identityProviderCommon struct {
+	Name          string `yaml:"name"`
+	Challenge     bool   `yaml:"challenge"`
+	Login         bool   `yaml:"login"`
+	MappingMethod string `yaml:"mappingMethod"`
+	Type          string `yaml:"type"`
+}
+
 type MetaData struct {
 	Name      string `yaml:"name"`
 	NameSpace string `yaml:"namespace"`

@@ -10,12 +10,8 @@ import (
 )
 
 type identityProviderHTPasswd struct {
-	Name          string `yaml:"name"`
-	Challenge     bool   `yaml:"challenge"`
-	Login         bool   `yaml:"login"`
-	MappingMethod string `yaml:"mappingMethod"`
-	Type          string `yaml:"type"`
-	HTPasswd      struct {
+	identityProviderCommon `yaml:",inline"`
+	HTPasswd               struct {
 		FileData struct {
 			Name string `yaml:"name"`
 		} `yaml:"fileData"`
