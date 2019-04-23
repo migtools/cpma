@@ -41,7 +41,7 @@ func buildGitHubIP(serializer *json.Serializer, p configv1.IdentityProvider) (id
 
 	secretName := p.Name + "-secret"
 	idP.GitHub.ClientSecret.Name = secretName
-	secret := secrets.GenSecretLiteral(secretName, github.ClientSecret.Value, "openshift-config")
+	secret := secrets.GenSecret(secretName, github.ClientSecret.Value, "openshift-config", "literal")
 
 	return idP, *secret
 }

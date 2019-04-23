@@ -35,8 +35,8 @@ type MetaData struct {
 
 var APIVersion = "v1"
 
-func GenSecretFile(name string, encodedSecret string, namespace string, idenityProviderType string) *Secret {
-	data := buildData(idenityProviderType, encodedSecret)
+func GenSecret(name string, secretContent string, namespace string, secretType string) *Secret {
+	data := buildData(secretType, secretContent)
 
 	var secret = Secret{
 		APIVersion: APIVersion,
@@ -51,33 +51,21 @@ func GenSecretFile(name string, encodedSecret string, namespace string, idenityP
 	return &secret
 }
 
-func buildData(idenityProviderType, encodedSecret string) interface{} {
+func buildData(secretType, secretContent string) interface{} {
 	var data interface{}
 
-	switch idenityProviderType {
+	switch secretType {
 	case "keystone":
-		data = KeystoneFileSecret{Keystone: encodedSecret}
+		data = KeystoneFileSecret{Keystone: secretContent}
 	case "htpasswd":
-		data = HTPasswdFileSecret{HTPasswd: encodedSecret}
+		data = HTPasswdFileSecret{HTPasswd: secretContent}
+	case "literal":
+		data = LiteralSecret{ClientSecret: secretContent}
 	default:
-		logrus.Fatal("Not valid idenity provider type ", idenityProviderType)
+		logrus.Fatal("Not valid secret type ", secretType)
 	}
 
 	return data
-}
-
-func GenSecretLiteral(name string, clientSecret string, namespace string) *Secret {
-	var secret = Secret{
-		APIVersion: APIVersion,
-		Data:       LiteralSecret{ClientSecret: clientSecret},
-		Kind:       "Secret",
-		Type:       "Opaque",
-		MetaData: MetaData{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-	return &secret
 }
 
 // GenYAML returns a YAML of the OAuthCRD

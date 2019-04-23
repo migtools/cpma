@@ -37,7 +37,7 @@ func buildGitLabIP(serializer *json.Serializer, p configv1.IdentityProvider) (id
 
 	secretName := p.Name + "-secret"
 	idP.GitLab.ClientSecret.Name = secretName
-	secret := secrets.GenSecretLiteral(secretName, gitlab.ClientSecret.Value, "openshift-config")
+	secret := secrets.GenSecret(secretName, gitlab.ClientSecret.Value, "openshift-config", "literal")
 
 	return idP, *secret
 }

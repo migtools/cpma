@@ -36,7 +36,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p configv1.IdentityProvider) (
 	//htpasswdFile := Fetch_File(htpasswd.File)
 	htpasswdFile := "This is pretend content"
 	encoded := base64.StdEncoding.EncodeToString([]byte(htpasswdFile))
-	secret := secrets.GenSecretFile(secretName, encoded, "openshift-config", "htpasswd")
+	secret := secrets.GenSecret(secretName, encoded, "openshift-config", "htpasswd")
 
 	return idP, *secret
 }
