@@ -8,12 +8,8 @@ import (
 )
 
 type identityProviderGitLab struct {
-	Name          string `yaml:"name"`
-	Challenge     bool   `yaml:"challenge"`
-	Login         bool   `yaml:"login"`
-	MappingMethod string `yaml:"mappingMethod"`
-	Type          string `yaml:"type"`
-	GitLab        struct {
+	identityProviderCommon `yaml:",inline"`
+	GitLab                 struct {
 		URL string `yaml:"url"`
 		CA  struct {
 			Name string `yaml:"name"`

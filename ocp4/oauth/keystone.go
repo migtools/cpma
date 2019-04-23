@@ -10,12 +10,8 @@ import (
 )
 
 type identityProviderKeystone struct {
-	Name          string `yaml:"name"`
-	Challenge     bool   `yaml:"challenge"`
-	Login         bool   `yaml:"login"`
-	MappingMethod string `yaml:"mappingMethod"`
-	Type          string `yaml:"type"`
-	Keystone      struct {
+	identityProviderCommon `yaml:",inline"`
+	Keystone               struct {
 		DomainName string `yaml:"domainName"`
 		URL        string `yaml:"url"`
 		CA         struct {

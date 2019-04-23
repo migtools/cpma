@@ -8,12 +8,8 @@ import (
 )
 
 type identityProviderGoogle struct {
-	Name          string `yaml:"name"`
-	Challenge     bool   `yaml:"challenge"`
-	Login         bool   `yaml:"login"`
-	MappingMethod string `yaml:"mappingMethod"`
-	Type          string `yaml:"type"`
-	Google        struct {
+	identityProviderCommon `yaml:",inline"`
+	Google                 struct {
 		ClientID     string `yaml:"clientID"`
 		ClientSecret struct {
 			Name string `yaml:"name"`
