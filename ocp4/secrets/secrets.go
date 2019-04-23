@@ -60,7 +60,7 @@ func buildData(idenityProviderType, encodedSecret string) interface{} {
 	case "htpasswd":
 		data = HTPasswdFileSecret{HTPasswd: encodedSecret}
 	default:
-		logrus.Fatal("Not valid idenity provider type", idenityProviderType)
+		logrus.Fatal("Not valid idenity provider type ", idenityProviderType)
 	}
 
 	return data
