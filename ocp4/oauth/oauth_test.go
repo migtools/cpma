@@ -24,3 +24,31 @@ func TestTranslateMasterConfig(t *testing.T) {
 	assert.Equal(t, resCrd.Spec.IdentityProviders[4].(identityProviderKeystone).Type, "Keystone")
 	assert.Equal(t, resCrd.Spec.IdentityProviders[5].(identityProviderRequestHeader).Type, "RequestHeader")
 }
+
+func TestGenYAML(t *testing.T) {
+	testConfig := ocp3.Config{
+		Masterf: "../../test/oauth/htpasswd-test-master-config.yaml",
+	}
+	masterConfig := testConfig.ParseMaster()
+	crd, _, err := Translate(masterConfig.OAuthConfig)
+
+	yaml := crd.GenYAML()
+	expectedYaml := `apiVersion: config.openshift.io/v1
+kind: OAuth
+metaData:
+  name: cluster
+  namespace: openshift-config
+spec:
+  identityProviders:
+  - name: htpasswd_auth
+    challenge: true
+    login: true
+    mappingMethod: claim
+    type: HTPasswd
+    htpasswd:
+      fileData:
+        name: htpasswd_auth-secret
+`
+	require.NoError(t, err)
+	assert.Equal(t, expectedYaml, yaml)
+}

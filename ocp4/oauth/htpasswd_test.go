@@ -22,6 +22,7 @@ func TestTranslateMasterConfigHtpasswd(t *testing.T) {
 	expectedCrd.MetaData.NameSpace = "openshift-config"
 
 	var htpasswdIDP identityProviderHTPasswd
+	htpasswdIDP.Name = "htpasswd_auth"
 	htpasswdIDP.Type = "HTPasswd"
 	htpasswdIDP.Challenge = true
 	htpasswdIDP.Login = true
