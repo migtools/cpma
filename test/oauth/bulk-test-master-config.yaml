@@ -3,6 +3,17 @@ oauthConfig:
   grantConfig:
     method: auto
   identityProviders:
+  - name: my_remote_basic_auth_provider 
+    challenge: true 
+    login: true 
+    mappingMethod: claim 
+    provider:
+      apiVersion: v1
+      kind: BasicAuthPasswordIdentityProvider
+      url: https://www.example.com/
+      ca: ca.file 
+      certFile: client.crt 
+      keyFile: client.key 
   - name: github123456789
     challenge: false
     login: true

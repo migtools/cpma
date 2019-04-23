@@ -92,6 +92,11 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 			secrets = append(secrets, certSecret)
 			secrets = append(secrets, keySercret)
+		case "BasicAuthPasswordIdentityProvider":
+			idP, certSecret, keySercret := buildBasicAuthIP(serializer, p)
+			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
+			secrets = append(secrets, certSecret)
+			secrets = append(secrets, keySercret)
 		default:
 			logrus.Infof("Can't handle %s OAuth kind", kind)
 		}
