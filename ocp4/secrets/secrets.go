@@ -8,8 +8,12 @@ import (
 // TODO: Comment exported functions and structures.
 // We may want to unexport some...
 
-type FileSecret struct {
+type HTPasswdFileSecret struct {
 	HTPasswd string `yaml:"htpasswd"`
+}
+
+type KeystoneFileSecret struct {
+	Keystone string `yaml:"keystone"`
 }
 
 type LiteralSecret struct {
@@ -31,10 +35,12 @@ type MetaData struct {
 
 var APIVersion = "v1"
 
-func GenSecretFile(name string, encodedSecret string, namespace string) *Secret {
+func GenSecretFile(name string, encodedSecret string, namespace string, idenityProviderType string) *Secret {
+	data := buildData(idenityProviderType, encodedSecret)
+
 	var secret = Secret{
 		APIVersion: APIVersion,
-		Data:       FileSecret{HTPasswd: encodedSecret},
+		Data:       data,
 		Kind:       "Secret",
 		Type:       "Opaque",
 		MetaData: MetaData{
@@ -43,6 +49,21 @@ func GenSecretFile(name string, encodedSecret string, namespace string) *Secret 
 		},
 	}
 	return &secret
+}
+
+func buildData(idenityProviderType, encodedSecret string) interface{} {
+	var data interface{}
+
+	switch idenityProviderType {
+	case "keystone":
+		data = KeystoneFileSecret{Keystone: encodedSecret}
+	case "htpasswd":
+		data = HTPasswdFileSecret{HTPasswd: encodedSecret}
+	default:
+		logrus.Fatal("Not valid idenity provider type ", idenityProviderType)
+	}
+
+	return data
 }
 
 func GenSecretLiteral(name string, clientSecret string, namespace string) *Secret {
