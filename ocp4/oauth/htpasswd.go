@@ -27,6 +27,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p configv1.IdentityProvider) (
 	var htpasswd configv1.HTPasswdPasswordIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
 
+	idP.Name = p.Name
 	idP.Type = "HTPasswd"
 	idP.Challenge = p.UseAsChallenger
 	idP.Login = p.UseAsLogin
