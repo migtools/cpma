@@ -21,12 +21,18 @@ import (
 	"path"
 	"path/filepath"
 
+	//"github.com/fusor/network"
+
 	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/ocp3"
 	"github.com/fusor/cpma/ocp4"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+type File struct {
+	URL string
+}
 
 func init() {
 	cobra.OnInitialize()
@@ -44,33 +50,88 @@ func init() {
 }
 
 // rootCmd represents the base command when called without any subcommands
+// The workflow is organized using pipelines chaining queues.
+// Queues are channels starting from files to manifests
 var rootCmd = &cobra.Command{
 	Use:   "cpma",
 	Short: "Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x",
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
 	Run: func(cmd *cobra.Command, args []string) {
+		startTime := time.Now()
 		env.InitConfig()
 		env.InitLogger()
 
-		// TODO: add survey to handle UI
-		ocp3config := ocp3.New()
-		ocp3config.Fetch()
-		mc := ocp3config.ParseMaster()
-		clusterV4 := ocp4.Cluster{}
-		clusterV4.Translate(mc)
-		manifests := clusterV4.GenYAML()
+		filestoFetch := make(chan File)
+		fetchedFiles := make(chan File)
+		toTranslate := make(chan File)
+		manifests := make(chan File)
 
-		// TODO: Add to pipeline as exit channel
-		for _, manifest := range manifests {
-			maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
-			os.MkdirAll(path.Dir(maniftestfile), 0755)
-			err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
-			logrus.Printf("CR manifest created: %s", maniftestfile)
+		logrus.Printf("Timeout in %s (Ctrl+C to stop)", env.Config().GetDuration("TimeOut"))
+
+		// Communication Broker
+		go func() {
+			for {
+				file := <-filestoFetch
+				fmt.Printf("broker: %v\n", file.URL)
+				// use stmpclient and save file locally
+				fetchedFiles <- file
+			}
+		}()
+
+		// OCP4 translater
+		go func() {
+			for {
+				file := <-toTranslate
+				fmt.Printf("ocp4 translator: %v\n", file.URL)
+				// Generate manifest
+				manifests <- file
+			}
+		}()
+
+		// OCP3 decoder
+		go func() {
+			for {
+				file := <-fetchedFiles
+				fmt.Printf("ocp3 decoder: %v\n", file.URL)
+				toTranslate <- file
+			}
+		}()
+
+		// Dir Monitor
+		go func(dir string) {
+			processedFiles := make([]File, 20)
+
+			err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
+					return err
+				}
+
+				// TODO: check file has already processed and loop around Dir
+				if path != dir && !info.IsDir() {
+					file := File{URL: path}
+					processedFiles = append(processedFiles, file)
+					fmt.Printf("monitor: %v\n", path)
+					filestoFetch <- file
+				}
+				return nil
+			})
 			if err != nil {
-				logrus.Panic(err)
+				fmt.Printf("error walking the path %q: %v\n", dir, err)
+				return
+			}
+		}(env.Config().GetString("OutputDir"))
+
+		for {
+			elapsed := time.Now().Sub(startTime)
+			select {
+			case msg := <-manifests:
+				fmt.Println("manifests:", msg)
+			case <-time.After(env.Config().GetDuration("TimeOut") - elapsed):
+				fmt.Println("timeout")
+				os.Exit(0)
 			}
 		}
-		fmt.Println(ocp4.OCP4InstallMsg)
 	},
 }
 
