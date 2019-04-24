@@ -24,6 +24,7 @@ func TestTranslateMasterConfig(t *testing.T) {
 	assert.Equal(t, resCrd.Spec.IdentityProviders[4].(identityProviderHTPasswd).Type, "HTPasswd")
 	assert.Equal(t, resCrd.Spec.IdentityProviders[5].(identityProviderKeystone).Type, "Keystone")
 	assert.Equal(t, resCrd.Spec.IdentityProviders[6].(identityProviderRequestHeader).Type, "RequestHeader")
+	assert.Equal(t, resCrd.Spec.IdentityProviders[7].(identityProviderOpenID).Type, "OpenID")
 }
 
 func TestGenYAML(t *testing.T) {

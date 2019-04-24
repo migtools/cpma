@@ -52,10 +52,10 @@ oauthConfig:
       clientID: 82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com
       clientSecret: e16a59ad33d7c29fd4354f46059f0950c609a7ea
       hostedDomain: test.example.com
-  - challenge: true
+  - name: htpasswd_auth
     login: true
     mappingMethod: claim
-    name: htpasswd_auth
+    challenge: true
     provider:
       apiVersion: v1
       file: /etc/origin/master/htpasswd
@@ -94,6 +94,39 @@ oauthConfig:
       - X-Remote-User-Display-Name
       preferredUsernameHeaders:
       - X-Remote-User-Login
+  - name: my_openid_connect
+    challenge: false
+    login: true
+    mappingMethod: claim
+    provider:
+      apiVersion: v1
+      kind: OpenIDIdentityProvider
+      clientID: testid
+      clientSecret: testsecret
+      ca: my-openid-ca-bundle.crt 
+      extraScopes: 
+      - email
+      - profile
+      extraAuthorizeParameters: 
+        include_granted_scopes: "true"
+      claims:
+        id: 
+        - custom_id_claim
+        - sub
+        preferredUsername: 
+        - preferred_username
+        - email
+        name: 
+        - nickname
+        - given_name
+        - name
+        email: 
+        - custom_email_claim
+        - email
+      urls:
+        authorize: https://myidp.example.com/oauth2/authorize
+        token: https://myidp.example.com/oauth2/token
+        userInfo: https://myidp.example.com/oauth2/userinfo
   masterCA: ca-bundle.crt
   masterPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com:443
   masterURL: https://openshift.internal.gildub2.lab.pnq2.cee.redhat.com:443
