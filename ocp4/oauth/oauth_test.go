@@ -3,17 +3,13 @@ package oauth
 import (
 	"testing"
 
+	"github.com/fusor/cpma/ocp3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/fusor/cpma/ocp3"
 )
 
 func TestTranslateMasterConfig(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../../test/oauth/bulk-test-master-config.yaml",
-	}
-	masterConfig := testConfig.ParseMaster()
+	masterConfig := ocp3.ParseMaster("../../test/oauth/bulk-test-master-config.yaml")
 
 	resCrd, _, err := Translate(masterConfig.OAuthConfig)
 	require.NoError(t, err)
@@ -29,10 +25,7 @@ func TestTranslateMasterConfig(t *testing.T) {
 }
 
 func TestGenYAML(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../../test/oauth/htpasswd-test-master-config.yaml",
-	}
-	masterConfig := testConfig.ParseMaster()
+	masterConfig := ocp3.ParseMaster("../../test/oauth/htpasswd-test-master-config.yaml")
 	crd, _, err := Translate(masterConfig.OAuthConfig)
 
 	CRD := crd.GenYAML()

@@ -10,10 +10,7 @@ import (
 )
 
 func TestTranslateMasterConfigLDAP(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../../test/oauth/ldap-test-master-config.yaml",
-	}
-	masterConfig := testConfig.ParseMaster()
+	masterConfig := ocp3.ParseMaster("../../test/oauth/ldap-test-master-config.yaml")
 
 	var expectedCrd OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"

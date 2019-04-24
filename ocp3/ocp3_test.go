@@ -8,10 +8,6 @@ import (
 )
 
 func TestConfigParseMaster(t *testing.T) {
-	testConfig := Config{
-		Masterf: "../test/common-test-master-config.yaml",
-	}
-
 	expectedMasterConfig := configv1.MasterConfig{
 		AuthConfig: configv1.MasterAuthConfig{
 			RequestHeader: &configv1.RequestHeaderAuthenticationOptions{
@@ -35,7 +31,7 @@ func TestConfigParseMaster(t *testing.T) {
 		},
 	}
 
-	resMasterConfig := testConfig.ParseMaster()
+	resMasterConfig := ParseMaster("../test/common-test-master-config.yaml")
 
 	assert.Equal(t, expectedMasterConfig.AuthConfig.RequestHeader.ClientCA, resMasterConfig.AuthConfig.RequestHeader.ClientCA)
 	assert.Equal(t, expectedMasterConfig.EtcdClientInfo.CA, resMasterConfig.EtcdClientInfo.CA)
@@ -43,13 +39,4 @@ func TestConfigParseMaster(t *testing.T) {
 	assert.Equal(t, expectedMasterConfig.OAuthConfig.MasterURL, resMasterConfig.OAuthConfig.MasterURL)
 	assert.Equal(t, expectedMasterConfig.OAuthConfig.IdentityProviders[0].Name, resMasterConfig.OAuthConfig.IdentityProviders[0].Name)
 	assert.Equal(t, expectedMasterConfig.OAuthConfig.IdentityProviders[1].Name, resMasterConfig.OAuthConfig.IdentityProviders[1].Name)
-}
-
-func TestNewConfig(t *testing.T) {
-	config := New()
-
-	assert.Equal(t, &Config{
-		Masterf: "/etc/origin/master/master-config.yaml",
-		Nodef:   "/etc/origin/node/node-config.yaml",
-	}, config)
 }

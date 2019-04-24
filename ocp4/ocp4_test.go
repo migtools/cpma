@@ -8,29 +8,24 @@ import (
 	"github.com/fusor/cpma/ocp3"
 )
 
-func TestClusterTranslate(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../test/common-test-master-config.yaml",
-	}
-	parsedTestConfig := testConfig.ParseMaster()
-	clusterV4 := Cluster{}
-	clusterV4.Translate(parsedTestConfig)
+func TestClusterTranslateMaster(t *testing.T) {
+	parsedTestConfig := ocp3.ParseMaster("../test/common-test-master-config.yaml")
 
-	assert.Equal(t, "cluster", clusterV4.Master.OAuth.Metadata.Name)
-	assert.Equal(t, 2, len(clusterV4.Master.OAuth.Spec.IdentityProviders))
+	clusterOCP4 := Cluster{}
+	clusterOCP4.Master.TranslateMaster(parsedTestConfig)
 
-	assert.Equal(t, 2, len(clusterV4.Master.Secrets))
-	assert.Equal(t, "htpasswd_auth-secret", clusterV4.Master.Secrets[0].Metadata.Name)
-	assert.Equal(t, "github123456789-secret", clusterV4.Master.Secrets[1].Metadata.Name)
+	assert.Equal(t, "cluster", clusterOCP4.Master.OAuth.Metadata.Name)
+	assert.Equal(t, 2, len(clusterOCP4.Master.OAuth.Spec.IdentityProviders))
+
+	assert.Equal(t, 2, len(clusterOCP4.Master.Secrets))
+	assert.Equal(t, "htpasswd_auth-secret", clusterOCP4.Master.Secrets[0].Metadata.Name)
+	assert.Equal(t, "github123456789-secret", clusterOCP4.Master.Secrets[1].Metadata.Name)
 }
 
-func TestClusterGenYaml(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../test/common-test-master-config.yaml",
-	}
-	parsedTestConfig := testConfig.ParseMaster()
+func TestClusterMasterGenYaml(t *testing.T) {
+	parsedTestConfig := ocp3.ParseMaster("../test/common-test-master-config.yaml")
 	clusterV4 := Cluster{}
-	clusterV4.Translate(parsedTestConfig)
+	clusterV4.Master.TranslateMaster(parsedTestConfig)
 	manifests := clusterV4.GenYAML()
 
 	// Test manifest names

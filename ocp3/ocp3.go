@@ -1,13 +1,11 @@
 package ocp3
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
-
-	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/internal/sftpclient"
+	"errors"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
+	"path/filepath"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -20,88 +18,41 @@ import (
 
 // TODO: we may want to be OCP3 minor version aware here
 
-// Config represents OCP3 configuration
-type Config struct {
-	master  configv1.MasterConfig
-	Masterf string
-
-	node  configv1.NodeConfig
-	Nodef string
+type Cluster struct {
+	Master Master
+}
+type Master struct {
+	Config configv1.MasterConfig
 }
 
 func init() {
 	configv1.InstallLegacy(scheme.Scheme)
 }
 
+// Decode unmarshals OCP3
+func (clusterOCP3 *Cluster) Decode(path string) error {
+	filename := filepath.Base(path)
+	if strings.Contains(filename, "master") {
+		clusterOCP3.Master.Config = ParseMaster(path)
+		return nil
+	}
+	return errors.New("No file decoded")
+}
+
 // ParseMaster unmarshals OCP3 master-config
-func (c *Config) ParseMaster() configv1.MasterConfig {
+func ParseMaster(file string) configv1.MasterConfig {
+	var masterConfig configv1.MasterConfig
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 
-	f, err := ioutil.ReadFile(c.Masterf)
+	f, err := ioutil.ReadFile(file)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	_, _, err = serializer.Decode(f, nil, &c.master)
+	_, _, err = serializer.Decode(f, nil, &masterConfig)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	return c.master
-}
-
-// Fetch checks whether OCP3 configuration is available and retrieves
-// it in case it is not.
-func (c *Config) Fetch() {
-	// TODO: this function must get all the files referred from master-config
-	// and node-config as well
-	var src, dst string
-	var err error
-	var client sftpclient.Client
-
-	source := env.Config().GetString("Source")
-	outputDir := env.Config().GetString("OutputDir")
-
-	src = filepath.Join(source, c.Masterf)
-	if _, err = os.Stat(src); os.IsNotExist(err) {
-		goto fetch
-	}
-	c.Masterf = src
-
-	src = filepath.Join(source, c.Nodef)
-	if _, err = os.Stat(src); os.IsNotExist(err) {
-		goto fetch
-	}
-	c.Nodef = src
-
-	logrus.Debug("Local copy of configuration files has been found, skip ssh fetch.")
-	goto out
-
-fetch:
-	// We weren't successfull in locating configuration in directory
-	// given by e.Source, thus we think it is fqdn.
-	// TODO: Rework logic or we may want to prompt user here.
-
-	logrus.Debug("Unable to locate configuration, attempt to fetch from ", source)
-	client = sftpclient.NewClient()
-	defer client.Close()
-
-	dst = filepath.Join(outputDir, c.Masterf)
-	client.GetFile(c.Masterf, dst)
-	c.Masterf = dst
-
-	dst = filepath.Join(outputDir, c.Nodef)
-	client.GetFile(c.Nodef, dst)
-	c.Nodef = dst
-
-out:
-	return
-}
-
-// New instantiates and returns Config structure that represents OCP3 configuration
-func New() *Config {
-	return &Config{
-		Masterf: "/etc/origin/master/master-config.yaml",
-		Nodef:   "/etc/origin/node/node-config.yaml",
-	}
+	return masterConfig
 }
