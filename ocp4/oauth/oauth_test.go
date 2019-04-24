@@ -23,8 +23,9 @@ func TestTranslateMasterConfig(t *testing.T) {
 	assert.Equal(t, resCrd.Spec.IdentityProviders[3].(identityProviderGoogle).Type, "Google")
 	assert.Equal(t, resCrd.Spec.IdentityProviders[4].(identityProviderHTPasswd).Type, "HTPasswd")
 	assert.Equal(t, resCrd.Spec.IdentityProviders[5].(identityProviderKeystone).Type, "Keystone")
-	assert.Equal(t, resCrd.Spec.IdentityProviders[6].(identityProviderRequestHeader).Type, "RequestHeader")
-	assert.Equal(t, resCrd.Spec.IdentityProviders[7].(identityProviderOpenID).Type, "OpenID")
+	assert.Equal(t, resCrd.Spec.IdentityProviders[6].(identityProviderLDAP).Type, "LDAP")
+	assert.Equal(t, resCrd.Spec.IdentityProviders[7].(identityProviderRequestHeader).Type, "RequestHeader")
+	assert.Equal(t, resCrd.Spec.IdentityProviders[8].(identityProviderOpenID).Type, "OpenID")
 }
 
 func TestGenYAML(t *testing.T) {
