@@ -33,7 +33,7 @@ func buildGoogleIP(serializer *json.Serializer, p configv1.IdentityProvider) (id
 
 	secretName := p.Name + "-secret"
 	idP.Google.ClientSecret.Name = secretName
-	secret := secrets.GenSecretLiteral(secretName, google.ClientSecret.Value, "openshift-config")
+	secret := secrets.GenSecret(secretName, google.ClientSecret.Value, "openshift-config", "literal")
 
 	return idP, *secret
 }

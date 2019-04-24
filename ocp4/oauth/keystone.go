@@ -46,14 +46,14 @@ func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (
 	// TODO: Fetch cert and key
 	certFile := "456This is pretend content"
 	encoded := base64.StdEncoding.EncodeToString([]byte(certFile))
-	certSecret := secrets.GenSecretFile(certSecretName, encoded, "openshift-config", "keystone")
+	certSecret := secrets.GenSecret(certSecretName, encoded, "openshift-config", "keystone")
 
 	keySecretName := p.Name + "-client-key-secret"
 	idP.Keystone.TLSClientKey.Name = keySecretName
 
 	keyFile := "123This is pretend content"
 	encoded = base64.StdEncoding.EncodeToString([]byte(keyFile))
-	keySecret := secrets.GenSecretFile(keySecretName, encoded, "openshift-config", "keystone")
+	keySecret := secrets.GenSecret(keySecretName, encoded, "openshift-config", "keystone")
 
 	return idP, *certSecret, *keySecret
 }

@@ -10,7 +10,7 @@ import (
 func TestGenSecretFileHtpasswd(t *testing.T) {
 	htpasswdFile := "testfile1"
 	encoded := base64.StdEncoding.EncodeToString([]byte(htpasswdFile))
-	resSecret := GenSecretFile("htpasswd-test", encoded, "openshift-config", "htpasswd")
+	resSecret := GenSecret("htpasswd-test", encoded, "openshift-config", "htpasswd")
 
 	var data = HTPasswdFileSecret{HTPasswd: encoded}
 	var expectedSecret = Secret{
@@ -29,7 +29,7 @@ func TestGenSecretFileHtpasswd(t *testing.T) {
 func TestGenSecretFileKeystone(t *testing.T) {
 	keystoneFile := "testfile2"
 	encoded := base64.StdEncoding.EncodeToString([]byte(keystoneFile))
-	resSecret := GenSecretFile("keystone-test", encoded, "openshift-config", "keystone")
+	resSecret := GenSecret("keystone-test", encoded, "openshift-config", "keystone")
 
 	var data = KeystoneFileSecret{Keystone: encoded}
 	var expectedSecret = Secret{
@@ -46,7 +46,7 @@ func TestGenSecretFileKeystone(t *testing.T) {
 	assert.Equal(t, &expectedSecret, resSecret)
 }
 func TestGenSecretLiteral(t *testing.T) {
-	resSecret := GenSecretLiteral("literal-secret", "some-value", "openshift-config")
+	resSecret := GenSecret("literal-secret", "some-value", "openshift-config", "literal")
 
 	var data = LiteralSecret{ClientSecret: "some-value"}
 	var expectedSecret = Secret{
