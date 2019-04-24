@@ -45,6 +45,25 @@ func TestGenSecretFileKeystone(t *testing.T) {
 
 	assert.Equal(t, &expectedSecret, resSecret)
 }
+func TestGenSecretFileBasicAuth(t *testing.T) {
+	basicAuth := "testfile2"
+	encoded := base64.StdEncoding.EncodeToString([]byte(basicAuth))
+	resSecret := GenSecret("keystone-test", encoded, "openshift-config", "basicauth")
+
+	var data = BasicAuthFileSecret{BasicAuth: encoded}
+	var expectedSecret = Secret{
+		APIVersion: APIVersion,
+		Data:       data,
+		Kind:       "Secret",
+		Type:       "Opaque",
+		MetaData: MetaData{
+			Name:      "keystone-test",
+			Namespace: "openshift-config",
+		},
+	}
+
+	assert.Equal(t, &expectedSecret, resSecret)
+}
 func TestGenSecretLiteral(t *testing.T) {
 	resSecret := GenSecret("literal-secret", "some-value", "openshift-config", "literal")
 

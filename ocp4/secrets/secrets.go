@@ -19,6 +19,9 @@ type KeystoneFileSecret struct {
 type LiteralSecret struct {
 	ClientSecret string `yaml:"clientSecret"`
 }
+type BasicAuthFileSecret struct {
+	BasicAuth string `yaml:"basicAuth"`
+}
 
 type Secret struct {
 	APIVersion string      `yaml:"apiVersion"`
@@ -61,6 +64,8 @@ func buildData(secretType, secretContent string) interface{} {
 		data = HTPasswdFileSecret{HTPasswd: secretContent}
 	case "literal":
 		data = LiteralSecret{ClientSecret: secretContent}
+	case "basicauth":
+		data = BasicAuthFileSecret{BasicAuth: secretContent}
 	default:
 		logrus.Fatal("Not valid secret type ", secretType)
 	}
