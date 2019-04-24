@@ -74,11 +74,11 @@ func buildData(secretType, secretContent string) interface{} {
 }
 
 // GenYAML returns a YAML of the OAuthCRD
-func (secret *Secret) GenYAML() string {
+func (secret *Secret) GenYAML() []byte {
 	yamlBytes, err := yaml.Marshal(&secret)
 	if err != nil {
 		logrus.WithError(err).Fatal("Cannot generate CRD")
 		logrus.Debugf("%+v", secret)
 	}
-	return string(yamlBytes)
+	return yamlBytes
 }

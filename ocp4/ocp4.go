@@ -16,6 +16,12 @@ type Master struct {
 	Secrets []secrets.Secret
 }
 
+// Manifest holds a CRD object
+type Manifest struct {
+	Name string
+	CRD  []byte
+}
+
 func (cluster *Cluster) Translate(masterconfig configv1.MasterConfig) {
 	oauth, secrets, err := oauth.Translate(masterconfig.OAuthConfig)
 	if err != nil {
@@ -25,12 +31,16 @@ func (cluster *Cluster) Translate(masterconfig configv1.MasterConfig) {
 	cluster.Master.Secrets = secrets
 }
 
-// GenYAML Generate the translated CRDs
-func (cluster *Cluster) GenYAML() {
-	oauthCRD := cluster.Master.OAuth.GenYAML()
-	logrus.Print(oauthCRD)
+// GenYAML returns the list of translated CRDs
+func (cluster *Cluster) GenYAML() []Manifest {
+	var manifests []Manifest
+	manifest := Manifest{Name: "CPMA-cluster-config-oauth.yaml", CRD: cluster.Master.OAuth.GenYAML()}
+	manifests = append(manifests, manifest)
 
 	for _, secret := range cluster.Master.Secrets {
-		logrus.Print(secret.GenYAML())
+		filename := "CPMA-cluster-config-secret-" + secret.MetaData.Name + ".yaml"
+		m := Manifest{Name: filename, CRD: secret.GenYAML()}
+		manifests = append(manifests, m)
 	}
+	return manifests
 }

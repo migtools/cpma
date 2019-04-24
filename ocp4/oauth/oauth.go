@@ -104,11 +104,11 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 }
 
 // GenYAML returns a YAML of the OAuthCRD
-func (oauth *OAuthCRD) GenYAML() string {
+func (oauth *OAuthCRD) GenYAML() []byte {
 	yamlBytes, err := yaml.Marshal(&oauth)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	return string(yamlBytes)
+	return yamlBytes
 }

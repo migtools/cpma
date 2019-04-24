@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"encoding/base64"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -95,8 +96,8 @@ func TestGenYaml(t *testing.T) {
 		},
 	}
 
-	yaml := secret.GenYAML()
+	manifest := secret.GenYAML()
+	fmt.Println(fmt.Sprintf("%v", manifest))
 	expectedYaml := "apiVersion: v1\nkind: Secret\ntype: Opaque\nmetaData:\n  name: literal-secret\n  namespace: openshift-config\ndata:\n  clientSecret: some-value\n"
-
-	assert.Equal(t, expectedYaml, yaml)
+	assert.Equal(t, expectedYaml, string(manifest))
 }
