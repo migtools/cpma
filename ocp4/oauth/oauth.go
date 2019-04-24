@@ -81,8 +81,12 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 			idP, secret = buildGoogleIP(serializer, p)
 		case "HTPasswdPasswordIdentityProvider":
 			idP, secret = buildHTPasswdIP(serializer, p)
+		case "OpenIDIdentityProvider":
+			idP, secret = buildOpenIDIP(serializer, p)
 		case "RequestHeaderIdentityProvider":
 			idP = buildRequestHeaderIP(serializer, p)
+		case "LDAPPasswordIdentityProvider":
+			idP = buildLdapIP(serializer, p)
 		case "KeystonePasswordIdentityProvider":
 			idP, certSecret, keySercret = buildKeystoneIP(serializer, p)
 			secretsSlice = append(secretsSlice, certSecret)
@@ -91,8 +95,6 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 			idP, certSecret, keySercret = buildBasicAuthIP(serializer, p)
 			secretsSlice = append(secretsSlice, certSecret)
 			secretsSlice = append(secretsSlice, keySercret)
-		case "OpenIDIdentityProvider":
-			idP, secret = buildOpenIDIP(serializer, p)
 		default:
 			logrus.Infof("Can't handle %s OAuth kind", kind)
 		}
