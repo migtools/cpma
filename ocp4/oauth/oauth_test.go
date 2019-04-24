@@ -34,7 +34,7 @@ func TestGenYAML(t *testing.T) {
 	masterConfig := testConfig.ParseMaster()
 	crd, _, err := Translate(masterConfig.OAuthConfig)
 
-	yaml := crd.GenYAML()
+	CRD := crd.GenYAML()
 	expectedYaml := `apiVersion: config.openshift.io/v1
 kind: OAuth
 metaData:
@@ -52,5 +52,5 @@ spec:
         name: htpasswd_auth-secret
 `
 	require.NoError(t, err)
-	assert.Equal(t, expectedYaml, yaml)
+	assert.Equal(t, expectedYaml, string(CRD))
 }

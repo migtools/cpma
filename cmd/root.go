@@ -15,7 +15,10 @@
 package cmd
 
 import (
+	"io/ioutil"
+	"os"
 	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/fusor/cpma/env"
@@ -59,7 +62,17 @@ var rootCmd = &cobra.Command{
 			mc := ocp3config.ParseMaster()
 			clusterV4 := ocp4.Cluster{}
 			clusterV4.Translate(mc)
-			clusterV4.GenYAML()
+			manifests := clusterV4.GenYAML()
+
+			// TODO: Add to pipeline as exit channel
+			for _, manifest := range manifests {
+				maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
+				os.MkdirAll(path.Dir(maniftestfile), 0755)
+				err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
+				if err != nil {
+					logrus.Panic(err)
+				}
+			}
 		}
 	},
 }
