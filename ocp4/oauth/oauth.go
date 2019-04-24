@@ -58,7 +58,12 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 	oauthCrd.Kind = "OAuth"
 	oauthCrd.MetaData.Name = "cluster"
 	oauthCrd.MetaData.NameSpace = "openshift-config"
-	var secrets []secrets.Secret
+
+	var idP interface{}
+	var secretsSlice []secrets.Secret
+	var secret secrets.Secret
+	var certSecret secrets.Secret
+	var keySercret secrets.Secret
 
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	for _, p := range auth.IdentityProviders {
@@ -69,44 +74,33 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 
 		switch kind := p.Provider.Object.GetObjectKind().GroupVersionKind().Kind; kind {
 		case "GitHubIdentityProvider":
-			idP, secret := buildGitHubIP(serializer, p)
-			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-			secrets = append(secrets, secret)
+			idP, secret = buildGitHubIP(serializer, p)
 		case "GitLabIdentityProvider":
-			idP, secret := buildGitLabIP(serializer, p)
-			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-			secrets = append(secrets, secret)
+			idP, secret = buildGitLabIP(serializer, p)
 		case "GoogleIdentityProvider":
-			idP, secret := buildGoogleIP(serializer, p)
-			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-			secrets = append(secrets, secret)
+			idP, secret = buildGoogleIP(serializer, p)
 		case "HTPasswdPasswordIdentityProvider":
-			idP, secret := buildHTPasswdIP(serializer, p)
-			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-			secrets = append(secrets, secret)
+			idP, secret = buildHTPasswdIP(serializer, p)
 		case "RequestHeaderIdentityProvider":
-			idP := buildRequestHeaderIP(serializer, p)
-			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
+			idP = buildRequestHeaderIP(serializer, p)
 		case "KeystonePasswordIdentityProvider":
-			idP, certSecret, keySercret := buildKeystoneIP(serializer, p)
-			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-			secrets = append(secrets, certSecret)
-			secrets = append(secrets, keySercret)
+			idP, certSecret, keySercret = buildKeystoneIP(serializer, p)
+			secretsSlice = append(secretsSlice, certSecret)
+			secretsSlice = append(secretsSlice, keySercret)
 		case "BasicAuthPasswordIdentityProvider":
-			idP, certSecret, keySercret := buildBasicAuthIP(serializer, p)
-			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-			secrets = append(secrets, certSecret)
-			secrets = append(secrets, keySercret)
+			idP, certSecret, keySercret = buildBasicAuthIP(serializer, p)
+			secretsSlice = append(secretsSlice, certSecret)
+			secretsSlice = append(secretsSlice, keySercret)
 		case "OpenIDIdentityProvider":
-			idP, secret := buildOpenIDIP(serializer, p)
-			oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-			secrets = append(secrets, secret)
+			idP, secret = buildOpenIDIP(serializer, p)
 		default:
 			logrus.Infof("Can't handle %s OAuth kind", kind)
 		}
+		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
+		secretsSlice = append(secretsSlice, secret)
 	}
 
-	return &oauthCrd, secrets, nil
+	return &oauthCrd, secretsSlice, nil
 }
 
 // GenYAML returns a YAML of the OAuthCRD
