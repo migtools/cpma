@@ -18,8 +18,8 @@ func TestTranslateMasterConfigGithub(t *testing.T) {
 	var expectedCrd OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
-	expectedCrd.MetaData.Name = "cluster"
-	expectedCrd.MetaData.NameSpace = "openshift-config"
+	expectedCrd.Metadata.Name = "cluster"
+	expectedCrd.Metadata.NameSpace = "openshift-config"
 
 	var githubIDP identityProviderGitHub
 	githubIDP.Type = "GitHub"

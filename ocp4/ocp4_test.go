@@ -16,12 +16,12 @@ func TestClusterTranslate(t *testing.T) {
 	clusterV4 := Cluster{}
 	clusterV4.Translate(parsedTestConfig)
 
-	assert.Equal(t, "cluster", clusterV4.Master.OAuth.MetaData.Name)
+	assert.Equal(t, "cluster", clusterV4.Master.OAuth.Metadata.Name)
 	assert.Equal(t, 2, len(clusterV4.Master.OAuth.Spec.IdentityProviders))
 
 	assert.Equal(t, 2, len(clusterV4.Master.Secrets))
-	assert.Equal(t, "htpasswd_auth-secret", clusterV4.Master.Secrets[0].MetaData.Name)
-	assert.Equal(t, "github123456789-secret", clusterV4.Master.Secrets[1].MetaData.Name)
+	assert.Equal(t, "htpasswd_auth-secret", clusterV4.Master.Secrets[0].Metadata.Name)
+	assert.Equal(t, "github123456789-secret", clusterV4.Master.Secrets[1].Metadata.Name)
 }
 
 func TestClusterGenYaml(t *testing.T) {
@@ -41,7 +41,7 @@ func TestClusterGenYaml(t *testing.T) {
 	// Test Oauth CR contents
 	expectedOauthCR := `apiVersion: config.openshift.io/v1
 kind: OAuth
-metaData:
+metadata:
   name: cluster
   namespace: openshift-config
 spec:
@@ -79,7 +79,7 @@ spec:
 	expectedSecretHtpasswd := `apiVersion: v1
 kind: Secret
 type: Opaque
-metaData:
+metadata:
   name: htpasswd_auth-secret
   namespace: openshift-config
 data:
@@ -89,7 +89,7 @@ data:
 	expectedSecretGitHub := `apiVersion: v1
 kind: Secret
 type: Opaque
-metaData:
+metadata:
   name: github123456789-secret
   namespace: openshift-config
 data:
