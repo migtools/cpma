@@ -93,7 +93,7 @@ metadata:
   name: github123456789-secret
   namespace: openshift-config
 data:
-  clientSecret: e16a59ad33d7c29fd4354f46059f0950c609a7ea
+  clientSecret: ZTE2YTU5YWQzM2Q3YzI5ZmQ0MzU0ZjQ2MDU5ZjA5NTBjNjA5YTdlYQ==
 `
 
 	assert.Equal(t, expectedSecretHtpasswd, string(manifests[1].CRD))

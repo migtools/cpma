@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"encoding/base64"
 	"github.com/fusor/cpma/ocp4/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
@@ -41,7 +42,9 @@ func buildGitHubIP(serializer *json.Serializer, p configv1.IdentityProvider) (id
 
 	secretName := p.Name + "-secret"
 	idP.GitHub.ClientSecret.Name = secretName
-	secret := secrets.GenSecret(secretName, github.ClientSecret.Value, "openshift-config", "literal")
+
+	encoded := base64.StdEncoding.EncodeToString([]byte(github.ClientSecret.Value))
+	secret := secrets.GenSecret(secretName, encoded, "openshift-config", "literal")
 
 	return idP, *secret
 }
