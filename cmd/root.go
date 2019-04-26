@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -75,6 +76,7 @@ var rootCmd = &cobra.Command{
 				}
 			}
 		}
+		fmt.Println(ocp4.OCP4InstallMsg)
 	},
 }
 
