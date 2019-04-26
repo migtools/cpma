@@ -69,6 +69,7 @@ var rootCmd = &cobra.Command{
 				maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
 				os.MkdirAll(path.Dir(maniftestfile), 0755)
 				err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
+				logrus.Printf("CR manifest created: %s", maniftestfile)
 				if err != nil {
 					logrus.Panic(err)
 				}
