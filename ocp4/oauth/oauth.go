@@ -27,7 +27,7 @@ func init() {
 type OAuthCRD struct {
 	APIVersion string   `yaml:"apiVersion"`
 	Kind       string   `yaml:"kind"`
-	MetaData   MetaData `yaml:"metaData"`
+	Metadata   MetaData `yaml:"metadata"`
 	Spec       struct {
 		IdentityProviders []interface{} `yaml:"identityProviders"`
 	} `yaml:"spec"`
@@ -56,8 +56,8 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 	var oauthCrd OAuthCRD
 	oauthCrd.APIVersion = APIVersion
 	oauthCrd.Kind = "OAuth"
-	oauthCrd.MetaData.Name = "cluster"
-	oauthCrd.MetaData.NameSpace = "openshift-config"
+	oauthCrd.Metadata.Name = "cluster"
+	oauthCrd.Metadata.NameSpace = "openshift-config"
 
 	var idP interface{}
 	var secretsSlice []secrets.Secret

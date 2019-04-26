@@ -38,7 +38,7 @@ func TestGenYAML(t *testing.T) {
 	CRD := crd.GenYAML()
 	expectedYaml := `apiVersion: config.openshift.io/v1
 kind: OAuth
-metaData:
+metadata:
   name: cluster
   namespace: openshift-config
 spec:

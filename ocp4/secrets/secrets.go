@@ -27,7 +27,7 @@ type Secret struct {
 	APIVersion string      `yaml:"apiVersion"`
 	Kind       string      `yaml:"kind"`
 	Type       string      `yaml:"type"`
-	MetaData   MetaData    `yaml:"metaData"`
+	Metadata   MetaData    `yaml:"metadata"`
 	Data       interface{} `yaml:"data"`
 }
 
@@ -46,7 +46,7 @@ func GenSecret(name string, secretContent string, namespace string, secretType s
 		Data:       data,
 		Kind:       "Secret",
 		Type:       "Opaque",
-		MetaData: MetaData{
+		Metadata: MetaData{
 			Name:      name,
 			Namespace: namespace,
 		},

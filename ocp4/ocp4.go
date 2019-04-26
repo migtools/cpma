@@ -38,7 +38,7 @@ func (cluster *Cluster) GenYAML() []Manifest {
 	manifests = append(manifests, manifest)
 
 	for _, secret := range cluster.Master.Secrets {
-		filename := "CPMA-cluster-config-secret-" + secret.MetaData.Name + ".yaml"
+		filename := "CPMA-cluster-config-secret-" + secret.Metadata.Name + ".yaml"
 		m := Manifest{Name: filename, CRD: secret.GenYAML()}
 		manifests = append(manifests, m)
 	}

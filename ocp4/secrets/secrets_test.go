@@ -19,7 +19,7 @@ func TestGenSecretFileHtpasswd(t *testing.T) {
 		Data:       data,
 		Kind:       "Secret",
 		Type:       "Opaque",
-		MetaData: MetaData{
+		Metadata: MetaData{
 			Name:      "htpasswd-test",
 			Namespace: "openshift-config",
 		},
@@ -38,7 +38,7 @@ func TestGenSecretFileKeystone(t *testing.T) {
 		Data:       data,
 		Kind:       "Secret",
 		Type:       "Opaque",
-		MetaData: MetaData{
+		Metadata: MetaData{
 			Name:      "keystone-test",
 			Namespace: "openshift-config",
 		},
@@ -57,7 +57,7 @@ func TestGenSecretFileBasicAuth(t *testing.T) {
 		Data:       data,
 		Kind:       "Secret",
 		Type:       "Opaque",
-		MetaData: MetaData{
+		Metadata: MetaData{
 			Name:      "keystone-test",
 			Namespace: "openshift-config",
 		},
@@ -74,7 +74,7 @@ func TestGenSecretLiteral(t *testing.T) {
 		Data:       data,
 		Kind:       "Secret",
 		Type:       "Opaque",
-		MetaData: MetaData{
+		Metadata: MetaData{
 			Name:      "literal-secret",
 			Namespace: "openshift-config",
 		},
@@ -90,7 +90,7 @@ func TestGenYaml(t *testing.T) {
 		Data:       data,
 		Kind:       "Secret",
 		Type:       "Opaque",
-		MetaData: MetaData{
+		Metadata: MetaData{
 			Name:      "literal-secret",
 			Namespace: "openshift-config",
 		},
@@ -98,6 +98,6 @@ func TestGenYaml(t *testing.T) {
 
 	manifest := secret.GenYAML()
 	fmt.Println(fmt.Sprintf("%v", manifest))
-	expectedYaml := "apiVersion: v1\nkind: Secret\ntype: Opaque\nmetaData:\n  name: literal-secret\n  namespace: openshift-config\ndata:\n  clientSecret: some-value\n"
+	expectedYaml := "apiVersion: v1\nkind: Secret\ntype: Opaque\nmetadata:\n  name: literal-secret\n  namespace: openshift-config\ndata:\n  clientSecret: some-value\n"
 	assert.Equal(t, expectedYaml, string(manifest))
 }

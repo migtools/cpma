@@ -18,8 +18,8 @@ func TestTranslateMasterConfigOpenID(t *testing.T) {
 	var expectedCrd OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
-	expectedCrd.MetaData.Name = "cluster"
-	expectedCrd.MetaData.NameSpace = "openshift-config"
+	expectedCrd.Metadata.Name = "cluster"
+	expectedCrd.Metadata.NameSpace = "openshift-config"
 
 	var openidIDP identityProviderOpenID
 	openidIDP.Type = "OpenID"
