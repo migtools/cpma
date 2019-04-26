@@ -34,9 +34,9 @@ func TestClusterGenYaml(t *testing.T) {
 	manifests := clusterV4.GenYAML()
 
 	// Test manifest names
-	assert.Equal(t, "CPMA-cluster-config-oauth.yaml", manifests[0].Name)
-	assert.Equal(t, "CPMA-cluster-config-secret-htpasswd_auth-secret.yaml", manifests[1].Name)
-	assert.Equal(t, "CPMA-cluster-config-secret-github123456789-secret.yaml", manifests[2].Name)
+	assert.Equal(t, "100_CPMA-cluster-config-oauth.yaml", manifests[0].Name)
+	assert.Equal(t, "100_CPMA-cluster-config-secret-htpasswd_auth-secret.yaml", manifests[1].Name)
+	assert.Equal(t, "100_CPMA-cluster-config-secret-github123456789-secret.yaml", manifests[2].Name)
 
 	// Test Oauth CR contents
 	expectedOauthCR := `apiVersion: config.openshift.io/v1
