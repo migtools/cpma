@@ -1,9 +1,9 @@
 module github.com/fusor/cpma
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/openshift/api v3.9.1-0.20190404192821-4706c46ddae5+incompatible
@@ -22,6 +22,6 @@ require (
 	k8s.io/apimachinery v0.0.0-20190413052414-40a3f73b0fa2
 	k8s.io/apiserver v0.0.0-20190413053200-5b6ebd80335e // indirect
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/kubernetes v1.14.1
+	k8s.io/kubernetes v1.14.1 // indirect
 	k8s.io/utils v0.0.0-20190308190857-21c4ce38f2a7 // indirect
 )
