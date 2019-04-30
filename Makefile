@@ -15,7 +15,7 @@ help:
 
 build:
 	@echo "GOPATH=${GOPATH}"
-	go build -o bin/${BIN_NAME}
+	GO111MODULE=on go build -o bin/${BIN_NAME}
 
 clean:
 	@test ! -e bin/${BIN_NAME} || rm bin/${BIN_NAME}
