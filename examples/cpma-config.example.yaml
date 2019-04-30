@@ -1,7 +1,11 @@
 ---
-Source: "master-0.gildub1.lab.pnq2.cee.redhat.com" # can also point to directory
+Source: "master-0.example.com" # can also point to directory
 SSHCreds:
   Login: "root"
-  PrivateKey: "/home/gildub/.ssh/quicklab"
+  PrivateKey: "/home/example/.ssh/key"
   Port: 22
 OutputDir: "./data"
+# MasterConfigFile and NodeConfigFile are optional fields
+# Use only if cluster was configured with different config locations
+MasterConfigFile: "/etc/origin/master/master-config.yaml"
+NodeConfigFile: "/etc/origin/node/node-config.yaml"
