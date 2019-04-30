@@ -15,15 +15,10 @@
 package cmd
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
 	"path"
-	"path/filepath"
 
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/ocp3"
-	"github.com/fusor/cpma/ocp4"
+	"github.com/fusor/cpma/ocp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -52,25 +47,23 @@ var rootCmd = &cobra.Command{
 		env.InitConfig()
 		env.InitLogger()
 
-		// TODO: add survey to handle UI
-		ocp3config := ocp3.New()
-		ocp3config.Fetch()
-		mc := ocp3config.ParseMaster()
-		clusterV4 := ocp4.Cluster{}
-		clusterV4.Translate(mc)
-		manifests := clusterV4.GenYAML()
+		source := env.Config().GetString("Source")
+		outputDir := env.Config().GetString("OutputDir")
 
-		// TODO: Add to pipeline as exit channel
-		for _, manifest := range manifests {
-			maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
-			os.MkdirAll(path.Dir(maniftestfile), 0755)
-			err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
-			logrus.Printf("CR manifest created: %s", maniftestfile)
-			if err != nil {
-				logrus.Panic(err)
-			}
+		configs := []ocp.Config{}
+
+		ocpMaster := ocp.Config{}
+		ocpNode := ocp.Config{}
+		ocpMaster.AddMaster(source)
+		ocpNode.AddNode(source)
+		configs = append(configs, ocpMaster, ocpNode)
+
+		for _, config := range configs {
+			config.Fetch(outputDir)
+			config.Decode()
+			config.Translate()
+			config.DumpManifests(outputDir, config.GenYAML())
 		}
-		fmt.Println(ocp4.OCP4InstallMsg)
 	},
 }
 

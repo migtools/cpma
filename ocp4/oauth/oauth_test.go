@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,12 +11,13 @@ import (
 )
 
 func TestTranslateMasterConfig(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../../test/oauth/bulk-test-master-config.yaml",
-	}
-	masterConfig := testConfig.ParseMaster()
+	file := "../../test/oauth/bulk-test-master-config.yaml"
+	content, _ := ioutil.ReadFile(file)
 
-	resCrd, _, err := Translate(masterConfig.OAuthConfig)
+	masterV3 := ocp3.Master{}
+	masterV3.Decode(content)
+
+	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, resCrd.Spec.IdentityProviders[0].(identityProviderBasicAuth).Type, "BasicAuth")
 	assert.Equal(t, resCrd.Spec.IdentityProviders[1].(identityProviderGitHub).Type, "GitHub")
@@ -29,11 +31,13 @@ func TestTranslateMasterConfig(t *testing.T) {
 }
 
 func TestGenYAML(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../../test/oauth/htpasswd-test-master-config.yaml",
-	}
-	masterConfig := testConfig.ParseMaster()
-	crd, _, err := Translate(masterConfig.OAuthConfig)
+	file := "../../test/oauth/htpasswd-test-master-config.yaml"
+	content, _ := ioutil.ReadFile(file)
+
+	masterV3 := ocp3.Master{}
+	masterV3.Decode(content)
+
+	crd, _, err := Translate(masterV3.Config.OAuthConfig)
 
 	CRD := crd.GenYAML()
 	expectedYaml := `apiVersion: config.openshift.io/v1

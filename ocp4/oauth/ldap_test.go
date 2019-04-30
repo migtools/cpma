@@ -1,19 +1,20 @@
 package oauth
 
 import (
+	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/ocp3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/fusor/cpma/ocp3"
 )
 
 func TestTranslateMasterConfigLDAP(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../../test/oauth/ldap-test-master-config.yaml",
-	}
-	masterConfig := testConfig.ParseMaster()
+	file := "../../test/oauth/ldap-test-master-config.yaml"
+	content, _ := ioutil.ReadFile(file)
+
+	masterV3 := ocp3.Master{}
+	masterV3.Decode(content)
 
 	var expectedCrd OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
@@ -38,7 +39,7 @@ func TestTranslateMasterConfigLDAP(t *testing.T) {
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, ldapIDP)
 
-	resCrd, _, err := Translate(masterConfig.OAuthConfig)
+	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

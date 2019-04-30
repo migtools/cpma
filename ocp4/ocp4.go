@@ -1,6 +1,8 @@
 package ocp4
 
 import (
+	"errors"
+
 	"github.com/fusor/cpma/ocp4/oauth"
 	"github.com/fusor/cpma/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -16,6 +18,8 @@ type Master struct {
 	Secrets []secrets.Secret
 }
 
+type Manifests []Manifest
+
 // Manifest holds a CRD object
 type Manifest struct {
 	Name string
@@ -29,25 +33,30 @@ const OCP4InstallMsg = `To install OCP4 run the installer as follow in order to 
 # Edit them if needed, then run installation:
 './openshift-install --dir $INSTALL_DIR  create cluster'`
 
-func (cluster *Cluster) Translate(masterconfig configv1.MasterConfig) {
-	oauth, secrets, err := oauth.Translate(masterconfig.OAuthConfig)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", masterconfig.OAuthConfig)
+func (ocp4Master *Master) Translate(ocp3Master configv1.MasterConfig) {
+	if ocp3Master.OAuthConfig != nil {
+		oauth, secrets, err := oauth.Translate(ocp3Master.OAuthConfig)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", ocp3Master.OAuthConfig)
+		}
+		ocp4Master.OAuth = *oauth
+		ocp4Master.Secrets = secrets
 	}
-	cluster.Master.OAuth = *oauth
-	cluster.Master.Secrets = secrets
 }
 
 // GenYAML returns the list of translated CRDs
-func (cluster *Cluster) GenYAML() []Manifest {
+func (ocp4Master *Master) GenYAML() ([]Manifest, error) {
 	var manifests []Manifest
-	manifest := Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: cluster.Master.OAuth.GenYAML()}
-	manifests = append(manifests, manifest)
+	if ocp4Master.OAuth.Kind != "" {
+		manifest := Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: ocp4Master.OAuth.GenYAML()}
+		manifests = append(manifests, manifest)
 
-	for _, secret := range cluster.Master.Secrets {
-		filename := "100_CPMA-cluster-config-secret-" + secret.Metadata.Name + ".yaml"
-		m := Manifest{Name: filename, CRD: secret.GenYAML()}
-		manifests = append(manifests, m)
+		for _, secret := range ocp4Master.Secrets {
+			filename := "100_CPMA-cluster-config-secret-" + secret.Metadata.Name + ".yaml"
+			m := Manifest{Name: filename, CRD: secret.GenYAML()}
+			manifests = append(manifests, m)
+		}
+		return manifests, nil
 	}
-	return manifests
+	return nil, errors.New("No manifests")
 }

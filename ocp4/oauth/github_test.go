@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,10 +11,11 @@ import (
 )
 
 func TestTranslateMasterConfigGithub(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../../test/oauth/github-test-master-config.yaml",
-	}
-	masterConfig := testConfig.ParseMaster()
+	file := "../../test/oauth/github-test-master-config.yaml"
+	content, _ := ioutil.ReadFile(file)
+
+	masterV3 := ocp3.Master{}
+	masterV3.Decode(content)
 
 	var expectedCrd OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
@@ -35,7 +37,7 @@ func TestTranslateMasterConfigGithub(t *testing.T) {
 	githubIDP.GitHub.ClientSecret.Name = "github123456789-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, githubIDP)
 
-	resCrd, _, err := Translate(masterConfig.OAuthConfig)
+	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

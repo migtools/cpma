@@ -1,6 +1,7 @@
 package ocp4
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,29 +10,31 @@ import (
 )
 
 func TestClusterTranslate(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../test/common-test-master-config.yaml",
-	}
-	parsedTestConfig := testConfig.ParseMaster()
-	clusterV4 := Cluster{}
-	clusterV4.Translate(parsedTestConfig)
+	masterV4 := Master{}
+	file := "../test/common-test-master-config.yaml"
+	content, _ := ioutil.ReadFile(file)
 
-	assert.Equal(t, "cluster", clusterV4.Master.OAuth.Metadata.Name)
-	assert.Equal(t, 2, len(clusterV4.Master.OAuth.Spec.IdentityProviders))
+	masterV3 := ocp3.Master{}
+	masterV3.Decode(content)
+	masterV4.Translate(masterV3.Config)
 
-	assert.Equal(t, 2, len(clusterV4.Master.Secrets))
-	assert.Equal(t, "htpasswd_auth-secret", clusterV4.Master.Secrets[0].Metadata.Name)
-	assert.Equal(t, "github123456789-secret", clusterV4.Master.Secrets[1].Metadata.Name)
+	assert.Equal(t, "cluster", masterV4.OAuth.Metadata.Name)
+	assert.Equal(t, 2, len(masterV4.OAuth.Spec.IdentityProviders))
+
+	assert.Equal(t, 2, len(masterV4.Secrets))
+	assert.Equal(t, "htpasswd_auth-secret", masterV4.Secrets[0].Metadata.Name)
+	assert.Equal(t, "github123456789-secret", masterV4.Secrets[1].Metadata.Name)
 }
 
 func TestClusterGenYaml(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../test/common-test-master-config.yaml",
-	}
-	parsedTestConfig := testConfig.ParseMaster()
-	clusterV4 := Cluster{}
-	clusterV4.Translate(parsedTestConfig)
-	manifests := clusterV4.GenYAML()
+	masterV4 := Master{}
+	file := "../test/common-test-master-config.yaml"
+	content, _ := ioutil.ReadFile(file)
+
+	masterV3 := ocp3.Master{}
+	masterV3.Decode(content)
+	masterV4.Translate(masterV3.Config)
+	manifests, _ := masterV4.GenYAML()
 
 	// Test manifest names
 	assert.Equal(t, "100_CPMA-cluster-config-oauth.yaml", manifests[0].Name)

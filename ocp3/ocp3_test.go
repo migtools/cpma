@@ -1,17 +1,18 @@
 package ocp3
 
 import (
+	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/env"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConfigParseMaster(t *testing.T) {
-	testConfig := Config{
-		Masterf: "../test/common-test-master-config.yaml",
-	}
+func TestConfigDecodeMaster(t *testing.T) {
+	master := Master{}
+	file := "../test/common-test-master-config.yaml"
+
+	content, _ := ioutil.ReadFile(file)
 
 	expectedMasterConfig := configv1.MasterConfig{
 		AuthConfig: configv1.MasterAuthConfig{
@@ -36,7 +37,8 @@ func TestConfigParseMaster(t *testing.T) {
 		},
 	}
 
-	resMasterConfig := testConfig.ParseMaster()
+	master.Decode(content)
+	resMasterConfig := master.Config
 
 	assert.Equal(t, expectedMasterConfig.AuthConfig.RequestHeader.ClientCA, resMasterConfig.AuthConfig.RequestHeader.ClientCA)
 	assert.Equal(t, expectedMasterConfig.EtcdClientInfo.CA, resMasterConfig.EtcdClientInfo.CA)
@@ -44,24 +46,4 @@ func TestConfigParseMaster(t *testing.T) {
 	assert.Equal(t, expectedMasterConfig.OAuthConfig.MasterURL, resMasterConfig.OAuthConfig.MasterURL)
 	assert.Equal(t, expectedMasterConfig.OAuthConfig.IdentityProviders[0].Name, resMasterConfig.OAuthConfig.IdentityProviders[0].Name)
 	assert.Equal(t, expectedMasterConfig.OAuthConfig.IdentityProviders[1].Name, resMasterConfig.OAuthConfig.IdentityProviders[1].Name)
-}
-
-func TestNewConfig(t *testing.T) {
-	// Init config with default master and node config paths
-	config := New()
-
-	assert.Equal(t, &Config{
-		Masterf: "/etc/origin/master/master-config.yaml",
-		Nodef:   "/etc/origin/node/node-config.yaml",
-	}, config)
-
-	// Init config with different master and node config paths
-	env.Config().Set("MasterConfigFile", "/test/path/master.yml")
-	env.Config().Set("NodeConfigFile", "/test/path/node.yml")
-
-	config = New()
-	assert.Equal(t, &Config{
-		Masterf: "/test/path/master.yml",
-		Nodef:   "/test/path/node.yml",
-	}, config)
 }

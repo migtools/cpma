@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,10 +11,11 @@ import (
 )
 
 func TestTranslateMasterConfigGoogle(t *testing.T) {
-	testConfig := ocp3.Config{
-		Masterf: "../../test/oauth/google-test-master-config.yaml",
-	}
-	masterConfig := testConfig.ParseMaster()
+	file := "../../test/oauth/google-test-master-config.yaml"
+	content, _ := ioutil.ReadFile(file)
+
+	masterV3 := ocp3.Master{}
+	masterV3.Decode(content)
 
 	var expectedCrd OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
@@ -32,7 +34,7 @@ func TestTranslateMasterConfigGoogle(t *testing.T) {
 	googleIDP.Google.HostedDomain = "test.example.com"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, googleIDP)
 
-	resCrd, _, err := Translate(masterConfig.OAuthConfig)
+	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

@@ -23,8 +23,7 @@ type Client struct {
 }
 
 // NewClient creates a new SFTP client
-func NewClient() Client {
-	source := env.Config().GetString("Source")
+func NewClient(source string) Client {
 	sshCreds := env.Config().GetStringMapString("SSHCreds")
 
 	key, err := ioutil.ReadFile(sshCreds["privatekey"])
@@ -80,7 +79,7 @@ func NewClient() Client {
 }
 
 // GetFile copies source file to destination file
-func (c *Client) GetFile(srcFilePath string, dstFilePath string) {
+func (c *Client) GetFile(srcFilePath string, dstFilePath string) (int64, error) {
 	srcFile, err := c.Open(srcFilePath)
 	if err != nil {
 		logrus.Fatal(err)
@@ -98,5 +97,17 @@ func (c *Client) GetFile(srcFilePath string, dstFilePath string) {
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	logrus.Printf("File %s: %d bytes copied", srcFilePath, bytes)
+	return bytes, err
+}
+
+// Fetch retrieves a file
+func Fetch(hostname, src, dst string) {
+	client := NewClient(hostname)
+	defer client.Close()
+
+	bytes, err := client.GetFile(src, dst)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	logrus.Printf("File %s:%s: %d bytes copied", hostname, src, bytes)
 }
