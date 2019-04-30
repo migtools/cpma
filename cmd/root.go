@@ -20,7 +20,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"time"
 
 	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/ocp3"
@@ -53,27 +52,22 @@ var rootCmd = &cobra.Command{
 		env.InitConfig()
 		env.InitLogger()
 
-		startTime := time.Now()
-		// Event loop to be interrupted by TimeOut flag or Ctrl+C
-		for elapsed := time.Duration(0); elapsed < env.Config().GetDuration("TimeOut"); elapsed = time.Now().Sub(startTime) {
-			logrus.Printf("Timeout in %s (Ctrl+C to stop)", env.Config().GetDuration("TimeOut")-elapsed)
-			// TODO: add survey to handle UI
-			ocp3config := ocp3.New()
-			ocp3config.Fetch()
-			mc := ocp3config.ParseMaster()
-			clusterV4 := ocp4.Cluster{}
-			clusterV4.Translate(mc)
-			manifests := clusterV4.GenYAML()
+		// TODO: add survey to handle UI
+		ocp3config := ocp3.New()
+		ocp3config.Fetch()
+		mc := ocp3config.ParseMaster()
+		clusterV4 := ocp4.Cluster{}
+		clusterV4.Translate(mc)
+		manifests := clusterV4.GenYAML()
 
-			// TODO: Add to pipeline as exit channel
-			for _, manifest := range manifests {
-				maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
-				os.MkdirAll(path.Dir(maniftestfile), 0755)
-				err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
-				logrus.Printf("CR manifest created: %s", maniftestfile)
-				if err != nil {
-					logrus.Panic(err)
-				}
+		// TODO: Add to pipeline as exit channel
+		for _, manifest := range manifests {
+			maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
+			os.MkdirAll(path.Dir(maniftestfile), 0755)
+			err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
+			logrus.Printf("CR manifest created: %s", maniftestfile)
+			if err != nil {
+				logrus.Panic(err)
 			}
 		}
 		fmt.Println(ocp4.OCP4InstallMsg)
