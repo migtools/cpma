@@ -1,0 +1,15 @@
+apiVersion: config.openshift.io/v1
+kind: OAuth
+spec:
+  identityProviders:
+    - name: github1234567
+      challenge: false
+      login: true
+      mappingMethod: claim
+      type: GitHub
+      github:
+        clientID: ac2f7812e12eef2c6267
+        clientSecret:
+          name: github-secret
+        organizations:
+          - blah
