@@ -100,8 +100,19 @@ out:
 
 // New instantiates and returns Config structure that represents OCP3 configuration
 func New() *Config {
+	masterf := env.Config().GetString("MasterConfigFile")
+	nodef := env.Config().GetString("NodeConfigFile")
+
+	if masterf == "" {
+		masterf = "/etc/origin/master/master-config.yaml"
+	}
+
+	if nodef == "" {
+		nodef = "/etc/origin/node/node-config.yaml"
+	}
+
 	return &Config{
-		Masterf: "/etc/origin/master/master-config.yaml",
-		Nodef:   "/etc/origin/node/node-config.yaml",
+		Masterf: masterf,
+		Nodef:   nodef,
 	}
 }

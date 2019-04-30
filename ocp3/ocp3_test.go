@@ -3,6 +3,7 @@ package ocp3
 import (
 	"testing"
 
+	"github.com/fusor/cpma/env"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
 )
@@ -46,10 +47,21 @@ func TestConfigParseMaster(t *testing.T) {
 }
 
 func TestNewConfig(t *testing.T) {
+	// Init config with default master and node config paths
 	config := New()
 
 	assert.Equal(t, &Config{
 		Masterf: "/etc/origin/master/master-config.yaml",
 		Nodef:   "/etc/origin/node/node-config.yaml",
+	}, config)
+
+	// Init config with different master and node config paths
+	env.Config().Set("MasterConfigFile", "/test/path/master.yml")
+	env.Config().Set("NodeConfigFile", "/test/path/node.yml")
+
+	config = New()
+	assert.Equal(t, &Config{
+		Masterf: "/test/path/master.yml",
+		Nodef:   "/test/path/node.yml",
 	}, config)
 }
