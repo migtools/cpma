@@ -21,9 +21,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
-
-	//"github.com/fusor/network"
 
 	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/internal/sftpclient"
@@ -56,7 +53,6 @@ var rootCmd = &cobra.Command{
 	Short: "Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x",
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
 	Run: func(cmd *cobra.Command, args []string) {
-		startTime := time.Now()
 		env.InitConfig()
 		env.InitLogger()
 
@@ -65,13 +61,12 @@ var rootCmd = &cobra.Command{
 		toTranslate := make(chan types.File)
 		manifests := make(chan ocp4.Manifest)
 
-		logrus.Printf("Timeout in %s (Ctrl+C to stop)", env.Config().GetDuration("TimeOut"))
+		var wg sync.WaitGroup
 
 		outputDir := env.Config().GetString("OutputDir")
 
-		// Communication Broker
 		// TODO: Ideally create a channel per host
-		go func() {
+		commBroker := func() {
 			for {
 				file := <-filestoFetch
 				logrus.Debugf("broker hostname: %v, file: %v\n", file.Hostname, file.Path)
@@ -87,10 +82,9 @@ var rootCmd = &cobra.Command{
 				file.Content = f
 				fetchedFiles <- file
 			}
-		}()
+		}
 
-		// OCP3 decoder
-		go func() {
+		OCP3Decoder := func() {
 			for {
 				file := <-fetchedFiles
 				logrus.Debugf("ocp3 decoder: %v\n", file.Path)
@@ -99,10 +93,9 @@ var rootCmd = &cobra.Command{
 					toTranslate <- file
 				}
 			}
-		}()
+		}
 
-		// OCP4 translator generates manifests
-		go func() {
+		OCP4Translator := func() {
 			for {
 				file := <-toTranslate
 				logrus.Debugf("ocp4 translator: %v\n", file.Path)
@@ -112,10 +105,9 @@ var rootCmd = &cobra.Command{
 					manifests <- crd
 				}
 			}
-		}()
+		}
 
-		// Directory Monitor
-		go func(dir string) {
+		dirMonitor := func(dir string) {
 			processedFiles := make([]types.File, 20)
 
 			err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -140,28 +132,26 @@ var rootCmd = &cobra.Command{
 				fmt.Printf("Error walking the path %q: %v\n", dir, err)
 				return
 			}
-		}(env.Config().GetString("OutputDir"))
+		}
 
-		for {
-			elapsed := time.Now().Sub(startTime)
-			select {
-			case manifest := <-manifests:
-				logrus.Debugf(fmt.Sprintf("manifests: %s", manifest.Name))
+		go commBroker()
+		go OCP3Decoder()
+		go OCP4Translator()
+		go dirMonitor(env.Config().GetString("OutputDir"))
 
-				maniftestfile := filepath.Join("manifests", manifest.Name)
-				os.MkdirAll(path.Dir(maniftestfile), 0755)
-				err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
-				logrus.Printf("CR manifest created: %s", maniftestfile)
-				if err != nil {
-					logrus.Panic(err)
-				}
+		for manifest := range manifests {
+			logrus.Debugf(fmt.Sprintf("manifests: %s", manifest.Name))
 
-			case <-time.After(env.Config().GetDuration("TimeOut") - elapsed):
-				fmt.Println("timeout")
-				fmt.Println(ocp4.OCP4InstallMsg)
-				os.Exit(0)
+			maniftestfile := filepath.Join("manifests", manifest.Name)
+			os.MkdirAll(path.Dir(maniftestfile), 0755)
+			err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
+			logrus.Printf("CR manifest created: %s", maniftestfile)
+			if err != nil {
+				logrus.Panic(err)
 			}
 		}
+		fmt.Println(ocp4.OCP4InstallMsg)
+		os.Exit(0)
 	},
 }
 
