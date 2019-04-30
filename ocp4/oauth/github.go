@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"encoding/base64"
+
 	"github.com/fusor/cpma/ocp4/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
