@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/internal/sftpclient"
+	"github.com/fusor/cpma/network/sftpclient"
 	"github.com/fusor/cpma/ocp3"
 	"github.com/fusor/cpma/ocp4"
 	"github.com/sirupsen/logrus"
