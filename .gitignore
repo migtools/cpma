@@ -8,6 +8,8 @@
 *.so
 *.dylib
 *.log.json
+*.swo
+*.swp
 cpma
 
 # Standard and 3rd party lib ignored - use go tool to regenerate

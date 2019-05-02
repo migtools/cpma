@@ -9,39 +9,32 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-// reference:
-// https://docs.openshift.com/container-platform/3.11/install_config/master_node_configuration.html
-
-// TODO: we may want to be OCP3 minor version aware here
-
-// Config represents OCP3 configuration
-
-type Cluster struct {
-	Master Master
-	Node   Node
-}
-
-type Master struct {
-	Config configv1.MasterConfig
-}
-
-type Node struct {
-	Config configv1.NodeConfig
-}
-
 func init() {
 	configv1.InstallLegacy(scheme.Scheme)
 }
 
-// Decode unmarshals OCP3
-func (master *Master) Decode(content []byte) {
-	var masterConfig configv1.MasterConfig
-	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+func (cluster *Cluster) Decode(configFile ConfigFile) {
+	switch configFile.Type {
+	case "master":
+		cluster.DecodeOpenshiftMaster(configFile.Content)
+	case "node":
+		cluster.DecodeOpenshiftNode(configFile.Content)
+	}
+}
 
-	_, _, err := serializer.Decode(content, nil, &masterConfig)
+func (cluster *Cluster) DecodeOpenshiftMaster(content []byte) {
+
+	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	_, _, err := serializer.Decode(content, nil, &cluster.MasterConfig)
 	if err != nil {
 		logrus.Fatal(err)
 	}
+}
 
-	master.Config = masterConfig
+func (cluster *Cluster) DecodeOpenshiftNode(content []byte) {
+	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	_, _, err := serializer.Decode(content, nil, &cluster.NodeConfig)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }

@@ -1,8 +1,9 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	//configv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -49,8 +50,8 @@ type MetaData struct {
 var APIVersion = "config.openshift.io/v1"
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, error) {
-	var auth = oauthconfig.DeepCopy()
+func Translate(OCP3Cluster ocp3.Cluster) (*OAuthCRD, []secrets.Secret, error) {
+	//var auth = oauthconfig.DeepCopy()
 	var err error
 
 	var oauthCrd OAuthCRD
@@ -66,13 +67,13 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 	var keySercret secrets.Secret
 
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	for _, p := range auth.IdentityProviders {
+	for _, p := range OCP3Cluster.IdentityProviders {
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		switch kind := p.Provider.Object.GetObjectKind().GroupVersionKind().Kind; kind {
+		switch p.Kind {
 		case "GitHubIdentityProvider":
 			idP, secret = buildGitHubIP(serializer, p)
 		case "GitLabIdentityProvider":
@@ -96,7 +97,8 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 			secretsSlice = append(secretsSlice, certSecret)
 			secretsSlice = append(secretsSlice, keySercret)
 		default:
-			logrus.Infof("Can't handle %s OAuth kind", kind)
+			logrus.Infof("Can't handle %s OAuth kind", p.Kind)
+			continue
 		}
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 		secretsSlice = append(secretsSlice, secret)

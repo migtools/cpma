@@ -1,38 +1,31 @@
 package ocp
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 
-	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/internal/sftpclient"
 	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4"
+	"github.com/fusor/cpma/pkg/sftpclient"
 	"github.com/sirupsen/logrus"
 )
 
-type Config struct {
-	Hostname string
-	Path     string
-	Content  []byte
-	OCP3     ocp3.Cluster
-	OCP4     ocp4.Cluster
-}
+const MasterConfigFile = "/etc/origin/master/master-config.yaml"
+const NodeConfigFile = "/etc/origin/node/node-config.yaml"
+const ETCDConfigFile = "/etc/etcd/etcd.conf"
 
-// Decode unmarshals OCP3
-func (config *Config) Decode() {
-	config.OCP3.Master.Decode(config.Content)
-	// TODO: Keep for when adding Node
-	//config.OCP3.DecodeNode(config.Content)
+func (migration *Migration) Decode(configFile ocp3.ConfigFile) {
+	migration.OCP3Cluster.Decode(configFile)
 }
 
 // GenYAML returns the list of translated CRDs
-func (config *Config) GenYAML() ocp4.Manifests {
+func (migration *Migration) GenYAML() ocp4.Manifests {
 	var manifests ocp4.Manifests
 
-	masterManifests, err := config.OCP4.Master.GenYAML()
+	masterManifests, err := migration.OCP4Cluster.Master.GenYAML()
 	if err != nil {
 		return nil
 	}
@@ -43,9 +36,9 @@ func (config *Config) GenYAML() ocp4.Manifests {
 }
 
 // DumpManifests creates OCDs files
-func (config *Config) DumpManifests(outputDir string, manifests []ocp4.Manifest) {
+func (migration *Migration) DumpManifests(manifests []ocp4.Manifest) {
 	for _, manifest := range manifests {
-		maniftestfile := filepath.Join(outputDir, "manifests", manifest.Name)
+		maniftestfile := filepath.Join(migration.OutputDir, "manifests", manifest.Name)
 		os.MkdirAll(path.Dir(maniftestfile), 0755)
 		err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
 		logrus.Printf("CR manifest created: %s", maniftestfile)
@@ -56,41 +49,61 @@ func (config *Config) DumpManifests(outputDir string, manifests []ocp4.Manifest)
 }
 
 // Fetch retrieves file from Host
-func (config *Config) Fetch(outputDir string) {
-	dst := filepath.Join(outputDir, config.Hostname, config.Path)
-	sftpclient.Fetch(config.Hostname, config.Path, dst)
+func (migration *Migration) Fetch(configFile *ocp3.ConfigFile) {
+	dst := filepath.Join(migration.OutputDir, migration.OCP3Cluster.Hostname, configFile.Path)
+	sftpclient.Fetch(migration.OCP3Cluster.Hostname, configFile.Path, dst)
 
-	f, err := ioutil.ReadFile(filepath.Join(outputDir, config.Hostname, config.Path))
+	f, err := ioutil.ReadFile(filepath.Join(migration.OutputDir, migration.OCP3Cluster.Hostname, configFile.Path))
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Warning(err)
 	}
-	config.Content = f
+	configFile.Content = f
+}
+
+func (migration *Migration) LoadOCP3Configs() {
+	// Get master config so we can start figuring out what additional files we need
+	masterConfig := ocp3.ConfigFile{"master", "/etc/origin/master/master-config.yaml", nil}
+	migration.Fetch(&masterConfig)
+	migration.Decode(masterConfig)
+
+	// Start compiling a list of additional files to retrieve
+	configFiles := []ocp3.ConfigFile{}
+	configFiles = append(configFiles, ocp3.ConfigFile{"node", "/etc/origin/node/node-config.yaml", nil})
+	configFiles = append(configFiles, ocp3.ConfigFile{"etcd", "/etc/etcd/etcd.conf", nil})
+	//configFiles = append(configFiles, ocp3.ConfigFile{"crio", "/etc/crio/crio.conf", nil})
+
+	for _, identityProvider := range migration.OCP3Cluster.MasterConfig.OAuthConfig.IdentityProviders {
+		providerJSON, _ := identityProvider.Provider.MarshalJSON()
+		provider := Provider{}
+		json.Unmarshal(providerJSON, &provider)
+		var HTFile ocp3.ConfigFile
+		if provider.Kind == "HTPasswdPasswordIdentityProvider" {
+			HTFile = (ocp3.ConfigFile{"htpasswd", provider.File, nil})
+			migration.Fetch(&HTFile)
+		}
+
+		migration.OCP3Cluster.IdentityProviders = append(migration.OCP3Cluster.IdentityProviders,
+			ocp3.IdentityProvider{
+				provider.Kind,
+				provider.APIVersion,
+				identityProvider.MappingMethod,
+				identityProvider.Name,
+				identityProvider.Provider,
+				HTFile.Path,
+				HTFile.Content,
+				identityProvider.UseAsChallenger,
+				identityProvider.UseAsLogin,
+			})
+	}
+
+	for _, configFile := range configFiles {
+		migration.Fetch(&configFile)
+		migration.Decode(configFile)
+	}
+
 }
 
 // Translate OCP3 to OCP4
-func (config *Config) Translate() {
-	config.OCP4.Master.Translate(config.OCP3.Master.Config)
-	// TODO: Keep for when adding Node
-	//config.OCP4.Node.Translate(config.OCP3.Node.Config)
-}
-
-func (config *Config) AddMaster(hostname string) {
-	masterf := env.Config().GetString("MasterConfigFile")
-
-	if masterf == "" {
-		masterf = "/etc/origin/master/master-config.yaml"
-	}
-	config.Hostname = hostname
-	config.Path = masterf
-}
-
-func (config *Config) AddNode(hostname string) {
-	nodef := env.Config().GetString("NodeConfigFile")
-
-	if nodef == "" {
-		nodef = "/etc/origin/node/node-config.yaml"
-	}
-
-	config.Hostname = hostname
-	config.Path = nodef
+func (migration *Migration) Translate() {
+	migration.OCP4Cluster.Master.Translate(migration.OCP3Cluster)
 }

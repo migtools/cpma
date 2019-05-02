@@ -5,6 +5,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
@@ -26,7 +27,7 @@ type identityProviderKeystone struct {
 	} `yaml:"keystone"`
 }
 
-func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (identityProviderKeystone, secrets.Secret, secrets.Secret) {
+func buildKeystoneIP(serializer *json.Serializer, p ocp3.IdentityProvider) (identityProviderKeystone, secrets.Secret, secrets.Secret) {
 	var idP identityProviderKeystone
 	var keystone configv1.KeystonePasswordIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &keystone)

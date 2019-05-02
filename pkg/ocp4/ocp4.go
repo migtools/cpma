@@ -3,9 +3,10 @@ package ocp4
 import (
 	"errors"
 
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/oauth"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	//configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,11 +34,11 @@ const OCP4InstallMsg = `To install OCP4 run the installer as follow in order to 
 # Edit them if needed, then run installation:
 './openshift-install --dir $INSTALL_DIR  create cluster'`
 
-func (ocp4Master *Master) Translate(ocp3Master configv1.MasterConfig) {
-	if ocp3Master.OAuthConfig != nil {
-		oauth, secrets, err := oauth.Translate(ocp3Master.OAuthConfig)
+func (ocp4Master *Master) Translate(cluster ocp3.Cluster) {
+	if cluster.MasterConfig.OAuthConfig != nil {
+		oauth, secrets, err := oauth.Translate(cluster)
 		if err != nil {
-			logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", ocp3Master.OAuthConfig)
+			logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", cluster.MasterConfig.OAuthConfig)
 		}
 		ocp4Master.OAuth = *oauth
 		ocp4Master.Secrets = secrets

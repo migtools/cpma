@@ -15,12 +15,12 @@
 package cmd
 
 import (
-	"path"
-
+	"fmt"
 	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/pkg/ocp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"path"
 )
 
 func init() {
@@ -47,22 +47,18 @@ var rootCmd = &cobra.Command{
 		env.InitConfig()
 		env.InitLogger()
 
-		source := env.Config().GetString("Source")
-		outputDir := env.Config().GetString("OutputDir")
+		migration := ocp.Migration{}
+		migration.OutputDir = env.Config().GetString("OutputDir")
+		migration.OCP3Cluster.Hostname = env.Config().GetString("Source")
 
-		configs := []ocp.Config{}
+		migration.LoadOCP3Configs()
 
-		ocpMaster := ocp.Config{}
-		ocpNode := ocp.Config{}
-		ocpMaster.AddMaster(source)
-		ocpNode.AddNode(source)
-		configs = append(configs, ocpMaster, ocpNode)
+		migration.Translate()
+		migration.DumpManifests(migration.GenYAML())
 
-		for _, config := range configs {
-			config.Fetch(outputDir)
-			config.Decode()
-			config.Translate()
-			config.DumpManifests(outputDir, config.GenYAML())
+		fmt.Printf("%s\n", migration.OCP3Cluster.MasterConfig.Kind)
+		for _, provider := range migration.OCP3Cluster.IdentityProviders {
+			fmt.Printf("%s\n", provider.Kind)
 		}
 	},
 }
