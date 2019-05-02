@@ -4,7 +4,13 @@ Control Plane Migration Assistance:  Intended to help migration cluster configur
 
 # Build
 
+Tested on go 1.12.4
+
+This project is Go Modules for managing dependencies. This means it can be cloned and compiled outside of GOPATH.
+
 ```console
+$ git checkout https://github.com/fusor/cpma.git
+$ cd cpma
 $ make
 $ ./bin/cpma
 ```
