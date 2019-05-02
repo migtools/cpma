@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/fusor/cpma/ocp3"
+	"github.com/fusor/cpma/pkg/ocp3"
 )
 
 func TestTranslateMasterConfig(t *testing.T) {
-	file := "../../test/oauth/bulk-test-master-config.yaml"
+	file := "testdata/bulk-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
 	masterV3 := ocp3.Master{}
@@ -31,7 +31,7 @@ func TestTranslateMasterConfig(t *testing.T) {
 }
 
 func TestGenYAML(t *testing.T) {
-	file := "../../test/oauth/htpasswd-test-master-config.yaml"
+	file := "testdata/htpasswd-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
 	masterV3 := ocp3.Master{}

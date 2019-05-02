@@ -1,7 +1,7 @@
 package oauth
 
 import (
-	"github.com/fusor/cpma/ocp4/secrets"
+	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
