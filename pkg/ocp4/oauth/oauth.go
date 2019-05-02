@@ -1,6 +1,9 @@
 package oauth
 
 import (
+	"io/ioutil"
+
+	"github.com/fusor/cpma/internal/sftpclient"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
@@ -46,7 +49,20 @@ type MetaData struct {
 	NameSpace string `yaml:"namespace"`
 }
 
-var APIVersion = "config.openshift.io/v1"
+var (
+	APIVersion = "config.openshift.io/v1"
+	GetFile    = FetchFile
+)
+
+// FetchFile provides remote file retrieval
+func FetchFile(host, src, dst string) []byte {
+	sftpclient.Fetch(host, src, dst)
+	f, err := ioutil.ReadFile(dst)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	return f
+}
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
 func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, error) {

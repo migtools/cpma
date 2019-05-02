@@ -10,6 +10,9 @@ import (
 )
 
 func TestTranslateMasterConfigKeystone(t *testing.T) {
+	defer func() { GetFile = _GetFile }()
+	GetFile = mockGetFile
+
 	file := "testdata/keystone-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
