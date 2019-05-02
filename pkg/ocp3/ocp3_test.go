@@ -10,7 +10,7 @@ import (
 
 func TestConfigDecodeMaster(t *testing.T) {
 	master := Master{}
-	file := "../test/common-test-master-config.yaml"
+	file := "../testdata/common-test-master-config.yaml"
 
 	content, _ := ioutil.ReadFile(file)
 

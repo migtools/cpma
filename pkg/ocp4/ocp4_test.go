@@ -6,12 +6,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/fusor/cpma/ocp3"
+	"github.com/fusor/cpma/pkg/ocp3"
 )
 
 func TestClusterTranslate(t *testing.T) {
 	masterV4 := Master{}
-	file := "../test/common-test-master-config.yaml"
+	file := "../testdata/common-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
 	masterV3 := ocp3.Master{}
@@ -28,7 +28,7 @@ func TestClusterTranslate(t *testing.T) {
 
 func TestClusterGenYaml(t *testing.T) {
 	masterV4 := Master{}
-	file := "../test/common-test-master-config.yaml"
+	file := "../testdata/common-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
 	masterV3 := ocp3.Master{}

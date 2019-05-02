@@ -10,7 +10,7 @@ import (
 )
 
 func TestInitConfig(t *testing.T) {
-	ConfigFile = "../test/test-cpma-config.yml"
+	ConfigFile = "testdata/test-cpma-config.yml"
 	InitConfig()
 
 	expectedHomeDir, _ := homedir.Dir()

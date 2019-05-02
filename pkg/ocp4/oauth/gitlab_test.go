@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/fusor/cpma/ocp3"
+	"github.com/fusor/cpma/pkg/ocp3"
 )
 
 func TestTranslateMasterConfigGitlab(t *testing.T) {
-	file := "../../test/oauth/gitlab-test-master-config.yaml"
+	file := "testdata/gitlab-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
 	masterV3 := ocp3.Master{}

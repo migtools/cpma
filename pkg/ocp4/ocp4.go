@@ -3,8 +3,8 @@ package ocp4
 import (
 	"errors"
 
-	"github.com/fusor/cpma/ocp4/oauth"
-	"github.com/fusor/cpma/ocp4/secrets"
+	"github.com/fusor/cpma/pkg/ocp4/oauth"
+	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
 )

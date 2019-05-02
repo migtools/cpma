@@ -4,13 +4,13 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/ocp3"
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestTranslateMasterConfigHtpasswd(t *testing.T) {
-	file := "../../test/oauth/htpasswd-test-master-config.yaml"
+	file := "testdata/htpasswd-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
 	masterV3 := ocp3.Master{}

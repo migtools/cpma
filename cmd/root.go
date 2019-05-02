@@ -18,7 +18,7 @@ import (
 	"path"
 
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/ocp"
+	"github.com/fusor/cpma/pkg/ocp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

@@ -3,7 +3,7 @@ package oauth
 import (
 	"encoding/base64"
 
-	"github.com/fusor/cpma/ocp4/secrets"
+	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
