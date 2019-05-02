@@ -1,9 +1,9 @@
 package oauth
 
 import (
-	"github.com/fusor/cpma/internal/io"
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	//configv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -47,38 +47,28 @@ type MetaData struct {
 	NameSpace string `yaml:"namespace"`
 }
 
-var (
-	APIVersion = "config.openshift.io/v1"
-	// GetFile allows to mock file retrieval
-	GetFile = io.GetFile
-)
+var APIVersion = "config.openshift.io/v1"
 
-// Transform converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Transform(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, error) {
-	var auth = oauthconfig.DeepCopy()
+// Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
+func Translate(identityProviders []ocp3.IdentityProvider) (*OAuthCRD, []secrets.Secret, error) {
 	var err error
-
+	var idP interface{}
+	var secretsSlice []secrets.Secret
+	var secret, certSecret, keySercret secrets.Secret
 	var oauthCrd OAuthCRD
 	oauthCrd.APIVersion = APIVersion
 	oauthCrd.Kind = "OAuth"
 	oauthCrd.Metadata.Name = "cluster"
 	oauthCrd.Metadata.NameSpace = "openshift-config"
 
-	var idP interface{}
-	var secretsSlice []secrets.Secret
-
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	for _, p := range auth.IdentityProviders {
-		secret := secrets.Secret{}
-		certSecret := secrets.Secret{}
-		keySecret := secrets.Secret{}
-
+	for _, p := range identityProviders {
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		switch kind := p.Provider.Object.GetObjectKind().GroupVersionKind().Kind; kind {
+		switch p.Kind {
 		case "GitHubIdentityProvider":
 			idP, secret = buildGitHubIP(serializer, p)
 		case "GitLabIdentityProvider":
@@ -94,26 +84,20 @@ func Transform(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 		case "LDAPPasswordIdentityProvider":
 			idP = buildLdapIP(serializer, p)
 		case "KeystonePasswordIdentityProvider":
-			idP, certSecret, keySecret = buildKeystoneIP(serializer, p)
-			if certSecret != (secrets.Secret{}) {
-				secretsSlice = append(secretsSlice, certSecret)
-				secretsSlice = append(secretsSlice, keySecret)
-			}
+			idP, certSecret, keySercret = buildKeystoneIP(serializer, p)
+			secretsSlice = append(secretsSlice, certSecret)
+			secretsSlice = append(secretsSlice, keySercret)
 		case "BasicAuthPasswordIdentityProvider":
-			idP, certSecret, keySecret = buildBasicAuthIP(serializer, p)
-			if certSecret != (secrets.Secret{}) {
-				secretsSlice = append(secretsSlice, certSecret)
-				secretsSlice = append(secretsSlice, keySecret)
-			}
+			idP, certSecret, keySercret = buildBasicAuthIP(serializer, p)
+			secretsSlice = append(secretsSlice, certSecret)
+			secretsSlice = append(secretsSlice, keySercret)
 		default:
-			logrus.Infof("Can't handle %s OAuth kind", kind)
+			logrus.Infof("Can't handle %s OAuth kind", p.Kind)
+			continue
 		}
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-		if secret != (secrets.Secret{}) {
-			secretsSlice = append(secretsSlice, secret)
-		}
+		secretsSlice = append(secretsSlice, secret)
 	}
-
 	return &oauthCrd, secretsSlice, nil
 }
 

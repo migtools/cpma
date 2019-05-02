@@ -3,13 +3,14 @@ package oauth
 import (
 	"encoding/base64"
 
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-type IdentityProviderGitHub struct {
+type identityProviderGitHub struct {
 	identityProviderCommon `yaml:",inline"`
 	GitHub                 struct {
 		HostName string `yaml:"hostname"`
@@ -25,8 +26,8 @@ type IdentityProviderGitHub struct {
 	} `yaml:"github"`
 }
 
-func buildGitHubIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderGitHub, secrets.Secret) {
-	var idP IdentityProviderGitHub
+func buildGitHubIP(serializer *json.Serializer, p ocp3.IdentityProvider) (identityProviderGitHub, secrets.Secret) {
+	var idP identityProviderGitHub
 	var github configv1.GitHubIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &github)
 

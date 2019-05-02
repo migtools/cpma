@@ -1,13 +1,13 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-type IdentityProviderGitLab struct {
+type identityProviderGitLab struct {
 	identityProviderCommon `yaml:",inline"`
 	GitLab                 struct {
 		URL string `yaml:"url"`
@@ -21,8 +21,8 @@ type IdentityProviderGitLab struct {
 	} `yaml:"gitlab"`
 }
 
-func buildGitLabIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderGitLab, secrets.Secret) {
-	var idP IdentityProviderGitLab
+func buildGitLabIP(serializer *json.Serializer, p ocp3.IdentityProvider) (identityProviderGitLab, secrets.Secret) {
+	var idP identityProviderGitLab
 	var gitlab configv1.GitLabIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &gitlab)
 

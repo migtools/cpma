@@ -2,16 +2,13 @@ package oauth
 
 import (
 	"encoding/base64"
-	"path/filepath"
 
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
-	"github.com/fusor/cpma/env"
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-type IdentityProviderHTPasswd struct {
+type identityProviderHTPasswd struct {
 	identityProviderCommon `yaml:",inline"`
 	HTPasswd               struct {
 		FileData struct {
@@ -20,27 +17,19 @@ type IdentityProviderHTPasswd struct {
 	} `yaml:"htpasswd"`
 }
 
-func buildHTPasswdIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderHTPasswd, secrets.Secret) {
-	var idP IdentityProviderHTPasswd
-	var htpasswd configv1.HTPasswdPasswordIdentityProvider
-	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
+func buildHTPasswdIP(serializer *json.Serializer, p ocp3.IdentityProvider) (identityProviderHTPasswd, secrets.Secret) {
+	var idP identityProviderHTPasswd
 
 	idP.Name = p.Name
 	idP.Type = "HTPasswd"
 	idP.Challenge = p.UseAsChallenger
 	idP.Login = p.UseAsLogin
 	idP.MappingMethod = p.MappingMethod
-	idP.HTPasswd.FileData.Name = htpasswd.File
+	idP.HTPasswd.FileData.Name = p.HTFileName
 
 	secretName := p.Name + "-secret"
 	idP.HTPasswd.FileData.Name = secretName
-
-	host := env.Config().GetString("Source")
-	src := filepath.Join(htpasswd.File)
-	dst := filepath.Join(env.Config().GetString("OutputDir"), host, htpasswd.File)
-	f := GetFile(host, src, dst)
-
-	encoded := base64.StdEncoding.EncodeToString(f)
+	encoded := base64.StdEncoding.EncodeToString(p.HTFileData)
 	secret := secrets.GenSecret(secretName, encoded, "openshift-config", "htpasswd")
 
 	return idP, *secret

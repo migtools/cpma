@@ -3,10 +3,11 @@ package oauth
 import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
+	"github.com/fusor/cpma/pkg/ocp3"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-type IdentityProviderRequestHeader struct {
+type identityProviderRequestHeader struct {
 	identityProviderCommon `yaml:",inline"`
 	RequestHeader          struct {
 		ChallengeURL string `yaml:"challengeURL"`
@@ -22,8 +23,8 @@ type IdentityProviderRequestHeader struct {
 	} `yaml:"requestHeader"`
 }
 
-func buildRequestHeaderIP(serializer *json.Serializer, p configv1.IdentityProvider) IdentityProviderRequestHeader {
-	var idP IdentityProviderRequestHeader
+func buildRequestHeaderIP(serializer *json.Serializer, p ocp3.IdentityProvider) identityProviderRequestHeader {
+	var idP identityProviderRequestHeader
 	var requestHeader configv1.RequestHeaderIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &requestHeader)
 

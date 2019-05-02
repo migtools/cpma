@@ -15,12 +15,12 @@
 package cmd
 
 import (
-	"path"
-
+	"fmt"
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/pkg/migration"
+	"github.com/fusor/cpma/pkg/ocp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"path"
 )
 
 func init() {
@@ -47,7 +47,19 @@ var rootCmd = &cobra.Command{
 		env.InitConfig()
 		env.InitLogger()
 
-		migration.Start()
+		config := ocp.Config{}
+		config.OutputDir = env.Config().GetString("OutputDir")
+		config.Hostname = env.Config().GetString("Source")
+		config.MasterConfigFile = ocp.MasterConfigFile
+		transformRunner := ocp.NewTransformRunner(config)
+
+		if err := transformRunner.Run([]ocp.Transform{
+			ocp.OAuthTransform{
+				Config: &config,
+			},
+		}); err != nil {
+			fmt.Printf("%s", err.Error())
+		}
 	},
 }
 

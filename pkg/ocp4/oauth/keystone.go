@@ -2,17 +2,15 @@ package oauth
 
 import (
 	"encoding/base64"
-	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
-	"github.com/fusor/cpma/env"
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
-	"github.com/sirupsen/logrus"
 )
 
-type IdentityProviderKeystone struct {
+type identityProviderKeystone struct {
 	identityProviderCommon `yaml:",inline"`
 	Keystone               struct {
 		DomainName string `yaml:"domainName"`
@@ -29,14 +27,9 @@ type IdentityProviderKeystone struct {
 	} `yaml:"keystone"`
 }
 
-func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret) {
-	var (
-		idP        IdentityProviderKeystone
-		keystone   configv1.KeystonePasswordIdentityProvider
-		certSecret = new(secrets.Secret)
-		keySecret  = new(secrets.Secret)
-	)
-
+func buildKeystoneIP(serializer *json.Serializer, p ocp3.IdentityProvider) (identityProviderKeystone, secrets.Secret, secrets.Secret) {
+	var idP identityProviderKeystone
+	var keystone configv1.KeystonePasswordIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &keystone)
 
 	idP.Type = "Keystone"
@@ -48,30 +41,20 @@ func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (
 	idP.Keystone.URL = keystone.URL
 	idP.Keystone.CA.Name = keystone.CA
 
-	if keystone.UseKeystoneIdentity {
-		logrus.Warn("Keystone useKeystoneIdentity value is not supported in OCP4")
-	}
+	certSecretName := p.Name + "-client-cert-secret"
+	idP.Keystone.TLSClientCert.Name = certSecretName
 
-	if keystone.CertFile != "" {
-		outputDir := env.Config().GetString("OutputDir")
-		host := env.Config().GetString("Source")
+	// TODO: Fetch cert and key
+	certFile := "456This is pretend content"
+	encoded := base64.StdEncoding.EncodeToString([]byte(certFile))
+	certSecret := secrets.GenSecret(certSecretName, encoded, "openshift-config", "keystone")
 
-		certSecretName := p.Name + "-client-cert-secret"
-		idP.Keystone.TLSClientCert.Name = certSecretName
-		src := filepath.Join(keystone.KeyFile)
-		dst := filepath.Join(outputDir, host, keystone.CertFile)
-		certFile := GetFile(host, src, dst)
-		encoded := base64.StdEncoding.EncodeToString([]byte(certFile))
-		certSecret = secrets.GenSecret(certSecretName, encoded, "openshift-config", "keystone")
+	keySecretName := p.Name + "-client-key-secret"
+	idP.Keystone.TLSClientKey.Name = keySecretName
 
-		keySecretName := p.Name + "-client-key-secret"
-		idP.Keystone.TLSClientKey.Name = keySecretName
-		src = filepath.Join(keystone.KeyFile)
-		dst = filepath.Join(outputDir, host, keystone.KeyFile)
-		keyFile := GetFile(host, src, dst)
-		encoded = base64.StdEncoding.EncodeToString([]byte(keyFile))
-		keySecret = secrets.GenSecret(keySecretName, encoded, "openshift-config", "keystone")
-	}
+	keyFile := "123This is pretend content"
+	encoded = base64.StdEncoding.EncodeToString([]byte(keyFile))
+	keySecret := secrets.GenSecret(keySecretName, encoded, "openshift-config", "keystone")
 
 	return idP, *certSecret, *keySecret
 }
