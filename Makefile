@@ -1,6 +1,8 @@
 .PHONY: build clean test help default ci
 
 BIN_NAME=cpma
+SOURCES:=$(shell find . -name '*.go')
+SOURCE_DIRS=cmd pkg internal
 
 default: build
 
@@ -25,3 +27,11 @@ ci: build test
 test:
 	go test ./...
 
+lint: ## Run golint
+	@golint -set_exit_status $(addsuffix /... , $(SOURCE_DIRS))
+
+fmt: ## Run go fmt
+	@gofmt -d $(SOURCES)
+
+fmtcheck: ## Check go formatting
+	@gofmt -l $(SOURCES) | grep ".*\.go"; if [ "$$?" = "0" ]; then exit 1; fi
