@@ -21,20 +21,6 @@ func (migration *Migration) Decode(configFile ocp3.ConfigFile) {
 	migration.OCP3Cluster.Decode(configFile)
 }
 
-// GenYAML returns the list of translated CRDs
-func (migration *Migration) GenYAML() ocp4.Manifests {
-	var manifests ocp4.Manifests
-
-	masterManifests, err := migration.OCP4Cluster.Master.GenYAML()
-	if err != nil {
-		return nil
-	}
-	for _, manifest := range masterManifests {
-		manifests = append(manifests, manifest)
-	}
-	return manifests
-}
-
 // DumpManifests creates OCDs files
 func (migration *Migration) DumpManifests(manifests []ocp4.Manifest) {
 	for _, manifest := range manifests {
@@ -75,9 +61,9 @@ type TransformOutput interface {
 	Flush() error
 }
 
-func (f FileTransformOutput) Flush() error {
+func (m ManifestTransformOutput) Flush() error {
 	fmt.Println("Writing file data:")
-	fmt.Printf("%s", f.FileData)
+	m.Migration.DumpManifests(m.Manifests)
 	return nil
 }
 
@@ -123,4 +109,8 @@ func LoadConfig() Config {
 
 	fmt.Println("Loaded config")
 	return config
+}
+
+func HandleError(err error) error {
+	return fmt.Errorf("An error has occurred: %s", err)
 }

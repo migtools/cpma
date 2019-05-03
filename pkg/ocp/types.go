@@ -23,13 +23,9 @@ type Config struct {
 	RunnerConfig     string
 }
 
-type FileTransformOutput struct {
-	FileData string
-}
-
-type MasterConfigTransform struct {
-	ConfigFile *ocp3.ConfigFile
-	Migration  *Migration
+type ManifestTransformOutput struct {
+	Migration Migration
+	Manifests []ocp4.Manifest
 }
 
 type TransformRunner struct {

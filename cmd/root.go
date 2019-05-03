@@ -55,16 +55,17 @@ var rootCmd = &cobra.Command{
 		transformRunner := ocp.NewTransformRunner(config)
 
 		if err := transformRunner.Run([]ocp.Transform{
-			ocp.MasterConfigTransform{
+			ocp.OAuthTransform{
+				ConfigFile: &ocp3.ConfigFile{"master", "/etc/origin/master/master-config.yaml", nil},
+				Migration:  &migration,
+			},
+			ocp.SDNTransform{
 				ConfigFile: &ocp3.ConfigFile{"master", "/etc/origin/master/master-config.yaml", nil},
 				Migration:  &migration,
 			},
 		}); err != nil {
 			fmt.Printf("%s", err.Error())
 		}
-
-		migration.Translate()
-		migration.DumpManifests(migration.GenYAML())
 	},
 }
 
