@@ -1,7 +1,8 @@
 package ocp
 
 import (
-	"encoding/json"
+	"fmt"
+	//	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path"
@@ -15,7 +16,6 @@ import (
 
 const MasterConfigFile = "/etc/origin/master/master-config.yaml"
 const NodeConfigFile = "/etc/origin/node/node-config.yaml"
-const ETCDConfigFile = "/etc/etcd/etcd.conf"
 
 func (migration *Migration) Decode(configFile ocp3.ConfigFile) {
 	migration.OCP3Cluster.Decode(configFile)
@@ -60,50 +60,67 @@ func (migration *Migration) Fetch(configFile *ocp3.ConfigFile) {
 	configFile.Content = f
 }
 
-func (migration *Migration) LoadOCP3Configs() {
-	// Get master config so we can start figuring out what additional files we need
-	masterConfig := ocp3.ConfigFile{"master", "/etc/origin/master/master-config.yaml", nil}
-	migration.Fetch(&masterConfig)
-	migration.Decode(masterConfig)
-
-	// Start compiling a list of additional files to retrieve
-	configFiles := []ocp3.ConfigFile{}
-	configFiles = append(configFiles, ocp3.ConfigFile{"node", "/etc/origin/node/node-config.yaml", nil})
-	configFiles = append(configFiles, ocp3.ConfigFile{"etcd", "/etc/etcd/etcd.conf", nil})
-	//configFiles = append(configFiles, ocp3.ConfigFile{"crio", "/etc/crio/crio.conf", nil})
-
-	for _, identityProvider := range migration.OCP3Cluster.MasterConfig.OAuthConfig.IdentityProviders {
-		providerJSON, _ := identityProvider.Provider.MarshalJSON()
-		provider := Provider{}
-		json.Unmarshal(providerJSON, &provider)
-		var HTFile ocp3.ConfigFile
-		if provider.Kind == "HTPasswdPasswordIdentityProvider" {
-			HTFile = (ocp3.ConfigFile{"htpasswd", provider.File, nil})
-			migration.Fetch(&HTFile)
-		}
-
-		migration.OCP3Cluster.IdentityProviders = append(migration.OCP3Cluster.IdentityProviders,
-			ocp3.IdentityProvider{
-				provider.Kind,
-				provider.APIVersion,
-				identityProvider.MappingMethod,
-				identityProvider.Name,
-				identityProvider.Provider,
-				HTFile.Path,
-				HTFile.Content,
-				identityProvider.UseAsChallenger,
-				identityProvider.UseAsLogin,
-			})
-	}
-
-	for _, configFile := range configFiles {
-		migration.Fetch(&configFile)
-		migration.Decode(configFile)
-	}
-
-}
-
 // Translate OCP3 to OCP4
 func (migration *Migration) Translate() {
 	migration.OCP4Cluster.Master.Translate(migration.OCP3Cluster)
+}
+
+type Transform interface {
+	Run() (TransformOutput, error)
+	Validate() error
+	Extract()
+}
+
+type TransformOutput interface {
+	Flush() error
+}
+
+func (f FileTransformOutput) Flush() error {
+	fmt.Println("Writing file data:")
+	fmt.Printf("%s", f.FileData)
+	return nil
+}
+
+func NewTransformRunner(config Config) *TransformRunner {
+	fmt.Printf("Building TransformRunner with RunnerConfig: %s\n", config.RunnerConfig)
+	return &TransformRunner{Config: config.RunnerConfig}
+}
+
+func (r TransformRunner) Run(transforms []Transform) error {
+	fmt.Println("TransformRunner::Run")
+
+	// For each transform, extract the data, validate it, and run the transform.
+	// Handle any errors, and finally flush the output to it's desired destination
+	// NOTE: This should be parallelized with channels unless the transforms have
+	// some dependency on the outputs of others
+	for _, transform := range transforms {
+		transform.Extract()
+
+		if err := transform.Validate(); err != nil {
+			return HandleError(err)
+		}
+
+		output, err := transform.Run()
+		if err != nil {
+			HandleError(err)
+		}
+
+		if err := output.Flush(); err != nil {
+			HandleError(err)
+		}
+	}
+
+	return nil
+}
+
+func LoadConfig() Config {
+	// Mocking out the details of collecting cli input and file input
+	config := Config{
+		MasterConfigFile: MasterConfigFile,
+		NodeConfigFile:   NodeConfigFile,
+		RunnerConfig:     "some_runner_config",
+	}
+
+	fmt.Println("Loaded config")
+	return config
 }

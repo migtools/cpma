@@ -16,3 +16,22 @@ type Provider struct {
 	Kind       string `json:"kind"`
 	File       string `json:"file"`
 }
+
+type Config struct {
+	MasterConfigFile string
+	NodeConfigFile   string
+	RunnerConfig     string
+}
+
+type FileTransformOutput struct {
+	FileData string
+}
+
+type MasterConfigTransform struct {
+	ConfigFile *ocp3.ConfigFile
+	Migration  *Migration
+}
+
+type TransformRunner struct {
+	Config string
+}

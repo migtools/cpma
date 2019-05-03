@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/pkg/ocp"
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"path"
@@ -50,16 +51,20 @@ var rootCmd = &cobra.Command{
 		migration := ocp.Migration{}
 		migration.OutputDir = env.Config().GetString("OutputDir")
 		migration.OCP3Cluster.Hostname = env.Config().GetString("Source")
+		config := ocp.LoadConfig()
+		transformRunner := ocp.NewTransformRunner(config)
 
-		migration.LoadOCP3Configs()
+		if err := transformRunner.Run([]ocp.Transform{
+			ocp.MasterConfigTransform{
+				ConfigFile: &ocp3.ConfigFile{"master", "/etc/origin/master/master-config.yaml", nil},
+				Migration:  &migration,
+			},
+		}); err != nil {
+			fmt.Printf("%s", err.Error())
+		}
 
 		migration.Translate()
 		migration.DumpManifests(migration.GenYAML())
-
-		fmt.Printf("%s\n", migration.OCP3Cluster.MasterConfig.Kind)
-		for _, provider := range migration.OCP3Cluster.IdentityProviders {
-			fmt.Printf("%s\n", provider.Kind)
-		}
 	},
 }
 
