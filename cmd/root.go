@@ -47,18 +47,18 @@ var rootCmd = &cobra.Command{
 		env.InitConfig()
 		env.InitLogger()
 
-		migration := ocp.Migration{}
-		migration.OutputDir = env.Config().GetString("OutputDir")
-		migration.OCP3Cluster.Hostname = env.Config().GetString("Source")
+		config := ocp.Config{}
+		config.OutputDir = env.Config().GetString("OutputDir")
+		config.Hostname = env.Config().GetString("Source")
+		config.MasterConfigFile = ocp.MasterConfigFile
+		transformRunner := ocp.NewTransformRunner(config)
 
-		migration.LoadOCP3Configs()
-
-		migration.Translate()
-		migration.DumpManifests(migration.GenYAML())
-
-		fmt.Printf("%s\n", migration.OCP3Cluster.MasterConfig.Kind)
-		for _, provider := range migration.OCP3Cluster.IdentityProviders {
-			fmt.Printf("%s\n", provider.Kind)
+		if err := transformRunner.Run([]ocp.Transform{
+			ocp.OAuthTransform{
+				Config: &config,
+			},
+		}); err != nil {
+			fmt.Printf("%s", err.Error())
 		}
 	},
 }

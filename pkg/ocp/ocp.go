@@ -1,13 +1,12 @@
 package ocp
 
 import (
-	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 
-	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4"
 	"github.com/fusor/cpma/pkg/sftpclient"
 	"github.com/sirupsen/logrus"
@@ -15,30 +14,11 @@ import (
 
 const MasterConfigFile = "/etc/origin/master/master-config.yaml"
 const NodeConfigFile = "/etc/origin/node/node-config.yaml"
-const ETCDConfigFile = "/etc/etcd/etcd.conf"
-
-func (migration *Migration) Decode(configFile ocp3.ConfigFile) {
-	migration.OCP3Cluster.Decode(configFile)
-}
-
-// GenYAML returns the list of translated CRDs
-func (migration *Migration) GenYAML() ocp4.Manifests {
-	var manifests ocp4.Manifests
-
-	masterManifests, err := migration.OCP4Cluster.Master.GenYAML()
-	if err != nil {
-		return nil
-	}
-	for _, manifest := range masterManifests {
-		manifests = append(manifests, manifest)
-	}
-	return manifests
-}
 
 // DumpManifests creates OCDs files
-func (migration *Migration) DumpManifests(manifests []ocp4.Manifest) {
+func (config *Config) DumpManifests(manifests []ocp4.Manifest) {
 	for _, manifest := range manifests {
-		maniftestfile := filepath.Join(migration.OutputDir, "manifests", manifest.Name)
+		maniftestfile := filepath.Join(config.OutputDir, "manifests", manifest.Name)
 		os.MkdirAll(path.Dir(maniftestfile), 0755)
 		err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
 		logrus.Printf("CR manifest created: %s", maniftestfile)
@@ -48,62 +28,64 @@ func (migration *Migration) DumpManifests(manifests []ocp4.Manifest) {
 	}
 }
 
-// Fetch retrieves file from Host
-func (migration *Migration) Fetch(configFile *ocp3.ConfigFile) {
-	dst := filepath.Join(migration.OutputDir, migration.OCP3Cluster.Hostname, configFile.Path)
-	sftpclient.Fetch(migration.OCP3Cluster.Hostname, configFile.Path, dst)
+func (config *Config) Fetch(path string) []byte {
+	dst := filepath.Join(config.OutputDir, config.Hostname, path)
+	sftpclient.Fetch(config.Hostname, path, dst)
 
-	f, err := ioutil.ReadFile(filepath.Join(migration.OutputDir, migration.OCP3Cluster.Hostname, configFile.Path))
+	f, err := ioutil.ReadFile(filepath.Join(config.OutputDir, config.Hostname, path))
 	if err != nil {
 		logrus.Warning(err)
 	}
-	configFile.Content = f
+	return f
 }
 
-func (migration *Migration) LoadOCP3Configs() {
-	// Get master config so we can start figuring out what additional files we need
-	masterConfig := ocp3.ConfigFile{"master", "/etc/origin/master/master-config.yaml", nil}
-	migration.Fetch(&masterConfig)
-	migration.Decode(masterConfig)
+type Transform interface {
+	Run([]byte) (TransformOutput, error)
+	Validate() error
+	Extract() []byte
+}
 
-	// Start compiling a list of additional files to retrieve
-	configFiles := []ocp3.ConfigFile{}
-	configFiles = append(configFiles, ocp3.ConfigFile{"node", "/etc/origin/node/node-config.yaml", nil})
-	configFiles = append(configFiles, ocp3.ConfigFile{"etcd", "/etc/etcd/etcd.conf", nil})
-	//configFiles = append(configFiles, ocp3.ConfigFile{"crio", "/etc/crio/crio.conf", nil})
+type TransformOutput interface {
+	Flush() error
+}
 
-	for _, identityProvider := range migration.OCP3Cluster.MasterConfig.OAuthConfig.IdentityProviders {
-		providerJSON, _ := identityProvider.Provider.MarshalJSON()
-		provider := Provider{}
-		json.Unmarshal(providerJSON, &provider)
-		var HTFile ocp3.ConfigFile
-		if provider.Kind == "HTPasswdPasswordIdentityProvider" {
-			HTFile = (ocp3.ConfigFile{"htpasswd", provider.File, nil})
-			migration.Fetch(&HTFile)
+func (m ManifestTransformOutput) Flush() error {
+	fmt.Println("Writing file data:")
+	m.Config.DumpManifests(m.Manifests)
+	return nil
+}
+
+func NewTransformRunner(config Config) *TransformRunner {
+	return &TransformRunner{}
+}
+
+func (r TransformRunner) Run(transforms []Transform) error {
+	fmt.Println("TransformRunner::Run")
+
+	// For each transform, extract the data, validate it, and run the transform.
+	// Handle any errors, and finally flush the output to it's desired destination
+	// NOTE: This should be parallelized with channels unless the transforms have
+	// some dependency on the outputs of others
+	for _, transform := range transforms {
+		content := transform.Extract()
+
+		if err := transform.Validate(); err != nil {
+			return HandleError(err)
 		}
 
-		migration.OCP3Cluster.IdentityProviders = append(migration.OCP3Cluster.IdentityProviders,
-			ocp3.IdentityProvider{
-				provider.Kind,
-				provider.APIVersion,
-				identityProvider.MappingMethod,
-				identityProvider.Name,
-				identityProvider.Provider,
-				HTFile.Path,
-				HTFile.Content,
-				identityProvider.UseAsChallenger,
-				identityProvider.UseAsLogin,
-			})
+		output, err := transform.Run(content)
+		if err != nil {
+			HandleError(err)
+		}
+
+		if err := output.Flush(); err != nil {
+			HandleError(err)
+		}
 	}
 
-	for _, configFile := range configFiles {
-		migration.Fetch(&configFile)
-		migration.Decode(configFile)
-	}
-
+	return nil
 }
 
-// Translate OCP3 to OCP4
-func (migration *Migration) Translate() {
-	migration.OCP4Cluster.Master.Translate(migration.OCP3Cluster)
+func HandleError(err error) error {
+	return fmt.Errorf("An error has occurred: %s", err)
 }

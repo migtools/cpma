@@ -50,7 +50,7 @@ type MetaData struct {
 var APIVersion = "config.openshift.io/v1"
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(OCP3Cluster ocp3.Cluster) (*OAuthCRD, []secrets.Secret, error) {
+func Translate(identityProviders []ocp3.IdentityProvider) (*OAuthCRD, []secrets.Secret, error) {
 	//var auth = oauthconfig.DeepCopy()
 	var err error
 
@@ -67,7 +67,7 @@ func Translate(OCP3Cluster ocp3.Cluster) (*OAuthCRD, []secrets.Secret, error) {
 	var keySercret secrets.Secret
 
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	for _, p := range OCP3Cluster.IdentityProviders {
+	for _, p := range identityProviders {
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
 		if err != nil {
 			return nil, nil, err
