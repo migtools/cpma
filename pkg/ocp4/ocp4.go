@@ -9,13 +9,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Cluster struct {
-	Master Master
-}
-
 type Master struct {
 	OAuth   oauth.OAuthCRD
 	Secrets []secrets.Secret
+}
+
+type Node struct {
+  Secrets []secrets.Secret
 }
 
 type Manifests []Manifest
@@ -44,6 +44,9 @@ func (ocp4Master *Master) Translate(ocp3Master configv1.MasterConfig) {
 	}
 }
 
+func (ocp4Node *Node) Translate(ocp3Node configv1.NodeConfig) {
+}
+
 // GenYAML returns the list of translated CRDs
 func (ocp4Master *Master) GenYAML() ([]Manifest, error) {
 	var manifests []Manifest
@@ -59,4 +62,9 @@ func (ocp4Master *Master) GenYAML() ([]Manifest, error) {
 		return manifests, nil
 	}
 	return nil, errors.New("No manifests")
+}
+
+// GenYAML returns the list of translated CRDs
+func (ocp4Node *Node) GenYAML() ([]Manifest, error) {
+	return nil, nil
 }
