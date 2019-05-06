@@ -77,12 +77,13 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 
 	var idP interface{}
 	var secretsSlice []secrets.Secret
-	var secret secrets.Secret
-	var certSecret secrets.Secret
-	var keySercret secrets.Secret
 
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	for _, p := range auth.IdentityProviders {
+		secret := secrets.Secret{}
+		certSecret := secrets.Secret{}
+		keySecret := secrets.Secret{}
+
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
 		if err != nil {
 			return nil, nil, err
@@ -104,18 +105,24 @@ func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, 
 		case "LDAPPasswordIdentityProvider":
 			idP = buildLdapIP(serializer, p)
 		case "KeystonePasswordIdentityProvider":
-			idP, certSecret, keySercret = buildKeystoneIP(serializer, p)
-			secretsSlice = append(secretsSlice, certSecret)
-			secretsSlice = append(secretsSlice, keySercret)
+			idP, certSecret, keySecret = buildKeystoneIP(serializer, p)
+			if certSecret != (secrets.Secret{}) {
+				secretsSlice = append(secretsSlice, certSecret)
+				secretsSlice = append(secretsSlice, keySecret)
+			}
 		case "BasicAuthPasswordIdentityProvider":
-			idP, certSecret, keySercret = buildBasicAuthIP(serializer, p)
-			secretsSlice = append(secretsSlice, certSecret)
-			secretsSlice = append(secretsSlice, keySercret)
+			idP, certSecret, keySecret = buildBasicAuthIP(serializer, p)
+			if certSecret != (secrets.Secret{}) {
+				secretsSlice = append(secretsSlice, certSecret)
+				secretsSlice = append(secretsSlice, keySecret)
+			}
 		default:
 			logrus.Infof("Can't handle %s OAuth kind", kind)
 		}
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-		secretsSlice = append(secretsSlice, secret)
+		if secret != (secrets.Secret{}) {
+			secretsSlice = append(secretsSlice, secret)
+		}
 	}
 
 	return &oauthCrd, secretsSlice, nil
