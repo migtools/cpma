@@ -48,22 +48,23 @@ func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (
 	outputDir := env.Config().GetString("OutputDir")
 	host := env.Config().GetString("Source")
 
-	src := filepath.Join(keystone.KeyFile)
-	dst := filepath.Join(outputDir, host, keystone.CertFile)
-	certFile := GetFile(host, src, dst)
+	if keystone.CertFile != "" {
+		src := filepath.Join(keystone.KeyFile)
+		dst := filepath.Join(outputDir, host, keystone.CertFile)
+		certFile := GetFile(host, src, dst)
+		encoded := base64.StdEncoding.EncodeToString([]byte(certFile))
+		certSecret := secrets.GenSecret(certSecretName, encoded, "openshift-config", "keystone")
 
-	encoded := base64.StdEncoding.EncodeToString([]byte(certFile))
-	certSecret := secrets.GenSecret(certSecretName, encoded, "openshift-config", "keystone")
+		keySecretName := p.Name + "-client-key-secret"
+		idP.Keystone.TLSClientKey.Name = keySecretName
 
-	keySecretName := p.Name + "-client-key-secret"
-	idP.Keystone.TLSClientKey.Name = keySecretName
+		src = filepath.Join(keystone.KeyFile)
+		dst = filepath.Join(outputDir, host, keystone.KeyFile)
+		keyFile := GetFile(host, src, dst)
+		encoded = base64.StdEncoding.EncodeToString([]byte(keyFile))
+		keySecret := secrets.GenSecret(keySecretName, encoded, "openshift-config", "keystone")
+		return idP, *certSecret, *keySecret
+	}
 
-	src = filepath.Join(keystone.KeyFile)
-	dst = filepath.Join(outputDir, host, keystone.KeyFile)
-	keyFile := GetFile(host, src, dst)
-
-	encoded = base64.StdEncoding.EncodeToString([]byte(keyFile))
-	keySecret := secrets.GenSecret(keySecretName, encoded, "openshift-config", "keystone")
-
-	return idP, *certSecret, *keySecret
+	return idP, secrets.Secret{}, secrets.Secret{}
 }

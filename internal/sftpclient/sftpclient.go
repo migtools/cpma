@@ -85,7 +85,6 @@ func (c *Client) GetFile(srcFilePath string, dstFilePath string) (int64, error) 
 		logrus.Fatal(err)
 	}
 	defer srcFile.Close()
-
 	os.MkdirAll(path.Dir(dstFilePath), 0755)
 	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
