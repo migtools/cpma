@@ -50,19 +50,18 @@ var rootCmd = &cobra.Command{
 		source := env.Config().GetString("Source")
 		outputDir := env.Config().GetString("OutputDir")
 
-		configs := []ocp.Config{}
-
-		ocpMaster := ocp.Config{}
-		ocpNode := ocp.Config{}
-		ocpMaster.AddMaster(source)
-		ocpNode.AddNode(source)
+		configs := []ocp.Translator{}
+		ocpMaster := new(ocp.ConfigMaster)
+		ocpNode := new(ocp.ConfigNode)
+		ocpMaster.Add(source)
+		ocpNode.Add(source)
 		configs = append(configs, ocpMaster, ocpNode)
 
 		for _, config := range configs {
 			config.Fetch(outputDir)
 			config.Decode()
 			config.Translate()
-			config.DumpManifests(outputDir, config.GenYAML())
+			ocp.DumpManifests(outputDir, config.GenYAML())
 		}
 	},
 }
