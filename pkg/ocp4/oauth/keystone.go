@@ -29,8 +29,13 @@ type identityProviderKeystone struct {
 }
 
 func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (identityProviderKeystone, secrets.Secret, secrets.Secret) {
-	var idP identityProviderKeystone
-	var keystone configv1.KeystonePasswordIdentityProvider
+	var (
+		idP        identityProviderKeystone
+		keystone   configv1.KeystonePasswordIdentityProvider
+		certSecret = new(secrets.Secret)
+		keySecret  = new(secrets.Secret)
+	)
+
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &keystone)
 
 	idP.Type = "Keystone"
@@ -42,29 +47,26 @@ func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (
 	idP.Keystone.URL = keystone.URL
 	idP.Keystone.CA.Name = keystone.CA
 
-	certSecretName := p.Name + "-client-cert-secret"
-	idP.Keystone.TLSClientCert.Name = certSecretName
-
-	outputDir := env.Config().GetString("OutputDir")
-	host := env.Config().GetString("Source")
-
 	if keystone.CertFile != "" {
+		outputDir := env.Config().GetString("OutputDir")
+		host := env.Config().GetString("Source")
+
+		certSecretName := p.Name + "-client-cert-secret"
+		idP.Keystone.TLSClientCert.Name = certSecretName
 		src := filepath.Join(keystone.KeyFile)
 		dst := filepath.Join(outputDir, host, keystone.CertFile)
 		certFile := GetFile(host, src, dst)
 		encoded := base64.StdEncoding.EncodeToString([]byte(certFile))
-		certSecret := secrets.GenSecret(certSecretName, encoded, "openshift-config", "keystone")
+		certSecret = secrets.GenSecret(certSecretName, encoded, "openshift-config", "keystone")
 
 		keySecretName := p.Name + "-client-key-secret"
 		idP.Keystone.TLSClientKey.Name = keySecretName
-
 		src = filepath.Join(keystone.KeyFile)
 		dst = filepath.Join(outputDir, host, keystone.KeyFile)
 		keyFile := GetFile(host, src, dst)
 		encoded = base64.StdEncoding.EncodeToString([]byte(keyFile))
-		keySecret := secrets.GenSecret(keySecretName, encoded, "openshift-config", "keystone")
-		return idP, *certSecret, *keySecret
+		keySecret = secrets.GenSecret(keySecretName, encoded, "openshift-config", "keystone")
 	}
 
-	return idP, secrets.Secret{}, secrets.Secret{}
+	return idP, *certSecret, *keySecret
 }
