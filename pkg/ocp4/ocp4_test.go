@@ -7,9 +7,19 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/fusor/cpma/pkg/ocp3"
+	"github.com/fusor/cpma/pkg/ocp4/oauth"
 )
 
+var _GetFile = oauth.GetFile
+
+func mockGetFile(a, b, c string) []byte {
+	return []byte("This is test file content")
+}
+
 func TestClusterTranslate(t *testing.T) {
+	defer func() { oauth.GetFile = _GetFile }()
+	oauth.GetFile = mockGetFile
+
 	masterV4 := Master{}
 	file := "../testdata/common-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
@@ -27,6 +37,9 @@ func TestClusterTranslate(t *testing.T) {
 }
 
 func TestClusterGenYaml(t *testing.T) {
+	defer func() { oauth.GetFile = _GetFile }()
+	oauth.GetFile = mockGetFile
+
 	masterV4 := Master{}
 	file := "../testdata/common-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
@@ -86,7 +99,7 @@ metadata:
   name: htpasswd_auth-secret
   namespace: openshift-config
 data:
-  htpasswd: VGhpcyBpcyBwcmV0ZW5kIGNvbnRlbnQ=
+  htpasswd: VGhpcyBpcyB0ZXN0IGZpbGUgY29udGVudA==
 `
 
 	expectedSecretGitHub := `apiVersion: v1

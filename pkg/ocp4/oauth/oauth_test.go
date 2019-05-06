@@ -10,7 +10,16 @@ import (
 	"github.com/fusor/cpma/pkg/ocp3"
 )
 
+var _GetFile = GetFile
+
+func mockGetFile(host, src, dst string) []byte {
+	return []byte("This is test file content")
+}
+
 func TestTranslateMasterConfig(t *testing.T) {
+	defer func() { GetFile = _GetFile }()
+	GetFile = mockGetFile
+
 	file := "testdata/bulk-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
@@ -31,6 +40,9 @@ func TestTranslateMasterConfig(t *testing.T) {
 }
 
 func TestGenYAML(t *testing.T) {
+	defer func() { GetFile = _GetFile }()
+	GetFile = mockGetFile
+
 	file := "testdata/htpasswd-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 

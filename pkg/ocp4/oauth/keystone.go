@@ -2,9 +2,11 @@ package oauth
 
 import (
 	"encoding/base64"
+	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
+	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
@@ -43,15 +45,23 @@ func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (
 	certSecretName := p.Name + "-client-cert-secret"
 	idP.Keystone.TLSClientCert.Name = certSecretName
 
-	// TODO: Fetch cert and key
-	certFile := "456This is pretend content"
+	outputDir := env.Config().GetString("OutputDir")
+	host := env.Config().GetString("Source")
+
+	src := filepath.Join(keystone.KeyFile)
+	dst := filepath.Join(outputDir, host, keystone.CertFile)
+	certFile := GetFile(host, src, dst)
+
 	encoded := base64.StdEncoding.EncodeToString([]byte(certFile))
 	certSecret := secrets.GenSecret(certSecretName, encoded, "openshift-config", "keystone")
 
 	keySecretName := p.Name + "-client-key-secret"
 	idP.Keystone.TLSClientKey.Name = keySecretName
 
-	keyFile := "123This is pretend content"
+	src = filepath.Join(keystone.KeyFile)
+	dst = filepath.Join(outputDir, host, keystone.KeyFile)
+	keyFile := GetFile(host, src, dst)
+
 	encoded = base64.StdEncoding.EncodeToString([]byte(keyFile))
 	keySecret := secrets.GenSecret(keySecretName, encoded, "openshift-config", "keystone")
 

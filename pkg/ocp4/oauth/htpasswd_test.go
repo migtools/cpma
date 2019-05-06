@@ -10,6 +10,9 @@ import (
 )
 
 func TestTranslateMasterConfigHtpasswd(t *testing.T) {
+	defer func() { GetFile = _GetFile }()
+	GetFile = mockGetFile
+
 	file := "testdata/htpasswd-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
