@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/internal/sftpclient"
+	"github.com/fusor/cpma/internal/io"
 	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4"
 	"github.com/sirupsen/logrus"
@@ -38,6 +38,9 @@ type Translator interface {
 	GenYAML() ocp4.Manifests
 	Translate()
 }
+
+// GetFile allows to mock file retrieval
+var GetFile = io.GetFile
 
 func (config *ConfigMaster) Add(hostname string) {
 	masterf := env.Config().GetString("MasterConfigFile")
@@ -74,7 +77,7 @@ func DumpManifests(outputDir string, manifests ocp4.Manifests) {
 		maniftestfile := filepath.Join(outputDir, "manifests", manifest.Name)
 		os.MkdirAll(path.Dir(maniftestfile), 0755)
 		err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
-		logrus.Printf("CR manifest created: %s", maniftestfile)
+		logrus.Printf("CRD:Added: %s", maniftestfile)
 		if err != nil {
 			logrus.Panic(err)
 		}
@@ -82,22 +85,15 @@ func DumpManifests(outputDir string, manifests ocp4.Manifests) {
 }
 
 func (config *ConfigMaster) Fetch(outputDir string) {
-	config.ConfigFile.Fetch(outputDir)
+	localF := filepath.Join(outputDir, config.Hostname, config.Path)
+	config.ConfigFile.Content = GetFile(config.Hostname, config.Path, localF)
+	logrus.Printf("File:Loaded: %s", localF)
 }
+
 func (config *ConfigNode) Fetch(outputDir string) {
-	config.ConfigFile.Fetch(outputDir)
-}
-
-// Fetch retrieves file from Host
-func (configFile *ConfigFile) Fetch(outputDir string) {
-	dst := filepath.Join(outputDir, configFile.Hostname, configFile.Path)
-	sftpclient.Fetch(configFile.Hostname, configFile.Path, dst)
-
-	f, err := ioutil.ReadFile(filepath.Join(outputDir, configFile.Hostname, configFile.Path))
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	configFile.Content = f
+	localF := filepath.Join(outputDir, config.Hostname, config.Path)
+	config.ConfigFile.Content = GetFile(config.Hostname, config.Path, localF)
+	logrus.Printf("File:Loaded: %s", localF)
 }
 
 // GenYAML returns the list of translated CRDs

@@ -7,10 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/fusor/cpma/internal/io"
 	"github.com/fusor/cpma/pkg/ocp3"
 )
 
-var _GetFile = GetFile
+var _GetFile = io.GetFile
 
 func mockGetFile(host, src, dst string) []byte {
 	return []byte("This is test file content")
