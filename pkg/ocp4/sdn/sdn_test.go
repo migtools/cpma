@@ -72,17 +72,7 @@ func TestGenYAML(t *testing.T) {
 	networkCR := Translate(masterV3.Config.NetworkConfig)
 
 	networkCRYAML := networkCR.GenYAML()
-	expectedYaml := `apiVersion: operator.openshift.io/v1
-kind: Network
-spec:
-  clusterNetwork:
-  - cidr: 10.128.0.0/14
-    hostPrefix: 9
-  serviceNetwork: 172.30.0.0/16
-  defaultNetwork:
-    type: OpenShiftSDN
-    openshiftSDNConfig:
-      mode: Subnet
-`
-	assert.Equal(t, expectedYaml, string(networkCRYAML))
+
+	expectedYaml, _ := ioutil.ReadFile("testdata/expected-network-cr-master.yaml")
+	assert.Equal(t, expectedYaml, networkCRYAML)
 }
