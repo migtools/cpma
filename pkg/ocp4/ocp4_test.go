@@ -53,6 +53,7 @@ func TestClusterGenYaml(t *testing.T) {
 	assert.Equal(t, "100_CPMA-cluster-config-oauth.yaml", manifests[0].Name)
 	assert.Equal(t, "100_CPMA-cluster-config-secret-htpasswd_auth-secret.yaml", manifests[1].Name)
 	assert.Equal(t, "100_CPMA-cluster-config-secret-github123456789-secret.yaml", manifests[2].Name)
+	assert.Equal(t, "100_CPMA-cluster-config-sdn.yaml", manifests[3].Name)
 
 	// Test Oauth CR contents
 	expectedOauthCR := `apiVersion: config.openshift.io/v1
@@ -114,4 +115,18 @@ data:
 
 	assert.Equal(t, expectedSecretHtpasswd, string(manifests[1].CRD))
 	assert.Equal(t, expectedSecretGitHub, string(manifests[2].CRD))
+
+	expectedNetworkCR := `apiVersion: operator.openshift.io/v1
+kind: Network
+spec:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 9
+  serviceNetwork: 172.30.0.0/16
+  defaultNetwork:
+    type: OpenShiftSDN
+    openshiftSDNConfig:
+      mode: Subnet
+`
+	  assert.Equal(t, expectedNetworkCR, string(manifests[3].CRD))
 }
