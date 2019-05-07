@@ -56,77 +56,16 @@ func TestClusterGenYaml(t *testing.T) {
 	assert.Equal(t, "100_CPMA-cluster-config-sdn.yaml", manifests[3].Name)
 
 	// Test Oauth CR contents
-	expectedOauthCR := `apiVersion: config.openshift.io/v1
-kind: OAuth
-metadata:
-  name: cluster
-  namespace: openshift-config
-spec:
-  identityProviders:
-  - name: htpasswd_auth
-    challenge: true
-    login: true
-    mappingMethod: claim
-    type: HTPasswd
-    htpasswd:
-      fileData:
-        name: htpasswd_auth-secret
-  - name: github123456789
-    challenge: false
-    login: true
-    mappingMethod: claim
-    type: GitHub
-    github:
-      hostname: test.example.com
-      ca:
-        name: github.crt
-      clientID: 2d85ea3f45d6777bffd7
-      clientSecret:
-        name: github123456789-secret
-      organizations:
-      - myorganization1
-      - myorganization2
-      teams:
-      - myorganization1/team-a
-      - myorganization2/team-b
-`
-	assert.Equal(t, expectedOauthCR, string(manifests[0].CRD))
+	expectedOauthCR, _ := ioutil.ReadFile("testdata/expected-test-oauth-master.yaml")
+	assert.Equal(t, expectedOauthCR, manifests[0].CRD)
 
 	// Test secrets contents
-	expectedSecretHtpasswd := `apiVersion: v1
-kind: Secret
-type: Opaque
-metadata:
-  name: htpasswd_auth-secret
-  namespace: openshift-config
-data:
-  htpasswd: VGhpcyBpcyB0ZXN0IGZpbGUgY29udGVudA==
-`
+	expectedSecretHtpasswd, _ := ioutil.ReadFile("testdata/expected-test-secret-httpasswd.yaml")
+	expectedSecretGitHub, _ := ioutil.ReadFile("testdata/expected-test-secret-github.yaml")
+	assert.Equal(t, expectedSecretHtpasswd, manifests[1].CRD)
+	assert.Equal(t, expectedSecretGitHub, manifests[2].CRD)
 
-	expectedSecretGitHub := `apiVersion: v1
-kind: Secret
-type: Opaque
-metadata:
-  name: github123456789-secret
-  namespace: openshift-config
-data:
-  clientSecret: ZTE2YTU5YWQzM2Q3YzI5ZmQ0MzU0ZjQ2MDU5ZjA5NTBjNjA5YTdlYQ==
-`
-
-	assert.Equal(t, expectedSecretHtpasswd, string(manifests[1].CRD))
-	assert.Equal(t, expectedSecretGitHub, string(manifests[2].CRD))
-
-	expectedNetworkCR := `apiVersion: operator.openshift.io/v1
-kind: Network
-spec:
-  clusterNetwork:
-  - cidr: 10.128.0.0/14
-    hostPrefix: 9
-  serviceNetwork: 172.30.0.0/16
-  defaultNetwork:
-    type: OpenShiftSDN
-    openshiftSDNConfig:
-      mode: Subnet
-`
-	  assert.Equal(t, expectedNetworkCR, string(manifests[3].CRD))
+	// Test network CR contents
+	expectedNetworkCR, _ := ioutil.ReadFile("testdata/expected-test-network-cr-master.yaml")
+	assert.Equal(t, expectedNetworkCR, manifests[3].CRD)
 }
