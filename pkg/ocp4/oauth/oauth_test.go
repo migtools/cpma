@@ -44,31 +44,18 @@ func TestGenYAML(t *testing.T) {
 	defer func() { GetFile = _GetFile }()
 	GetFile = mockGetFile
 
-	file := "testdata/htpasswd-test-master-config.yaml"
+	file := "testdata/bulk-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
 	masterV3 := ocp3.Master{}
 	masterV3.Decode(content)
 
-	crd, _, err := Translate(masterV3.Config.OAuthConfig)
+	crd, manifests, err := Translate(masterV3.Config.OAuthConfig)
+	require.NoError(t, err)
 
 	CRD := crd.GenYAML()
-	expectedYaml := `apiVersion: config.openshift.io/v1
-kind: OAuth
-metadata:
-  name: cluster
-  namespace: openshift-config
-spec:
-  identityProviders:
-  - name: htpasswd_auth
-    challenge: true
-    login: true
-    mappingMethod: claim
-    type: HTPasswd
-    htpasswd:
-      fileData:
-        name: htpasswd_auth-secret
-`
-	require.NoError(t, err)
-	assert.Equal(t, expectedYaml, string(CRD))
+	expectedYaml, _ := ioutil.ReadFile("testdata/expected-bulk-test-masterconfig-oauth.yaml")
+
+	assert.Equal(t, len(manifests), 9)
+	assert.Equal(t, expectedYaml, CRD)
 }
