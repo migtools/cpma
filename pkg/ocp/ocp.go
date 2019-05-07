@@ -21,14 +21,14 @@ type ConfigFile struct {
 
 type ConfigMaster struct {
 	ConfigFile
-	OCP3     ocp3.Master
-	OCP4     ocp4.Master
+	OCP3 ocp3.Master
+	OCP4 ocp4.Master
 }
 
 type ConfigNode struct {
 	ConfigFile
-	OCP3     ocp3.Node
-	OCP4     ocp4.Node
+	OCP3 ocp3.Node
+	OCP4 ocp4.Node
 }
 
 type Translator interface {
@@ -104,10 +104,8 @@ func (configFile *ConfigFile) Fetch(outputDir string) {
 func (config *ConfigMaster) GenYAML() ocp4.Manifests {
 	var manifests ocp4.Manifests
 
-	masterManifests, err := config.OCP4.GenYAML()
-	if err != nil {
-		return nil
-	}
+	masterManifests := config.OCP4.GenYAML()
+
 	for _, manifest := range masterManifests {
 		manifests = append(manifests, manifest)
 	}
@@ -118,10 +116,8 @@ func (config *ConfigMaster) GenYAML() ocp4.Manifests {
 func (config *ConfigNode) GenYAML() ocp4.Manifests {
 	var manifests ocp4.Manifests
 
-	nodeManifests, err := config.OCP4.GenYAML()
-	if err != nil {
-		return nil
-	}
+	nodeManifests := config.OCP4.GenYAML()
+
 	for _, manifest := range nodeManifests {
 		manifests = append(manifests, manifest)
 	}

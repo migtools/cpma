@@ -47,7 +47,7 @@ func TestClusterGenYaml(t *testing.T) {
 	masterV3 := ocp3.Master{}
 	masterV3.Decode(content)
 	masterV4.Translate(masterV3.Config)
-	manifests, _ := masterV4.GenYAML()
+	manifests := masterV4.GenYAML()
 
 	// Test manifest names
 	assert.Equal(t, "100_CPMA-cluster-config-oauth.yaml", manifests[0].Name)

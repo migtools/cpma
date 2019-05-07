@@ -25,7 +25,7 @@ clean:
 ci: build test
 
 test:
-	go test ./...
+	GO111MODULE=on go test ./...
 
 lint: ## Run golint
 	@golint -set_exit_status $(addsuffix /... , $(SOURCE_DIRS))
