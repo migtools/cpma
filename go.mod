@@ -1,6 +1,7 @@
 module github.com/fusor/cpma
 
 require (
+	github.com/BurntSushi/toml v0.3.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect

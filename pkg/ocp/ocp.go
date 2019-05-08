@@ -31,6 +31,12 @@ type ConfigNode struct {
 	OCP4 ocp4.Node
 }
 
+type ConfigRegistries struct {
+	ConfigFile
+	OCP3 ocp3.Registries
+	OCP4 ocp4.Registries
+}
+
 type Translator interface {
 	Add(string)
 	Decode()
@@ -60,11 +66,26 @@ func (config *ConfigNode) Add(hostname string) {
 	config.ConfigFile.Path = nodef
 }
 
+func (config *ConfigRegistries) Add(hostname string) {
+	registriesf := env.Config().GetString("RegistryConfigFile")
+
+	if registriesf == "" {
+		registriesf = "/etc/containers/registries.conf"
+	}
+
+	config.ConfigFile.Hostname = hostname
+	config.ConfigFile.Path = registriesf
+}
+
 func (config *ConfigMaster) Decode() {
 	config.OCP3.Decode(config.ConfigFile.Content)
 }
 
 func (config *ConfigNode) Decode() {
+	config.OCP3.Decode(config.ConfigFile.Content)
+}
+
+func (config *ConfigRegistries) Decode() {
 	config.OCP3.Decode(config.ConfigFile.Content)
 }
 
@@ -85,6 +106,10 @@ func (config *ConfigMaster) Fetch(outputDir string) {
 	config.ConfigFile.Fetch(outputDir)
 }
 func (config *ConfigNode) Fetch(outputDir string) {
+	config.ConfigFile.Fetch(outputDir)
+}
+
+func (config *ConfigRegistries) Fetch(outputDir string) {
 	config.ConfigFile.Fetch(outputDir)
 }
 
@@ -124,6 +149,17 @@ func (config *ConfigNode) GenYAML() ocp4.Manifests {
 	return manifests
 }
 
+// GenYAML returns the list of translated CRDs
+func (config *ConfigRegistries) GenYAML() ocp4.Manifests {
+	var manifests ocp4.Manifests
+
+	registriesManifests := config.OCP4.GenYAML()
+	for _, manifest := range registriesManifests {
+		manifests = append(manifests, manifest)
+	}
+	return manifests
+}
+
 // Translate OCP3 to OCP4
 func (config *ConfigMaster) Translate() {
 	config.OCP4.Translate(config.OCP3.Config)
@@ -131,5 +167,10 @@ func (config *ConfigMaster) Translate() {
 
 // Translate OCP3 to OCP4
 func (config *ConfigNode) Translate() {
+	config.OCP4.Translate(config.OCP3.Config)
+}
+
+// Translate OCP3 to OCP4
+func (config *ConfigRegistries) Translate() {
 	config.OCP4.Translate(config.OCP3.Config)
 }

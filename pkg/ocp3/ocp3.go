@@ -1,8 +1,9 @@
 package ocp3
 
 import (
+	"github.com/BurntSushi/toml"
+	"github.com/fusor/cpma/pkg/ocp4/image"
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -20,6 +21,10 @@ type Master struct {
 
 type Node struct {
 	Config configv1.NodeConfig
+}
+
+type Registries struct {
+	Config image.Containers
 }
 
 func init() {
@@ -50,4 +55,13 @@ func (node *Node) Decode(content []byte) {
 	}
 
 	node.Config = nodeConfig
+}
+
+// Decode unmarshals OCP3 Registries
+func (registries *Registries) Decode(content []byte) {
+	var containers image.Containers
+	if _, err := toml.Decode(string(content), &containers); err != nil {
+		logrus.Fatal(err)
+	}
+	registries.Config = containers
 }

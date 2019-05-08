@@ -53,11 +53,11 @@ var rootCmd = &cobra.Command{
 		configs := []ocp.Translator{}
 		ocpMaster := new(ocp.ConfigMaster)
 		ocpNode := new(ocp.ConfigNode)
-		ocpMaster.Add(source)
-		ocpNode.Add(source)
-		configs = append(configs, ocpMaster, ocpNode)
+		ocpRegistries := new(ocp.ConfigRegistries)
+		configs = append(configs, ocpMaster, ocpNode, ocpRegistries)
 
 		for _, config := range configs {
+			config.Add(source)
 			config.Fetch(outputDir)
 			config.Decode()
 			config.Translate()

@@ -1,6 +1,7 @@
 package ocp4
 
 import (
+	"github.com/fusor/cpma/pkg/ocp4/image"
 	"github.com/fusor/cpma/pkg/ocp4/oauth"
 	"github.com/fusor/cpma/pkg/ocp4/sdn"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
@@ -16,6 +17,10 @@ type Master struct {
 
 type Node struct {
 	Secrets []secrets.Secret
+}
+
+type Registries struct {
+	Image image.ImageCR
 }
 
 type Manifests []Manifest
@@ -57,6 +62,11 @@ func (ocp4Master *Master) Translate(ocp3Master configv1.MasterConfig) {
 }
 
 func (ocp4Node *Node) Translate(ocp3Node configv1.NodeConfig) {
+}
+
+func (ocp4Registries *Registries) Translate(ocp3Registries image.Containers) {
+	imageCR := image.Translate(ocp3Registries)
+	ocp4Registries.Image = *imageCR
 }
 
 // GenYAML returns the list of translated CRDs
@@ -106,8 +116,33 @@ func sdnManifest(networkCR []byte, manifests []Manifest) []Manifest {
 
 	return manifests
 }
+func imageManifest(imageCR []byte, manifests []Manifest) []Manifest {
+	filename := manifestPrefix + "config-image.yaml"
+	manifest := Manifest{Name: filename, CRD: imageCR}
+	manifests = append(manifests, manifest)
+
+	return manifests
+}
+
+func registriesManifest(imageCR []byte, manifests []Manifest) []Manifest {
+	filename := manifestPrefix + "image-cluster.yaml"
+	manifest := Manifest{Name: filename, CRD: imageCR}
+	manifests = append(manifests, manifest)
+
+	return manifests
+}
 
 // GenYAML returns the list of translated CRDs
 func (ocp4Node *Node) GenYAML() []Manifest {
 	return nil
+}
+
+// GenYAML returns the list of translated CRDs
+func (ocp4Registries *Registries) GenYAML() []Manifest {
+
+	var manifests []Manifest
+	// Generate yaml for Registries config
+	imageCR := ocp4Registries.Image.GenYAML()
+	manifests = registriesManifest(imageCR, manifests)
+	return manifests
 }
