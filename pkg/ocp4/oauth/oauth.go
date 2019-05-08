@@ -53,8 +53,8 @@ var (
 	GetFile = io.GetFile
 )
 
-// Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, error) {
+// Transform converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
+func Transform(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, error) {
 	var auth = oauthconfig.DeepCopy()
 	var err error
 

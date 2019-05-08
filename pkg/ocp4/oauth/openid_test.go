@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTranslateMasterConfigOpenID(t *testing.T) {
+func TestTransformMasterConfigOpenID(t *testing.T) {
 	file := "testdata/openid-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
@@ -38,7 +38,7 @@ func TestTranslateMasterConfigOpenID(t *testing.T) {
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, openidIDP)
 
-	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
+	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

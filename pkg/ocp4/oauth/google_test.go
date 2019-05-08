@@ -10,7 +10,7 @@ import (
 	"github.com/fusor/cpma/pkg/ocp3"
 )
 
-func TestTranslateMasterConfigGoogle(t *testing.T) {
+func TestTransformMasterConfigGoogle(t *testing.T) {
 	file := "testdata/google-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
@@ -34,7 +34,7 @@ func TestTranslateMasterConfigGoogle(t *testing.T) {
 	googleIDP.Google.HostedDomain = "test.example.com"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, googleIDP)
 
-	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
+	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

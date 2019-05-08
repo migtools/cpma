@@ -48,20 +48,21 @@ var rootCmd = &cobra.Command{
 		env.InitLogger()
 
 		source := env.Config().GetString("Source")
-		outputDir := env.Config().GetString("OutputDir")
 
 		configs := []ocp.Translator{}
-		ocpMaster := new(ocp.ConfigMaster)
+		ocpOAuth := new(ocp.OAuthConfig)
+		ocpSDN := new(ocp.SDNConfig)
 		ocpNode := new(ocp.ConfigNode)
-		ocpMaster.Add(source)
+		ocpOAuth.Add(source)
+		ocpSDN.Add(source)
 		ocpNode.Add(source)
-		configs = append(configs, ocpMaster, ocpNode)
+
+		configs = append(configs, ocpOAuth, ocpSDN, ocpNode)
 
 		for _, config := range configs {
-			config.Fetch(outputDir)
-			config.Decode()
-			config.Translate()
-			ocp.DumpManifests(outputDir, config.GenYAML())
+			config.Extract()
+			config.Transform()
+			ocp.DumpManifests(config.GenYAML())
 		}
 	},
 }

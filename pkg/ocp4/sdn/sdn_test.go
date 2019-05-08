@@ -12,14 +12,14 @@ import (
 	"github.com/fusor/cpma/pkg/ocp3"
 )
 
-func TestTranslateMasterConfig(t *testing.T) {
+func TestTransformMasterConfig(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
 	masterV3 := ocp3.Master{}
 	masterV3.Decode(content)
 
-	resNetworkCR := Translate(masterV3.Config.NetworkConfig)
+	resNetworkCR := Transform(masterV3.Config.NetworkConfig)
 
 	// Check if network CR was translated correctly
 	assert.Equal(t, resNetworkCR.APIVersion, "operator.openshift.io/v1")
@@ -49,7 +49,7 @@ func TestSelectNetworkPlugin(t *testing.T) {
 	assert.Error(t, expectedErr, err)
 }
 
-func TestTranslateClusterNetworks(t *testing.T) {
+func TestTransformClusterNetworks(t *testing.T) {
 	var clusterNeworkEntries []configv1.ClusterNetworkEntry
 	clusterNetwork1 := configv1.ClusterNetworkEntry{CIDR: "10.128.0.0/14", HostSubnetLength: uint32(9)}
 	clusterNetwork2 := configv1.ClusterNetworkEntry{CIDR: "10.127.0.0/14", HostSubnetLength: uint32(10)}
@@ -69,7 +69,7 @@ func TestGenYAML(t *testing.T) {
 	masterV3 := ocp3.Master{}
 	masterV3.Decode(content)
 
-	networkCR := Translate(masterV3.Config.NetworkConfig)
+	networkCR := Transform(masterV3.Config.NetworkConfig)
 
 	networkCRYAML := networkCR.GenYAML()
 

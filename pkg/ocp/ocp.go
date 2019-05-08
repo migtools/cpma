@@ -10,7 +10,13 @@ import (
 	"github.com/fusor/cpma/internal/io"
 	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4"
+	"github.com/fusor/cpma/pkg/ocp4/oauth"
+	"github.com/fusor/cpma/pkg/ocp4/sdn"
+	"github.com/fusor/cpma/pkg/ocp4/secrets"
+	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 type ConfigFile struct {
@@ -19,10 +25,17 @@ type ConfigFile struct {
 	Content  []byte
 }
 
-type ConfigMaster struct {
+type OAuthConfig struct {
 	ConfigFile
-	OCP3 ocp3.Master
-	OCP4 ocp4.Master
+	OCP3    configv1.MasterConfig
+	OAuth   oauth.OAuthCRD
+	Secrets []secrets.Secret
+}
+
+type SDNConfig struct {
+	ConfigFile
+	OCP3 configv1.MasterNetworkConfig
+	SDN  sdn.NetworkCR
 }
 
 type ConfigNode struct {
@@ -33,23 +46,34 @@ type ConfigNode struct {
 
 type Translator interface {
 	Add(string)
-	Decode()
-	Fetch(string)
+	Extract()
+	Transform()
 	GenYAML() ocp4.Manifests
-	Translate()
 }
 
 // GetFile allows to mock file retrieval
 var GetFile = io.GetFile
 
-func (config *ConfigMaster) Add(hostname string) {
-	masterf := env.Config().GetString("MasterConfigFile")
+var source = env.Config().GetString("Source")
 
-	if masterf == "" {
-		masterf = "/etc/origin/master/master-config.yaml"
+func (sdnConfig *SDNConfig) Add(hostname string) {
+	path := env.Config().GetString("MasterConfigFile")
+
+	if path == "" {
+		path = "/etc/origin/master/master-config.yaml"
 	}
-	config.ConfigFile.Hostname = hostname
-	config.ConfigFile.Path = masterf
+	sdnConfig.ConfigFile.Hostname = hostname
+	sdnConfig.ConfigFile.Path = path
+}
+
+func (oauthConfig *OAuthConfig) Add(hostname string) {
+	path := env.Config().GetString("MasterConfigFile")
+
+	if path == "" {
+		path = "/etc/origin/master/master-config.yaml"
+	}
+	oauthConfig.ConfigFile.Hostname = hostname
+	oauthConfig.ConfigFile.Path = path
 }
 
 func (config *ConfigNode) Add(hostname string) {
@@ -63,8 +87,29 @@ func (config *ConfigNode) Add(hostname string) {
 	config.ConfigFile.Path = nodef
 }
 
-func (config *ConfigMaster) Decode() {
-	config.OCP3.Decode(config.ConfigFile.Content)
+func (sdnConfig *SDNConfig) Decode() {
+	var masterConfig configv1.MasterConfig
+	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+
+	_, _, err := serializer.Decode(sdnConfig.Content, nil, &masterConfig)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	sdnConfig.OCP3 = masterConfig.NetworkConfig
+}
+
+// Decode unmarshals OCP3 MasterConfig and sets OAuth
+func (oauthConfig *OAuthConfig) Decode() {
+	var masterConfig configv1.MasterConfig
+	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+
+	_, _, err := serializer.Decode(oauthConfig.Content, nil, &masterConfig)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	oauthConfig.OCP3.OAuthConfig = masterConfig.OAuthConfig
 }
 
 func (config *ConfigNode) Decode() {
@@ -72,9 +117,9 @@ func (config *ConfigNode) Decode() {
 }
 
 // DumpManifests creates OCDs files
-func DumpManifests(outputDir string, manifests ocp4.Manifests) {
+func DumpManifests(manifests ocp4.Manifests) {
 	for _, manifest := range manifests {
-		maniftestfile := filepath.Join(outputDir, "manifests", manifest.Name)
+		maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
 		os.MkdirAll(path.Dir(maniftestfile), 0755)
 		err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
 		logrus.Printf("CRD:Added: %s", maniftestfile)
@@ -84,27 +129,33 @@ func DumpManifests(outputDir string, manifests ocp4.Manifests) {
 	}
 }
 
-func (config *ConfigMaster) Fetch(outputDir string) {
-	localF := filepath.Join(outputDir, config.Hostname, config.Path)
-	config.ConfigFile.Content = GetFile(config.Hostname, config.Path, localF)
+func Fetch(configFile *ConfigFile) {
+	localF := filepath.Join(env.Config().GetString("OutputDir"), configFile.Hostname, configFile.Path)
+	configFile.Content = GetFile(configFile.Hostname, configFile.Path, localF)
 	logrus.Printf("File:Loaded: %s", localF)
 }
 
-func (config *ConfigNode) Fetch(outputDir string) {
-	localF := filepath.Join(outputDir, config.Hostname, config.Path)
-	config.ConfigFile.Content = GetFile(config.Hostname, config.Path, localF)
-	logrus.Printf("File:Loaded: %s", localF)
+// GenYAML returns the list of OAuth CRDs
+func (oauthConfig *OAuthConfig) GenYAML() ocp4.Manifests {
+	var manifests ocp4.Manifests
+
+	// Generate yaml for oauth config
+	crd := oauthConfig.OAuth.GenYAML()
+	manifests = ocp4.OAuthManifest(oauthConfig.OAuth.Kind, crd, manifests)
+
+	for _, secretManifest := range oauthConfig.Secrets {
+		crd := secretManifest.GenYAML()
+		manifests = ocp4.SecretsManifest(secretManifest, crd, manifests)
+	}
+
+	return manifests
 }
 
 // GenYAML returns the list of translated CRDs
-func (config *ConfigMaster) GenYAML() ocp4.Manifests {
+func (sdnConfig *SDNConfig) GenYAML() ocp4.Manifests {
 	var manifests ocp4.Manifests
-
-	masterManifests := config.OCP4.GenYAML()
-
-	for _, manifest := range masterManifests {
-		manifests = append(manifests, manifest)
-	}
+	crd := sdnConfig.SDN.GenYAML()
+	manifests = ocp4.SDNManifest(crd, manifests)
 	return manifests
 }
 
@@ -120,12 +171,47 @@ func (config *ConfigNode) GenYAML() ocp4.Manifests {
 	return manifests
 }
 
-// Translate OCP3 to OCP4
-func (config *ConfigMaster) Translate() {
-	config.OCP4.Translate(config.OCP3.Config)
+// Extract fetch then decode OCP3 OAuth component
+func (oauthConfig *OAuthConfig) Extract() {
+	Fetch(&oauthConfig.ConfigFile)
+	oauthConfig.Decode()
 }
 
-// Translate OCP3 to OCP4
-func (config *ConfigNode) Translate() {
-	config.OCP4.Translate(config.OCP3.Config)
+// Extract fetch then decode OCP3 component
+func (sdnConfig *SDNConfig) Extract() {
+	Fetch(&sdnConfig.ConfigFile)
+	sdnConfig.Decode()
+}
+
+// Extract fetch then decode OCP3 component
+func (config *ConfigNode) Extract() {
+	Fetch(&config.ConfigFile)
+	config.Decode()
+}
+
+// Transform OCP3 to OCP4
+func (oauthConfig *OAuthConfig) Transform() {
+	if oauthConfig.OCP3.OAuthConfig != nil {
+		logrus.Debugln("Transforming oauth config")
+		oauth, secretList, err := oauth.Transform(oauthConfig.OCP3.OAuthConfig)
+
+		if err != nil {
+			logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", oauthConfig.OCP3.OAuthConfig)
+		}
+		oauthConfig.OAuth = *oauth
+		oauthConfig.Secrets = secretList
+	}
+}
+
+func (sdnConfig *SDNConfig) Transform() {
+	if &sdnConfig.OCP3 != nil {
+		logrus.Debugln("Translating SDN config")
+		networkCR := sdn.Transform(sdnConfig.OCP3)
+		sdnConfig.SDN = *networkCR
+	}
+}
+
+// Transform OCP3 to OCP4
+func (config *ConfigNode) Transform() {
+	config.OCP4.Transform(config.OCP3.Config)
 }

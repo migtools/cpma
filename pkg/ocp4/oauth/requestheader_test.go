@@ -10,7 +10,7 @@ import (
 	"github.com/fusor/cpma/pkg/ocp3"
 )
 
-func TestTranslateMasterConfigRequestHeader(t *testing.T) {
+func TestTransformMasterConfigRequestHeader(t *testing.T) {
 	file := "testdata/requestheader-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
@@ -40,7 +40,7 @@ func TestTranslateMasterConfigRequestHeader(t *testing.T) {
 	requestHeaderIDP.RequestHeader.PreferredUsernameHeaders = []string{"X-Remote-User-Login"}
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, requestHeaderIDP)
 
-	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
+	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

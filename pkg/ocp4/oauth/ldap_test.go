@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTranslateMasterConfigLDAP(t *testing.T) {
+func TestTransformMasterConfigLDAP(t *testing.T) {
 	file := "testdata/ldap-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
@@ -39,7 +39,7 @@ func TestTranslateMasterConfigLDAP(t *testing.T) {
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, ldapIDP)
 
-	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
+	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

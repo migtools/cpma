@@ -10,7 +10,7 @@ import (
 	"github.com/fusor/cpma/pkg/ocp3"
 )
 
-func TestTranslateMasterConfigGithub(t *testing.T) {
+func TestTransformMasterConfigGithub(t *testing.T) {
 	file := "testdata/github-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
@@ -37,7 +37,7 @@ func TestTranslateMasterConfigGithub(t *testing.T) {
 	githubIDP.GitHub.ClientSecret.Name = "github123456789-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, githubIDP)
 
-	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
+	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

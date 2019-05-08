@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTranslateMasterConfigHtpasswd(t *testing.T) {
+func TestTransformMasterConfigHtpasswd(t *testing.T) {
 	defer func() { GetFile = _GetFile }()
 	GetFile = mockGetFile
 
@@ -34,7 +34,7 @@ func TestTranslateMasterConfigHtpasswd(t *testing.T) {
 	htpasswdIDP.HTPasswd.FileData.Name = "htpasswd_auth-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, htpasswdIDP)
 
-	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
+	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

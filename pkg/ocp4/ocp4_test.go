@@ -16,7 +16,7 @@ func mockGetFile(a, b, c string) []byte {
 	return []byte("This is test file content")
 }
 
-func TestClusterTranslate(t *testing.T) {
+func TestClusterTransform(t *testing.T) {
 	defer func() { oauth.GetFile = _GetFile }()
 	oauth.GetFile = mockGetFile
 
@@ -26,7 +26,7 @@ func TestClusterTranslate(t *testing.T) {
 
 	masterV3 := ocp3.Master{}
 	masterV3.Decode(content)
-	masterV4.Translate(masterV3.Config)
+	masterV4.Transform(masterV3.Config)
 
 	assert.Equal(t, "cluster", masterV4.OAuth.Metadata.Name)
 	assert.Equal(t, 2, len(masterV4.OAuth.Spec.IdentityProviders))
@@ -46,7 +46,7 @@ func TestClusterGenYaml(t *testing.T) {
 
 	masterV3 := ocp3.Master{}
 	masterV3.Decode(content)
-	masterV4.Translate(masterV3.Config)
+	masterV4.Transform(masterV3.Config)
 	manifests := masterV4.GenYAML()
 
 	// Test manifest names

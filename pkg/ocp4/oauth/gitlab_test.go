@@ -10,7 +10,7 @@ import (
 	"github.com/fusor/cpma/pkg/ocp3"
 )
 
-func TestTranslateMasterConfigGitlab(t *testing.T) {
+func TestTransformMasterConfigGitlab(t *testing.T) {
 	file := "testdata/gitlab-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
@@ -35,7 +35,7 @@ func TestTranslateMasterConfigGitlab(t *testing.T) {
 	gitlabIDP.GitLab.ClientSecret.Name = "gitlab123456789-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, gitlabIDP)
 
-	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
+	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

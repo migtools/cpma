@@ -10,7 +10,7 @@ import (
 	"github.com/fusor/cpma/pkg/ocp3"
 )
 
-func TestTranslateMasterConfigBasicAuth(t *testing.T) {
+func TestTransformMasterConfigBasicAuth(t *testing.T) {
 	file := "testdata/basicauth-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
@@ -36,7 +36,7 @@ func TestTranslateMasterConfigBasicAuth(t *testing.T) {
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, basicAuthIDP)
 
-	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
+	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

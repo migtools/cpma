@@ -17,7 +17,7 @@ func mockGetFile(host, src, dst string) []byte {
 	return []byte("This is test file content")
 }
 
-func TestTranslateMasterConfig(t *testing.T) {
+func TestTransformMasterConfig(t *testing.T) {
 	defer func() { GetFile = _GetFile }()
 	GetFile = mockGetFile
 
@@ -27,7 +27,7 @@ func TestTranslateMasterConfig(t *testing.T) {
 	masterV3 := ocp3.Master{}
 	masterV3.Decode(content)
 
-	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
+	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, len(resCrd.Spec.IdentityProviders), 9)
 	assert.Equal(t, resCrd.Spec.IdentityProviders[0].(identityProviderBasicAuth).Type, "BasicAuth")
@@ -51,7 +51,7 @@ func TestGenYAML(t *testing.T) {
 	masterV3 := ocp3.Master{}
 	masterV3.Decode(content)
 
-	crd, manifests, err := Translate(masterV3.Config.OAuthConfig)
+	crd, manifests, err := Transform(masterV3.Config.OAuthConfig)
 	require.NoError(t, err)
 
 	CRD := crd.GenYAML()
