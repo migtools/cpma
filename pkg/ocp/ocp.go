@@ -14,6 +14,7 @@ import (
 
 const MasterConfigFile = "/etc/origin/master/master-config.yaml"
 const NodeConfigFile = "/etc/origin/node/node-config.yaml"
+const RegistriesConfigFile = "/etc/containers/registries.conf"
 
 // DumpManifests creates OCDs files
 func (config *Config) DumpManifests(manifests []ocp4.Manifest) {

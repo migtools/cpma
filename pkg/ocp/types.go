@@ -11,10 +11,11 @@ type Provider struct {
 }
 
 type Config struct {
-	MasterConfigFile string
-	NodeConfigFile   string
-	OutputDir        string
-	Hostname         string
+	MasterConfigFile     string
+	NodeConfigFile       string
+	RegistriesConfigFile string
+	OutputDir            string
+	Hostname             string
 }
 
 type ManifestTransformOutput struct {

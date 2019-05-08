@@ -51,10 +51,14 @@ var rootCmd = &cobra.Command{
 		config.OutputDir = env.Config().GetString("OutputDir")
 		config.Hostname = env.Config().GetString("Source")
 		config.MasterConfigFile = ocp.MasterConfigFile
+		config.RegistriesConfigFile = ocp.RegistriesConfigFile
 		transformRunner := ocp.NewTransformRunner(config)
 
 		if err := transformRunner.Run([]ocp.Transform{
 			ocp.OAuthTransform{
+				Config: &config,
+			},
+			ocp.RegistriesTransform{
 				Config: &config,
 			},
 		}); err != nil {
