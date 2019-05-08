@@ -58,6 +58,9 @@ var rootCmd = &cobra.Command{
 			ocp.OAuthTransform{
 				Config: &config,
 			},
+			ocp.SDNTransform{
+				Config: &config,
+			},
 			ocp.RegistriesTransform{
 				Config: &config,
 			},
