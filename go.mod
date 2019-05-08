@@ -1,7 +1,7 @@
 module github.com/fusor/cpma
 
 require (
-	github.com/Azure/go-autorest/autorest v0.1.0 // indirect
+	github.com/BurntSushi/toml v0.3.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/go-openapi/loads v0.19.0 // indirect

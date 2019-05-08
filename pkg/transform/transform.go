@@ -57,6 +57,9 @@ func Start() {
 		SDNTransform{
 			Config: &config,
 		},
+		RegistriesTransform{
+			Config: &config,
+		},
 	}); err != nil {
 		logrus.WithError(err).Fatalf("%s", err.Error())
 	}
