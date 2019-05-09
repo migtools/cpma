@@ -25,13 +25,40 @@ Flags:
 -o, --output-dir string   set the directory to store extracted configuration.
 ```
 
-You can find example config in `examples/` 
+You can find example config in `examples/`
 
 Example:
 
 ```console
 $ ./bin/cpma --config /path/to/config/.yml --debug
 ```
+
+# IO
+
+The data file structure looks like the following tree structure example.
+The cluster endpoints subfolders contain the configuration files retrieved and to process.
+The manifests directory contains the generated CRDs.
+
+data
+├── manifests
+├── master-0.example.com
+|   └── etc
+|       └── origin
+|           ├── master
+|               ├── htpasswd
+|               └── master-config.yaml
+└── node-1.example.com
+    └── etc
+        └── origin
+            └── node
+                └── node-config.yaml
+
+
+The configuration files are retrieved from local disk (outputDir/<Hostname>/),
+If a file is not available it's retrieved from <Hostname> and stored on local disk.
+
+To trigger a total or partial network file fetch, remove any prior data from <Hostname> sub directory.
+
 
 # Unit tests
 

@@ -108,5 +108,6 @@ func Fetch(hostname, src, dst string) {
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	logrus.Printf("File %s:%s: %d bytes copied", hostname, src, bytes)
+
+	logrus.Printf("SFTP: %s:%s: %d bytes copied", hostname, src, bytes)
 }
