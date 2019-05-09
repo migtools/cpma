@@ -1,29 +1,27 @@
-package oauth
+package oauth_test
 
 import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/ocp3"
+	"github.com/fusor/cpma/pkg/ocp4/oauth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/fusor/cpma/pkg/ocp3"
 )
 
 func TestTransformMasterConfigGitlab(t *testing.T) {
 	file := "testdata/gitlab-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
+	masterV3 := ocp3.MasterDecode(content)
 
-	masterV3 := ocp3.Master{}
-	masterV3.Decode(content)
-
-	var expectedCrd OAuthCRD
+	var expectedCrd oauth.OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = "openshift-config"
 
-	var gitlabIDP identityProviderGitLab
+	var gitlabIDP oauth.IdentityProviderGitLab
 	gitlabIDP.Type = "GitLab"
 	gitlabIDP.Challenge = true
 	gitlabIDP.Login = true
@@ -35,7 +33,7 @@ func TestTransformMasterConfigGitlab(t *testing.T) {
 	gitlabIDP.GitLab.ClientSecret.Name = "gitlab123456789-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, gitlabIDP)
 
-	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
+	resCrd, _, err := oauth.Transform(masterV3.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

@@ -1,4 +1,4 @@
-package oauth
+package oauth_test
 
 import (
 	"io/ioutil"
@@ -8,22 +8,21 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/fusor/cpma/pkg/ocp3"
+	"github.com/fusor/cpma/pkg/ocp4/oauth"
 )
 
 func TestTransformMasterConfigGithub(t *testing.T) {
 	file := "testdata/github-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
+	masterV3 := ocp3.MasterDecode(content)
 
-	masterV3 := ocp3.Master{}
-	masterV3.Decode(content)
-
-	var expectedCrd OAuthCRD
+	var expectedCrd oauth.OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = "openshift-config"
 
-	var githubIDP identityProviderGitHub
+	var githubIDP oauth.IdentityProviderGitHub
 	githubIDP.Type = "GitHub"
 	githubIDP.Challenge = false
 	githubIDP.Login = true
@@ -37,7 +36,7 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 	githubIDP.GitHub.ClientSecret.Name = "github123456789-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, githubIDP)
 
-	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
+	resCrd, _, err := oauth.Transform(masterV3.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

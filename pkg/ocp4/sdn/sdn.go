@@ -49,11 +49,11 @@ func Transform(networkConfig configv1.MasterNetworkConfig) *NetworkCR {
 	networkCR.Spec.DefaultNetwork.Type = defaultNetworkType
 
 	// Transform CIDRs and adress size for each node
-	translatedClusterNetworks := translateClusterNetworks(networkConfig.ClusterNetworks)
+	translatedClusterNetworks := TranslateClusterNetworks(networkConfig.ClusterNetworks)
 	networkCR.Spec.ClusterNetworks = translatedClusterNetworks
 
 	// Transform network plugin name
-	selectedNetworkPlugin, err := selectNetworkPlugin(networkConfig.NetworkPluginName)
+	selectedNetworkPlugin, err := SelectNetworkPlugin(networkConfig.NetworkPluginName)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func Transform(networkConfig configv1.MasterNetworkConfig) *NetworkCR {
 	return &networkCR
 }
 
-func translateClusterNetworks(clusterNeworkEntries []configv1.ClusterNetworkEntry) []ClusterNetwork {
+func TranslateClusterNetworks(clusterNeworkEntries []configv1.ClusterNetworkEntry) []ClusterNetwork {
 	translatedClusterNetworks := make([]ClusterNetwork, 0)
 
 	for _, networkConfig := range clusterNeworkEntries {
@@ -77,7 +77,7 @@ func translateClusterNetworks(clusterNeworkEntries []configv1.ClusterNetworkEntr
 	return translatedClusterNetworks
 }
 
-func selectNetworkPlugin(pluginName string) (string, error) {
+func SelectNetworkPlugin(pluginName string) (string, error) {
 	var selectedName string
 
 	switch pluginName {

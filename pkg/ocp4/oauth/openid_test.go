@@ -1,10 +1,11 @@
-package oauth
+package oauth_test
 
 import (
 	"io/ioutil"
 	"testing"
 
 	"github.com/fusor/cpma/pkg/ocp3"
+	"github.com/fusor/cpma/pkg/ocp4/oauth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -12,17 +13,15 @@ import (
 func TestTransformMasterConfigOpenID(t *testing.T) {
 	file := "testdata/openid-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
+	masterV3 := ocp3.MasterDecode(content)
 
-	masterV3 := ocp3.Master{}
-	masterV3.Decode(content)
-
-	var expectedCrd OAuthCRD
+	var expectedCrd oauth.OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = "openshift-config"
 
-	var openidIDP identityProviderOpenID
+	var openidIDP oauth.IdentityProviderOpenID
 	openidIDP.Type = "OpenID"
 	openidIDP.Challenge = false
 	openidIDP.Login = true
@@ -38,7 +37,7 @@ func TestTransformMasterConfigOpenID(t *testing.T) {
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, openidIDP)
 
-	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
+	resCrd, _, err := oauth.Transform(masterV3.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

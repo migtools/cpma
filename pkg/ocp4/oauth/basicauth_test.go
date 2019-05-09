@@ -1,4 +1,4 @@
-package oauth
+package oauth_test
 
 import (
 	"io/ioutil"
@@ -8,22 +8,21 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/fusor/cpma/pkg/ocp3"
+	"github.com/fusor/cpma/pkg/ocp4/oauth"
 )
 
 func TestTransformMasterConfigBasicAuth(t *testing.T) {
 	file := "testdata/basicauth-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
+	masterV3 := ocp3.MasterDecode(content)
 
-	masterV3 := ocp3.Master{}
-	masterV3.Decode(content)
-
-	var expectedCrd OAuthCRD
+	var expectedCrd oauth.OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = "openshift-config"
 
-	var basicAuthIDP identityProviderBasicAuth
+	var basicAuthIDP oauth.IdentityProviderBasicAuth
 	basicAuthIDP.Type = "BasicAuth"
 	basicAuthIDP.Challenge = true
 	basicAuthIDP.Login = true
@@ -36,7 +35,7 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, basicAuthIDP)
 
-	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
+	resCrd, _, err := oauth.Transform(masterV3.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

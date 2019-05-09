@@ -9,7 +9,6 @@ import (
 )
 
 func TestConfigDecodeMaster(t *testing.T) {
-	master := Master{}
 	file := "../testdata/common-test-master-config.yaml"
 
 	content, _ := ioutil.ReadFile(file)
@@ -37,8 +36,8 @@ func TestConfigDecodeMaster(t *testing.T) {
 		},
 	}
 
-	master.Decode(content)
-	resMasterConfig := master.Config
+	master := MasterDecode(content)
+	resMasterConfig := master //.Config
 
 	assert.Equal(t, expectedMasterConfig.AuthConfig.RequestHeader.ClientCA, resMasterConfig.AuthConfig.RequestHeader.ClientCA)
 	assert.Equal(t, expectedMasterConfig.EtcdClientInfo.CA, resMasterConfig.EtcdClientInfo.CA)

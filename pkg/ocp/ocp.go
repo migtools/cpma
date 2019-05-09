@@ -15,8 +15,6 @@ import (
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-	"k8s.io/client-go/kubernetes/scheme"
 )
 
 type ConfigFile struct {
@@ -36,12 +34,6 @@ type SDNConfig struct {
 	ConfigFile
 	OCP3 configv1.MasterNetworkConfig
 	SDN  sdn.NetworkCR
-}
-
-type ConfigNode struct {
-	ConfigFile
-	OCP3 ocp3.Node
-	OCP4 ocp4.Node
 }
 
 type Translator interface {
@@ -76,44 +68,15 @@ func (oauthConfig *OAuthConfig) Add(hostname string) {
 	oauthConfig.ConfigFile.Path = path
 }
 
-func (config *ConfigNode) Add(hostname string) {
-	nodef := env.Config().GetString("NodeConfigFile")
-
-	if nodef == "" {
-		nodef = "/etc/origin/node/node-config.yaml"
-	}
-
-	config.ConfigFile.Hostname = hostname
-	config.ConfigFile.Path = nodef
-}
-
-func (sdnConfig *SDNConfig) Decode() {
-	var masterConfig configv1.MasterConfig
-	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-
-	_, _, err := serializer.Decode(sdnConfig.Content, nil, &masterConfig)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	sdnConfig.OCP3 = masterConfig.NetworkConfig
-}
-
 // Decode unmarshals OCP3 MasterConfig and sets OAuth
 func (oauthConfig *OAuthConfig) Decode() {
-	var masterConfig configv1.MasterConfig
-	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-
-	_, _, err := serializer.Decode(oauthConfig.Content, nil, &masterConfig)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
+	masterConfig := ocp3.MasterDecode(oauthConfig.Content)
 	oauthConfig.OCP3.OAuthConfig = masterConfig.OAuthConfig
 }
 
-func (config *ConfigNode) Decode() {
-	config.OCP3.Decode(config.ConfigFile.Content)
+func (sdnConfig *SDNConfig) Decode() {
+	masterConfig := ocp3.MasterDecode(sdnConfig.Content)
+	sdnConfig.OCP3 = masterConfig.NetworkConfig
 }
 
 // DumpManifests creates OCDs files
@@ -159,18 +122,6 @@ func (sdnConfig *SDNConfig) GenYAML() ocp4.Manifests {
 	return manifests
 }
 
-// GenYAML returns the list of translated CRDs
-func (config *ConfigNode) GenYAML() ocp4.Manifests {
-	var manifests ocp4.Manifests
-
-	nodeManifests := config.OCP4.GenYAML()
-
-	for _, manifest := range nodeManifests {
-		manifests = append(manifests, manifest)
-	}
-	return manifests
-}
-
 // Extract fetch then decode OCP3 OAuth component
 func (oauthConfig *OAuthConfig) Extract() {
 	Fetch(&oauthConfig.ConfigFile)
@@ -183,13 +134,7 @@ func (sdnConfig *SDNConfig) Extract() {
 	sdnConfig.Decode()
 }
 
-// Extract fetch then decode OCP3 component
-func (config *ConfigNode) Extract() {
-	Fetch(&config.ConfigFile)
-	config.Decode()
-}
-
-// Transform OCP3 to OCP4
+// Transform OAuthConfig from OCP3 to OCP4
 func (oauthConfig *OAuthConfig) Transform() {
 	if oauthConfig.OCP3.OAuthConfig != nil {
 		logrus.Debugln("Transforming oauth config")
@@ -203,15 +148,11 @@ func (oauthConfig *OAuthConfig) Transform() {
 	}
 }
 
+// Transform SDNConfig from OCP3 to OCP4
 func (sdnConfig *SDNConfig) Transform() {
 	if &sdnConfig.OCP3 != nil {
 		logrus.Debugln("Translating SDN config")
 		networkCR := sdn.Transform(sdnConfig.OCP3)
 		sdnConfig.SDN = *networkCR
 	}
-}
-
-// Transform OCP3 to OCP4
-func (config *ConfigNode) Transform() {
-	config.OCP4.Transform(config.OCP3.Config)
 }

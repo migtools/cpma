@@ -9,7 +9,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-type identityProviderGitHub struct {
+type IdentityProviderGitHub struct {
 	identityProviderCommon `yaml:",inline"`
 	GitHub                 struct {
 		HostName string `yaml:"hostname"`
@@ -25,8 +25,8 @@ type identityProviderGitHub struct {
 	} `yaml:"github"`
 }
 
-func buildGitHubIP(serializer *json.Serializer, p configv1.IdentityProvider) (identityProviderGitHub, secrets.Secret) {
-	var idP identityProviderGitHub
+func buildGitHubIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderGitHub, secrets.Secret) {
+	var idP IdentityProviderGitHub
 	var github configv1.GitHubIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &github)
 

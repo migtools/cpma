@@ -6,7 +6,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-type identityProviderLDAP struct {
+type IdentityProviderLDAP struct {
 	identityProviderCommon `yaml:",inline"`
 	LDAP                   struct {
 		Attributes struct {
@@ -25,8 +25,8 @@ type identityProviderLDAP struct {
 	} `yaml:"ldap"`
 }
 
-func buildLdapIP(serializer *json.Serializer, p configv1.IdentityProvider) identityProviderLDAP {
-	var idP identityProviderLDAP
+func buildLdapIP(serializer *json.Serializer, p configv1.IdentityProvider) IdentityProviderLDAP {
+	var idP IdentityProviderLDAP
 	var ldap configv1.LDAPPasswordIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &ldap)
 

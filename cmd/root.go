@@ -52,12 +52,10 @@ var rootCmd = &cobra.Command{
 		configs := []ocp.Translator{}
 		ocpOAuth := new(ocp.OAuthConfig)
 		ocpSDN := new(ocp.SDNConfig)
-		ocpNode := new(ocp.ConfigNode)
 		ocpOAuth.Add(source)
 		ocpSDN.Add(source)
-		ocpNode.Add(source)
 
-		configs = append(configs, ocpOAuth, ocpSDN, ocpNode)
+		configs = append(configs, ocpOAuth, ocpSDN)
 
 		for _, config := range configs {
 			config.Extract()

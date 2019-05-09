@@ -11,7 +11,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-type identityProviderHTPasswd struct {
+type IdentityProviderHTPasswd struct {
 	identityProviderCommon `yaml:",inline"`
 	HTPasswd               struct {
 		FileData struct {
@@ -20,8 +20,8 @@ type identityProviderHTPasswd struct {
 	} `yaml:"htpasswd"`
 }
 
-func buildHTPasswdIP(serializer *json.Serializer, p configv1.IdentityProvider) (identityProviderHTPasswd, secrets.Secret) {
-	var idP identityProviderHTPasswd
+func buildHTPasswdIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderHTPasswd, secrets.Secret) {
+	var idP IdentityProviderHTPasswd
 	var htpasswd configv1.HTPasswdPasswordIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
 

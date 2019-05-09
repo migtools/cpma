@@ -7,7 +7,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-type identityProviderGoogle struct {
+type IdentityProviderGoogle struct {
 	identityProviderCommon `yaml:",inline"`
 	Google                 struct {
 		ClientID     string `yaml:"clientID"`
@@ -18,8 +18,8 @@ type identityProviderGoogle struct {
 	} `yaml:"google"`
 }
 
-func buildGoogleIP(serializer *json.Serializer, p configv1.IdentityProvider) (identityProviderGoogle, secrets.Secret) {
-	var idP identityProviderGoogle
+func buildGoogleIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderGoogle, secrets.Secret) {
+	var idP IdentityProviderGoogle
 	var google configv1.GoogleIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &google)
 

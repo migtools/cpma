@@ -11,7 +11,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-type identityProviderKeystone struct {
+type IdentityProviderKeystone struct {
 	identityProviderCommon `yaml:",inline"`
 	Keystone               struct {
 		DomainName string `yaml:"domainName"`
@@ -28,9 +28,9 @@ type identityProviderKeystone struct {
 	} `yaml:"keystone"`
 }
 
-func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (identityProviderKeystone, secrets.Secret, secrets.Secret) {
+func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret) {
 	var (
-		idP        identityProviderKeystone
+		idP        IdentityProviderKeystone
 		keystone   configv1.KeystonePasswordIdentityProvider
 		certSecret = new(secrets.Secret)
 		keySecret  = new(secrets.Secret)

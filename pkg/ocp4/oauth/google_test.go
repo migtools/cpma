@@ -1,29 +1,27 @@
-package oauth
+package oauth_test
 
 import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/ocp3"
+	"github.com/fusor/cpma/pkg/ocp4/oauth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/fusor/cpma/pkg/ocp3"
 )
 
 func TestTransformMasterConfigGoogle(t *testing.T) {
 	file := "testdata/google-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
+	masterV3 := ocp3.MasterDecode(content)
 
-	masterV3 := ocp3.Master{}
-	masterV3.Decode(content)
-
-	var expectedCrd OAuthCRD
+	var expectedCrd oauth.OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = "openshift-config"
 
-	var googleIDP identityProviderGoogle
+	var googleIDP oauth.IdentityProviderGoogle
 	googleIDP.Type = "Google"
 	googleIDP.Challenge = false
 	googleIDP.Login = true
@@ -34,7 +32,7 @@ func TestTransformMasterConfigGoogle(t *testing.T) {
 	googleIDP.Google.HostedDomain = "test.example.com"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, googleIDP)
 
-	resCrd, _, err := Transform(masterV3.Config.OAuthConfig)
+	resCrd, _, err := oauth.Transform(masterV3.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }
