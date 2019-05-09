@@ -26,8 +26,8 @@ const manifestPrefix = "100_CPMA-cluster-"
 func OAuthManifest(oauthCRKind string, crd []byte, manifests Manifests) Manifests {
 	if oauthCRKind != "" {
 		filename := manifestPrefix + "config-oauth.yaml"
-		m := Manifest{Name: filename, CRD: crd}
-		manifests = append(manifests, m)
+		manifest := Manifest{Name: filename, CRD: crd}
+		manifests = append(manifests, manifest)
 	} else {
 		logrus.Debugln("Skipping oauth, no manifests found")
 	}
@@ -36,14 +36,14 @@ func OAuthManifest(oauthCRKind string, crd []byte, manifests Manifests) Manifest
 
 func SecretsManifest(secret secrets.Secret, crd []byte, manifests Manifests) Manifests {
 	filename := manifestPrefix + "config-secret-" + secret.Metadata.Name + ".yaml"
-	m := Manifest{Name: filename, CRD: crd}
-	manifests = append(manifests, m)
+	manifest := Manifest{Name: filename, CRD: crd}
+	manifests = append(manifests, manifest)
 	return manifests
 }
 
 func SDNManifest(networkCR []byte, manifests Manifests) Manifests {
 	filename := manifestPrefix + "config-sdn.yaml"
-	m := Manifest{Name: filename, CRD: networkCR}
-	manifests = append(manifests, m)
+	manifest := Manifest{Name: filename, CRD: networkCR}
+	manifests = append(manifests, manifest)
 	return manifests
 }

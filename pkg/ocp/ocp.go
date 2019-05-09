@@ -40,7 +40,7 @@ type Translator interface {
 	Add(string)
 	Extract()
 	Transform()
-	GenYAML() ocp4.Manifests
+	Load()
 }
 
 // GetFile allows to mock file retrieval
@@ -79,7 +79,15 @@ func (sdnConfig *SDNConfig) Decode() {
 	sdnConfig.OCP3 = masterConfig.NetworkConfig
 }
 
-// DumpManifests creates OCDs files
+func (oauthConfig *OAuthConfig) Load() {
+	DumpManifests(oauthConfig.GenYAML())
+}
+
+func (sdnConfig *SDNConfig) Load() {
+	DumpManifests(sdnConfig.GenYAML())
+}
+
+// DumpManifests creates Manifests file from OCDs
 func DumpManifests(manifests ocp4.Manifests) {
 	for _, manifest := range manifests {
 		maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)

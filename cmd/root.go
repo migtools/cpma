@@ -60,7 +60,7 @@ var rootCmd = &cobra.Command{
 		for _, config := range configs {
 			config.Extract()
 			config.Transform()
-			ocp.DumpManifests(config.GenYAML())
+			config.Load()
 		}
 	},
 }
