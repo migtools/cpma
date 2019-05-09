@@ -17,12 +17,12 @@ func mockGetFile(a, b, c string) []byte {
 	return []byte("This is test file content")
 }
 
-func TestAddOAuthConfig(t *testing.T) {
+func TestAddOAuthTranslator(t *testing.T) {
 	// Init config with default master config paths
-	ocpMaster := OAuthConfig{}
+	ocpMaster := OAuthTranslator{}
 	ocpMaster.Add("example.com")
 
-	assert.Equal(t, OAuthConfig{
+	assert.Equal(t, OAuthTranslator{
 		ConfigFile: ConfigFile{
 			Hostname: "example.com",
 			Path:     "/etc/origin/master/master-config.yaml",
@@ -31,10 +31,10 @@ func TestAddOAuthConfig(t *testing.T) {
 
 	// Init config with different master config path
 	env.Config().Set("MasterConfigFile", "/test/path/master.yml")
-	ocpMaster = OAuthConfig{}
+	ocpMaster = OAuthTranslator{}
 	ocpMaster.Add("example.com")
 
-	assert.Equal(t, OAuthConfig{
+	assert.Equal(t, OAuthTranslator{
 		ConfigFile: ConfigFile{
 			Hostname: "example.com",
 			Path:     "/test/path/master.yml",
@@ -43,12 +43,12 @@ func TestAddOAuthConfig(t *testing.T) {
 	env.Config().Set("MasterConfigFile", "/etc/origin/master/master-config.yaml")
 }
 
-func TestAddSDNConfig(t *testing.T) {
+func TestAddSDNTranslator(t *testing.T) {
 	// Init config with default node config paths
-	ocpMaster := SDNConfig{}
+	ocpMaster := SDNTranslator{}
 	ocpMaster.Add("example.com")
 
-	assert.Equal(t, SDNConfig{
+	assert.Equal(t, SDNTranslator{
 		ConfigFile: ConfigFile{
 			Hostname: "example.com",
 			Path:     "/etc/origin/master/master-config.yaml",
@@ -57,10 +57,10 @@ func TestAddSDNConfig(t *testing.T) {
 
 	// Init config with different node config paths
 	env.Config().Set("MasterConfigFile", "/test/path/another.yml")
-	ocpMaster = SDNConfig{}
+	ocpMaster = SDNTranslator{}
 	ocpMaster.Add("example.com")
 
-	assert.Equal(t, SDNConfig{
+	assert.Equal(t, SDNTranslator{
 		ConfigFile: ConfigFile{
 			Hostname: "example.com",
 			Path:     "/test/path/another.yml",
@@ -93,7 +93,7 @@ func TestGenYamlOAuth(t *testing.T) {
 	content, _ := ioutil.ReadFile(file)
 	masterV3 := ocp3.MasterDecode(content)
 
-	oauthConfig := OAuthConfig{}
+	oauthConfig := OAuthTranslator{}
 	oauthConfig.OCP3.OAuthConfig = masterV3.OAuthConfig
 	oauthConfig.Transform()
 

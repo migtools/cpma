@@ -50,8 +50,8 @@ var rootCmd = &cobra.Command{
 		source := env.Config().GetString("Source")
 
 		configs := []ocp.Translator{}
-		ocpOAuth := new(ocp.OAuthConfig)
-		ocpSDN := new(ocp.SDNConfig)
+		ocpOAuth := new(ocp.OAuthTranslator)
+		ocpSDN := new(ocp.SDNTranslator)
 		ocpOAuth.Add(source)
 		ocpSDN.Add(source)
 

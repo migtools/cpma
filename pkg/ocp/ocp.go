@@ -23,14 +23,14 @@ type ConfigFile struct {
 	Content  []byte
 }
 
-type OAuthConfig struct {
+type OAuthTranslator struct {
 	ConfigFile
 	OCP3    configv1.MasterConfig
 	OAuth   oauth.OAuthCRD
 	Secrets []secrets.Secret
 }
 
-type SDNConfig struct {
+type SDNTranslator struct {
 	ConfigFile
 	OCP3 configv1.MasterNetworkConfig
 	SDN  sdn.NetworkCR
@@ -48,7 +48,7 @@ var GetFile = io.GetFile
 
 var source = env.Config().GetString("Source")
 
-func (sdnConfig *SDNConfig) Add(hostname string) {
+func (sdnConfig *SDNTranslator) Add(hostname string) {
 	path := env.Config().GetString("MasterConfigFile")
 
 	if path == "" {
@@ -58,7 +58,7 @@ func (sdnConfig *SDNConfig) Add(hostname string) {
 	sdnConfig.ConfigFile.Path = path
 }
 
-func (oauthConfig *OAuthConfig) Add(hostname string) {
+func (oauthConfig *OAuthTranslator) Add(hostname string) {
 	path := env.Config().GetString("MasterConfigFile")
 
 	if path == "" {
@@ -69,21 +69,21 @@ func (oauthConfig *OAuthConfig) Add(hostname string) {
 }
 
 // Decode unmarshals OCP3 MasterConfig and sets OAuth
-func (oauthConfig *OAuthConfig) Decode() {
+func (oauthConfig *OAuthTranslator) Decode() {
 	masterConfig := ocp3.MasterDecode(oauthConfig.Content)
 	oauthConfig.OCP3.OAuthConfig = masterConfig.OAuthConfig
 }
 
-func (sdnConfig *SDNConfig) Decode() {
+func (sdnConfig *SDNTranslator) Decode() {
 	masterConfig := ocp3.MasterDecode(sdnConfig.Content)
 	sdnConfig.OCP3 = masterConfig.NetworkConfig
 }
 
-func (oauthConfig *OAuthConfig) Load() {
+func (oauthConfig *OAuthTranslator) Load() {
 	DumpManifests(oauthConfig.GenYAML())
 }
 
-func (sdnConfig *SDNConfig) Load() {
+func (sdnConfig *SDNTranslator) Load() {
 	DumpManifests(sdnConfig.GenYAML())
 }
 
@@ -107,7 +107,7 @@ func Fetch(configFile *ConfigFile) {
 }
 
 // GenYAML returns the list of OAuth CRDs
-func (oauthConfig *OAuthConfig) GenYAML() ocp4.Manifests {
+func (oauthConfig *OAuthTranslator) GenYAML() ocp4.Manifests {
 	var manifests ocp4.Manifests
 
 	// Generate yaml for oauth config
@@ -123,7 +123,7 @@ func (oauthConfig *OAuthConfig) GenYAML() ocp4.Manifests {
 }
 
 // GenYAML returns the list of translated CRDs
-func (sdnConfig *SDNConfig) GenYAML() ocp4.Manifests {
+func (sdnConfig *SDNTranslator) GenYAML() ocp4.Manifests {
 	var manifests ocp4.Manifests
 	crd := sdnConfig.SDN.GenYAML()
 	manifests = ocp4.SDNManifest(crd, manifests)
@@ -131,19 +131,19 @@ func (sdnConfig *SDNConfig) GenYAML() ocp4.Manifests {
 }
 
 // Extract fetch then decode OCP3 OAuth component
-func (oauthConfig *OAuthConfig) Extract() {
+func (oauthConfig *OAuthTranslator) Extract() {
 	Fetch(&oauthConfig.ConfigFile)
 	oauthConfig.Decode()
 }
 
 // Extract fetch then decode OCP3 component
-func (sdnConfig *SDNConfig) Extract() {
+func (sdnConfig *SDNTranslator) Extract() {
 	Fetch(&sdnConfig.ConfigFile)
 	sdnConfig.Decode()
 }
 
-// Transform OAuthConfig from OCP3 to OCP4
-func (oauthConfig *OAuthConfig) Transform() {
+// Transform OAuthTranslator from OCP3 to OCP4
+func (oauthConfig *OAuthTranslator) Transform() {
 	if oauthConfig.OCP3.OAuthConfig != nil {
 		logrus.Debugln("Transforming oauth config")
 		oauth, secretList, err := oauth.Transform(oauthConfig.OCP3.OAuthConfig)
@@ -156,8 +156,8 @@ func (oauthConfig *OAuthConfig) Transform() {
 	}
 }
 
-// Transform SDNConfig from OCP3 to OCP4
-func (sdnConfig *SDNConfig) Transform() {
+// Transform SDNTranslator from OCP3 to OCP4
+func (sdnConfig *SDNTranslator) Transform() {
 	if &sdnConfig.OCP3 != nil {
 		logrus.Debugln("Translating SDN config")
 		networkCR := sdn.Transform(sdnConfig.OCP3)

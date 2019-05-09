@@ -18,7 +18,7 @@ func TestTransformMasterConfig(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
-	sdnConfig := ocp.SDNConfig{}
+	sdnConfig := ocp.SDNTranslator{}
 	masterV3 := ocp3.MasterDecode(content)
 	sdnConfig.OCP3 = masterV3.NetworkConfig
 	networkCR := sdn.Transform(sdnConfig.OCP3)
@@ -68,7 +68,7 @@ func TestGenYAML(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
-	sdnConfig := ocp.SDNConfig{}
+	sdnConfig := ocp.SDNTranslator{}
 	masterV3 := ocp3.MasterDecode(content)
 	sdnConfig.OCP3 = masterV3.NetworkConfig
 	networkCR := sdn.Transform(sdnConfig.OCP3)
