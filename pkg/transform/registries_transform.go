@@ -1,4 +1,4 @@
-package ocp
+package transform
 
 import (
 	"github.com/BurntSushi/toml"

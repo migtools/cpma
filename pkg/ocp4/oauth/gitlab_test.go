@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/ocp"
 	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/oauth"
+	"github.com/fusor/cpma/pkg/transform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -28,7 +28,7 @@ func TestTransformMasterConfigGitlab(t *testing.T) {
 	var identityProviders []ocp3.IdentityProvider
 	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
 		providerJSON, _ := identityProvider.Provider.MarshalJSON()
-		provider := ocp.Provider{}
+		provider := transform.Provider{}
 		json.Unmarshal(providerJSON, &provider)
 
 		identityProviders = append(identityProviders,

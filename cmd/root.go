@@ -16,7 +16,7 @@ package cmd
 
 import (
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/pkg/ocp"
+	"github.com/fusor/cpma/pkg/transform"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"path"
@@ -45,7 +45,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		env.InitConfig()
 		env.InitLogger()
-		ocp.Start()
+		transform.Start()
 	},
 }
 
