@@ -68,17 +68,6 @@ func (oauthConfig *OAuthTranslator) Add(hostname string) {
 	oauthConfig.ConfigFile.Path = path
 }
 
-// Decode unmarshals OCP3 MasterConfig and sets OAuth
-func (oauthConfig *OAuthTranslator) Decode() {
-	masterConfig := ocp3.MasterDecode(oauthConfig.Content)
-	oauthConfig.OCP3.OAuthConfig = masterConfig.OAuthConfig
-}
-
-func (sdnConfig *SDNTranslator) Decode() {
-	masterConfig := ocp3.MasterDecode(sdnConfig.Content)
-	sdnConfig.OCP3 = masterConfig.NetworkConfig
-}
-
 // DumpManifests creates Manifests file from OCDs
 func DumpManifests(manifests ocp4.Manifests) {
 	for _, manifest := range manifests {
@@ -101,13 +90,15 @@ func fetch(configFile *ConfigFile) {
 // Extract fetch then decode OCP3 OAuth component
 func (oauthConfig *OAuthTranslator) Extract() {
 	fetch(&oauthConfig.ConfigFile)
-	oauthConfig.Decode()
+	masterConfig := ocp3.MasterDecode(oauthConfig.Content)
+	oauthConfig.OCP3.OAuthConfig = masterConfig.OAuthConfig
 }
 
 // Extract fetch then decode OCP3 component
 func (sdnConfig *SDNTranslator) Extract() {
 	fetch(&sdnConfig.ConfigFile)
-	sdnConfig.Decode()
+	masterConfig := ocp3.MasterDecode(sdnConfig.Content)
+	sdnConfig.OCP3 = masterConfig.NetworkConfig
 }
 
 func (oauthConfig *OAuthTranslator) Load() {
