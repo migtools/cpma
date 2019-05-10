@@ -7,6 +7,7 @@ import (
 	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/internal/io"
 	"github.com/fusor/cpma/pkg/ocp3"
+	"github.com/fusor/cpma/pkg/ocp4"
 	"github.com/fusor/cpma/pkg/ocp4/oauth"
 	"github.com/stretchr/testify/assert"
 )
@@ -97,7 +98,14 @@ func TestGenYamlOAuth(t *testing.T) {
 	oauthConfig.OCP3.OAuthConfig = masterV3.OAuthConfig
 	oauthConfig.Transform()
 
-	manifests := oauthConfig.GenYAML()
+	crd := oauthConfig.OAuth.GenYAML()
+	var manifests ocp4.Manifests
+	manifests = ocp4.OAuthManifest(oauthConfig.OAuth.Kind, crd, manifests)
+
+	for _, secretManifest := range oauthConfig.Secrets {
+		crd := secretManifest.GenYAML()
+		manifests = ocp4.SecretsManifest(secretManifest, crd, manifests)
+	}
 
 	// Test number of manifests
 	assert.Equal(t, len(manifests), 3)

@@ -79,14 +79,6 @@ func (sdnConfig *SDNTranslator) Decode() {
 	sdnConfig.OCP3 = masterConfig.NetworkConfig
 }
 
-func (oauthConfig *OAuthTranslator) Load() {
-	DumpManifests(oauthConfig.GenYAML())
-}
-
-func (sdnConfig *SDNTranslator) Load() {
-	DumpManifests(sdnConfig.GenYAML())
-}
-
 // DumpManifests creates Manifests file from OCDs
 func DumpManifests(manifests ocp4.Manifests) {
 	for _, manifest := range manifests {
@@ -100,14 +92,25 @@ func DumpManifests(manifests ocp4.Manifests) {
 	}
 }
 
-func Fetch(configFile *ConfigFile) {
+func fetch(configFile *ConfigFile) {
 	localF := filepath.Join(env.Config().GetString("OutputDir"), configFile.Hostname, configFile.Path)
 	configFile.Content = GetFile(configFile.Hostname, configFile.Path, localF)
 	logrus.Printf("File:Loaded: %s", localF)
 }
 
-// GenYAML returns the list of OAuth CRDs
-func (oauthConfig *OAuthTranslator) GenYAML() ocp4.Manifests {
+// Extract fetch then decode OCP3 OAuth component
+func (oauthConfig *OAuthTranslator) Extract() {
+	fetch(&oauthConfig.ConfigFile)
+	oauthConfig.Decode()
+}
+
+// Extract fetch then decode OCP3 component
+func (sdnConfig *SDNTranslator) Extract() {
+	fetch(&sdnConfig.ConfigFile)
+	sdnConfig.Decode()
+}
+
+func (oauthConfig *OAuthTranslator) Load() {
 	var manifests ocp4.Manifests
 
 	// Generate yaml for oauth config
@@ -119,27 +122,14 @@ func (oauthConfig *OAuthTranslator) GenYAML() ocp4.Manifests {
 		manifests = ocp4.SecretsManifest(secretManifest, crd, manifests)
 	}
 
-	return manifests
+	DumpManifests(manifests)
 }
 
-// GenYAML returns the list of translated CRDs
-func (sdnConfig *SDNTranslator) GenYAML() ocp4.Manifests {
+func (sdnConfig *SDNTranslator) Load() {
 	var manifests ocp4.Manifests
 	crd := sdnConfig.SDN.GenYAML()
 	manifests = ocp4.SDNManifest(crd, manifests)
-	return manifests
-}
-
-// Extract fetch then decode OCP3 OAuth component
-func (oauthConfig *OAuthTranslator) Extract() {
-	Fetch(&oauthConfig.ConfigFile)
-	oauthConfig.Decode()
-}
-
-// Extract fetch then decode OCP3 component
-func (sdnConfig *SDNTranslator) Extract() {
-	Fetch(&sdnConfig.ConfigFile)
-	sdnConfig.Decode()
+	DumpManifests(manifests)
 }
 
 // Transform OAuthTranslator from OCP3 to OCP4
