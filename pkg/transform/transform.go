@@ -65,8 +65,8 @@ func Start() {
 	}
 }
 
-// DumpManifests creates Manifests file from OCDs
-func (config *Config) DumpManifests(manifests ocp4.Manifests) {
+// DumpManifests creates OCDs files
+func (config *Config) DumpManifests(manifests []ocp4.Manifest) {
 	for _, manifest := range manifests {
 		maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
 		os.MkdirAll(path.Dir(maniftestfile), 0755)

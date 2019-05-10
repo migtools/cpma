@@ -11,6 +11,11 @@ import (
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/oauth"
+	"github.com/fusor/cpma/pkg/transform"
+	"k8s.io/client-go/kubernetes/scheme"
+
+	configv1 "github.com/openshift/api/legacyconfig/v1"
+	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 var _GetFile = io.GetFile
@@ -25,9 +30,32 @@ func TestTransformMasterConfig(t *testing.T) {
 
 	file := "testdata/bulk-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
-	masterV3 := ocp3.MasterDecode(content)
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	var masterV3 configv1.MasterConfig
+	_, _, _ = serializer.Decode(content, nil, &masterV3)
 
-	resCrd, _, err := oauth.Transform(masterV3.OAuthConfig)
+	var htContent []byte
+	var identityProviders []ocp3.IdentityProvider
+	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
+		providerJSON, _ := identityProvider.Provider.MarshalJSON()
+		provider := transform.Provider{}
+		json.Unmarshal(providerJSON, &provider)
+
+		identityProviders = append(identityProviders,
+			ocp3.IdentityProvider{
+				provider.Kind,
+				provider.APIVersion,
+				identityProvider.MappingMethod,
+				identityProvider.Name,
+				identityProvider.Provider,
+				provider.File,
+				htContent,
+				identityProvider.UseAsChallenger,
+				identityProvider.UseAsLogin,
+			})
+	}
+
+	resCrd, _, err := oauth.Translate(identityProviders)
 	require.NoError(t, err)
 	assert.Equal(t, len(resCrd.Spec.IdentityProviders), 9)
 	assert.Equal(t, resCrd.Spec.IdentityProviders[0].(oauth.IdentityProviderBasicAuth).Type, "BasicAuth")
@@ -54,7 +82,7 @@ func TestGenYAML(t *testing.T) {
 	var identityProviders []ocp3.IdentityProvider
 	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
 		providerJSON, _ := identityProvider.Provider.MarshalJSON()
-		provider := ocp.Provider{}
+		provider := transform.Provider{}
 		json.Unmarshal(providerJSON, &provider)
 
 		identityProviders = append(identityProviders,
@@ -78,6 +106,6 @@ func TestGenYAML(t *testing.T) {
 	CRD := crd.GenYAML()
 	expectedYaml, _ := ioutil.ReadFile("testdata/expected-bulk-test-masterconfig-oauth.yaml")
 
-	assert.Equal(t, len(manifests), 9)
+	assert.Equal(t, 10, len(manifests))
 	assert.Equal(t, expectedYaml, CRD)
 }

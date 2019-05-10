@@ -5,23 +5,17 @@ import (
 	"io/ioutil"
 	"testing"
 
-	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/fusor/cpma/pkg/migration"
-	"github.com/fusor/cpma/pkg/ocp3"
-	"github.com/fusor/cpma/pkg/ocp4/sdn"
+	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
 func TestTransformMasterConfig(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
-	sdnTranslator := migration.SDNTranslator{}
-	masterV3 := ocp3.MasterDecode(content)
-	sdnTranslator.OCP3 = masterV3.NetworkConfig
-	networkCR := sdn.Transform(sdnTranslator.OCP3)
+	networkCR := SDNTranslate(content)
 
 	// Check if network CR was translated correctly
 	assert.Equal(t, networkCR.APIVersion, "operator.openshift.io/v1")
@@ -34,19 +28,19 @@ func TestTransformMasterConfig(t *testing.T) {
 }
 
 func TestSelectNetworkPlugin(t *testing.T) {
-	resPluginName, err := sdn.SelectNetworkPlugin("redhat/openshift-ovs-multitenant")
+	resPluginName, err := SelectNetworkPlugin("redhat/openshift-ovs-multitenant")
 	require.NoError(t, err)
 	assert.Equal(t, "Multitenant", resPluginName)
 
-	resPluginName, err = sdn.SelectNetworkPlugin("redhat/openshift-ovs-networkpolicy")
+	resPluginName, err = SelectNetworkPlugin("redhat/openshift-ovs-networkpolicy")
 	require.NoError(t, err)
 	assert.Equal(t, "NetworkPolicy", resPluginName)
 
-	resPluginName, err = sdn.SelectNetworkPlugin("redhat/openshift-ovs-subnet")
+	resPluginName, err = SelectNetworkPlugin("redhat/openshift-ovs-subnet")
 	require.NoError(t, err)
 	assert.Equal(t, "Subnet", resPluginName)
 
-	_, err = sdn.SelectNetworkPlugin("123")
+	_, err = SelectNetworkPlugin("123")
 	expectedErr := errors.New("Network plugin not supported")
 	assert.Error(t, expectedErr, err)
 }
@@ -57,7 +51,7 @@ func TestTransformClusterNetworks(t *testing.T) {
 	clusterNetwork2 := configv1.ClusterNetworkEntry{CIDR: "10.127.0.0/14", HostSubnetLength: uint32(10)}
 	clusterNeworkEntries = append(clusterNeworkEntries, clusterNetwork1, clusterNetwork2)
 
-	translatedClusterNetworks := sdn.TranslateClusterNetworks(clusterNeworkEntries)
+	translatedClusterNetworks := TranslateClusterNetworks(clusterNeworkEntries)
 	assert.Equal(t, translatedClusterNetworks[0].CIDR, "10.128.0.0/14")
 	assert.Equal(t, translatedClusterNetworks[0].HostPrefix, uint32(9))
 	assert.Equal(t, translatedClusterNetworks[1].CIDR, "10.127.0.0/14")
@@ -68,11 +62,8 @@ func TestGenYAML(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
-	sdnTranslator := migration.SDNTranslator{}
-	masterV3 := ocp3.MasterDecode(content)
-	sdnTranslator.OCP3 = masterV3.NetworkConfig
-	networkCR := sdn.Transform(sdnTranslator.OCP3)
-	networkCRYAML := networkCR.GenYAML()
+	networkCR := SDNTranslate(content)
+	networkCRYAML := GenYAML(networkCR)
 
 	expectedYaml, _ := ioutil.ReadFile("testdata/expected-network-cr-master.yaml")
 	assert.Equal(t, expectedYaml, networkCRYAML)

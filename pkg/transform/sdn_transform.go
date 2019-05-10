@@ -52,32 +52,7 @@ func (c SDNTransform) Run(content []byte) (TransformOutput, error) {
 
 	var manifests ocp4.Manifests
 
-	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	var masterConfig configv1.MasterConfig
-
-	_, _, err := serializer.Decode(content, nil, &masterConfig)
-	if err != nil {
-		HandleError(err)
-	}
-	networkConfig := masterConfig.NetworkConfig
-
-	var networkCR NetworkCR
-
-	networkCR.APIVersion = apiVersion
-	networkCR.Kind = kind
-	networkCR.Spec.ServiceNetwork = networkConfig.ServiceNetworkCIDR
-	networkCR.Spec.DefaultNetwork.Type = defaultNetworkType
-
-	// Transform CIDRs and adress size for each node
-	translatedClusterNetworks := TranslateClusterNetworks(networkConfig.ClusterNetworks)
-	networkCR.Spec.ClusterNetworks = translatedClusterNetworks
-
-	// Transform network plugin name
-	selectedNetworkPlugin, err := SelectNetworkPlugin(networkConfig.NetworkPluginName)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	networkCR.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode = selectedNetworkPlugin
+	networkCR := SDNTranslate(content)
 	networkCRYAML := GenYAML(networkCR)
 
 	manifest := ocp4.Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML}
@@ -87,6 +62,36 @@ func (c SDNTransform) Run(content []byte) (TransformOutput, error) {
 		Config:    *c.Config,
 		Manifests: manifests,
 	}, nil
+}
+
+func SDNTranslate(content []byte) NetworkCR {
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	var masterConfig configv1.MasterConfig
+
+	_, _, err := serializer.Decode(content, nil, &masterConfig)
+	if err != nil {
+		HandleError(err)
+	}
+	networkConfig := masterConfig.NetworkConfig
+	var networkCR NetworkCR
+
+	networkCR.APIVersion = apiVersion
+	networkCR.Kind = kind
+	networkCR.Spec.ServiceNetwork = networkConfig.ServiceNetworkCIDR
+	networkCR.Spec.DefaultNetwork.Type = defaultNetworkType
+
+	// Translate CIDRs and adress size for each node
+	translatedClusterNetworks := TranslateClusterNetworks(networkConfig.ClusterNetworks)
+	networkCR.Spec.ClusterNetworks = translatedClusterNetworks
+
+	// Translate network plugin name
+	selectedNetworkPlugin, err := SelectNetworkPlugin(networkConfig.NetworkPluginName)
+	if err != nil {
+		HandleError(err)
+	}
+	networkCR.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode = selectedNetworkPlugin
+
+	return networkCR
 }
 
 func (c SDNTransform) Extract() []byte {

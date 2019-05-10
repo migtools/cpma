@@ -59,6 +59,8 @@ func Translate(identityProviders []ocp3.IdentityProvider) (*OAuthCRD, []secrets.
 	var err error
 	var idP interface{}
 	var secretsSlice []secrets.Secret
+	var secret, certSecret, keySecret secrets.Secret
+
 	var oauthCrd OAuthCRD
 	oauthCrd.APIVersion = APIVersion
 	oauthCrd.Kind = "OAuth"
@@ -67,16 +69,12 @@ func Translate(identityProviders []ocp3.IdentityProvider) (*OAuthCRD, []secrets.
 
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	for _, p := range identityProviders {
-		secret := secrets.Secret{}
-		certSecret := secrets.Secret{}
-		keySecret := secrets.Secret{}
-
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		switch kind := p.Provider.Object.GetObjectKind().GroupVersionKind().Kind; kind {
+		switch kind := p.Kind; kind {
 		case "GitHubIdentityProvider":
 			idP, secret = buildGitHubIP(serializer, p)
 		case "GitLabIdentityProvider":
@@ -107,7 +105,8 @@ func Translate(identityProviders []ocp3.IdentityProvider) (*OAuthCRD, []secrets.
 			logrus.Infof("Can't handle %s OAuth kind", kind)
 		}
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-		if secret != (secrets.Secret{}) {
+
+		if secret.Metadata.Name != "htpasswd_auth-secret" || p.Kind == "HTPasswdPasswordIdentityProvider" {
 			secretsSlice = append(secretsSlice, secret)
 		}
 	}
