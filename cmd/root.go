@@ -54,10 +54,10 @@ var rootCmd = &cobra.Command{
 		translators := []ocp.Translator{}
 		translators = append(translators, ocpOAuth, ocpSDN)
 
-		for _, config := range translators {
-			config.Extract()
-			config.Transform()
-			config.Load()
+		for _, translator := range translators {
+			translator.Extract()
+			translator.Transform()
+			translator.Load()
 		}
 	},
 }
