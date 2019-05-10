@@ -1,4 +1,4 @@
-package ocp
+package migration
 
 import (
 	"io/ioutil"
