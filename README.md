@@ -39,6 +39,7 @@ The data file structure looks like the following tree structure example.
 The cluster endpoints subfolders contain the configuration files retrieved and to process.
 The manifests directory contains the generated CRDs.
 
+```
 data
 ├── manifests
 ├── master-0.example.com
@@ -52,7 +53,7 @@ data
         └── origin
             └── node
                 └── node-config.yaml
-
+```
 
 The configuration files are retrieved from local disk (outputDir/<Hostname>/),
 If a file is not available it's retrieved from <Hostname> and stored on local disk.
