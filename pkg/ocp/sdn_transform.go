@@ -2,9 +2,9 @@ package ocp
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/fusor/cpma/pkg/ocp4"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -41,7 +41,7 @@ type SDNTransform struct {
 }
 
 func (c SDNTransform) Run(content []byte) (TransformOutput, error) {
-	fmt.Println("SDNTransform::Run")
+	logrus.Info("SDNTransform::Run")
 
 	const (
 		apiVersion         = "operator.openshift.io/v1"
@@ -91,7 +91,7 @@ func (c SDNTransform) Run(content []byte) (TransformOutput, error) {
 }
 
 func (c SDNTransform) Extract() []byte {
-	fmt.Println("SDNTransform::Extract")
+	logrus.Info("SDNTransform::Extract")
 	return c.Config.Fetch(c.Config.MasterConfigFile)
 }
 

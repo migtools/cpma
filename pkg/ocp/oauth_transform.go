@@ -2,7 +2,6 @@ package ocp
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4"
@@ -19,7 +18,7 @@ type OAuthTransform struct {
 }
 
 func (c OAuthTransform) Run(content []byte) (TransformOutput, error) {
-	fmt.Println("OAuthTransform::Run")
+	logrus.Info("OAuthTransform::Run")
 
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var masterConfig configv1.MasterConfig
@@ -80,7 +79,7 @@ func (c OAuthTransform) Run(content []byte) (TransformOutput, error) {
 }
 
 func (c OAuthTransform) Extract() []byte {
-	fmt.Println("OAuthTransform::Extract")
+	logrus.Info("OAuthTransform::Extract")
 	return c.Config.Fetch(c.Config.MasterConfigFile)
 }
 

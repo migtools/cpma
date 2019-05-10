@@ -1,10 +1,9 @@
 package ocp
 
 import (
-	"fmt"
-
 	"github.com/BurntSushi/toml"
 	"github.com/fusor/cpma/pkg/ocp4"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -40,7 +39,7 @@ type RegistriesTransform struct {
 }
 
 func (c RegistriesTransform) Run(content []byte) (TransformOutput, error) {
-	fmt.Println("RegistriesTransform::Run")
+	logrus.Info("RegistriesTransform::Run")
 
 	var containers Containers
 	var manifests ocp4.Manifests
@@ -81,7 +80,7 @@ func (c RegistriesTransform) Run(content []byte) (TransformOutput, error) {
 }
 
 func (c RegistriesTransform) Extract() []byte {
-	fmt.Println("RegistriesTransform::Extract")
+	logrus.Info("RegistriesTransform::Extract")
 	return c.Config.Fetch(c.Config.RegistriesConfigFile)
 }
 

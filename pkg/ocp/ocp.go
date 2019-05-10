@@ -1,7 +1,6 @@
 package ocp
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -62,7 +61,7 @@ func Start() {
 			Config: &config,
 		},
 	}); err != nil {
-		fmt.Printf("%s", err.Error())
+		logrus.WithError(err).Fatalf("%s", err.Error())
 	}
 }
 
@@ -98,7 +97,7 @@ type TransformOutput interface {
 }
 
 func (m ManifestTransformOutput) Flush() error {
-	fmt.Println("Writing file data:")
+	logrus.Info("Writing file data:")
 	m.Config.DumpManifests(m.Manifests)
 	return nil
 }
@@ -108,7 +107,7 @@ func NewTransformRunner(config Config) *TransformRunner {
 }
 
 func (r TransformRunner) Run(transforms []Transform) error {
-	fmt.Println("TransformRunner::Run")
+	logrus.Info("TransformRunner::Run")
 
 	// For each transform, extract the data, validate it, and run the transform.
 	// Handle any errors, and finally flush the output to it's desired destination
@@ -135,5 +134,6 @@ func (r TransformRunner) Run(transforms []Transform) error {
 }
 
 func HandleError(err error) error {
-	return fmt.Errorf("An error has occurred: %s", err)
+	logrus.WithError(err).Fatalf("An error has occurred: %s\n", err)
+	return err
 }

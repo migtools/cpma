@@ -2,7 +2,6 @@ package oauth_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -101,10 +100,6 @@ func TestGenYAML(t *testing.T) {
 	}
 
 	crd, manifests, err := oauth.Translate(identityProviders)
-
-	for _, m := range manifests {
-		fmt.Printf("%s\n", m.Metadata.Name)
-	}
 
 	require.NoError(t, err)
 
