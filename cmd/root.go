@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/pkg/ocp"
 	"github.com/sirupsen/logrus"
@@ -46,27 +45,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		env.InitConfig()
 		env.InitLogger()
-
-		config := ocp.Config{}
-		config.OutputDir = env.Config().GetString("OutputDir")
-		config.Hostname = env.Config().GetString("Source")
-		config.MasterConfigFile = ocp.MasterConfigFile
-		config.RegistriesConfigFile = ocp.RegistriesConfigFile
-		transformRunner := ocp.NewTransformRunner(config)
-
-		if err := transformRunner.Run([]ocp.Transform{
-			ocp.OAuthTransform{
-				Config: &config,
-			},
-			ocp.SDNTransform{
-				Config: &config,
-			},
-			ocp.RegistriesTransform{
-				Config: &config,
-			},
-		}); err != nil {
-			fmt.Printf("%s", err.Error())
-		}
+		ocp.Start()
 	},
 }
 

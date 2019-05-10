@@ -7,6 +7,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/ocp4"
 	"github.com/sirupsen/logrus"
@@ -40,6 +41,29 @@ type ManifestTransformOutput struct {
 
 type TransformRunner struct {
 	Config string
+}
+
+func Start() {
+	config := Config{}
+	config.OutputDir = env.Config().GetString("OutputDir")
+	config.Hostname = env.Config().GetString("Source")
+	config.MasterConfigFile = MasterConfigFile
+	config.RegistriesConfigFile = RegistriesConfigFile
+	transformRunner := NewTransformRunner(config)
+
+	if err := transformRunner.Run([]Transform{
+		OAuthTransform{
+			Config: &config,
+		},
+		SDNTransform{
+			Config: &config,
+		},
+		RegistriesTransform{
+			Config: &config,
+		},
+	}); err != nil {
+		fmt.Printf("%s", err.Error())
+	}
 }
 
 // DumpManifests creates OCDs files
