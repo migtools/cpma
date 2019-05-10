@@ -8,7 +8,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-type identityProviderOpenID struct {
+type IdentityProviderOpenID struct {
 	identityProviderCommon `yaml:",inline"`
 	OpenID                 struct {
 		ClientID     string `yaml:"clientID"`
@@ -27,8 +27,8 @@ type identityProviderOpenID struct {
 	} `yaml:"openID"`
 }
 
-func buildOpenIDIP(serializer *json.Serializer, p ocp3.IdentityProvider) (identityProviderOpenID, secrets.Secret) {
-	var idP identityProviderOpenID
+func buildOpenIDIP(serializer *json.Serializer, p ocp3.IdentityProvider) (IdentityProviderOpenID, secrets.Secret) {
+	var idP IdentityProviderOpenID
 	var openID configv1.OpenIDIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &openID)
 

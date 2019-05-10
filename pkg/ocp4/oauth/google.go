@@ -7,7 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-type identityProviderGoogle struct {
+type IdentityProviderGoogle struct {
 	identityProviderCommon `yaml:",inline"`
 	Google                 struct {
 		ClientID     string `yaml:"clientID"`
@@ -18,8 +18,8 @@ type identityProviderGoogle struct {
 	} `yaml:"google"`
 }
 
-func buildGoogleIP(serializer *json.Serializer, p ocp3.IdentityProvider) (identityProviderGoogle, secrets.Secret) {
-	var idP identityProviderGoogle
+func buildGoogleIP(serializer *json.Serializer, p ocp3.IdentityProvider) (IdentityProviderGoogle, secrets.Secret) {
+	var idP IdentityProviderGoogle
 	var google configv1.GoogleIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &google)
 

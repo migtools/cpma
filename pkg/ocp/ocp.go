@@ -7,8 +7,8 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/ocp4"
-	"github.com/fusor/cpma/pkg/sftpclient"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,13 +16,16 @@ const MasterConfigFile = "/etc/origin/master/master-config.yaml"
 const NodeConfigFile = "/etc/origin/node/node-config.yaml"
 const RegistriesConfigFile = "/etc/containers/registries.conf"
 
+// GetFile allows to mock file retrieval
+var GetFile = io.GetFile
+
 // DumpManifests creates OCDs files
 func (config *Config) DumpManifests(manifests []ocp4.Manifest) {
 	for _, manifest := range manifests {
 		maniftestfile := filepath.Join(config.OutputDir, "manifests", manifest.Name)
 		os.MkdirAll(path.Dir(maniftestfile), 0755)
 		err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
-		logrus.Printf("CR manifest created: %s", maniftestfile)
+		logrus.Printf("CRD:Added: %s", maniftestfile)
 		if err != nil {
 			logrus.Panic(err)
 		}
@@ -31,12 +34,9 @@ func (config *Config) DumpManifests(manifests []ocp4.Manifest) {
 
 func (config *Config) Fetch(path string) []byte {
 	dst := filepath.Join(config.OutputDir, config.Hostname, path)
-	sftpclient.Fetch(config.Hostname, path, dst)
+	f := GetFile(config.Hostname, path, dst)
+	logrus.Printf("File:Loaded: %s", dst)
 
-	f, err := ioutil.ReadFile(filepath.Join(config.OutputDir, config.Hostname, path))
-	if err != nil {
-		logrus.Warning(err)
-	}
 	return f
 }
 

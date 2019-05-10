@@ -7,7 +7,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-type identityProviderRequestHeader struct {
+type IdentityProviderRequestHeader struct {
 	identityProviderCommon `yaml:",inline"`
 	RequestHeader          struct {
 		ChallengeURL string `yaml:"challengeURL"`
@@ -23,8 +23,8 @@ type identityProviderRequestHeader struct {
 	} `yaml:"requestHeader"`
 }
 
-func buildRequestHeaderIP(serializer *json.Serializer, p ocp3.IdentityProvider) identityProviderRequestHeader {
-	var idP identityProviderRequestHeader
+func buildRequestHeaderIP(serializer *json.Serializer, p ocp3.IdentityProvider) IdentityProviderRequestHeader {
+	var idP IdentityProviderRequestHeader
 	var requestHeader configv1.RequestHeaderIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &requestHeader)
 

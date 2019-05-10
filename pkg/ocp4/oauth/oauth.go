@@ -1,14 +1,15 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
-	//configv1 "github.com/openshift/api/legacyconfig/v1"
-	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
+
+	oauthv1 "github.com/openshift/api/oauth/v1"
 )
 
 func init() {
@@ -47,7 +48,11 @@ type MetaData struct {
 	NameSpace string `yaml:"namespace"`
 }
 
-var APIVersion = "config.openshift.io/v1"
+var (
+	APIVersion = "config.openshift.io/v1"
+	// GetFile allows to mock file retrieval
+	GetFile = io.GetFile
+)
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
 func Translate(identityProviders []ocp3.IdentityProvider) (*OAuthCRD, []secrets.Secret, error) {
@@ -96,7 +101,11 @@ func Translate(identityProviders []ocp3.IdentityProvider) (*OAuthCRD, []secrets.
 			continue
 		}
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-		secretsSlice = append(secretsSlice, secret)
+
+		if secret.Metadata.Name != "htpasswd_auth-secret" || p.Kind == "HTPasswdPasswordIdentityProvider" {
+			secretsSlice = append(secretsSlice, secret)
+		}
+
 	}
 	return &oauthCrd, secretsSlice, nil
 }

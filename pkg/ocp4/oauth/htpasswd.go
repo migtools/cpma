@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-type identityProviderHTPasswd struct {
+type IdentityProviderHTPasswd struct {
 	identityProviderCommon `yaml:",inline"`
 	HTPasswd               struct {
 		FileData struct {
@@ -17,8 +17,8 @@ type identityProviderHTPasswd struct {
 	} `yaml:"htpasswd"`
 }
 
-func buildHTPasswdIP(serializer *json.Serializer, p ocp3.IdentityProvider) (identityProviderHTPasswd, secrets.Secret) {
-	var idP identityProviderHTPasswd
+func buildHTPasswdIP(serializer *json.Serializer, p ocp3.IdentityProvider) (IdentityProviderHTPasswd, secrets.Secret) {
+	var idP IdentityProviderHTPasswd
 
 	idP.Name = p.Name
 	idP.Type = "HTPasswd"
