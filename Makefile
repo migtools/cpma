@@ -6,25 +6,25 @@ SOURCE_DIRS=cmd pkg internal
 
 default: build
 
-help:
-	@echo 'Management commands for cpma:'
-	@echo
-	@echo 'Usage:'
-	@echo '    make build           Compile the project.'
-	
-	@echo '    make clean           Clean the directory tree.'
-	@echo
+help: ## Show this help screen
+	@echo 'Usage: make <OPTIONS> ... <TARGETS>'
+	@echo ''
+	@echo 'Available targets are:'
+	@echo ''
+	@grep -E '^[ a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ''
 
-build:
+build: ## Compile the project
 	@echo "GOPATH=${GOPATH}"
 	GO111MODULE=on go build -o bin/${BIN_NAME}
 
-clean:
+clean: ## Clean the directory tree
 	@test ! -e bin/${BIN_NAME} || rm bin/${BIN_NAME}
 
 ci: build test
 
-test:
+test: ## Test the project
 	GO111MODULE=on go test ./...
 
 lint: ## Run golint
