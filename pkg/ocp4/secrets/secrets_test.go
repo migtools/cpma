@@ -2,7 +2,6 @@ package secrets
 
 import (
 	"encoding/base64"
-	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -98,7 +97,6 @@ func TestGenYaml(t *testing.T) {
 	}
 
 	manifest := secret.GenYAML()
-	fmt.Println(fmt.Sprintf("%v", manifest))
 	expectedYaml, _ := ioutil.ReadFile("testdata/expected-secret.yaml")
 	assert.Equal(t, expectedYaml, manifest)
 }

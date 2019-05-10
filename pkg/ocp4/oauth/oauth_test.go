@@ -1,6 +1,7 @@
 package oauth_test
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"testing"
 
@@ -46,9 +47,32 @@ func TestGenYAML(t *testing.T) {
 
 	file := "testdata/bulk-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
-	masterV3 := ocp3.MasterDecode(content)
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	var masterV3 configv1.MasterConfig
+	_, _, _ = serializer.Decode(content, nil, &masterV3)
 
-	crd, manifests, err := oauth.Transform(masterV3.OAuthConfig)
+	var identityProviders []ocp3.IdentityProvider
+	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
+		providerJSON, _ := identityProvider.Provider.MarshalJSON()
+		provider := ocp.Provider{}
+		json.Unmarshal(providerJSON, &provider)
+
+		identityProviders = append(identityProviders,
+			ocp3.IdentityProvider{
+				provider.Kind,
+				provider.APIVersion,
+				identityProvider.MappingMethod,
+				identityProvider.Name,
+				identityProvider.Provider,
+				provider.File,
+				nil,
+				identityProvider.UseAsChallenger,
+				identityProvider.UseAsLogin,
+			})
+	}
+
+	crd, manifests, err := oauth.Translate(identityProviders)
+
 	require.NoError(t, err)
 
 	CRD := crd.GenYAML()
