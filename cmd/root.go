@@ -18,7 +18,7 @@ import (
 	"path"
 
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/pkg/ocp"
+	"github.com/fusor/cpma/pkg/migration"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -47,7 +47,7 @@ var rootCmd = &cobra.Command{
 		env.InitConfig()
 		env.InitLogger()
 
-		ocp.Start()
+		migration.Start()
 	},
 }
 

@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/fusor/cpma/pkg/ocp"
+	"github.com/fusor/cpma/pkg/migration"
 	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/sdn"
 )
@@ -18,7 +18,7 @@ func TestTransformMasterConfig(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
-	sdnTranslator := ocp.SDNTranslator{}
+	sdnTranslator := migration.SDNTranslator{}
 	masterV3 := ocp3.MasterDecode(content)
 	sdnTranslator.OCP3 = masterV3.NetworkConfig
 	networkCR := sdn.Transform(sdnTranslator.OCP3)
@@ -68,7 +68,7 @@ func TestGenYAML(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
-	sdnTranslator := ocp.SDNTranslator{}
+	sdnTranslator := migration.SDNTranslator{}
 	masterV3 := ocp3.MasterDecode(content)
 	sdnTranslator.OCP3 = masterV3.NetworkConfig
 	networkCR := sdn.Transform(sdnTranslator.OCP3)
