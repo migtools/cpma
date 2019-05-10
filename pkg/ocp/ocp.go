@@ -91,27 +91,27 @@ func fetch(configFile *ConfigFile) {
 }
 
 // Extract fetch then decode OCP3 OAuth component
-func (oauthConfig *OAuthTranslator) Extract() {
-	fetch(&oauthConfig.ConfigFile)
-	masterConfig := ocp3.MasterDecode(oauthConfig.Content)
-	oauthConfig.OCP3.OAuthConfig = masterConfig.OAuthConfig
+func (oauthTranslator *OAuthTranslator) Extract() {
+	fetch(&oauthTranslator.ConfigFile)
+	masterConfig := ocp3.MasterDecode(oauthTranslator.Content)
+	oauthTranslator.OCP3.OAuthConfig = masterConfig.OAuthConfig
 }
 
 // Extract fetch then decode OCP3 component
-func (sdnConfig *SDNTranslator) Extract() {
-	fetch(&sdnConfig.ConfigFile)
-	masterConfig := ocp3.MasterDecode(sdnConfig.Content)
-	sdnConfig.OCP3 = masterConfig.NetworkConfig
+func (sdnTranslator *SDNTranslator) Extract() {
+	fetch(&sdnTranslator.ConfigFile)
+	masterConfig := ocp3.MasterDecode(sdnTranslator.Content)
+	sdnTranslator.OCP3 = masterConfig.NetworkConfig
 }
 
-func (oauthConfig *OAuthTranslator) Load() {
+func (oauthTranslator *OAuthTranslator) Load() {
 	var manifests ocp4.Manifests
 
 	// Generate yaml for oauth config
-	crd := oauthConfig.OAuth.GenYAML()
-	manifests = ocp4.OAuthManifest(oauthConfig.OAuth.Kind, crd, manifests)
+	crd := oauthTranslator.OAuth.GenYAML()
+	manifests = ocp4.OAuthManifest(oauthTranslator.OAuth.Kind, crd, manifests)
 
-	for _, secretManifest := range oauthConfig.Secrets {
+	for _, secretManifest := range oauthTranslator.Secrets {
 		crd := secretManifest.GenYAML()
 		manifests = ocp4.SecretsManifest(secretManifest, crd, manifests)
 	}
@@ -119,32 +119,32 @@ func (oauthConfig *OAuthTranslator) Load() {
 	DumpManifests(manifests)
 }
 
-func (sdnConfig *SDNTranslator) Load() {
+func (sdnTranslator *SDNTranslator) Load() {
 	var manifests ocp4.Manifests
-	crd := sdnConfig.SDN.GenYAML()
+	crd := sdnTranslator.SDN.GenYAML()
 	manifests = ocp4.SDNManifest(crd, manifests)
 	DumpManifests(manifests)
 }
 
 // Transform OAuthTranslator from OCP3 to OCP4
-func (oauthConfig *OAuthTranslator) Transform() {
-	if oauthConfig.OCP3.OAuthConfig != nil {
+func (oauthTranslator *OAuthTranslator) Transform() {
+	if oauthTranslator.OCP3.OAuthConfig != nil {
 		logrus.Debugln("Transforming oauth config")
-		oauth, secretList, err := oauth.Transform(oauthConfig.OCP3.OAuthConfig)
+		oauth, secretList, err := oauth.Transform(oauthTranslator.OCP3.OAuthConfig)
 
 		if err != nil {
-			logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", oauthConfig.OCP3.OAuthConfig)
+			logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", oauthTranslator.OCP3.OAuthConfig)
 		}
-		oauthConfig.OAuth = *oauth
-		oauthConfig.Secrets = secretList
+		oauthTranslator.OAuth = *oauth
+		oauthTranslator.Secrets = secretList
 	}
 }
 
 // Transform SDNTranslator from OCP3 to OCP4
-func (sdnConfig *SDNTranslator) Transform() {
-	if &sdnConfig.OCP3 != nil {
+func (sdnTranslator *SDNTranslator) Transform() {
+	if &sdnTranslator.OCP3 != nil {
 		logrus.Debugln("Translating SDN config")
-		networkCR := sdn.Transform(sdnConfig.OCP3)
-		sdnConfig.SDN = *networkCR
+		networkCR := sdn.Transform(sdnTranslator.OCP3)
+		sdnTranslator.SDN = *networkCR
 	}
 }

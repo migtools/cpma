@@ -18,10 +18,10 @@ func TestTransformMasterConfig(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
-	sdnConfig := ocp.SDNTranslator{}
+	sdnTranslator := ocp.SDNTranslator{}
 	masterV3 := ocp3.MasterDecode(content)
-	sdnConfig.OCP3 = masterV3.NetworkConfig
-	networkCR := sdn.Transform(sdnConfig.OCP3)
+	sdnTranslator.OCP3 = masterV3.NetworkConfig
+	networkCR := sdn.Transform(sdnTranslator.OCP3)
 
 	// Check if network CR was translated correctly
 	assert.Equal(t, networkCR.APIVersion, "operator.openshift.io/v1")
@@ -68,10 +68,10 @@ func TestGenYAML(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
-	sdnConfig := ocp.SDNTranslator{}
+	sdnTranslator := ocp.SDNTranslator{}
 	masterV3 := ocp3.MasterDecode(content)
-	sdnConfig.OCP3 = masterV3.NetworkConfig
-	networkCR := sdn.Transform(sdnConfig.OCP3)
+	sdnTranslator.OCP3 = masterV3.NetworkConfig
+	networkCR := sdn.Transform(sdnTranslator.OCP3)
 	networkCRYAML := networkCR.GenYAML()
 
 	expectedYaml, _ := ioutil.ReadFile("testdata/expected-network-cr-master.yaml")

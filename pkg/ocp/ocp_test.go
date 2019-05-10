@@ -73,10 +73,10 @@ func TestTransformOAuth(t *testing.T) {
 	file := "../testdata/common-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 	masterV3 := ocp3.MasterDecode(content)
-	oauthConfig, secrets, _ := oauth.Transform(masterV3.OAuthConfig)
+	oauthTranslator, secrets, _ := oauth.Transform(masterV3.OAuthConfig)
 
-	assert.Equal(t, "cluster", oauthConfig.Metadata.Name)
-	assert.Equal(t, 2, len(oauthConfig.Spec.IdentityProviders))
+	assert.Equal(t, "cluster", oauthTranslator.Metadata.Name)
+	assert.Equal(t, 2, len(oauthTranslator.Spec.IdentityProviders))
 
 	assert.Equal(t, 2, len(secrets))
 	assert.Equal(t, "htpasswd_auth-secret", secrets[0].Metadata.Name)
@@ -91,15 +91,15 @@ func TestGenYamlOAuth(t *testing.T) {
 	content, _ := ioutil.ReadFile(file)
 	masterV3 := ocp3.MasterDecode(content)
 
-	oauthConfig := OAuthTranslator{}
-	oauthConfig.OCP3.OAuthConfig = masterV3.OAuthConfig
-	oauthConfig.Transform()
+	oauthTranslator := OAuthTranslator{}
+	oauthTranslator.OCP3.OAuthConfig = masterV3.OAuthConfig
+	oauthTranslator.Transform()
 
-	crd := oauthConfig.OAuth.GenYAML()
+	crd := oauthTranslator.OAuth.GenYAML()
 	var manifests ocp4.Manifests
-	manifests = ocp4.OAuthManifest(oauthConfig.OAuth.Kind, crd, manifests)
+	manifests = ocp4.OAuthManifest(oauthTranslator.OAuth.Kind, crd, manifests)
 
-	for _, secretManifest := range oauthConfig.Secrets {
+	for _, secretManifest := range oauthTranslator.Secrets {
 		crd := secretManifest.GenYAML()
 		manifests = ocp4.SecretsManifest(secretManifest, crd, manifests)
 	}
