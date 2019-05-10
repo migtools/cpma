@@ -1,4 +1,4 @@
-package oauth
+package oauth_test
 
 import (
 	"io/ioutil"
@@ -8,22 +8,21 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/fusor/cpma/pkg/ocp3"
+	"github.com/fusor/cpma/pkg/ocp4/oauth"
 )
 
-func TestTranslateMasterConfigRequestHeader(t *testing.T) {
+func TestTransformMasterConfigRequestHeader(t *testing.T) {
 	file := "testdata/requestheader-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
+	masterV3 := ocp3.MasterDecode(content)
 
-	masterV3 := ocp3.Master{}
-	masterV3.Decode(content)
-
-	var expectedCrd OAuthCRD
+	var expectedCrd oauth.OAuthCRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = "openshift-config"
 
-	var requestHeaderIDP identityProviderRequestHeader
+	var requestHeaderIDP oauth.IdentityProviderRequestHeader
 
 	requestHeaderIDP.Type = "RequestHeader"
 	requestHeaderIDP.Name = "my_request_header_provider"
@@ -40,7 +39,7 @@ func TestTranslateMasterConfigRequestHeader(t *testing.T) {
 	requestHeaderIDP.RequestHeader.PreferredUsernameHeaders = []string{"X-Remote-User-Login"}
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, requestHeaderIDP)
 
-	resCrd, _, err := Translate(masterV3.Config.OAuthConfig)
+	resCrd, _, err := oauth.Transform(masterV3.OAuthConfig)
 	require.NoError(t, err)
 	assert.Equal(t, &expectedCrd, resCrd)
 }

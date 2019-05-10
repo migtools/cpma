@@ -7,7 +7,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-type identityProviderGitLab struct {
+type IdentityProviderGitLab struct {
 	identityProviderCommon `yaml:",inline"`
 	GitLab                 struct {
 		URL string `yaml:"url"`
@@ -21,8 +21,8 @@ type identityProviderGitLab struct {
 	} `yaml:"gitlab"`
 }
 
-func buildGitLabIP(serializer *json.Serializer, p configv1.IdentityProvider) (identityProviderGitLab, secrets.Secret) {
-	var idP identityProviderGitLab
+func buildGitLabIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderGitLab, secrets.Secret) {
+	var idP IdentityProviderGitLab
 	var gitlab configv1.GitLabIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &gitlab)
 

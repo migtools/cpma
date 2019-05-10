@@ -9,9 +9,10 @@ import (
 	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/sirupsen/logrus"
 )
 
-type identityProviderKeystone struct {
+type IdentityProviderKeystone struct {
 	identityProviderCommon `yaml:",inline"`
 	Keystone               struct {
 		DomainName string `yaml:"domainName"`
@@ -28,9 +29,9 @@ type identityProviderKeystone struct {
 	} `yaml:"keystone"`
 }
 
-func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (identityProviderKeystone, secrets.Secret, secrets.Secret) {
+func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret) {
 	var (
-		idP        identityProviderKeystone
+		idP        IdentityProviderKeystone
 		keystone   configv1.KeystonePasswordIdentityProvider
 		certSecret = new(secrets.Secret)
 		keySecret  = new(secrets.Secret)
@@ -46,6 +47,10 @@ func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (
 	idP.Keystone.DomainName = keystone.DomainName
 	idP.Keystone.URL = keystone.URL
 	idP.Keystone.CA.Name = keystone.CA
+
+	if keystone.UseKeystoneIdentity {
+		logrus.Warn("Keystone useKeystoneIdentity value is not supported in OCP4")
+	}
 
 	if keystone.CertFile != "" {
 		outputDir := env.Config().GetString("OutputDir")

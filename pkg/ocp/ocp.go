@@ -10,6 +10,10 @@ import (
 	"github.com/fusor/cpma/internal/io"
 	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4"
+	"github.com/fusor/cpma/pkg/ocp4/oauth"
+	"github.com/fusor/cpma/pkg/ocp4/sdn"
+	"github.com/fusor/cpma/pkg/ocp4/secrets"
+	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,62 +23,58 @@ type ConfigFile struct {
 	Content  []byte
 }
 
-type ConfigMaster struct {
+type OAuthTranslator struct {
 	ConfigFile
-	OCP3 ocp3.Master
-	OCP4 ocp4.Master
+	OCP3    configv1.MasterConfig
+	OAuth   oauth.OAuthCRD
+	Secrets []secrets.Secret
 }
 
-type ConfigNode struct {
+type SDNTranslator struct {
 	ConfigFile
-	OCP3 ocp3.Node
-	OCP4 ocp4.Node
+	OCP3 configv1.MasterNetworkConfig
+	SDN  sdn.NetworkCR
 }
 
 type Translator interface {
-	Add(string)
-	Decode()
-	Fetch(string)
-	GenYAML() ocp4.Manifests
-	Translate()
+	Extract()
+	Transform()
+	Load()
 }
 
 // GetFile allows to mock file retrieval
 var GetFile = io.GetFile
 
-func (config *ConfigMaster) Add(hostname string) {
-	masterf := env.Config().GetString("MasterConfigFile")
+var source = env.Config().GetString("Source")
 
-	if masterf == "" {
-		masterf = "/etc/origin/master/master-config.yaml"
+func NewOAuthTranslator(hostname string) *OAuthTranslator {
+	oauthTranslator := new(OAuthTranslator)
+	path := env.Config().GetString("MasterConfigFile")
+
+	if path == "" {
+		path = "/etc/origin/master/master-config.yaml"
 	}
-	config.ConfigFile.Hostname = hostname
-	config.ConfigFile.Path = masterf
+	oauthTranslator.ConfigFile.Hostname = hostname
+	oauthTranslator.ConfigFile.Path = path
+	return oauthTranslator
 }
 
-func (config *ConfigNode) Add(hostname string) {
-	nodef := env.Config().GetString("NodeConfigFile")
+func NewSDNTranslator(hostname string) *SDNTranslator {
+	sdnTranslator := new(SDNTranslator)
+	path := env.Config().GetString("MasterConfigFile")
 
-	if nodef == "" {
-		nodef = "/etc/origin/node/node-config.yaml"
+	if path == "" {
+		path = "/etc/origin/master/master-config.yaml"
 	}
-
-	config.ConfigFile.Hostname = hostname
-	config.ConfigFile.Path = nodef
+	sdnTranslator.ConfigFile.Hostname = hostname
+	sdnTranslator.ConfigFile.Path = path
+	return sdnTranslator
 }
 
-func (config *ConfigMaster) Decode() {
-	config.OCP3.Decode(config.ConfigFile.Content)
-}
-
-func (config *ConfigNode) Decode() {
-	config.OCP3.Decode(config.ConfigFile.Content)
-}
-
-// DumpManifests creates OCDs files
-func DumpManifests(outputDir string, manifests ocp4.Manifests) {
+// DumpManifests creates Manifests file from OCDs
+func DumpManifests(manifests ocp4.Manifests) {
 	for _, manifest := range manifests {
-		maniftestfile := filepath.Join(outputDir, "manifests", manifest.Name)
+		maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
 		os.MkdirAll(path.Dir(maniftestfile), 0755)
 		err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
 		logrus.Printf("CRD:Added: %s", maniftestfile)
@@ -84,48 +84,67 @@ func DumpManifests(outputDir string, manifests ocp4.Manifests) {
 	}
 }
 
-func (config *ConfigMaster) Fetch(outputDir string) {
-	localF := filepath.Join(outputDir, config.Hostname, config.Path)
-	config.ConfigFile.Content = GetFile(config.Hostname, config.Path, localF)
+func fetch(configFile *ConfigFile) {
+	localF := filepath.Join(env.Config().GetString("OutputDir"), configFile.Hostname, configFile.Path)
+	configFile.Content = GetFile(configFile.Hostname, configFile.Path, localF)
 	logrus.Printf("File:Loaded: %s", localF)
 }
 
-func (config *ConfigNode) Fetch(outputDir string) {
-	localF := filepath.Join(outputDir, config.Hostname, config.Path)
-	config.ConfigFile.Content = GetFile(config.Hostname, config.Path, localF)
-	logrus.Printf("File:Loaded: %s", localF)
+// Extract fetch then decode OCP3 OAuth component
+func (oauthTranslator *OAuthTranslator) Extract() {
+	fetch(&oauthTranslator.ConfigFile)
+	masterConfig := ocp3.MasterDecode(oauthTranslator.Content)
+	oauthTranslator.OCP3.OAuthConfig = masterConfig.OAuthConfig
 }
 
-// GenYAML returns the list of translated CRDs
-func (config *ConfigMaster) GenYAML() ocp4.Manifests {
+// Extract fetch then decode OCP3 component
+func (sdnTranslator *SDNTranslator) Extract() {
+	fetch(&sdnTranslator.ConfigFile)
+	masterConfig := ocp3.MasterDecode(sdnTranslator.Content)
+	sdnTranslator.OCP3 = masterConfig.NetworkConfig
+}
+
+func (oauthTranslator *OAuthTranslator) Load() {
 	var manifests ocp4.Manifests
 
-	masterManifests := config.OCP4.GenYAML()
+	// Generate yaml for oauth config
+	crd := oauthTranslator.OAuth.GenYAML()
+	manifests = ocp4.OAuthManifest(oauthTranslator.OAuth.Kind, crd, manifests)
 
-	for _, manifest := range masterManifests {
-		manifests = append(manifests, manifest)
+	for _, secretManifest := range oauthTranslator.Secrets {
+		crd := secretManifest.GenYAML()
+		manifests = ocp4.SecretsManifest(secretManifest, crd, manifests)
 	}
-	return manifests
+
+	DumpManifests(manifests)
 }
 
-// GenYAML returns the list of translated CRDs
-func (config *ConfigNode) GenYAML() ocp4.Manifests {
+func (sdnTranslator *SDNTranslator) Load() {
 	var manifests ocp4.Manifests
+	crd := sdnTranslator.SDN.GenYAML()
+	manifests = ocp4.SDNManifest(crd, manifests)
+	DumpManifests(manifests)
+}
 
-	nodeManifests := config.OCP4.GenYAML()
+// Transform OAuthTranslator from OCP3 to OCP4
+func (oauthTranslator *OAuthTranslator) Transform() {
+	if oauthTranslator.OCP3.OAuthConfig != nil {
+		logrus.Debugln("Transforming oauth config")
+		oauth, secretList, err := oauth.Transform(oauthTranslator.OCP3.OAuthConfig)
 
-	for _, manifest := range nodeManifests {
-		manifests = append(manifests, manifest)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", oauthTranslator.OCP3.OAuthConfig)
+		}
+		oauthTranslator.OAuth = *oauth
+		oauthTranslator.Secrets = secretList
 	}
-	return manifests
 }
 
-// Translate OCP3 to OCP4
-func (config *ConfigMaster) Translate() {
-	config.OCP4.Translate(config.OCP3.Config)
-}
-
-// Translate OCP3 to OCP4
-func (config *ConfigNode) Translate() {
-	config.OCP4.Translate(config.OCP3.Config)
+// Transform SDNTranslator from OCP3 to OCP4
+func (sdnTranslator *SDNTranslator) Transform() {
+	if &sdnTranslator.OCP3 != nil {
+		logrus.Debugln("Translating SDN config")
+		networkCR := sdn.Transform(sdnTranslator.OCP3)
+		sdnTranslator.SDN = *networkCR
+	}
 }

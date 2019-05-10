@@ -9,7 +9,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-type identityProviderBasicAuth struct {
+type IdentityProviderBasicAuth struct {
 	identityProviderCommon `yaml:",inline"`
 	BasicAuth              struct {
 		URL string `yaml:"url"`
@@ -25,8 +25,8 @@ type identityProviderBasicAuth struct {
 	} `yaml:"basicAuth"`
 }
 
-func buildBasicAuthIP(serializer *json.Serializer, p configv1.IdentityProvider) (identityProviderBasicAuth, secrets.Secret, secrets.Secret) {
-	var idP identityProviderBasicAuth
+func buildBasicAuthIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderBasicAuth, secrets.Secret, secrets.Secret) {
+	var idP IdentityProviderBasicAuth
 	var basicAuth configv1.BasicAuthPasswordIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &basicAuth)
 

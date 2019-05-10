@@ -39,8 +39,8 @@ const (
 	defaultNetworkType = "OpenShiftSDN"
 )
 
-// Translate converts OCPv3 SDN to OCPv4 SDN Custom Resources
-func Translate(networkConfig configv1.MasterNetworkConfig) *NetworkCR {
+// Transform converts OCPv3 SDN to OCPv4 SDN Custom Resources
+func Transform(networkConfig configv1.MasterNetworkConfig) *NetworkCR {
 	var networkCR NetworkCR
 
 	networkCR.APIVersion = apiVersion
@@ -48,12 +48,12 @@ func Translate(networkConfig configv1.MasterNetworkConfig) *NetworkCR {
 	networkCR.Spec.ServiceNetwork = networkConfig.ServiceNetworkCIDR
 	networkCR.Spec.DefaultNetwork.Type = defaultNetworkType
 
-	// Translate CIDRs and adress size for each node
-	translatedClusterNetworks := translateClusterNetworks(networkConfig.ClusterNetworks)
+	// Transform CIDRs and adress size for each node
+	translatedClusterNetworks := TranslateClusterNetworks(networkConfig.ClusterNetworks)
 	networkCR.Spec.ClusterNetworks = translatedClusterNetworks
 
-	// Translate network plugin name
-	selectedNetworkPlugin, err := selectNetworkPlugin(networkConfig.NetworkPluginName)
+	// Transform network plugin name
+	selectedNetworkPlugin, err := SelectNetworkPlugin(networkConfig.NetworkPluginName)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func Translate(networkConfig configv1.MasterNetworkConfig) *NetworkCR {
 	return &networkCR
 }
 
-func translateClusterNetworks(clusterNeworkEntries []configv1.ClusterNetworkEntry) []ClusterNetwork {
+func TranslateClusterNetworks(clusterNeworkEntries []configv1.ClusterNetworkEntry) []ClusterNetwork {
 	translatedClusterNetworks := make([]ClusterNetwork, 0)
 
 	for _, networkConfig := range clusterNeworkEntries {
@@ -77,7 +77,7 @@ func translateClusterNetworks(clusterNeworkEntries []configv1.ClusterNetworkEntr
 	return translatedClusterNetworks
 }
 
-func selectNetworkPlugin(pluginName string) (string, error) {
+func SelectNetworkPlugin(pluginName string) (string, error) {
 	var selectedName string
 
 	switch pluginName {
