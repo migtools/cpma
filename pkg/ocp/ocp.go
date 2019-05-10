@@ -47,6 +47,21 @@ var GetFile = io.GetFile
 
 var source = env.Config().GetString("Source")
 
+func Start() {
+	source := env.Config().GetString("Source")
+
+	ocpOAuth := NewOAuthTranslator(source)
+	ocpSDN := NewSDNTranslator(source)
+	translators := []Translator{}
+	translators = append(translators, ocpOAuth, ocpSDN)
+
+	for _, translator := range translators {
+		translator.Extract()
+		translator.Transform()
+		translator.Load()
+	}
+}
+
 func NewOAuthTranslator(hostname string) *OAuthTranslator {
 	oauthTranslator := new(OAuthTranslator)
 	path := env.Config().GetString("MasterConfigFile")
