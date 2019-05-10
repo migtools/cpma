@@ -18,55 +18,52 @@ func mockGetFile(a, b, c string) []byte {
 	return []byte("This is test file content")
 }
 
-func TestAddOAuthTranslator(t *testing.T) {
+func TestNewOAuthTranslator(t *testing.T) {
 	// Init config with default master config paths
-	ocpMaster := OAuthTranslator{}
-	ocpMaster.Add("example.com")
+	oauthTranslator := *NewOAuthTranslator("example.com")
 
 	assert.Equal(t, OAuthTranslator{
 		ConfigFile: ConfigFile{
 			Hostname: "example.com",
 			Path:     "/etc/origin/master/master-config.yaml",
 		},
-	}, ocpMaster)
+	}, oauthTranslator)
 
 	// Init config with different master config path
 	env.Config().Set("MasterConfigFile", "/test/path/master.yml")
-	ocpMaster = OAuthTranslator{}
-	ocpMaster.Add("example.com")
+	oauthTranslator = *NewOAuthTranslator("example.com")
 
 	assert.Equal(t, OAuthTranslator{
 		ConfigFile: ConfigFile{
 			Hostname: "example.com",
 			Path:     "/test/path/master.yml",
 		},
-	}, ocpMaster)
+	}, oauthTranslator)
 	env.Config().Set("MasterConfigFile", "/etc/origin/master/master-config.yaml")
 }
 
-func TestAddSDNTranslator(t *testing.T) {
+func TestNewSDNTranslator(t *testing.T) {
 	// Init config with default node config paths
-	ocpMaster := SDNTranslator{}
-	ocpMaster.Add("example.com")
+	sdnTranslator := *NewSDNTranslator("example.com")
 
 	assert.Equal(t, SDNTranslator{
 		ConfigFile: ConfigFile{
 			Hostname: "example.com",
 			Path:     "/etc/origin/master/master-config.yaml",
 		},
-	}, ocpMaster)
+	}, sdnTranslator)
 
 	// Init config with different node config paths
 	env.Config().Set("MasterConfigFile", "/test/path/another.yml")
-	ocpMaster = SDNTranslator{}
-	ocpMaster.Add("example.com")
+	sdnTranslator = *NewSDNTranslator("example.com")
 
 	assert.Equal(t, SDNTranslator{
 		ConfigFile: ConfigFile{
 			Hostname: "example.com",
 			Path:     "/test/path/another.yml",
 		},
-	}, ocpMaster)
+	}, sdnTranslator)
+	env.Config().Set("MasterConfigFile", "/etc/origin/master/master-config.yaml")
 }
 
 func TestTransformOAuth(t *testing.T) {

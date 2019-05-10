@@ -37,7 +37,6 @@ type SDNTranslator struct {
 }
 
 type Translator interface {
-	Add(string)
 	Extract()
 	Transform()
 	Load()
@@ -48,24 +47,28 @@ var GetFile = io.GetFile
 
 var source = env.Config().GetString("Source")
 
-func (sdnConfig *SDNTranslator) Add(hostname string) {
+func NewOAuthTranslator(hostname string) *OAuthTranslator {
+	oauthTranslator := new(OAuthTranslator)
 	path := env.Config().GetString("MasterConfigFile")
 
 	if path == "" {
 		path = "/etc/origin/master/master-config.yaml"
 	}
-	sdnConfig.ConfigFile.Hostname = hostname
-	sdnConfig.ConfigFile.Path = path
+	oauthTranslator.ConfigFile.Hostname = hostname
+	oauthTranslator.ConfigFile.Path = path
+	return oauthTranslator
 }
 
-func (oauthConfig *OAuthTranslator) Add(hostname string) {
+func NewSDNTranslator(hostname string) *SDNTranslator {
+	sdnTranslator := new(SDNTranslator)
 	path := env.Config().GetString("MasterConfigFile")
 
 	if path == "" {
 		path = "/etc/origin/master/master-config.yaml"
 	}
-	oauthConfig.ConfigFile.Hostname = hostname
-	oauthConfig.ConfigFile.Path = path
+	sdnTranslator.ConfigFile.Hostname = hostname
+	sdnTranslator.ConfigFile.Path = path
+	return sdnTranslator
 }
 
 // DumpManifests creates Manifests file from OCDs

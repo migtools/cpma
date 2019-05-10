@@ -49,12 +49,9 @@ var rootCmd = &cobra.Command{
 
 		source := env.Config().GetString("Source")
 
+		ocpOAuth := ocp.NewOAuthTranslator(source)
+		ocpSDN := ocp.NewSDNTranslator(source)
 		translators := []ocp.Translator{}
-		ocpOAuth := new(ocp.OAuthTranslator)
-		ocpSDN := new(ocp.SDNTranslator)
-		ocpOAuth.Add(source)
-		ocpSDN.Add(source)
-
 		translators = append(translators, ocpOAuth, ocpSDN)
 
 		for _, config := range translators {
