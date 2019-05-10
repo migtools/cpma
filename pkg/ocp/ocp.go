@@ -19,6 +19,29 @@ const RegistriesConfigFile = "/etc/containers/registries.conf"
 // GetFile allows to mock file retrieval
 var GetFile = io.GetFile
 
+type Provider struct {
+	APIVersion string `json:"apiVersion"`
+	Kind       string `json:"kind"`
+	File       string `json:"file"`
+}
+
+type Config struct {
+	MasterConfigFile     string
+	NodeConfigFile       string
+	RegistriesConfigFile string
+	OutputDir            string
+	Hostname             string
+}
+
+type ManifestTransformOutput struct {
+	Config    Config
+	Manifests []ocp4.Manifest
+}
+
+type TransformRunner struct {
+	Config string
+}
+
 // DumpManifests creates OCDs files
 func (config *Config) DumpManifests(manifests []ocp4.Manifest) {
 	for _, manifest := range manifests {

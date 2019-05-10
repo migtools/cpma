@@ -14,6 +14,10 @@ import (
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
+type OAuthTransform struct {
+	Config *Config
+}
+
 func (c OAuthTransform) Run(content []byte) (TransformOutput, error) {
 	fmt.Println("OAuthTransform::Run")
 
