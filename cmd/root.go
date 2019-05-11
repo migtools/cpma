@@ -15,11 +15,10 @@
 package cmd
 
 import (
+	"fmt"
 	"path"
 
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/pkg/transform"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -36,6 +35,9 @@ func init() {
 	// Default timeout is 10s
 	rootCmd.Flags().DurationP("timeout", "t", 10000000000, "Set timeout, unit must be provided, i.e. '-t 20s'.")
 	env.Config().BindPFlag("TimeOut", rootCmd.Flags().Lookup("timeout"))
+
+	rootCmd.AddCommand(transformCmd)
+	rootCmd.AddCommand(reportCmd)
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -44,10 +46,7 @@ var rootCmd = &cobra.Command{
 	Short: "Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x",
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
 	Run: func(cmd *cobra.Command, args []string) {
-		env.InitConfig()
-		env.InitLogger()
-
-		transform.Start()
+		fmt.Println("Run cpma --help to see usage.")
 	},
 }
 
@@ -55,6 +54,5 @@ var rootCmd = &cobra.Command{
 // It only needs to happen once.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logrus.WithError(err).Fatal("Something went terribly wrong!")
 	}
 }
