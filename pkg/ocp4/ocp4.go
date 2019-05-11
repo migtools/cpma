@@ -1,9 +1,18 @@
 package ocp4
 
 import (
+	"github.com/fusor/cpma/pkg/ocp4/oauth"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
-	"github.com/sirupsen/logrus"
 )
+
+type Cluster struct {
+	Master Master
+}
+
+type Master struct {
+	OAuth   oauth.OAuthCRD
+	Secrets []secrets.Secret
+}
 
 type Manifests []Manifest
 
@@ -20,30 +29,3 @@ const OCP4InstallMsg = `To install OCP4 run the installer as follow in order to 
 # Copy generated CRD manifest files  to '$INSTALL_DIR/openshift/'
 # Edit them if needed, then run installation:
 './openshift-install --dir $INSTALL_DIR  create cluster'`
-
-const manifestPrefix = "100_CPMA-cluster-"
-
-func OAuthManifest(oauthCRKind string, crd []byte, manifests Manifests) Manifests {
-	if oauthCRKind != "" {
-		filename := manifestPrefix + "config-oauth.yaml"
-		manifest := Manifest{Name: filename, CRD: crd}
-		manifests = append(manifests, manifest)
-	} else {
-		logrus.Debugln("Skipping oauth, no manifests found")
-	}
-	return manifests
-}
-
-func SecretsManifest(secret secrets.Secret, crd []byte, manifests Manifests) Manifests {
-	filename := manifestPrefix + "config-secret-" + secret.Metadata.Name + ".yaml"
-	manifest := Manifest{Name: filename, CRD: crd}
-	manifests = append(manifests, manifest)
-	return manifests
-}
-
-func SDNManifest(networkCR []byte, manifests Manifests) Manifests {
-	filename := manifestPrefix + "config-sdn.yaml"
-	manifest := Manifest{Name: filename, CRD: networkCR}
-	manifests = append(manifests, manifest)
-	return manifests
-}

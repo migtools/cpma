@@ -2,13 +2,14 @@ package oauth
 
 import (
 	"github.com/fusor/cpma/internal/io"
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
-	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
+
+	oauthv1 "github.com/openshift/api/oauth/v1"
 )
 
 func init() {
@@ -54,21 +55,18 @@ var (
 )
 
 // Transform converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Transform(oauthconfig *configv1.OAuthConfig) (*OAuthCRD, []secrets.Secret, error) {
-	var auth = oauthconfig.DeepCopy()
+func Translate(identityProviders []ocp3.IdentityProvider) (*OAuthCRD, []secrets.Secret, error) {
 	var err error
-
+	var idP interface{}
+	var secretsSlice []secrets.Secret
 	var oauthCrd OAuthCRD
 	oauthCrd.APIVersion = APIVersion
 	oauthCrd.Kind = "OAuth"
 	oauthCrd.Metadata.Name = "cluster"
 	oauthCrd.Metadata.NameSpace = "openshift-config"
 
-	var idP interface{}
-	var secretsSlice []secrets.Secret
-
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	for _, p := range auth.IdentityProviders {
+	for _, p := range identityProviders {
 		secret := secrets.Secret{}
 		certSecret := secrets.Secret{}
 		keySecret := secrets.Secret{}

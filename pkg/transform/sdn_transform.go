@@ -1,11 +1,15 @@
-package sdn
+package transform
 
 import (
 	"errors"
 
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/fusor/cpma/pkg/ocp4"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+	"k8s.io/client-go/kubernetes/scheme"
+
+	configv1 "github.com/openshift/api/legacyconfig/v1"
+	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 // NetworkCR describes Network CR for OCP4
@@ -33,14 +37,30 @@ type DefaultNetwork struct {
 	} `yaml:"openshiftSDNConfig"`
 }
 
+type SDNTransform struct {
+	Config *Config
+}
+
 const (
 	apiVersion         = "operator.openshift.io/v1"
 	kind               = "Network"
 	defaultNetworkType = "OpenShiftSDN"
 )
 
-// Transform converts OCPv3 SDN to OCPv4 SDN Custom Resources
-func Transform(networkConfig configv1.MasterNetworkConfig) *NetworkCR {
+func (c SDNTransform) Run(content []byte) (TransformOutput, error) {
+	logrus.Info("SDNTransform::Run")
+
+	var manifests ocp4.Manifests
+
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	var masterConfig configv1.MasterConfig
+
+	_, _, err := serializer.Decode(content, nil, &masterConfig)
+	if err != nil {
+		HandleError(err)
+	}
+	networkConfig := masterConfig.NetworkConfig
+
 	var networkCR NetworkCR
 
 	networkCR.APIVersion = apiVersion
@@ -58,8 +78,24 @@ func Transform(networkConfig configv1.MasterNetworkConfig) *NetworkCR {
 		logrus.Fatal(err)
 	}
 	networkCR.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode = selectedNetworkPlugin
+	networkCRYAML := GenYAML(networkCR)
 
-	return &networkCR
+	manifest := ocp4.Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML}
+	manifests = append(manifests, manifest)
+
+	return ManifestTransformOutput{
+		Config:    *c.Config,
+		Manifests: manifests,
+	}, nil
+}
+
+func (c SDNTransform) Extract() []byte {
+	logrus.Info("SDNTransform::Extract")
+	return c.Config.Fetch(c.Config.MasterConfigFile)
+}
+
+func (c SDNTransform) Validate() error {
+	return nil // Simulate fine
 }
 
 func TranslateClusterNetworks(clusterNeworkEntries []configv1.ClusterNetworkEntry) []ClusterNetwork {
@@ -96,8 +132,8 @@ func SelectNetworkPlugin(pluginName string) (string, error) {
 }
 
 // GenYAML returns a YAML of the OAuthCRD
-func (networkCR *NetworkCR) GenYAML() []byte {
-	yamlBytes, err := yaml.Marshal(&networkCR)
+func GenYAML(networkCR NetworkCR) []byte {
+	yamlBytes, err := yaml.Marshal(networkCR)
 	if err != nil {
 		logrus.Fatal(err)
 	}

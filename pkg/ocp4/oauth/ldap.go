@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/pkg/ocp3"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -25,7 +26,7 @@ type IdentityProviderLDAP struct {
 	} `yaml:"ldap"`
 }
 
-func buildLdapIP(serializer *json.Serializer, p configv1.IdentityProvider) IdentityProviderLDAP {
+func buildLdapIP(serializer *json.Serializer, p ocp3.IdentityProvider) IdentityProviderLDAP {
 	var idP IdentityProviderLDAP
 	var ldap configv1.LDAPPasswordIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &ldap)

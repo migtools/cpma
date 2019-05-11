@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/pkg/ocp3"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -22,7 +23,7 @@ type IdentityProviderRequestHeader struct {
 	} `yaml:"requestHeader"`
 }
 
-func buildRequestHeaderIP(serializer *json.Serializer, p configv1.IdentityProvider) IdentityProviderRequestHeader {
+func buildRequestHeaderIP(serializer *json.Serializer, p ocp3.IdentityProvider) IdentityProviderRequestHeader {
 	var idP IdentityProviderRequestHeader
 	var requestHeader configv1.RequestHeaderIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &requestHeader)

@@ -4,12 +4,13 @@ import (
 	"encoding/base64"
 	"path/filepath"
 
+	"github.com/fusor/cpma/env"
+	"github.com/fusor/cpma/pkg/ocp3"
+	"github.com/fusor/cpma/pkg/ocp4/secrets"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
-	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
-	"github.com/sirupsen/logrus"
 )
 
 type IdentityProviderKeystone struct {
@@ -29,7 +30,7 @@ type IdentityProviderKeystone struct {
 	} `yaml:"keystone"`
 }
 
-func buildKeystoneIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret) {
+func buildKeystoneIP(serializer *json.Serializer, p ocp3.IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret) {
 	var (
 		idP        IdentityProviderKeystone
 		keystone   configv1.KeystonePasswordIdentityProvider

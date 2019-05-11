@@ -4,10 +4,11 @@ import (
 	"encoding/base64"
 	"path/filepath"
 
+	"github.com/fusor/cpma/env"
+	"github.com/fusor/cpma/pkg/ocp3"
+	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
-	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
@@ -20,7 +21,7 @@ type IdentityProviderHTPasswd struct {
 	} `yaml:"htpasswd"`
 }
 
-func buildHTPasswdIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderHTPasswd, secrets.Secret) {
+func buildHTPasswdIP(serializer *json.Serializer, p ocp3.IdentityProvider) (IdentityProviderHTPasswd, secrets.Secret) {
 	var idP IdentityProviderHTPasswd
 	var htpasswd configv1.HTPasswdPasswordIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &htpasswd)

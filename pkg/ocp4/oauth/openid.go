@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
@@ -26,7 +27,7 @@ type IdentityProviderOpenID struct {
 	} `yaml:"openID"`
 }
 
-func buildOpenIDIP(serializer *json.Serializer, p configv1.IdentityProvider) (IdentityProviderOpenID, secrets.Secret) {
+func buildOpenIDIP(serializer *json.Serializer, p ocp3.IdentityProvider) (IdentityProviderOpenID, secrets.Secret) {
 	var idP IdentityProviderOpenID
 	var openID configv1.OpenIDIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &openID)
