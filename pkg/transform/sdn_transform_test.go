@@ -7,15 +7,23 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/client-go/kubernetes/scheme"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 func TestTransformMasterConfig(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
+	var extraction SDNExtraction
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	_, _, err := serializer.Decode(content, nil, &extraction.MasterConfig)
+	if err != nil {
+		HandleError(err)
+	}
 
-	networkCR := SDNTranslate(content)
+	networkCR := SDNTranslate(extraction.MasterConfig)
 
 	// Check if network CR was translated correctly
 	assert.Equal(t, networkCR.APIVersion, "operator.openshift.io/v1")
@@ -62,7 +70,14 @@ func TestGenYAML(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
 
-	networkCR := SDNTranslate(content)
+	var extraction SDNExtraction
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	_, _, err := serializer.Decode(content, nil, &extraction.MasterConfig)
+	if err != nil {
+		HandleError(err)
+	}
+
+	networkCR := SDNTranslate(extraction.MasterConfig)
 	networkCRYAML := GenYAML(networkCR)
 
 	expectedYaml, _ := ioutil.ReadFile("testdata/expected-network-cr-master.yaml")

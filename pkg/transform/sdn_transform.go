@@ -11,6 +11,10 @@ import (
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
+type SDNExtraction struct {
+	configv1.MasterConfig
+}
+
 // NetworkCR describes Network CR for OCP4
 type NetworkCR struct {
 	APIVersion string `yaml:"apiVersion"`
@@ -46,31 +50,23 @@ const (
 	defaultNetworkType = "OpenShiftSDN"
 )
 
-func (c SDNTransform) Run(content []byte) (TransformOutput, error) {
-	logrus.Info("SDNTransform::Run")
+func (e SDNExtraction) Transform() (TransformOutput, error) {
+	logrus.Info("SDNTransform::Transform")
 
-	var manifests Manifests
+	var manifests []Manifest
 
-	networkCR := SDNTranslate(content)
+	networkCR := SDNTranslate(e.MasterConfig)
 	networkCRYAML := GenYAML(networkCR)
 
 	manifest := Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML}
 	manifests = append(manifests, manifest)
 
 	return ManifestTransformOutput{
-		Config:    *c.Config,
 		Manifests: manifests,
 	}, nil
 }
 
-func SDNTranslate(content []byte) NetworkCR {
-	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	var masterConfig configv1.MasterConfig
-
-	_, _, err := serializer.Decode(content, nil, &masterConfig)
-	if err != nil {
-		HandleError(err)
-	}
+func SDNTranslate(masterConfig configv1.MasterConfig) NetworkCR {
 	networkConfig := masterConfig.NetworkConfig
 	var networkCR NetworkCR
 
@@ -93,12 +89,21 @@ func SDNTranslate(content []byte) NetworkCR {
 	return networkCR
 }
 
-func (c SDNTransform) Extract() []byte {
+func (c SDNTransform) Extract() Extraction {
 	logrus.Info("SDNTransform::Extract")
-	return c.Config.Fetch(c.Config.MasterConfigFile)
+	content := c.Config.Fetch(c.Config.MasterConfigFile)
+	var extraction SDNExtraction
+
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	_, _, err := serializer.Decode(content, nil, &extraction.MasterConfig)
+	if err != nil {
+		HandleError(err)
+	}
+
+	return extraction
 }
 
-func (c SDNTransform) Validate() error {
+func (c SDNExtraction) Validate() error {
 	return nil // Simulate fine
 }
 

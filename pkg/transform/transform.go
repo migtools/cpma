@@ -33,9 +33,6 @@ type Master struct {
 	Secrets []secrets.Secret
 }
 
-type Manifests []Manifest
-
-// Manifest holds a CRD object
 type Manifest struct {
 	Name string
 	CRD  []byte
@@ -50,7 +47,7 @@ type Config struct {
 }
 
 type ManifestTransformOutput struct {
-	Config    Config
+	//Config    Config
 	Manifests []Manifest
 }
 
@@ -69,7 +66,7 @@ func Start() {
 	config.RegistriesConfigFile = RegistriesConfigFile
 	transformRunner := NewTransformRunner(config)
 
-	if err := transformRunner.Run([]Transform{
+	if err := transformRunner.Transform([]Transform{
 		OAuthTransform{
 			Config: &config,
 		},
@@ -85,7 +82,7 @@ func Start() {
 }
 
 // DumpManifests creates OCDs files
-func (config *Config) DumpManifests(manifests []Manifest) {
+func DumpManifests(manifests []Manifest) {
 	for _, manifest := range manifests {
 		maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
 		os.MkdirAll(path.Dir(maniftestfile), 0755)
@@ -105,10 +102,13 @@ func (config *Config) Fetch(path string) []byte {
 	return f
 }
 
-type Transform interface {
-	Run([]byte) (TransformOutput, error)
+type Extraction interface {
+	Transform() (TransformOutput, error)
 	Validate() error
-	Extract() []byte
+}
+
+type Transform interface {
+	Extract() Extraction
 }
 
 type TransformOutput interface {
@@ -117,29 +117,25 @@ type TransformOutput interface {
 
 func (m ManifestTransformOutput) Flush() error {
 	logrus.Info("Writing file data:")
-	m.Config.DumpManifests(m.Manifests)
+	DumpManifests(m.Manifests)
 	return nil
 }
 
-func NewTransformRunner(config Config) *TransformRunner {
-	return &TransformRunner{}
-}
-
-func (r TransformRunner) Run(transforms []Transform) error {
-	logrus.Info("TransformRunner::Run")
+func (r TransformRunner) Transform(transforms []Transform) error {
+	logrus.Info("TransformRunner::Transform")
 
 	// For each transform, extract the data, validate it, and run the transform.
 	// Handle any errors, and finally flush the output to it's desired destination
 	// NOTE: This should be parallelized with channels unless the transforms have
 	// some dependency on the outputs of others
 	for _, transform := range transforms {
-		content := transform.Extract()
+		extraction := transform.Extract()
 
-		if err := transform.Validate(); err != nil {
-			return HandleError(err)
+		if err := extraction.Validate(); err != nil {
+			HandleError(err)
 		}
 
-		output, err := transform.Run(content)
+		output, err := extraction.Transform()
 		if err != nil {
 			HandleError(err)
 		}
@@ -150,6 +146,10 @@ func (r TransformRunner) Run(transforms []Transform) error {
 	}
 
 	return nil
+}
+
+func NewTransformRunner(config Config) *TransformRunner {
+	return &TransformRunner{}
 }
 
 func HandleError(err error) error {

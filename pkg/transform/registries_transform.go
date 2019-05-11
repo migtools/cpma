@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Containers struct {
+type RegistriesExtraction struct {
 	Registries map[string]Registries
 }
 
@@ -37,15 +37,9 @@ type RegistriesTransform struct {
 	Config *Config
 }
 
-func (c RegistriesTransform) Run(content []byte) (TransformOutput, error) {
-	logrus.Info("RegistriesTransform::Run")
-
-	var containers Containers
-	var manifests Manifests
-
-	if _, err := toml.Decode(string(content), &containers); err != nil {
-		// handle error
-	}
+func (e RegistriesExtraction) Transform() (TransformOutput, error) {
+	logrus.Info("RegistriesTransform::Extraction")
+	var manifests []Manifest
 
 	const (
 		apiVersion = "config.openshift.io/v1"
@@ -61,8 +55,8 @@ func (c RegistriesTransform) Run(content []byte) (TransformOutput, error) {
 	imageCR.Metadata.Name = name
 	imageCR.Metadata.Annotations = make(map[string]string)
 	imageCR.Metadata.Annotations[annokey] = annoval
-	imageCR.Spec.RegistrySources.BlockedRegistries = containers.Registries["block"].List
-	imageCR.Spec.RegistrySources.InsecureRegistries = containers.Registries["insecure"].List
+	imageCR.Spec.RegistrySources.BlockedRegistries = e.Registries["block"].List
+	imageCR.Spec.RegistrySources.InsecureRegistries = e.Registries["insecure"].List
 
 	imageCRYAML, err := yaml.Marshal(&imageCR)
 	if err != nil {
@@ -73,16 +67,20 @@ func (c RegistriesTransform) Run(content []byte) (TransformOutput, error) {
 	manifests = append(manifests, manifest)
 
 	return ManifestTransformOutput{
-		Config:    *c.Config,
 		Manifests: manifests,
 	}, nil
 }
 
-func (c RegistriesTransform) Extract() []byte {
+func (c RegistriesTransform) Extract() Extraction {
 	logrus.Info("RegistriesTransform::Extract")
-	return c.Config.Fetch(c.Config.RegistriesConfigFile)
+	content := c.Config.Fetch(c.Config.RegistriesConfigFile)
+	var extraction RegistriesExtraction
+	if _, err := toml.Decode(string(content), &extraction); err != nil {
+		HandleError(err)
+	}
+	return extraction
 }
 
-func (c RegistriesTransform) Validate() error {
+func (c RegistriesExtraction) Validate() error {
 	return nil // Simulate fine
 }

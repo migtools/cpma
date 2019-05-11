@@ -11,55 +11,26 @@ import (
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
+type OAuthExtraction struct {
+	IdentityProviders []oauth.IdentityProvider
+}
+
 type OAuthTransform struct {
 	Config *Config
 }
 
-func (c OAuthTransform) Run(content []byte) (TransformOutput, error) {
-	logrus.Info("OAuthTransform::Run")
+func (e OAuthExtraction) Transform() (TransformOutput, error) {
+	logrus.Info("OAuthTransform::Transform")
 
-	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	var masterConfig configv1.MasterConfig
-	var identityProviders []oauth.IdentityProvider
 	var ocp4Cluster Cluster
-	var htContent []byte
 
-	_, _, err := serializer.Decode(content, nil, &masterConfig)
+	oauth, secrets, err := oauth.Translate(e.IdentityProviders)
 	if err != nil {
-		HandleError(err)
+		logrus.WithError(err).Fatalf("Unable to generate OAuth CRD")
 	}
 
-	for _, identityProvider := range masterConfig.OAuthConfig.IdentityProviders {
-		providerJSON, _ := identityProvider.Provider.MarshalJSON()
-		provider := oauth.Provider{}
-		json.Unmarshal(providerJSON, &provider)
-		if provider.Kind == "HTPasswdPasswordIdentityProvider" {
-			htContent = c.Config.Fetch(provider.File)
-		}
-
-		identityProviders = append(identityProviders,
-			oauth.IdentityProvider{
-				provider.Kind,
-				provider.APIVersion,
-				identityProvider.MappingMethod,
-				identityProvider.Name,
-				identityProvider.Provider,
-				provider.File,
-				htContent,
-				identityProvider.UseAsChallenger,
-				identityProvider.UseAsLogin,
-			})
-	}
-
-	if masterConfig.OAuthConfig != nil {
-		oauth, secrets, err := oauth.Translate(identityProviders)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Unable to generate OAuth CRD from %+v", masterConfig.OAuthConfig)
-		}
-
-		ocp4Cluster.Master.OAuth = *oauth
-		ocp4Cluster.Master.Secrets = secrets
-	}
+	ocp4Cluster.Master.OAuth = *oauth
+	ocp4Cluster.Master.Secrets = secrets
 
 	var manifests []Manifest
 	if ocp4Cluster.Master.OAuth.Kind != "" {
@@ -73,14 +44,49 @@ func (c OAuthTransform) Run(content []byte) (TransformOutput, error) {
 		}
 	}
 
-	return ManifestTransformOutput{Config: *c.Config, Manifests: manifests}, nil
+	return ManifestTransformOutput{Manifests: manifests}, nil
 }
 
-func (c OAuthTransform) Extract() []byte {
+func (c OAuthTransform) Extract() Extraction {
 	logrus.Info("OAuthTransform::Extract")
-	return c.Config.Fetch(c.Config.MasterConfigFile)
+	content := c.Config.Fetch(c.Config.MasterConfigFile)
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	var masterConfig configv1.MasterConfig
+	var extraction OAuthExtraction
+	var htContent []byte
+
+	_, _, err := serializer.Decode(content, nil, &masterConfig)
+	if err != nil {
+		HandleError(err)
+	}
+
+	if masterConfig.OAuthConfig != nil {
+		for _, identityProvider := range masterConfig.OAuthConfig.IdentityProviders {
+			providerJSON, _ := identityProvider.Provider.MarshalJSON()
+			provider := oauth.Provider{}
+			json.Unmarshal(providerJSON, &provider)
+			if provider.Kind == "HTPasswdPasswordIdentityProvider" {
+				htContent = c.Config.Fetch(provider.File)
+			}
+
+			extraction.IdentityProviders = append(extraction.IdentityProviders,
+				oauth.IdentityProvider{
+					provider.Kind,
+					provider.APIVersion,
+					identityProvider.MappingMethod,
+					identityProvider.Name,
+					identityProvider.Provider,
+					provider.File,
+					htContent,
+					identityProvider.UseAsChallenger,
+					identityProvider.UseAsLogin,
+				})
+		}
+	}
+
+	return extraction
 }
 
-func (c OAuthTransform) Validate() error {
+func (c OAuthExtraction) Validate() error {
 	return nil // Simulate fine
 }

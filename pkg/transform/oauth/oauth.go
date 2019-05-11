@@ -121,6 +121,7 @@ func Translate(identityProviders []IdentityProvider) (*OAuthCRD, []secrets.Secre
 			}
 		default:
 			logrus.Infof("Can't handle %s OAuth kind", kind)
+			continue
 		}
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 
