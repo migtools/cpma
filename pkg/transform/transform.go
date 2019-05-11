@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/internal/io"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/ocp4"
 	"github.com/sirupsen/logrus"
 )

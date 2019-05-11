@@ -1,7 +1,7 @@
 package oauth
 
 import (
-	"github.com/fusor/cpma/internal/io"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/secrets"
 	"github.com/sirupsen/logrus"

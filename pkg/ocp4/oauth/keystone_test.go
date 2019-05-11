@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/internal/io"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/ocp3"
 	"github.com/fusor/cpma/pkg/ocp4/oauth"
 	"github.com/stretchr/testify/assert"

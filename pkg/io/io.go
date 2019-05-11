@@ -3,7 +3,7 @@ package io
 import (
 	"io/ioutil"
 
-	"github.com/fusor/cpma/internal/io/sftpclient"
+	"github.com/fusor/cpma/pkg/io/sftpclient"
 	"github.com/sirupsen/logrus"
 )
 
