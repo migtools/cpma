@@ -3,9 +3,7 @@ package transform
 import (
 	"encoding/json"
 
-	"github.com/fusor/cpma/pkg/ocp3"
-	"github.com/fusor/cpma/pkg/ocp4"
-	"github.com/fusor/cpma/pkg/ocp4/oauth"
+	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -22,8 +20,8 @@ func (c OAuthTransform) Run(content []byte) (TransformOutput, error) {
 
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var masterConfig configv1.MasterConfig
-	var identityProviders []ocp3.IdentityProvider
-	var ocp4Cluster ocp4.Cluster
+	var identityProviders []oauth.IdentityProvider
+	var ocp4Cluster Cluster
 	var htContent []byte
 
 	_, _, err := serializer.Decode(content, nil, &masterConfig)
@@ -33,14 +31,14 @@ func (c OAuthTransform) Run(content []byte) (TransformOutput, error) {
 
 	for _, identityProvider := range masterConfig.OAuthConfig.IdentityProviders {
 		providerJSON, _ := identityProvider.Provider.MarshalJSON()
-		provider := Provider{}
+		provider := oauth.Provider{}
 		json.Unmarshal(providerJSON, &provider)
 		if provider.Kind == "HTPasswdPasswordIdentityProvider" {
 			htContent = c.Config.Fetch(provider.File)
 		}
 
 		identityProviders = append(identityProviders,
-			ocp3.IdentityProvider{
+			oauth.IdentityProvider{
 				provider.Kind,
 				provider.APIVersion,
 				identityProvider.MappingMethod,
@@ -63,14 +61,14 @@ func (c OAuthTransform) Run(content []byte) (TransformOutput, error) {
 		ocp4Cluster.Master.Secrets = secrets
 	}
 
-	var manifests []ocp4.Manifest
+	var manifests []Manifest
 	if ocp4Cluster.Master.OAuth.Kind != "" {
-		manifest := ocp4.Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: ocp4Cluster.Master.OAuth.GenYAML()}
+		manifest := Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: ocp4Cluster.Master.OAuth.GenYAML()}
 		manifests = append(manifests, manifest)
 
 		for _, secret := range ocp4Cluster.Master.Secrets {
 			filename := "100_CPMA-cluster-config-secret-" + secret.Metadata.Name + ".yaml"
-			m := ocp4.Manifest{Name: filename, CRD: secret.GenYAML()}
+			m := Manifest{Name: filename, CRD: secret.GenYAML()}
 			manifests = append(manifests, m)
 		}
 	}

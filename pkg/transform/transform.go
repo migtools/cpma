@@ -8,18 +8,37 @@ import (
 
 	"github.com/fusor/cpma/env"
 	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/ocp4"
+	"github.com/fusor/cpma/pkg/transform/oauth"
+	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/sirupsen/logrus"
 )
 
+// OCP4InstallMsg message about using generated manifests
+const OCP4InstallMsg = `To install OCP4 run the installer as follow in order to add CRDs:
+' /openshift-install --dir $INSTALL_DIR create install-config'
+'./openshift-install --dir $INSTALL_DIR create manifests'
+# Copy generated CRD manifest files  to '$INSTALL_DIR/openshift/'
+# Edit them if needed, then run installation:
+'./openshift-install --dir $INSTALL_DIR  create cluster'`
 const MasterConfigFile = "/etc/origin/master/master-config.yaml"
 const NodeConfigFile = "/etc/origin/node/node-config.yaml"
 const RegistriesConfigFile = "/etc/containers/registries.conf"
 
-type Provider struct {
-	APIVersion string `json:"apiVersion"`
-	Kind       string `json:"kind"`
-	File       string `json:"file"`
+type Cluster struct {
+	Master Master
+}
+
+type Master struct {
+	OAuth   oauth.OAuthCRD
+	Secrets []secrets.Secret
+}
+
+type Manifests []Manifest
+
+// Manifest holds a CRD object
+type Manifest struct {
+	Name string
+	CRD  []byte
 }
 
 type Config struct {
@@ -32,7 +51,7 @@ type Config struct {
 
 type ManifestTransformOutput struct {
 	Config    Config
-	Manifests []ocp4.Manifest
+	Manifests []Manifest
 }
 
 type TransformRunner struct {
@@ -66,7 +85,7 @@ func Start() {
 }
 
 // DumpManifests creates OCDs files
-func (config *Config) DumpManifests(manifests []ocp4.Manifest) {
+func (config *Config) DumpManifests(manifests []Manifest) {
 	for _, manifest := range manifests {
 		maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
 		os.MkdirAll(path.Dir(maniftestfile), 0755)

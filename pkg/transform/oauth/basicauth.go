@@ -3,8 +3,7 @@ package oauth
 import (
 	"encoding/base64"
 
-	"github.com/fusor/cpma/pkg/ocp3"
-	"github.com/fusor/cpma/pkg/ocp4/secrets"
+	"github.com/fusor/cpma/pkg/transform/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -26,7 +25,7 @@ type IdentityProviderBasicAuth struct {
 	} `yaml:"basicAuth"`
 }
 
-func buildBasicAuthIP(serializer *json.Serializer, p ocp3.IdentityProvider) (IdentityProviderBasicAuth, secrets.Secret, secrets.Secret) {
+func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderBasicAuth, secrets.Secret, secrets.Secret) {
 	var idP IdentityProviderBasicAuth
 	var basicAuth configv1.BasicAuthPasswordIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &basicAuth)

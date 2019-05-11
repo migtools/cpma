@@ -6,9 +6,7 @@ import (
 	"testing"
 
 	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/ocp3"
-	"github.com/fusor/cpma/pkg/ocp4/oauth"
-	"github.com/fusor/cpma/pkg/transform"
+	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -28,14 +26,14 @@ func TestTransformMasterConfigKeystone(t *testing.T) {
 	_, _, _ = serializer.Decode(content, nil, &masterV3)
 
 	var htContent []byte
-	var identityProviders []ocp3.IdentityProvider
+	var identityProviders []oauth.IdentityProvider
 	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
 		providerJSON, _ := identityProvider.Provider.MarshalJSON()
-		provider := transform.Provider{}
+		provider := oauth.Provider{}
 		json.Unmarshal(providerJSON, &provider)
 
 		identityProviders = append(identityProviders,
-			ocp3.IdentityProvider{
+			oauth.IdentityProvider{
 				provider.Kind,
 				provider.APIVersion,
 				identityProvider.MappingMethod,

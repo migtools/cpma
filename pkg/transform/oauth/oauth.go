@@ -2,20 +2,20 @@ package oauth
 
 import (
 	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/ocp3"
-	"github.com/fusor/cpma/pkg/ocp4/secrets"
+	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
 
+	configv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 )
 
 func init() {
-	// TODO: Is this line needed at all? It may be superflous to
-	// ocp3.go/init()/configv1.InstallLegacy(scheme.Scheme)
 	oauthv1.Install(scheme.Scheme)
+	configv1.InstallLegacy(scheme.Scheme)
 }
 
 // reference:
@@ -48,6 +48,24 @@ type MetaData struct {
 	NameSpace string `yaml:"namespace"`
 }
 
+type Provider struct {
+	APIVersion string `json:"apiVersion"`
+	Kind       string `json:"kind"`
+	File       string `json:"file"`
+}
+
+type IdentityProvider struct {
+	Kind            string
+	APIVersion      string
+	MappingMethod   string
+	Name            string
+	Provider        runtime.RawExtension
+	HTFileName      string
+	HTFileData      []byte
+	UseAsChallenger bool
+	UseAsLogin      bool
+}
+
 var (
 	APIVersion = "config.openshift.io/v1"
 	// GetFile allows to mock file retrieval
@@ -55,7 +73,7 @@ var (
 )
 
 // Transform converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(identityProviders []ocp3.IdentityProvider) (*OAuthCRD, []secrets.Secret, error) {
+func Translate(identityProviders []IdentityProvider) (*OAuthCRD, []secrets.Secret, error) {
 	var err error
 	var idP interface{}
 	var secretsSlice []secrets.Secret

@@ -3,7 +3,6 @@ package transform
 import (
 	"errors"
 
-	"github.com/fusor/cpma/pkg/ocp4"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -50,12 +49,12 @@ const (
 func (c SDNTransform) Run(content []byte) (TransformOutput, error) {
 	logrus.Info("SDNTransform::Run")
 
-	var manifests ocp4.Manifests
+	var manifests Manifests
 
 	networkCR := SDNTranslate(content)
 	networkCRYAML := GenYAML(networkCR)
 
-	manifest := ocp4.Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML}
+	manifest := Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML}
 	manifests = append(manifests, manifest)
 
 	return ManifestTransformOutput{

@@ -5,8 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/pkg/ocp3"
-	"github.com/fusor/cpma/pkg/ocp4/secrets"
+	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
@@ -30,7 +29,7 @@ type IdentityProviderKeystone struct {
 	} `yaml:"keystone"`
 }
 
-func buildKeystoneIP(serializer *json.Serializer, p ocp3.IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret) {
+func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret) {
 	var (
 		idP        IdentityProviderKeystone
 		keystone   configv1.KeystonePasswordIdentityProvider

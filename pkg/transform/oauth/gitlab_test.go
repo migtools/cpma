@@ -5,9 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/ocp3"
-	"github.com/fusor/cpma/pkg/ocp4/oauth"
-	"github.com/fusor/cpma/pkg/transform"
+	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -16,22 +14,23 @@ import (
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-func TestTransformMasterConfigBasicAuth(t *testing.T) {
-	file := "testdata/basicauth-test-master-config.yaml"
+func TestTransformMasterConfigGitlab(t *testing.T) {
+	file := "testdata/gitlab-test-master-config.yaml"
 	content, _ := ioutil.ReadFile(file)
+
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var masterV3 configv1.MasterConfig
 	_, _, _ = serializer.Decode(content, nil, &masterV3)
 
 	var htContent []byte
-	var identityProviders []ocp3.IdentityProvider
+	var identityProviders []oauth.IdentityProvider
 	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
 		providerJSON, _ := identityProvider.Provider.MarshalJSON()
-		provider := transform.Provider{}
+		provider := oauth.Provider{}
 		json.Unmarshal(providerJSON, &provider)
 
 		identityProviders = append(identityProviders,
-			ocp3.IdentityProvider{
+			oauth.IdentityProvider{
 				provider.Kind,
 				provider.APIVersion,
 				identityProvider.MappingMethod,
@@ -50,18 +49,17 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = "openshift-config"
 
-	var basicAuthIDP oauth.IdentityProviderBasicAuth
-	basicAuthIDP.Type = "BasicAuth"
-	basicAuthIDP.Challenge = true
-	basicAuthIDP.Login = true
-	basicAuthIDP.Name = "my_remote_basic_auth_provider"
-	basicAuthIDP.MappingMethod = "claim"
-	basicAuthIDP.BasicAuth.URL = "https://www.example.com/"
-	basicAuthIDP.BasicAuth.CA.Name = "ca.file"
-	basicAuthIDP.BasicAuth.TLSClientCert.Name = "my_remote_basic_auth_provider-client-cert-secret"
-	basicAuthIDP.BasicAuth.TLSClientKey.Name = "my_remote_basic_auth_provider-client-key-secret"
-
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, basicAuthIDP)
+	var gitlabIDP oauth.IdentityProviderGitLab
+	gitlabIDP.Type = "GitLab"
+	gitlabIDP.Challenge = true
+	gitlabIDP.Login = true
+	gitlabIDP.MappingMethod = "claim"
+	gitlabIDP.Name = "gitlab123456789"
+	gitlabIDP.GitLab.URL = "https://gitlab.com/"
+	gitlabIDP.GitLab.CA.Name = "gitlab.crt"
+	gitlabIDP.GitLab.ClientID = "fake-id"
+	gitlabIDP.GitLab.ClientSecret.Name = "gitlab123456789-secret"
+	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, gitlabIDP)
 
 	resCrd, _, err := oauth.Translate(identityProviders)
 	require.NoError(t, err)

@@ -1,8 +1,7 @@
 package oauth
 
 import (
-	"github.com/fusor/cpma/pkg/ocp3"
-	"github.com/fusor/cpma/pkg/ocp4/secrets"
+	"github.com/fusor/cpma/pkg/transform/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -19,7 +18,7 @@ type IdentityProviderGoogle struct {
 	} `yaml:"google"`
 }
 
-func buildGoogleIP(serializer *json.Serializer, p ocp3.IdentityProvider) (IdentityProviderGoogle, secrets.Secret) {
+func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGoogle, secrets.Secret) {
 	var idP IdentityProviderGoogle
 	var google configv1.GoogleIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &google)

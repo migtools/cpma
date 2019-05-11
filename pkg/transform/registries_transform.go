@@ -2,7 +2,6 @@ package transform
 
 import (
 	"github.com/BurntSushi/toml"
-	"github.com/fusor/cpma/pkg/ocp4"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
@@ -11,7 +10,7 @@ func (c RegistriesTransform) Run(content []byte) (TransformOutput, error) {
 	logrus.Info("RegistriesTransform::Run")
 
 	var containers Containers
-	var manifests ocp4.Manifests
+	var manifests Manifests
 
 	if _, err := toml.Decode(string(content), &containers); err != nil {
 		// handle error
@@ -39,7 +38,7 @@ func (c RegistriesTransform) Run(content []byte) (TransformOutput, error) {
 		HandleError(err)
 	}
 
-	manifest := ocp4.Manifest{Name: "100_CPMA-cluster-config-registries.yaml", CRD: imageCRYAML}
+	manifest := Manifest{Name: "100_CPMA-cluster-config-registries.yaml", CRD: imageCRYAML}
 	manifests = append(manifests, manifest)
 
 	return ManifestTransformOutput{
