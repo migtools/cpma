@@ -1,9 +1,6 @@
 package transform
 
 import (
-	"io/ioutil"
-	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/fusor/cpma/env"
@@ -46,13 +43,21 @@ type Config struct {
 	Hostname             string
 }
 
-type ManifestTransformOutput struct {
-	//Config    Config
-	Manifests []Manifest
-}
-
 type TransformRunner struct {
 	Config string
+}
+
+type Extraction interface {
+	Transform() (TransformOutput, error)
+	Validate() error
+}
+
+type Transform interface {
+	Extract() Extraction
+}
+
+type TransformOutput interface {
+	Flush() error
 }
 
 // GetFile allows to mock file retrieval
@@ -89,44 +94,12 @@ func LoadConfig() Config {
 	return config
 }
 
-// DumpManifests creates OCDs files
-func DumpManifests(manifests []Manifest) {
-	for _, manifest := range manifests {
-		maniftestfile := filepath.Join(env.Config().GetString("OutputDir"), "manifests", manifest.Name)
-		os.MkdirAll(path.Dir(maniftestfile), 0755)
-		err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
-		logrus.Printf("CRD:Added: %s", maniftestfile)
-		if err != nil {
-			logrus.Panic(err)
-		}
-	}
-}
-
 func (config *Config) Fetch(path string) []byte {
 	dst := filepath.Join(config.OutputDir, config.Hostname, path)
 	f := GetFile(config.Hostname, path, dst)
 	logrus.Printf("File:Loaded: %s", dst)
 
 	return f
-}
-
-type Extraction interface {
-	Transform() (TransformOutput, error)
-	Validate() error
-}
-
-type Transform interface {
-	Extract() Extraction
-}
-
-type TransformOutput interface {
-	Flush() error
-}
-
-func (m ManifestTransformOutput) Flush() error {
-	logrus.Info("Writing file data:")
-	DumpManifests(m.Manifests)
-	return nil
 }
 
 func (r TransformRunner) Transform(transforms []Transform) error {
