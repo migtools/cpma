@@ -15,17 +15,19 @@ type Registries struct {
 }
 
 type ImageCR struct {
-	APIVersion string   `yaml:"apiVersion"`
-	Kind       string   `yaml:"kind"`
-	Metadata   Metadata `yaml:"metadata"`
-	Spec       struct {
-		RegistrySources RegistrySources `yaml:"registrySources"`
-	} `yaml:"spec"`
+	APIVersion string    `yaml:"apiVersion"`
+	Kind       string    `yaml:"kind"`
+	Metadata   Metadata  `yaml:"metadata"`
+	Spec       ImageSpec `yaml:"spec"`
 }
 
 type Metadata struct {
 	Name        string
 	Annotations map[string]string `yaml:"annotations"`
+}
+
+type ImageSpec struct {
+	RegistrySources RegistrySources `yaml:"registrySources"`
 }
 
 type RegistrySources struct {
@@ -82,5 +84,6 @@ func (c RegistriesTransform) Extract() Extraction {
 }
 
 func (c RegistriesExtraction) Validate() error {
+	logrus.Warn("Registries Transform Validation Not Implmeneted")
 	return nil // Simulate fine
 }

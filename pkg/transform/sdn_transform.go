@@ -17,13 +17,15 @@ type SDNExtraction struct {
 
 // NetworkCR describes Network CR for OCP4
 type NetworkCR struct {
-	APIVersion string `yaml:"apiVersion"`
-	Kind       string `yaml:"kind"`
-	Spec       struct {
-		ClusterNetworks []ClusterNetwork `yaml:"clusterNetwork"`
-		ServiceNetwork  string           `yaml:"serviceNetwork"`
-		DefaultNetwork  `yaml:"defaultNetwork"`
-	} `yaml:"spec"`
+	APIVersion string  `yaml:"apiVersion"`
+	Kind       string  `yaml:"kind"`
+	Spec       SDNSpec `yaml:"spec"`
+}
+
+type SDNSpec struct {
+	ClusterNetworks []ClusterNetwork `yaml:"clusterNetwork"`
+	ServiceNetwork  string           `yaml:"serviceNetwork"`
+	DefaultNetwork  `yaml:"defaultNetwork"`
 }
 
 // ClusterNetwork contains CIDR and address size to assign to each node
@@ -104,6 +106,7 @@ func (c SDNTransform) Extract() Extraction {
 }
 
 func (c SDNExtraction) Validate() error {
+	logrus.Warn("SDN Transform Validation Not Implmeneted")
 	return nil // Simulate fine
 }
 

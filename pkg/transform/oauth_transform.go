@@ -88,5 +88,6 @@ func (c OAuthTransform) Extract() Extraction {
 }
 
 func (c OAuthExtraction) Validate() error {
+	logrus.Warn("Oauth Transform Validation Not Implmeneted")
 	return nil // Simulate fine
 }

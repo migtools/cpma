@@ -59,11 +59,7 @@ type TransformRunner struct {
 var GetFile = io.GetFile
 
 func Start() {
-	config := Config{}
-	config.OutputDir = env.Config().GetString("OutputDir")
-	config.Hostname = env.Config().GetString("Source")
-	config.MasterConfigFile = MasterConfigFile
-	config.RegistriesConfigFile = RegistriesConfigFile
+	config := LoadConfig()
 	transformRunner := NewTransformRunner(config)
 
 	if err := transformRunner.Transform([]Transform{
@@ -79,6 +75,18 @@ func Start() {
 	}); err != nil {
 		logrus.WithError(err).Fatalf("%s", err.Error())
 	}
+}
+
+func LoadConfig() Config {
+	logrus.Info("Loaded config")
+
+	config := Config{}
+	config.OutputDir = env.Config().GetString("OutputDir")
+	config.Hostname = env.Config().GetString("Source")
+	config.MasterConfigFile = MasterConfigFile
+	config.RegistriesConfigFile = RegistriesConfigFile
+
+	return config
 }
 
 // DumpManifests creates OCDs files

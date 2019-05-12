@@ -27,12 +27,14 @@ func init() {
 
 // Shared CRD part, present in all types of OAuth CRDs
 type OAuthCRD struct {
-	APIVersion string   `yaml:"apiVersion"`
-	Kind       string   `yaml:"kind"`
-	Metadata   MetaData `yaml:"metadata"`
-	Spec       struct {
-		IdentityProviders []interface{} `yaml:"identityProviders"`
-	} `yaml:"spec"`
+	APIVersion string    `yaml:"apiVersion"`
+	Kind       string    `yaml:"kind"`
+	Metadata   MetaData  `yaml:"metadata"`
+	Spec       OAuthSpec `yaml:"spec"`
+}
+
+type OAuthSpec struct {
+	IdentityProviders []interface{} `yaml:"identityProviders"`
 }
 
 type identityProviderCommon struct {
