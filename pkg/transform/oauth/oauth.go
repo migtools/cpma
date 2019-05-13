@@ -74,6 +74,11 @@ var (
 	GetFile = io.GetFile
 )
 
+const (
+	httpdAuthSecret  = "htpasswd_auth-secret"
+	httpProviderKind = "HTPasswdPasswordIdentityProvider"
+)
+
 // Transform converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
 func Translate(identityProviders []IdentityProvider) (*OAuthCRD, []secrets.Secret, error) {
 	var err error
@@ -86,7 +91,6 @@ func Translate(identityProviders []IdentityProvider) (*OAuthCRD, []secrets.Secre
 	oauthCrd.Kind = "OAuth"
 	oauthCrd.Metadata.Name = "cluster"
 	oauthCrd.Metadata.NameSpace = "openshift-config"
-
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	for _, p := range identityProviders {
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
@@ -127,7 +131,7 @@ func Translate(identityProviders []IdentityProvider) (*OAuthCRD, []secrets.Secre
 		}
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 
-		if secret.Metadata.Name != "htpasswd_auth-secret" || p.Kind == "HTPasswdPasswordIdentityProvider" {
+		if secret.Metadata.Name != httpdAuthSecret || p.Kind == httpProviderKind {
 			secretsSlice = append(secretsSlice, secret)
 		}
 	}
