@@ -21,7 +21,6 @@ func TestTransformMasterConfigGoogle(t *testing.T) {
 	var masterV3 configv1.MasterConfig
 	_, _, _ = serializer.Decode(content, nil, &masterV3)
 
-	var htContent []byte
 	var identityProviders []oauth.IdentityProvider
 	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
 		providerJSON, _ := identityProvider.Provider.MarshalJSON()
@@ -36,7 +35,9 @@ func TestTransformMasterConfigGoogle(t *testing.T) {
 				identityProvider.Name,
 				identityProvider.Provider,
 				provider.File,
-				htContent,
+				nil,
+				nil,
+				nil,
 				identityProvider.UseAsChallenger,
 				identityProvider.UseAsLogin,
 			})
