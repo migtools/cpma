@@ -15,11 +15,10 @@
 package cmd
 
 import (
+	"fmt"
 	"path"
 
 	"github.com/fusor/cpma/env"
-	"github.com/fusor/cpma/pkg/migration"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -27,15 +26,14 @@ func init() {
 	cobra.OnInitialize()
 	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
 
-	rootCmd.Flags().Bool("debug", false, "show debug ouput")
-	env.Config().BindPFlag("Debug", rootCmd.Flags().Lookup("debug"))
+	rootCmd.PersistentFlags().Bool("debug", false, "show debug ouput")
+	env.Config().BindPFlag("Debug", rootCmd.PersistentFlags().Lookup("debug"))
 
-	rootCmd.Flags().StringP("output-dir", "o", path.Dir(""), "set the directory to store extracted configuration.")
-	env.Config().BindPFlag("OutputDir", rootCmd.Flags().Lookup("output-dir"))
+	rootCmd.PersistentFlags().StringP("output-dir", "o", path.Dir(""), "set the directory to store extracted configuration.")
+	env.Config().BindPFlag("OutputDir", rootCmd.PersistentFlags().Lookup("output-dir"))
 
-	// Default timeout is 10s
-	rootCmd.Flags().DurationP("timeout", "t", 10000000000, "Set timeout, unit must be provided, i.e. '-t 20s'.")
-	env.Config().BindPFlag("TimeOut", rootCmd.Flags().Lookup("timeout"))
+	rootCmd.AddCommand(transformCmd)
+	rootCmd.AddCommand(reportCmd)
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -44,10 +42,7 @@ var rootCmd = &cobra.Command{
 	Short: "Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x",
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
 	Run: func(cmd *cobra.Command, args []string) {
-		env.InitConfig()
-		env.InitLogger()
-
-		migration.Start()
+		fmt.Println("Run cpma --help to see usage.")
 	},
 }
 
@@ -55,6 +50,5 @@ var rootCmd = &cobra.Command{
 // It only needs to happen once.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logrus.WithError(err).Fatal("Something went terribly wrong!")
 	}
 }
