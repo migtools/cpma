@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/fusor/cpma/env"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/pkg/sftp"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"

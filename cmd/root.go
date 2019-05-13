@@ -18,13 +18,13 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/fusor/cpma/env"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/spf13/cobra"
 )
 
 func init() {
 	cobra.OnInitialize()
-	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
+	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (Default searches ./cpma.yaml, $HOME/cpma.yml)")
 
 	rootCmd.PersistentFlags().Bool("debug", false, "show debug ouput")
 	env.Config().BindPFlag("Debug", rootCmd.PersistentFlags().Lookup("debug"))

@@ -3,7 +3,7 @@ package transform
 import (
 	"path/filepath"
 
-	"github.com/fusor/cpma/env"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -17,15 +17,6 @@ const OCP4InstallMsg = `To install OCP4 run the installer as follow in order to 
 # Copy generated CRD manifest files  to '$INSTALL_DIR/openshift/'
 # Edit them if needed, then run installation:
 './openshift-install --dir $INSTALL_DIR  create cluster'`
-
-// MasterConfigFile file path to the master-config.yaml
-const MasterConfigFile = "/etc/origin/master/master-config.yaml"
-
-// NodeConfigFile file path for node-config.yaml
-const NodeConfigFile = "/etc/origin/node/node-config.yaml"
-
-// RegistriesConfigFile file path for registries.conf
-const RegistriesConfigFile = "/etc/containers/registries.conf"
 
 // Cluster contains a cluster
 type Cluster struct {
@@ -46,11 +37,8 @@ type Manifest struct {
 
 // Config contains CPMA configuration information
 type Config struct {
-	MasterConfigFile     string
-	NodeConfigFile       string
-	RegistriesConfigFile string
-	OutputDir            string
-	Hostname             string
+	OutputDir string
+	Hostname  string
 }
 
 // Runner a generic transform runner
@@ -104,8 +92,6 @@ func LoadConfig() Config {
 	config := Config{}
 	config.OutputDir = env.Config().GetString("OutputDir")
 	config.Hostname = env.Config().GetString("Source")
-	config.MasterConfigFile = MasterConfigFile
-	config.RegistriesConfigFile = RegistriesConfigFile
 
 	return config
 }

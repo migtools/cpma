@@ -3,6 +3,7 @@ package transform
 import (
 	"encoding/json"
 
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -53,7 +54,7 @@ func (e OAuthExtraction) Transform() (Output, error) {
 // Extract collects OAuth configuration from an OCP3 cluster
 func (e OAuthTransform) Extract() Extraction {
 	logrus.Info("OAuthTransform::Extract")
-	content := e.Config.Fetch(e.Config.MasterConfigFile)
+	content := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var masterConfig configv1.MasterConfig
 	var extraction OAuthExtraction
