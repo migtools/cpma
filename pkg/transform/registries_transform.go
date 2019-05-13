@@ -1,6 +1,8 @@
 package transform
 
 import (
+	"errors"
+
 	"github.com/BurntSushi/toml"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -84,6 +86,8 @@ func (c RegistriesTransform) Extract() Extraction {
 }
 
 func (c RegistriesExtraction) Validate() error {
-	logrus.Warn("Registries Transform Validation Not Implmeneted")
-	return nil // Simulate fine
+	if len(c.Registries["block"].List) == 0 && len(c.Registries["insecure"].List) == 0 {
+		return errors.New("No configured registries detected. Not generating a CR.\n")
+	}
+	return nil
 }
