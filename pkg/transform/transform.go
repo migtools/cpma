@@ -114,6 +114,7 @@ func (r TransformRunner) Transform(transforms []Transform) error {
 
 		if err := extraction.Validate(); err != nil {
 			HandleError(err)
+			continue
 		}
 
 		output, err := extraction.Transform()
@@ -134,6 +135,6 @@ func NewTransformRunner(config Config) *TransformRunner {
 }
 
 func HandleError(err error) error {
-	logrus.WithError(err).Fatalf("An error has occurred: %s\n", err)
+	logrus.Warnf("%s\n", err)
 	return err
 }
