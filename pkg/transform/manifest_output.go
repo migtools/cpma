@@ -15,11 +15,15 @@ type ManifestOutput struct {
 	Manifests []Manifest
 }
 
-// Flush calls DumpManifests to write file data
-func (m ManifestOutput) Flush() error {
-	logrus.Info("Writing file data:")
-	DumpManifests(m.Manifests)
+var manifestOutputFlush = func(manifests []Manifest) error {
+	logrus.Info("Flushing manifests to disk")
+	DumpManifests(manifests)
 	return nil
+}
+
+// Flush manifests to files
+func (m ManifestOutput) Flush() error {
+	return manifestOutputFlush(m.Manifests)
 }
 
 // DumpManifests creates OCDs files
