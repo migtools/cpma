@@ -26,15 +26,11 @@ func init() {
 	cobra.OnInitialize()
 	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (default is $HOME/.cpma.yaml)")
 
-	rootCmd.Flags().Bool("debug", false, "show debug ouput")
-	env.Config().BindPFlag("Debug", rootCmd.Flags().Lookup("debug"))
+	rootCmd.PersistentFlags().Bool("debug", false, "show debug ouput")
+	env.Config().BindPFlag("Debug", rootCmd.PersistentFlags().Lookup("debug"))
 
-	rootCmd.Flags().StringP("output-dir", "o", path.Dir(""), "set the directory to store extracted configuration.")
-	env.Config().BindPFlag("OutputDir", rootCmd.Flags().Lookup("output-dir"))
-
-	// Default timeout is 10s
-	rootCmd.Flags().DurationP("timeout", "t", 10000000000, "Set timeout, unit must be provided, i.e. '-t 20s'.")
-	env.Config().BindPFlag("TimeOut", rootCmd.Flags().Lookup("timeout"))
+	rootCmd.PersistentFlags().StringP("output-dir", "o", path.Dir(""), "set the directory to store extracted configuration.")
+	env.Config().BindPFlag("OutputDir", rootCmd.PersistentFlags().Lookup("output-dir"))
 
 	rootCmd.AddCommand(transformCmd)
 	rootCmd.AddCommand(reportCmd)
