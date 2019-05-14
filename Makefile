@@ -35,3 +35,6 @@ fmt: ## Run go fmt
 
 fmtcheck: ## Check go formatting
 	@gofmt -l $(SOURCES) | grep ".*\.go"; if [ "$$?" = "0" ]; then exit 1; fi
+
+vet: ## Run go vet
+	@GO111MODULE=on go vet $(addsuffix /..., $(addprefix ./, $(SOURCE_DIRS)))
