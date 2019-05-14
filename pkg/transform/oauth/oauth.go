@@ -57,6 +57,9 @@ type Provider struct {
 	APIVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	File       string `json:"file"`
+	CA         string `json:"ca"`
+	CertFile   string `json:"certFile"`
+	KeyFile    string `json:"keyFile"`
 }
 
 // IdentityProvider stroes an identity provider
@@ -68,6 +71,8 @@ type IdentityProvider struct {
 	Provider        runtime.RawExtension
 	HTFileName      string
 	HTFileData      []byte
+	CrtData         []byte
+	KeyData         []byte
 	UseAsChallenger bool
 	UseAsLogin      bool
 }

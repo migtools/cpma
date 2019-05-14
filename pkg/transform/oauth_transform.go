@@ -57,7 +57,7 @@ func (e OAuthTransform) Extract() Extraction {
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var masterConfig configv1.MasterConfig
 	var extraction OAuthExtraction
-	var htContent []byte
+	var htContent, crtContent, keyContent []byte
 
 	_, _, err := serializer.Decode(content, nil, &masterConfig)
 	if err != nil {
@@ -72,6 +72,10 @@ func (e OAuthTransform) Extract() Extraction {
 			if provider.Kind == "HTPasswdPasswordIdentityProvider" {
 				htContent = e.Config.Fetch(provider.File)
 			}
+			if provider.Kind == "KeystonePasswordIdentityProvider" {
+				crtContent = e.Config.Fetch(provider.CertFile)
+				keyContent = e.Config.Fetch(provider.KeyFile)
+			}
 
 			extraction.IdentityProviders = append(extraction.IdentityProviders,
 				oauth.IdentityProvider{
@@ -82,6 +86,8 @@ func (e OAuthTransform) Extract() Extraction {
 					identityProvider.Provider,
 					provider.File,
 					htContent,
+					crtContent,
+					keyContent,
 					identityProvider.UseAsChallenger,
 					identityProvider.UseAsLogin,
 				})

@@ -5,11 +5,10 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/oauth"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -32,7 +31,6 @@ func TestTransformMasterConfig(t *testing.T) {
 	var masterV3 configv1.MasterConfig
 	_, _, _ = serializer.Decode(content, nil, &masterV3)
 
-	var htContent []byte
 	var identityProviders []oauth.IdentityProvider
 	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
 		providerJSON, _ := identityProvider.Provider.MarshalJSON()
@@ -47,7 +45,9 @@ func TestTransformMasterConfig(t *testing.T) {
 				identityProvider.Name,
 				identityProvider.Provider,
 				provider.File,
-				htContent,
+				nil,
+				nil,
+				nil,
 				identityProvider.UseAsChallenger,
 				identityProvider.UseAsLogin,
 			})
@@ -91,6 +91,8 @@ func TestGenYAML(t *testing.T) {
 				identityProvider.Name,
 				identityProvider.Provider,
 				provider.File,
+				nil,
+				nil,
 				nil,
 				identityProvider.UseAsChallenger,
 				identityProvider.UseAsLogin,
