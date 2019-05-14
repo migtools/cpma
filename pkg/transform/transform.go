@@ -113,8 +113,9 @@ func LoadConfig() Config {
 // Fetch files from the OCP3 cluster
 func (config *Config) Fetch(path string) []byte {
 	dst := filepath.Join(config.OutputDir, config.Hostname, path)
+	logrus.Infof("Fetching file: %s", dst)
 	f := GetFile(config.Hostname, path, dst)
-	logrus.Printf("File:Loaded: %s", dst)
+	logrus.Infof("File successfully loaded: %v", dst)
 
 	return f
 }
