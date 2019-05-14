@@ -3,6 +3,7 @@ package transform
 import (
 	"errors"
 
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -99,7 +100,7 @@ func SDNTranslate(masterConfig configv1.MasterConfig) NetworkCR {
 // Extract collects SDN configuration information from an OCP3 cluster
 func (e SDNTransform) Extract() Extraction {
 	logrus.Info("SDNTransform::Extract")
-	content := e.Config.Fetch(e.Config.MasterConfigFile)
+	content := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
 	var extraction SDNExtraction
 
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)

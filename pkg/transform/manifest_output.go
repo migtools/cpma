@@ -6,7 +6,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/fusor/cpma/env"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/sirupsen/logrus"
 )
 

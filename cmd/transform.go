@@ -15,7 +15,7 @@
 package cmd
 
 import (
-	"github.com/fusor/cpma/env"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/spf13/cobra"
 )

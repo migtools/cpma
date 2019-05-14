@@ -34,23 +34,23 @@ func Config() *viper.Viper {
 
 // InitConfig initializes application's configuration
 func InitConfig() {
-	// Find home directory.
 	home, err := homedir.Dir()
 	if err != nil {
-		logrus.WithError(err).Fatal("Can't detect home user directory")
+		logrus.Fatal("Can't detect home user directory")
 	}
 	viperConfig.Set("home", home)
 
+	viperConfig.SetDefault("MasterConfigFile", "/etc/origin/master/master-config.yaml")
+	viperConfig.SetDefault("NodeConfigFile", "/etc/origin/node/node-config.yaml")
+	viperConfig.SetDefault("RegistriesConfigFile", "/etc/containers/registries.conf")
+
 	if ConfigFile != "" {
-		// Use config file from the flag.
 		viperConfig.SetConfigFile(ConfigFile)
 	} else {
-		// TODO: Do we want default config file at all?
-		// Search config in home directory with name ".cpma" (without extension).
+		viperConfig.AddConfigPath(".")
 		viperConfig.AddConfigPath(home)
-		viperConfig.SetConfigName(".cpma")
+		viperConfig.SetConfigName("cpma")
 	}
-
 	// Fill in environment variables that match
 	viper.AutomaticEnv()
 

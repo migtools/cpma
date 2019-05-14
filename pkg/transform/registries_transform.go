@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
@@ -86,7 +87,7 @@ func (e RegistriesExtraction) Transform() (Output, error) {
 // Extract collects registry information from an OCP3 cluster
 func (e RegistriesTransform) Extract() Extraction {
 	logrus.Info("RegistriesTransform::Extract")
-	content := e.Config.Fetch(e.Config.RegistriesConfigFile)
+	content := e.Config.Fetch(env.Config().GetString("RegistriesConfigFile"))
 	var extraction RegistriesExtraction
 	if _, err := toml.Decode(string(content), &extraction); err != nil {
 		HandleError(err)
