@@ -22,7 +22,7 @@ type IdentityProviderGitLab struct {
 	} `yaml:"gitlab"`
 }
 
-func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitLab, secrets.Secret) {
+func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitLab, secrets.Secret, error) {
 	var idP IdentityProviderGitLab
 	var gitlab configv1.GitLabIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &gitlab)
@@ -38,7 +38,10 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 
 	secretName := p.Name + "-secret"
 	idP.GitLab.ClientSecret.Name = secretName
-	secret := secrets.GenSecret(secretName, gitlab.ClientSecret.Value, "openshift-config", "literal")
+	secret, err := secrets.GenSecret(secretName, gitlab.ClientSecret.Value, "openshift-config", "literal")
+	if err != nil {
+		return idP, *secret, err
+	}
 
-	return idP, *secret
+	return idP, *secret, nil
 }

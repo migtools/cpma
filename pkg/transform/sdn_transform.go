@@ -62,8 +62,15 @@ func (e SDNExtraction) Transform() (Output, error) {
 
 	var manifests []Manifest
 
-	networkCR := SDNTranslate(e.MasterConfig)
-	networkCRYAML := GenYAML(networkCR)
+	networkCR, err := SDNTranslate(e.MasterConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	networkCRYAML, err := GenYAML(networkCR)
+	if err != nil {
+		return nil, err
+	}
 
 	manifest := Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML}
 	manifests = append(manifests, manifest)
@@ -74,7 +81,7 @@ func (e SDNExtraction) Transform() (Output, error) {
 }
 
 // SDNTranslate is called by Transform to do the majority of the work in converting data
-func SDNTranslate(masterConfig configv1.MasterConfig) NetworkCR {
+func SDNTranslate(masterConfig configv1.MasterConfig) (NetworkCR, error) {
 	networkConfig := masterConfig.NetworkConfig
 	var networkCR NetworkCR
 
@@ -90,26 +97,30 @@ func SDNTranslate(masterConfig configv1.MasterConfig) NetworkCR {
 	// Translate network plugin name
 	selectedNetworkPlugin, err := SelectNetworkPlugin(networkConfig.NetworkPluginName)
 	if err != nil {
-		HandleError(err)
+		return networkCR, err
 	}
 	networkCR.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode = selectedNetworkPlugin
 
-	return networkCR
+	return networkCR, nil
 }
 
 // Extract collects SDN configuration information from an OCP3 cluster
-func (e SDNTransform) Extract() Extraction {
+func (e SDNTransform) Extract() (Extraction, error) {
 	logrus.Info("SDNTransform::Extract")
-	content := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
+	content, err := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
+	if err != nil {
+		return nil, err
+	}
+
 	var extraction SDNExtraction
 
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	_, _, err := serializer.Decode(content, nil, &extraction.MasterConfig)
+	_, _, err = serializer.Decode(content, nil, &extraction.MasterConfig)
 	if err != nil {
-		HandleError(err)
+		return nil, err
 	}
 
-	return extraction
+	return extraction, nil
 }
 
 // Validate the data extracted from the OCP3 cluster
@@ -154,11 +165,16 @@ func SelectNetworkPlugin(pluginName string) (string, error) {
 }
 
 // GenYAML returns a YAML of the OAuthCRD
-func GenYAML(networkCR NetworkCR) []byte {
+func GenYAML(networkCR NetworkCR) ([]byte, error) {
 	yamlBytes, err := yaml.Marshal(networkCR)
 	if err != nil {
-		logrus.Fatal(err)
+		return nil, err
 	}
 
-	return yamlBytes
+	return yamlBytes, nil
+}
+
+// Type retrurn transform type
+func (e SDNTransform) Type() string {
+	return "SDN"
 }

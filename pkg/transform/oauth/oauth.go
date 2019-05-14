@@ -110,29 +110,31 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, er
 			return nil, nil, err
 		}
 
-		switch kind := p.Kind; kind {
+		kind := p.Kind
+
+		switch kind {
 		case "GitHubIdentityProvider":
-			idP, secret = buildGitHubIP(serializer, p)
+			idP, secret, err = buildGitHubIP(serializer, p)
 		case "GitLabIdentityProvider":
-			idP, secret = buildGitLabIP(serializer, p)
+			idP, secret, err = buildGitLabIP(serializer, p)
 		case "GoogleIdentityProvider":
-			idP, secret = buildGoogleIP(serializer, p)
+			idP, secret, err = buildGoogleIP(serializer, p)
 		case "HTPasswdPasswordIdentityProvider":
-			idP, secret = buildHTPasswdIP(serializer, p)
+			idP, secret, err = buildHTPasswdIP(serializer, p)
 		case "OpenIDIdentityProvider":
-			idP, secret = buildOpenIDIP(serializer, p)
+			idP, secret, err = buildOpenIDIP(serializer, p)
 		case "RequestHeaderIdentityProvider":
 			idP = buildRequestHeaderIP(serializer, p)
 		case "LDAPPasswordIdentityProvider":
 			idP = buildLdapIP(serializer, p)
 		case "KeystonePasswordIdentityProvider":
-			idP, certSecret, keySecret = buildKeystoneIP(serializer, p)
+			idP, certSecret, keySecret, err = buildKeystoneIP(serializer, p)
 			if certSecret != (secrets.Secret{}) {
 				secretsSlice = append(secretsSlice, certSecret)
 				secretsSlice = append(secretsSlice, keySecret)
 			}
 		case "BasicAuthPasswordIdentityProvider":
-			idP, certSecret, keySecret = buildBasicAuthIP(serializer, p)
+			idP, certSecret, keySecret, err = buildBasicAuthIP(serializer, p)
 			if certSecret != (secrets.Secret{}) {
 				secretsSlice = append(secretsSlice, certSecret)
 				secretsSlice = append(secretsSlice, keySecret)
@@ -141,6 +143,13 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, er
 			logrus.Infof("Can't handle %s OAuth kind", kind)
 			continue
 		}
+
+		// Skip OAuth provider if error was returned
+		if err != nil {
+			logrus.Error("Can't handle ", kind, " skipping.. error:", err)
+			continue
+		}
+
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 
 		if secret.Metadata.Name != httpdAuthSecret || p.Kind == httpProviderKind {
@@ -152,11 +161,12 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, er
 }
 
 // GenYAML returns a YAML of the CRD
-func (oauth *CRD) GenYAML() []byte {
+func (oauth *CRD) GenYAML() ([]byte, error) {
 	yamlBytes, err := yaml.Marshal(&oauth)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Debugf("Error in OAuth CRD, OAuth CRD - %+v", yamlBytes)
+		return nil, err
 	}
 
-	return yamlBytes
+	return yamlBytes, nil
 }

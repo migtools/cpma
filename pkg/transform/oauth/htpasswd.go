@@ -25,8 +25,10 @@ type FileData struct {
 	Name string `yaml:"name"`
 }
 
-func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderHTPasswd, secrets.Secret) {
+func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderHTPasswd, secrets.Secret, error) {
 	var idP IdentityProviderHTPasswd
+	var secret *secrets.Secret
+
 	var htpasswd configv1.HTPasswdPasswordIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
 
@@ -41,7 +43,11 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 	idP.HTPasswd.FileData.Name = secretName
 
 	encoded := base64.StdEncoding.EncodeToString(p.HTFileData)
-	secret := secrets.GenSecret(secretName, encoded, "openshift-config", "htpasswd")
 
-	return idP, *secret
+	secret, err := secrets.GenSecret(secretName, encoded, "openshift-config", "htpasswd")
+	if err != nil {
+		return idP, *secret, err
+	}
+
+	return idP, *secret, nil
 }

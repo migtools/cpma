@@ -27,7 +27,7 @@ type IdentityProviderOpenID struct {
 	} `yaml:"openID"`
 }
 
-func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderOpenID, secrets.Secret) {
+func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderOpenID, secrets.Secret, error) {
 	var idP IdentityProviderOpenID
 	var openID configv1.OpenIDIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &openID)
@@ -46,7 +46,10 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 
 	secretName := p.Name + "-secret"
 	idP.OpenID.ClientSecret.Name = secretName
-	secret := secrets.GenSecret(secretName, openID.ClientSecret.Value, "openshift-config", "literal")
+	secret, err := secrets.GenSecret(secretName, openID.ClientSecret.Value, "openshift-config", "literal")
+	if err != nil {
+		return idP, *secret, err
+	}
 
-	return idP, *secret
+	return idP, *secret, nil
 }

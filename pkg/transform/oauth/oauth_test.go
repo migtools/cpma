@@ -17,8 +17,8 @@ import (
 
 var _GetFile = io.GetFile
 
-func mockGetFile(a, b, c string) []byte {
-	return []byte("This is test file content")
+func mockGetFile(a, b, c string) ([]byte, error) {
+	return []byte("This is test file content"), nil
 }
 
 func TestTransformMasterConfig(t *testing.T) {
@@ -26,16 +26,25 @@ func TestTransformMasterConfig(t *testing.T) {
 	oauth.GetFile = mockGetFile
 
 	file := "testdata/bulk-test-master-config.yaml"
-	content, _ := ioutil.ReadFile(file)
+
+	content, err := ioutil.ReadFile(file)
+	require.NoError(t, err)
+
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var masterV3 configv1.MasterConfig
-	_, _, _ = serializer.Decode(content, nil, &masterV3)
+
+	_, _, err = serializer.Decode(content, nil, &masterV3)
+	require.NoError(t, err)
 
 	var identityProviders []oauth.IdentityProvider
 	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
-		providerJSON, _ := identityProvider.Provider.MarshalJSON()
+		providerJSON, err := identityProvider.Provider.MarshalJSON()
+		require.NoError(t, err)
+
 		provider := oauth.Provider{}
-		json.Unmarshal(providerJSON, &provider)
+
+		err = json.Unmarshal(providerJSON, &provider)
+		require.NoError(t, err)
 
 		identityProviders = append(identityProviders,
 			oauth.IdentityProvider{
@@ -55,6 +64,7 @@ func TestTransformMasterConfig(t *testing.T) {
 
 	resCrd, _, err := oauth.Translate(identityProviders)
 	require.NoError(t, err)
+
 	assert.Equal(t, len(resCrd.Spec.IdentityProviders), 9)
 	assert.Equal(t, resCrd.Spec.IdentityProviders[0].(oauth.IdentityProviderBasicAuth).Type, "BasicAuth")
 	assert.Equal(t, resCrd.Spec.IdentityProviders[1].(oauth.IdentityProviderGitHub).Type, "GitHub")
@@ -72,16 +82,24 @@ func TestGenYAML(t *testing.T) {
 	oauth.GetFile = mockGetFile
 
 	file := "testdata/bulk-test-master-config.yaml"
-	content, _ := ioutil.ReadFile(file)
+
+	content, err := ioutil.ReadFile(file)
+	require.NoError(t, err)
+
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var masterV3 configv1.MasterConfig
-	_, _, _ = serializer.Decode(content, nil, &masterV3)
+
+	_, _, err = serializer.Decode(content, nil, &masterV3)
+	require.NoError(t, err)
 
 	var identityProviders []oauth.IdentityProvider
 	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
-		providerJSON, _ := identityProvider.Provider.MarshalJSON()
+		providerJSON, err := identityProvider.Provider.MarshalJSON()
+		require.NoError(t, err)
+
 		provider := oauth.Provider{}
-		json.Unmarshal(providerJSON, &provider)
+		err = json.Unmarshal(providerJSON, &provider)
+		require.NoError(t, err)
 
 		identityProviders = append(identityProviders,
 			oauth.IdentityProvider{
@@ -103,8 +121,11 @@ func TestGenYAML(t *testing.T) {
 
 	require.NoError(t, err)
 
-	CRD := crd.GenYAML()
-	expectedYaml, _ := ioutil.ReadFile("testdata/expected-bulk-test-masterconfig-oauth.yaml")
+	CRD, err := crd.GenYAML()
+	require.NoError(t, err)
+
+	expectedYaml, err := ioutil.ReadFile("testdata/expected-bulk-test-masterconfig-oauth.yaml")
+	require.NoError(t, err)
 
 	assert.Equal(t, 10, len(manifests))
 	assert.Equal(t, expectedYaml, CRD)

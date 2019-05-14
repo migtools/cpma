@@ -40,12 +40,13 @@ type TLSClientKey struct {
 	Name string `yaml:"name"`
 }
 
-func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret) {
+func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret, error) {
 	var (
 		idP        IdentityProviderKeystone
 		keystone   configv1.KeystonePasswordIdentityProvider
 		certSecret = new(secrets.Secret)
 		keySecret  = new(secrets.Secret)
+		err        error
 	)
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &keystone)
 
@@ -66,13 +67,19 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 		certSecretName := p.Name + "-client-cert-secret"
 		idP.Keystone.TLSClientCert.Name = certSecretName
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-		certSecret = secrets.GenSecret(certSecretName, encoded, "openshift-config", "keystone")
+		certSecret, err = secrets.GenSecret(certSecretName, encoded, "openshift-config", "keystone")
+		if err != nil {
+			return idP, *certSecret, *keySecret, nil
+		}
 
 		keySecretName := p.Name + "-client-key-secret"
 		idP.Keystone.TLSClientKey.Name = keySecretName
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
-		keySecret = secrets.GenSecret(keySecretName, encoded, "openshift-config", "keystone")
+		keySecret, err = secrets.GenSecret(keySecretName, encoded, "openshift-config", "keystone")
+		if err != nil {
+			return idP, *certSecret, *keySecret, nil
+		}
 	}
 
-	return idP, *certSecret, *keySecret
+	return idP, *certSecret, *keySecret, nil
 }

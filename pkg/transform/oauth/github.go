@@ -26,8 +26,10 @@ type IdentityProviderGitHub struct {
 	} `yaml:"github"`
 }
 
-func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitHub, secrets.Secret) {
+func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitHub, secrets.Secret, error) {
 	var idP IdentityProviderGitHub
+	var secret *secrets.Secret
+
 	var github configv1.GitHubIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &github)
 
@@ -46,7 +48,10 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 	idP.GitHub.ClientSecret.Name = secretName
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(github.ClientSecret.Value))
-	secret := secrets.GenSecret(secretName, encoded, "openshift-config", "literal")
+	secret, err := secrets.GenSecret(secretName, encoded, "openshift-config", "literal")
+	if err != nil {
+		return idP, *secret, err
+	}
 
-	return idP, *secret
+	return idP, *secret, nil
 }

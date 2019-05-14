@@ -54,7 +54,8 @@ type Extraction interface {
 
 // Transform is a generic transform
 type Transform interface {
-	Extract() Extraction
+	Extract() (Extraction, error)
+	Type() string
 }
 
 // Output is a generic output type
@@ -70,7 +71,7 @@ func Start() {
 	config := LoadConfig()
 	runner := NewRunner(config)
 
-	if err := runner.Transform([]Transform{
+	runner.Transform([]Transform{
 		OAuthTransform{
 			Config: &config,
 		},
@@ -80,9 +81,7 @@ func Start() {
 		RegistriesTransform{
 			Config: &config,
 		},
-	}); err != nil {
-		logrus.WithError(err).Fatalf("%s", err.Error())
-	}
+	})
 }
 
 // LoadConfig collects and stores configuration for CPMA
@@ -97,17 +96,20 @@ func LoadConfig() Config {
 }
 
 // Fetch files from the OCP3 cluster
-func (config *Config) Fetch(path string) []byte {
+func (config *Config) Fetch(path string) ([]byte, error) {
 	dst := filepath.Join(config.OutputDir, config.Hostname, path)
 	logrus.Infof("Fetching file: %s", dst)
-	f := GetFile(config.Hostname, path, dst)
+	f, err := GetFile(config.Hostname, path, dst)
+	if err != nil {
+		return nil, err
+	}
 	logrus.Infof("File successfully loaded: %v", dst)
 
-	return f
+	return f, nil
 }
 
 // Transform is the process run to complete a transform
-func (r Runner) Transform(transforms []Transform) error {
+func (r Runner) Transform(transforms []Transform) {
 	logrus.Info("TransformRunner::Transform")
 
 	// For each transform, extract the data, validate it, and run the transform.
@@ -115,24 +117,28 @@ func (r Runner) Transform(transforms []Transform) error {
 	// NOTE: This should be parallelized with channels unless the transforms have
 	// some dependency on the outputs of others
 	for _, transform := range transforms {
-		extraction := transform.Extract()
+		extraction, err := transform.Extract()
+		if err != nil {
+			HandleError(err, transform.Type())
+			continue
+		}
 
 		if err := extraction.Validate(); err != nil {
-			HandleError(err)
+			HandleError(err, transform.Type())
 			continue
 		}
 
 		output, err := extraction.Transform()
 		if err != nil {
-			HandleError(err)
+			HandleError(err, transform.Type())
+			continue
 		}
 
 		if err := output.Flush(); err != nil {
-			HandleError(err)
+			HandleError(err, transform.Type())
+			continue
 		}
 	}
-
-	return nil
 }
 
 // NewRunner creates a new Runner
@@ -141,7 +147,8 @@ func NewRunner(config Config) *Runner {
 }
 
 // HandleError handles errors
-func HandleError(err error) error {
+func HandleError(err error, transformType string) error {
+	logrus.Warnf("Skipping %s, see error below\n", transformType)
 	logrus.Warnf("%s\n", err)
 	return err
 }
