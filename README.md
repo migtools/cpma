@@ -4,7 +4,7 @@ configuration of a OCP 3.x cluster to OCP 4.x
 
 ## Build
 
-Tested on go 1.12.4
+Requires go >= v1.11
 
 This project is Go Modules for managing dependencies. This means it can be
 cloned and compiled outside of `GOPATH`.
