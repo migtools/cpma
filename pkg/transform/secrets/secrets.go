@@ -8,21 +8,27 @@ import (
 // TODO: Comment exported functions and structures.
 // We may want to unexport some...
 
+// HTPasswdFileSecret is an htpasswd secret
 type HTPasswdFileSecret struct {
 	HTPasswd string `yaml:"htpasswd"`
 }
 
+// KeystoneFileSecret is a keystone secret
 type KeystoneFileSecret struct {
 	Keystone string `yaml:"keystone"`
 }
 
+// LiteralSecret is a literal secret
 type LiteralSecret struct {
 	ClientSecret string `yaml:"clientSecret"`
 }
+
+// BasicAuthFileSecret is a basic auth secret
 type BasicAuthFileSecret struct {
 	BasicAuth string `yaml:"basicAuth"`
 }
 
+// Secret contains a secret
 type Secret struct {
 	APIVersion string      `yaml:"apiVersion"`
 	Kind       string      `yaml:"kind"`
@@ -31,13 +37,16 @@ type Secret struct {
 	Data       interface{} `yaml:"data"`
 }
 
+// MetaData is the Metadata for a secret
 type MetaData struct {
 	Name      string `yaml:"name"`
 	Namespace string `yaml:"namespace"`
 }
 
+// APIVersion is the apiVersion string
 var APIVersion = "v1"
 
+// GenSecret generates a secret
 func GenSecret(name string, secretContent string, namespace string, secretType string) *Secret {
 	data := buildData(secretType, secretContent)
 

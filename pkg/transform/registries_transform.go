@@ -8,14 +8,17 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// RegistriesExtraction holds registry information extracted from an OCP3 cluster
 type RegistriesExtraction struct {
 	Registries map[string]Registries
 }
 
+// Registries holds a list of Registries
 type Registries struct {
 	List []string `toml:"registries"`
 }
 
+// ImageCR is an Image Cluster Resource
 type ImageCR struct {
 	APIVersion string    `yaml:"apiVersion"`
 	Kind       string    `yaml:"kind"`
@@ -23,25 +26,30 @@ type ImageCR struct {
 	Spec       ImageSpec `yaml:"spec"`
 }
 
+// Metadata is the Metadata for an Image Cluster Resource
 type Metadata struct {
 	Name        string
 	Annotations map[string]string `yaml:"annotations"`
 }
 
+// ImageSpec is a Spec for an ImageCR
 type ImageSpec struct {
 	RegistrySources RegistrySources `yaml:"registrySources"`
 }
 
+// RegistrySources holds lists of blocked and insecure registries from an OCP3 cluster
 type RegistrySources struct {
 	BlockedRegistries  []string `yaml:"blockedRegistries,omitempty"`
 	InsecureRegistries []string `yaml:"insecureRegistries,omitempty"`
 }
 
+// RegistriesTransform is a registry specific transform
 type RegistriesTransform struct {
 	Config *Config
 }
 
-func (e RegistriesExtraction) Transform() (TransformOutput, error) {
+// Transform contains registry configuration collected from an OCP3 cluster
+func (e RegistriesExtraction) Transform() (Output, error) {
 	logrus.Info("RegistriesTransform::Extraction")
 	var manifests []Manifest
 
@@ -70,14 +78,15 @@ func (e RegistriesExtraction) Transform() (TransformOutput, error) {
 	manifest := Manifest{Name: "100_CPMA-cluster-config-registries.yaml", CRD: imageCRYAML}
 	manifests = append(manifests, manifest)
 
-	return ManifestTransformOutput{
+	return ManifestOutput{
 		Manifests: manifests,
 	}, nil
 }
 
-func (c RegistriesTransform) Extract() Extraction {
+// Extract collects registry information from an OCP3 cluster
+func (e RegistriesTransform) Extract() Extraction {
 	logrus.Info("RegistriesTransform::Extract")
-	content := c.Config.Fetch(c.Config.RegistriesConfigFile)
+	content := e.Config.Fetch(e.Config.RegistriesConfigFile)
 	var extraction RegistriesExtraction
 	if _, err := toml.Decode(string(content), &extraction); err != nil {
 		HandleError(err)
@@ -85,9 +94,10 @@ func (c RegistriesTransform) Extract() Extraction {
 	return extraction
 }
 
-func (c RegistriesExtraction) Validate() error {
-	if len(c.Registries["block"].List) == 0 && len(c.Registries["insecure"].List) == 0 {
-		return errors.New("No configured registries detected. Not generating a CR.\n")
+// Validate registry data collected from an OCP3 cluster
+func (e RegistriesExtraction) Validate() error {
+	if len(e.Registries["block"].List) == 0 && len(e.Registries["insecure"].List) == 0 {
+		return errors.New("no configured registries detected, not generating a cr")
 	}
 	return nil
 }

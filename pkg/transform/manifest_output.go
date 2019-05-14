@@ -10,11 +10,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type ManifestTransformOutput struct {
+// ManifestOutput holds a collection of manifests to be written to fil
+type ManifestOutput struct {
 	Manifests []Manifest
 }
 
-func (m ManifestTransformOutput) Flush() error {
+// Flush calls DumpManifests to write file data
+func (m ManifestOutput) Flush() error {
 	logrus.Info("Writing file data:")
 	DumpManifests(m.Manifests)
 	return nil

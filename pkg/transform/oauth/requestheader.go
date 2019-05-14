@@ -6,6 +6,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
+// IdentityProviderRequestHeader is a request header specific identity provider
 type IdentityProviderRequestHeader struct {
 	identityProviderCommon `yaml:",inline"`
 	RequestHeader          struct {

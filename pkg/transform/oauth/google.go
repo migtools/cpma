@@ -7,6 +7,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
+//IdentityProviderGoogle is a Google specific identity provider
 type IdentityProviderGoogle struct {
 	identityProviderCommon `yaml:",inline"`
 	Google                 struct {

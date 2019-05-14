@@ -17,24 +17,34 @@ const OCP4InstallMsg = `To install OCP4 run the installer as follow in order to 
 # Copy generated CRD manifest files  to '$INSTALL_DIR/openshift/'
 # Edit them if needed, then run installation:
 './openshift-install --dir $INSTALL_DIR  create cluster'`
+
+// MasterConfigFile file path to the master-config.yaml
 const MasterConfigFile = "/etc/origin/master/master-config.yaml"
+
+// NodeConfigFile file path for node-config.yaml
 const NodeConfigFile = "/etc/origin/node/node-config.yaml"
+
+// RegistriesConfigFile file path for registries.conf
 const RegistriesConfigFile = "/etc/containers/registries.conf"
 
+// Cluster contains a cluster
 type Cluster struct {
 	Master Master
 }
 
+// Master is a cluster Master
 type Master struct {
-	OAuth   oauth.OAuthCRD
+	OAuth   oauth.CRD
 	Secrets []secrets.Secret
 }
 
+// Manifest to be exported for use with OCP 4
 type Manifest struct {
 	Name string
 	CRD  []byte
 }
 
+// Config contains CPMA configuration information
 type Config struct {
 	MasterConfigFile     string
 	NodeConfigFile       string
@@ -43,31 +53,36 @@ type Config struct {
 	Hostname             string
 }
 
-type TransformRunner struct {
+// Runner a generic transform runner
+type Runner struct {
 	Config string
 }
 
+// Extraction is a generic data extraction
 type Extraction interface {
-	Transform() (TransformOutput, error)
+	Transform() (Output, error)
 	Validate() error
 }
 
+// Transform is a generic transform
 type Transform interface {
 	Extract() Extraction
 }
 
-type TransformOutput interface {
+// Output is a generic output type
+type Output interface {
 	Flush() error
 }
 
 // GetFile allows to mock file retrieval
 var GetFile = io.GetFile
 
+//Start generating manifests to be used with Openshift 4
 func Start() {
 	config := LoadConfig()
-	transformRunner := NewTransformRunner(config)
+	runner := NewRunner(config)
 
-	if err := transformRunner.Transform([]Transform{
+	if err := runner.Transform([]Transform{
 		OAuthTransform{
 			Config: &config,
 		},
@@ -82,6 +97,7 @@ func Start() {
 	}
 }
 
+// LoadConfig collects and stores configuration for CPMA
 func LoadConfig() Config {
 	logrus.Info("Loaded config")
 
@@ -94,6 +110,7 @@ func LoadConfig() Config {
 	return config
 }
 
+// Fetch files from the OCP3 cluster
 func (config *Config) Fetch(path string) []byte {
 	dst := filepath.Join(config.OutputDir, config.Hostname, path)
 	f := GetFile(config.Hostname, path, dst)
@@ -102,7 +119,8 @@ func (config *Config) Fetch(path string) []byte {
 	return f
 }
 
-func (r TransformRunner) Transform(transforms []Transform) error {
+// Transform is the process run to complete a transform
+func (r Runner) Transform(transforms []Transform) error {
 	logrus.Info("TransformRunner::Transform")
 
 	// For each transform, extract the data, validate it, and run the transform.
@@ -130,10 +148,12 @@ func (r TransformRunner) Transform(transforms []Transform) error {
 	return nil
 }
 
-func NewTransformRunner(config Config) *TransformRunner {
-	return &TransformRunner{}
+// NewRunner creates a new Runner
+func NewRunner(config Config) *Runner {
+	return &Runner{}
 }
 
+// HandleError handles errors
 func HandleError(err error) error {
 	logrus.Warnf("%s\n", err)
 	return err

@@ -11,15 +11,18 @@ import (
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
+// OAuthExtraction holds OAuth data extracted from OCP3
 type OAuthExtraction struct {
 	IdentityProviders []oauth.IdentityProvider
 }
 
+// OAuthTransform is an OAuth specific transform
 type OAuthTransform struct {
 	Config *Config
 }
 
-func (e OAuthExtraction) Transform() (TransformOutput, error) {
+// Transform converts data collected from an OCP3 cluster to OCP4 CR's
+func (e OAuthExtraction) Transform() (Output, error) {
 	logrus.Info("OAuthTransform::Transform")
 
 	var ocp4Cluster Cluster
@@ -44,12 +47,13 @@ func (e OAuthExtraction) Transform() (TransformOutput, error) {
 		}
 	}
 
-	return ManifestTransformOutput{Manifests: manifests}, nil
+	return ManifestOutput{Manifests: manifests}, nil
 }
 
-func (c OAuthTransform) Extract() Extraction {
+// Extract collects OAuth configuration from an OCP3 cluster
+func (e OAuthTransform) Extract() Extraction {
 	logrus.Info("OAuthTransform::Extract")
-	content := c.Config.Fetch(c.Config.MasterConfigFile)
+	content := e.Config.Fetch(e.Config.MasterConfigFile)
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var masterConfig configv1.MasterConfig
 	var extraction OAuthExtraction
@@ -66,7 +70,7 @@ func (c OAuthTransform) Extract() Extraction {
 			provider := oauth.Provider{}
 			json.Unmarshal(providerJSON, &provider)
 			if provider.Kind == "HTPasswdPasswordIdentityProvider" {
-				htContent = c.Config.Fetch(provider.File)
+				htContent = e.Config.Fetch(provider.File)
 			}
 
 			extraction.IdentityProviders = append(extraction.IdentityProviders,
@@ -87,7 +91,8 @@ func (c OAuthTransform) Extract() Extraction {
 	return extraction
 }
 
-func (c OAuthExtraction) Validate() error {
+// Validate confirms we have recieved good OAuth configuration data during Extract
+func (e OAuthExtraction) Validate() error {
 	logrus.Warn("Oauth Transform Validation Not Implmeneted")
 	return nil // Simulate fine
 }

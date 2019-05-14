@@ -9,6 +9,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
+//IdentityProviderGitHub is a Github specific identity provider
 type IdentityProviderGitHub struct {
 	identityProviderCommon `yaml:",inline"`
 	GitHub                 struct {

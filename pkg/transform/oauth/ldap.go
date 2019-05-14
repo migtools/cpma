@@ -6,6 +6,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
+// IdentityProviderLDAP is a LDAP specific identity provider
 type IdentityProviderLDAP struct {
 	identityProviderCommon `yaml:",inline"`
 	LDAP                   struct {
