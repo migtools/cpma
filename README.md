@@ -18,6 +18,12 @@ $ ./bin/cpma
 
 ## Usage
 
+Commands:
+```
+tranform Generates configuration from an Openshift 3 cluster for use on an Openshift 4
+report   Generates a report explaining what Openshift 3 configuration can be recreated on Openshift 4
+```
+
 Flags:
 ```
 --config string           config file (default is $HOME/.cpma.yaml)
@@ -31,7 +37,7 @@ You can find example config in `examples/`
 Example:
 
 ```console
-$ ./bin/cpma --config /path/to/config/.yml --debug
+$ ./bin/cpma transform --config /path/to/config/.yml --debug
 ```
 
 ## IO
