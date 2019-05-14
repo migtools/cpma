@@ -22,7 +22,7 @@ build: ## Compile the project
 clean: ## Clean the directory tree
 	@test ! -e bin/${BIN_NAME} || rm bin/${BIN_NAME}
 
-ci: build test
+ci: lint vet build test
 
 test: ## Test the project
 	GO111MODULE=on go test ./...
