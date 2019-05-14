@@ -11,6 +11,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
+// IdentityProviderHTPasswd is a htpasswd specific identity provider
 type IdentityProviderHTPasswd struct {
 	identityProviderCommon `yaml:",inline"`
 	HTPasswd               struct {

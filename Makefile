@@ -2,7 +2,7 @@
 
 BIN_NAME=cpma
 SOURCES:=$(shell find . -name '*.go')
-SOURCE_DIRS=cmd pkg internal
+SOURCE_DIRS=cmd pkg
 
 default: build
 

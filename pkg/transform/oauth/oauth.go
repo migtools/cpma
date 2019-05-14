@@ -25,15 +25,16 @@ func init() {
 //   - [2] htpasswd: https://docs.openshift.com/container-platform/4.0/authentication/understanding-identity-provider.html
 //   - [3] github: https://docs.openshift.com/container-platform/4.0/authentication/identity_providers/configuring-github-identity-provider.html
 
-// Shared CRD part, present in all types of OAuth CRDs
-type OAuthCRD struct {
-	APIVersion string    `yaml:"apiVersion"`
-	Kind       string    `yaml:"kind"`
-	Metadata   MetaData  `yaml:"metadata"`
-	Spec       OAuthSpec `yaml:"spec"`
+// CRD Shared CRD part, present in all types of OAuth CRDs
+type CRD struct {
+	APIVersion string   `yaml:"apiVersion"`
+	Kind       string   `yaml:"kind"`
+	Metadata   MetaData `yaml:"metadata"`
+	Spec       Spec     `yaml:"spec"`
 }
 
-type OAuthSpec struct {
+// Spec is a CRD Spec
+type Spec struct {
 	IdentityProviders []interface{} `yaml:"identityProviders"`
 }
 
@@ -45,17 +46,20 @@ type identityProviderCommon struct {
 	Type          string `yaml:"type"`
 }
 
+// MetaData contains CRD Metadata
 type MetaData struct {
 	Name      string `yaml:"name"`
 	NameSpace string `yaml:"namespace"`
 }
 
+// Provider contains an identity providers type specific provider data
 type Provider struct {
 	APIVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	File       string `json:"file"`
 }
 
+// IdentityProvider stroes an identity provider
 type IdentityProvider struct {
 	Kind            string
 	APIVersion      string
@@ -69,24 +73,27 @@ type IdentityProvider struct {
 }
 
 var (
+	// APIVersion is the apiVersion string
 	APIVersion = "config.openshift.io/v1"
 	// GetFile allows to mock file retrieval
 	GetFile = io.GetFile
 )
 
 const (
-	httpdAuthSecret  = "htpasswd_auth-secret"
+	// httpdAuthSecret is the htpasswd auth secret string
+	httpdAuthSecret = "htpasswd_auth-secret"
+	// httpProviderKind is the htpasswd idp type string
 	httpProviderKind = "HTPasswdPasswordIdentityProvider"
 )
 
-// Transform converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(identityProviders []IdentityProvider) (*OAuthCRD, []secrets.Secret, error) {
+// Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
+func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, error) {
 	var err error
 	var idP interface{}
 	var secretsSlice []secrets.Secret
 	var secret, certSecret, keySecret secrets.Secret
 
-	var oauthCrd OAuthCRD
+	var oauthCrd CRD
 	oauthCrd.APIVersion = APIVersion
 	oauthCrd.Kind = "OAuth"
 	oauthCrd.Metadata.Name = "cluster"
@@ -139,8 +146,8 @@ func Translate(identityProviders []IdentityProvider) (*OAuthCRD, []secrets.Secre
 	return &oauthCrd, secretsSlice, nil
 }
 
-// GenYAML returns a YAML of the OAuthCRD
-func (oauth *OAuthCRD) GenYAML() []byte {
+// GenYAML returns a YAML of the CRD
+func (oauth *CRD) GenYAML() []byte {
 	yamlBytes, err := yaml.Marshal(&oauth)
 	if err != nil {
 		logrus.Fatal(err)

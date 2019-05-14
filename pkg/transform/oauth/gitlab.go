@@ -7,6 +7,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
+// IdentityProviderGitLab is a Gitlab specific identity provider
 type IdentityProviderGitLab struct {
 	identityProviderCommon `yaml:",inline"`
 	GitLab                 struct {

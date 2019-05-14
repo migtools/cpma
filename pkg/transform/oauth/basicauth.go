@@ -9,6 +9,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
+// IdentityProviderBasicAuth is a basic auth specific identity provider
 type IdentityProviderBasicAuth struct {
 	identityProviderCommon `yaml:",inline"`
 	BasicAuth              struct {

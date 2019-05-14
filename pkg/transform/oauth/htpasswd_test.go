@@ -46,7 +46,7 @@ func TestTransformMasterConfigHtpasswd(t *testing.T) {
 			})
 	}
 
-	var expectedCrd oauth.OAuthCRD
+	var expectedCrd oauth.CRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"

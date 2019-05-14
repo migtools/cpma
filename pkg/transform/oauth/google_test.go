@@ -5,10 +5,9 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/fusor/cpma/pkg/transform/oauth"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -43,7 +42,7 @@ func TestTransformMasterConfigGoogle(t *testing.T) {
 			})
 	}
 
-	var expectedCrd oauth.OAuthCRD
+	var expectedCrd oauth.CRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"

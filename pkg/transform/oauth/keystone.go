@@ -12,6 +12,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
+// IdentityProviderKeystone is a Keystone specific identity provider
 type IdentityProviderKeystone struct {
 	identityProviderCommon `yaml:",inline"`
 	Keystone               struct {

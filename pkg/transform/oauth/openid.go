@@ -7,6 +7,7 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
+// IdentityProviderOpenID is an Open ID specific identity provider
 type IdentityProviderOpenID struct {
 	identityProviderCommon `yaml:",inline"`
 	OpenID                 struct {

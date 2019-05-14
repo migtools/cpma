@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// GetFile allows to mock file retrieval
 var GetFile = fetchFile
 
 // Fetch first tries to retrieve file from local disk (outputDir/<Hostname>/).
@@ -21,7 +22,6 @@ func fetchFile(host, src, target string) []byte {
 			logrus.Fatal(err)
 		}
 		return netFile
-	} else {
-		return f
 	}
+	return f
 }
