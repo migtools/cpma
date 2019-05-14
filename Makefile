@@ -28,7 +28,9 @@ test: ## Test the project
 	GO111MODULE=on go test ./...
 
 lint: ## Run golint
-	@golint -set_exit_status $(addsuffix /... , $(SOURCE_DIRS))
+	@for i in $(SOURCE_DIRS); \
+		do golint -set_exit_status $(addprefix ./, $(addsuffix /... , $$i)); \
+		done
 
 fmt: ## Run go fmt
 	@gofmt -d $(SOURCES)
