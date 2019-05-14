@@ -15,10 +15,12 @@ type IdentityProviderHTPasswd struct {
 	HTPasswd               `yaml:"htpasswd"`
 }
 
+// HTPasswd contains htpasswd FileData
 type HTPasswd struct {
 	FileData FileData `yaml:"fileData"`
 }
 
+// FileData from htpasswd file
 type FileData struct {
 	Name string `yaml:"name"`
 }

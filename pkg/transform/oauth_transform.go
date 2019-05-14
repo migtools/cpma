@@ -79,17 +79,17 @@ func (e OAuthTransform) Extract() Extraction {
 
 			extraction.IdentityProviders = append(extraction.IdentityProviders,
 				oauth.IdentityProvider{
-					provider.Kind,
-					provider.APIVersion,
-					identityProvider.MappingMethod,
-					identityProvider.Name,
-					identityProvider.Provider,
-					provider.File,
-					htContent,
-					crtContent,
-					keyContent,
-					identityProvider.UseAsChallenger,
-					identityProvider.UseAsLogin,
+					Kind:            provider.Kind,
+					APIVersion:      provider.APIVersion,
+					MappingMethod:   identityProvider.MappingMethod,
+					Name:            identityProvider.Name,
+					Provider:        identityProvider.Provider,
+					HTFileName:      provider.File,
+					HTFileData:      htContent,
+					CrtData:         crtContent,
+					KeyData:         keyContent,
+					UseAsChallenger: identityProvider.UseAsChallenger,
+					UseAsLogin:      identityProvider.UseAsLogin,
 				})
 		}
 	}

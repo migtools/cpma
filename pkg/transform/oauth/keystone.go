@@ -16,6 +16,7 @@ type IdentityProviderKeystone struct {
 	Keystone               Keystone `yaml:"keystone"`
 }
 
+// Keystone specific Provider data
 type Keystone struct {
 	DomainName    string        `yaml:"domainName"`
 	URL           string        `yaml:"url"`
@@ -24,14 +25,17 @@ type Keystone struct {
 	TLSClientKey  TLSClientKey  `yaml:"tlsClientKey"`
 }
 
+// CA secret name
 type CA struct {
 	Name string `yaml:"name"`
 }
 
+// TLSClientCert secret name
 type TLSClientCert struct {
 	Name string `yaml:"name"`
 }
 
+// TLSClientKey secret name
 type TLSClientKey struct {
 	Name string `yaml:"name"`
 }
