@@ -10,13 +10,14 @@ import (
 //IdentityProviderGoogle is a Google specific identity provider
 type IdentityProviderGoogle struct {
 	identityProviderCommon `yaml:",inline"`
-	Google                 struct {
-		ClientID     string `yaml:"clientID"`
-		ClientSecret struct {
-			Name string `yaml:"name"`
-		} `yaml:"clientSecret"`
-		HostedDomain string `yaml:"hostedDomain"`
-	} `yaml:"google"`
+	Google                 Google `yaml:"google"`
+}
+
+// Google provider specific data
+type Google struct {
+	ClientID     string       `yaml:"clientID"`
+	ClientSecret ClientSecret `yaml:"clientSecret"`
+	HostedDomain string       `yaml:"hostedDomain"`
 }
 
 func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGoogle, secrets.Secret, error) {

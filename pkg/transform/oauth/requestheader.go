@@ -9,18 +9,19 @@ import (
 // IdentityProviderRequestHeader is a request header specific identity provider
 type IdentityProviderRequestHeader struct {
 	identityProviderCommon `yaml:",inline"`
-	RequestHeader          struct {
-		ChallengeURL string `yaml:"challengeURL"`
-		LoginURL     string `yaml:"loginURL"`
-		CA           struct {
-			Name string `yaml:"name"`
-		} `yaml:"ca"`
-		ClientCommonNames        []string `yaml:"сlientCommonNames"`
-		Headers                  []string `yaml:"headers"`
-		EmailHeaders             []string `yaml:"emailHeaders"`
-		NameHeaders              []string `yaml:"nameHeaders"`
-		PreferredUsernameHeaders []string `yaml:"preferredUsernameHeaders"`
-	} `yaml:"requestHeader"`
+	RequestHeader          RequestHeader `yaml:"requestHeader"`
+}
+
+// RequestHeader provider specific data
+type RequestHeader struct {
+	ChallengeURL             string   `yaml:"challengeURL"`
+	LoginURL                 string   `yaml:"loginURL"`
+	CA                       CA       `yaml:"ca"`
+	ClientCommonNames        []string `yaml:"сlientCommonNames"`
+	Headers                  []string `yaml:"headers"`
+	EmailHeaders             []string `yaml:"emailHeaders"`
+	NameHeaders              []string `yaml:"nameHeaders"`
+	PreferredUsernameHeaders []string `yaml:"preferredUsernameHeaders"`
 }
 
 func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) IdentityProviderRequestHeader {

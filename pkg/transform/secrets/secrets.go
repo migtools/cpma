@@ -7,9 +7,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// TODO: Comment exported functions and structures.
-// We may want to unexport some...
-
 // HTPasswdFileSecret is an htpasswd secret
 type HTPasswdFileSecret struct {
 	HTPasswd string `yaml:"htpasswd"`

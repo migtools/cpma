@@ -39,10 +39,13 @@ type ClusterNetwork struct {
 
 // DefaultNetwork containts network type and SDN plugin name
 type DefaultNetwork struct {
-	Type               string `yaml:"type"`
-	OpenshiftSDNConfig struct {
-		Mode string `yaml:"mode"`
-	} `yaml:"openshiftSDNConfig"`
+	Type               string             `yaml:"type"`
+	OpenshiftSDNConfig OpenshiftSDNConfig `yaml:"openshiftSDNConfig"`
+}
+
+// OpenshiftSDNConfig is the Openshift SDN Configured Mode
+type OpenshiftSDNConfig struct {
+	Mode string `yaml:"mode"`
 }
 
 // SDNTransform is an SDN specific transform
