@@ -15,15 +15,17 @@ import (
 
 func TestTransformMasterConfig(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
-	content, _ := ioutil.ReadFile(file)
+
+	content, err := ioutil.ReadFile(file)
+	require.NoError(t, err)
+
 	var extraction SDNExtraction
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	_, _, err := serializer.Decode(content, nil, &extraction.MasterConfig)
-	if err != nil {
-		HandleError(err)
-	}
+	_, _, err = serializer.Decode(content, nil, &extraction.MasterConfig)
+	require.NoError(t, err)
 
-	networkCR := SDNTranslate(extraction.MasterConfig)
+	networkCR, err := SDNTranslate(extraction.MasterConfig)
+	require.NoError(t, err)
 
 	// Check if network CR was translated correctly
 	assert.Equal(t, networkCR.APIVersion, "operator.openshift.io/v1")
@@ -38,14 +40,17 @@ func TestTransformMasterConfig(t *testing.T) {
 func TestSelectNetworkPlugin(t *testing.T) {
 	resPluginName, err := SelectNetworkPlugin("redhat/openshift-ovs-multitenant")
 	require.NoError(t, err)
+
 	assert.Equal(t, "Multitenant", resPluginName)
 
 	resPluginName, err = SelectNetworkPlugin("redhat/openshift-ovs-networkpolicy")
 	require.NoError(t, err)
+
 	assert.Equal(t, "NetworkPolicy", resPluginName)
 
 	resPluginName, err = SelectNetworkPlugin("redhat/openshift-ovs-subnet")
 	require.NoError(t, err)
+
 	assert.Equal(t, "Subnet", resPluginName)
 
 	_, err = SelectNetworkPlugin("123")
@@ -68,18 +73,24 @@ func TestTransformClusterNetworks(t *testing.T) {
 
 func TestGenYAML(t *testing.T) {
 	file := "testdata/network-test-master-config.yaml"
-	content, _ := ioutil.ReadFile(file)
+
+	content, err := ioutil.ReadFile(file)
+	require.NoError(t, err)
 
 	var extraction SDNExtraction
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	_, _, err := serializer.Decode(content, nil, &extraction.MasterConfig)
-	if err != nil {
-		HandleError(err)
-	}
 
-	networkCR := SDNTranslate(extraction.MasterConfig)
-	networkCRYAML := GenYAML(networkCR)
+	_, _, err = serializer.Decode(content, nil, &extraction.MasterConfig)
+	require.NoError(t, err)
 
-	expectedYaml, _ := ioutil.ReadFile("testdata/expected-network-cr-master.yaml")
+	networkCR, err := SDNTranslate(extraction.MasterConfig)
+	require.NoError(t, err)
+
+	networkCRYAML, err := GenYAML(networkCR)
+	require.NoError(t, err)
+
+	expectedYaml, err := ioutil.ReadFile("testdata/expected-network-cr-master.yaml")
+	require.NoError(t, err)
+
 	assert.Equal(t, expectedYaml, networkCRYAML)
 }

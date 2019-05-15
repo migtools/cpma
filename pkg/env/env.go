@@ -1,6 +1,7 @@
 package env
 
 import (
+	"errors"
 	"time"
 
 	"github.com/mitchellh/go-homedir"
@@ -33,10 +34,11 @@ func Config() *viper.Viper {
 }
 
 // InitConfig initializes application's configuration
-func InitConfig() {
+func InitConfig() error {
+	// Find home directory.
 	home, err := homedir.Dir()
 	if err != nil {
-		logrus.Fatal("Can't detect home user directory")
+		return errors.New("Can't detect home user directory")
 	}
 	viperConfig.Set("home", home)
 
@@ -56,8 +58,10 @@ func InitConfig() {
 
 	// If a config file is found, read it in.
 	if err := viperConfig.ReadInConfig(); err != nil {
-		logrus.Fatal(err)
+		return errors.New("Can't read config file")
 	}
+
+	return nil
 }
 
 // InitLogger initializes stderr and logger to file

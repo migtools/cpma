@@ -11,7 +11,10 @@ import (
 
 func TestInitConfig(t *testing.T) {
 	ConfigFile = "testdata/test-cpma-config.yml"
-	InitConfig()
+	err := InitConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	expectedHomeDir, _ := homedir.Dir()
 	actualHomeDir := viperConfig.GetString("home")

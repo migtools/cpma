@@ -1,6 +1,7 @@
 package sftpclient
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -23,24 +24,28 @@ type Client struct {
 }
 
 // NewClient creates a new SFTP client
-func NewClient(source string) Client {
+func NewClient(source string) (Client, error) {
 	sshCreds := env.Config().GetStringMapString("SSHCreds")
 
 	key, err := ioutil.ReadFile(sshCreds["privatekey"])
 	if err != nil {
-		logrus.WithError(err).Fatalf("Unable to read private key: %s", sshCreds["privatekey"])
+		logrus.Errorf("Unable to read private key: %s", sshCreds["privatekey"])
+		return Client{}, err
 	}
 
 	// Create the Signer for this private key.
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		logrus.Fatalf("Unable to parse private key: %v", err)
+		logrus.Error("Unable to parse private key")
+		return Client{}, err
 	}
 
 	knownHostsFile := filepath.Join(env.Config().GetString("home"), ".ssh", "known_hosts")
+
 	hostKeyCallback, err := kh.New(knownHostsFile)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Unable to get hostkey in %s", knownHostsFile)
+		logrus.Errorf("Unable to get hostkey in %s", knownHostsFile)
+		return Client{}, err
 	}
 
 	sshConfig := &ssh.ClientConfig{
@@ -57,7 +62,7 @@ func NewClient(source string) Client {
 	if p := sshCreds["port"]; p != "" {
 		port, err = strconv.Atoi(p)
 		if err != nil || port < 1 || port > 65535 {
-			logrus.Fatalf("Port number (%s) is wrong.", p)
+			return Client{}, errors.New("Port number " + p + " is wrong.")
 		}
 	}
 
@@ -66,48 +71,60 @@ func NewClient(source string) Client {
 
 	connection, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Cannot connect to %s", addr)
+		logrus.Errorf("Cannot connect to %s", addr)
+		return Client{}, err
 	}
 
 	// create new SFTP client
 	client, err := sftp.NewClient(connection)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Error("Unable to create new SFTP client")
+		return Client{}, err
 	}
 
-	return Client{client}
+	return Client{client}, nil
 }
 
 // GetFile copies source file to destination file
 func (c *Client) GetFile(srcFilePath string, dstFilePath string) (int64, error) {
 	srcFile, err := c.Open(srcFilePath)
 	if err != nil {
-		logrus.Fatal(err)
+		// int64(0) empty value to return in case of error
+		return int64(0), err
 	}
+
 	defer srcFile.Close()
 	os.MkdirAll(path.Dir(dstFilePath), 0755)
+
 	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
-		logrus.Fatal(err)
+		return int64(0), err
 	}
+
 	defer dstFile.Close()
 
 	bytes, err := io.Copy(dstFile, srcFile)
 	if err != nil {
-		logrus.Fatal(err)
+		return int64(0), err
 	}
+
 	return bytes, err
 }
 
 // Fetch retrieves a file
-func Fetch(hostname, src, dst string) {
-	client := NewClient(hostname)
+func Fetch(hostname, src, dst string) error {
+	client, err := NewClient(hostname)
+	if err != nil {
+		return err
+	}
+
 	defer client.Close()
 
 	bytes, err := client.GetFile(src, dst)
 	if err != nil {
-		logrus.Fatal(err)
+		return err
 	}
 
 	logrus.Printf("SFTP: %s:%s: %d bytes copied", hostname, src, bytes)
+	return nil
 }

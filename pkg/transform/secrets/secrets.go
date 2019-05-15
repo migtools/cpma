@@ -1,6 +1,8 @@
 package secrets
 
 import (
+	"errors"
+
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
@@ -47,8 +49,11 @@ type MetaData struct {
 var APIVersion = "v1"
 
 // GenSecret generates a secret
-func GenSecret(name string, secretContent string, namespace string, secretType string) *Secret {
-	data := buildData(secretType, secretContent)
+func GenSecret(name string, secretContent string, namespace string, secretType string) (*Secret, error) {
+	data, err := buildData(secretType, secretContent)
+	if err != nil {
+		return nil, err
+	}
 
 	var secret = Secret{
 		APIVersion: APIVersion,
@@ -60,10 +65,10 @@ func GenSecret(name string, secretContent string, namespace string, secretType s
 			Namespace: namespace,
 		},
 	}
-	return &secret
+	return &secret, nil
 }
 
-func buildData(secretType, secretContent string) interface{} {
+func buildData(secretType, secretContent string) (interface{}, error) {
 	var data interface{}
 
 	switch secretType {
@@ -76,18 +81,19 @@ func buildData(secretType, secretContent string) interface{} {
 	case "basicauth":
 		data = BasicAuthFileSecret{BasicAuth: secretContent}
 	default:
-		logrus.Fatal("Not valid secret type ", secretType)
+		errorMsg := "Not valid secret type " + secretType
+		return nil, errors.New(errorMsg)
 	}
 
-	return data
+	return data, nil
 }
 
 // GenYAML returns a YAML of the OAuthCRD
-func (secret *Secret) GenYAML() []byte {
+func (secret *Secret) GenYAML() ([]byte, error) {
 	yamlBytes, err := yaml.Marshal(&secret)
 	if err != nil {
-		logrus.WithError(err).Fatal("Cannot generate CRD")
-		logrus.Debugf("%+v", secret)
+		logrus.Debugf("Error in secret, secret - %+v", secret)
+		return nil, err
 	}
-	return yamlBytes
+	return yamlBytes, nil
 }

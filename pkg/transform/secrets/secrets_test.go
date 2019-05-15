@@ -1,6 +1,7 @@
 package secrets
 
 import (
+	"github.com/stretchr/testify/require"
 	"encoding/base64"
 	"io/ioutil"
 	"testing"
@@ -11,7 +12,8 @@ import (
 func TestGenSecretFileHtpasswd(t *testing.T) {
 	htpasswdFile := "testfile1"
 	encoded := base64.StdEncoding.EncodeToString([]byte(htpasswdFile))
-	resSecret := GenSecret("htpasswd-test", encoded, "openshift-config", "htpasswd")
+	resSecret, err := GenSecret("htpasswd-test", encoded, "openshift-config", "htpasswd")
+	require.NoError(t, err)
 
 	var data = HTPasswdFileSecret{HTPasswd: encoded}
 	var expectedSecret = Secret{
@@ -30,7 +32,8 @@ func TestGenSecretFileHtpasswd(t *testing.T) {
 func TestGenSecretFileKeystone(t *testing.T) {
 	keystoneFile := "testfile2"
 	encoded := base64.StdEncoding.EncodeToString([]byte(keystoneFile))
-	resSecret := GenSecret("keystone-test", encoded, "openshift-config", "keystone")
+	resSecret, err := GenSecret("keystone-test", encoded, "openshift-config", "keystone")
+	require.NoError(t, err)
 
 	var data = KeystoneFileSecret{Keystone: encoded}
 	var expectedSecret = Secret{
@@ -49,7 +52,8 @@ func TestGenSecretFileKeystone(t *testing.T) {
 func TestGenSecretFileBasicAuth(t *testing.T) {
 	basicAuth := "testfile2"
 	encoded := base64.StdEncoding.EncodeToString([]byte(basicAuth))
-	resSecret := GenSecret("keystone-test", encoded, "openshift-config", "basicauth")
+	resSecret, err := GenSecret("keystone-test", encoded, "openshift-config", "basicauth")
+	require.NoError(t, err)
 
 	var data = BasicAuthFileSecret{BasicAuth: encoded}
 	var expectedSecret = Secret{
@@ -66,7 +70,8 @@ func TestGenSecretFileBasicAuth(t *testing.T) {
 	assert.Equal(t, &expectedSecret, resSecret)
 }
 func TestGenSecretLiteral(t *testing.T) {
-	resSecret := GenSecret("literal-secret", "some-value", "openshift-config", "literal")
+	resSecret, err := GenSecret("literal-secret", "some-value", "openshift-config", "literal")
+	require.NoError(t, err)
 
 	var data = LiteralSecret{ClientSecret: "some-value"}
 	var expectedSecret = Secret{
@@ -96,7 +101,11 @@ func TestGenYaml(t *testing.T) {
 		},
 	}
 
-	manifest := secret.GenYAML()
-	expectedYaml, _ := ioutil.ReadFile("testdata/expected-secret.yaml")
+	manifest, err := secret.GenYAML()
+	require.NoError(t, err)
+
+	expectedYaml, err := ioutil.ReadFile("testdata/expected-secret.yaml")
+	require.NoError(t, err)
+
 	assert.Equal(t, expectedYaml, manifest)
 }

@@ -2,6 +2,7 @@ package transform
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform/oauth"
@@ -30,7 +31,7 @@ func (e OAuthExtraction) Transform() (Output, error) {
 
 	oauth, secrets, err := oauth.Translate(e.IdentityProviders)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Unable to generate OAuth CRD")
+		return nil, errors.New("Unable to generate OAuth CRD")
 	}
 
 	ocp4Cluster.Master.OAuth = *oauth
@@ -38,12 +39,22 @@ func (e OAuthExtraction) Transform() (Output, error) {
 
 	var manifests []Manifest
 	if ocp4Cluster.Master.OAuth.Kind != "" {
-		manifest := Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: ocp4Cluster.Master.OAuth.GenYAML()}
+		oauthCRD, err := ocp4Cluster.Master.OAuth.GenYAML()
+		if err != nil {
+			return nil, err
+		}
+
+		manifest := Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: oauthCRD}
 		manifests = append(manifests, manifest)
 
 		for _, secret := range ocp4Cluster.Master.Secrets {
+			secretCR, err := secret.GenYAML()
+			if err != nil {
+				return nil, err
+			}
+
 			filename := "100_CPMA-cluster-config-secret-" + secret.Metadata.Name + ".yaml"
-			m := Manifest{Name: filename, CRD: secret.GenYAML()}
+			m := Manifest{Name: filename, CRD: secretCR}
 			manifests = append(manifests, m)
 		}
 	}
@@ -52,30 +63,52 @@ func (e OAuthExtraction) Transform() (Output, error) {
 }
 
 // Extract collects OAuth configuration from an OCP3 cluster
-func (e OAuthTransform) Extract() Extraction {
+func (e OAuthTransform) Extract() (Extraction, error) {
 	logrus.Info("OAuthTransform::Extract")
-	content := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
+	content, err := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
+	if err != nil {
+		return nil, err
+	}
+
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var masterConfig configv1.MasterConfig
 	var extraction OAuthExtraction
 	var htContent, crtContent, keyContent []byte
 
-	_, _, err := serializer.Decode(content, nil, &masterConfig)
+	_, _, err = serializer.Decode(content, nil, &masterConfig)
 	if err != nil {
-		HandleError(err)
+		return nil, err
 	}
 
 	if masterConfig.OAuthConfig != nil {
 		for _, identityProvider := range masterConfig.OAuthConfig.IdentityProviders {
-			providerJSON, _ := identityProvider.Provider.MarshalJSON()
+			providerJSON, err := identityProvider.Provider.MarshalJSON()
+			if err != nil {
+				return nil, err
+			}
+
 			provider := oauth.Provider{}
-			json.Unmarshal(providerJSON, &provider)
+			err = json.Unmarshal(providerJSON, &provider)
+			if err != nil {
+				return nil, err
+			}
+
 			if provider.Kind == "HTPasswdPasswordIdentityProvider" {
-				htContent = e.Config.Fetch(provider.File)
+				htContent, err = e.Config.Fetch(provider.File)
+				if err != nil {
+					return nil, err
+				}
 			}
 			if provider.Kind == "KeystonePasswordIdentityProvider" {
-				crtContent = e.Config.Fetch(provider.CertFile)
-				keyContent = e.Config.Fetch(provider.KeyFile)
+				crtContent, err = e.Config.Fetch(provider.CertFile)
+				if err != nil {
+					return nil, err
+				}
+
+				keyContent, err = e.Config.Fetch(provider.KeyFile)
+				if err != nil {
+					return nil, err
+				}
 			}
 
 			extraction.IdentityProviders = append(extraction.IdentityProviders,
@@ -95,11 +128,16 @@ func (e OAuthTransform) Extract() Extraction {
 		}
 	}
 
-	return extraction
+	return extraction, nil
 }
 
 // Validate confirms we have recieved good OAuth configuration data during Extract
 func (e OAuthExtraction) Validate() error {
 	logrus.Warn("Oauth Transform Validation Not Implmeneted")
 	return nil // Simulate fine
+}
+
+// Type retrurn transform type
+func (e OAuthTransform) Type() string {
+	return "OAuth"
 }

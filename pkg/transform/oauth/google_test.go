@@ -16,16 +16,25 @@ import (
 
 func TestTransformMasterConfigGoogle(t *testing.T) {
 	file := "testdata/google-test-master-config.yaml"
-	content, _ := ioutil.ReadFile(file)
+
+	content, err := ioutil.ReadFile(file)
+	require.NoError(t, err)
+
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var masterV3 configv1.MasterConfig
-	_, _, _ = serializer.Decode(content, nil, &masterV3)
+
+	_, _, err = serializer.Decode(content, nil, &masterV3)
+	require.NoError(t, err)
 
 	var identityProviders []oauth.IdentityProvider
 	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
-		providerJSON, _ := identityProvider.Provider.MarshalJSON()
+		providerJSON, err := identityProvider.Provider.MarshalJSON()
+		require.NoError(t, err)
+
 		provider := oauth.Provider{}
-		json.Unmarshal(providerJSON, &provider)
+
+		err = json.Unmarshal(providerJSON, &provider)
+		require.NoError(t, err)
 
 		identityProviders = append(identityProviders,
 			oauth.IdentityProvider{
