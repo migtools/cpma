@@ -18,5 +18,9 @@ matrix:
         directories:
           - $HOME/Library/Caches/go-build
           - $HOME/gopath/pkg/mod
+
+before_install:
+  - env GO111MODULE=off go get -u golang.org/x/lint/golint
+
 script:
   - env GO111MODULE=on make ci
