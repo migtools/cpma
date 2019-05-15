@@ -10,21 +10,28 @@ import (
 // IdentityProviderOpenID is an Open ID specific identity provider
 type IdentityProviderOpenID struct {
 	identityProviderCommon `yaml:",inline"`
-	OpenID                 struct {
-		ClientID     string `yaml:"clientID"`
-		ClientSecret struct {
-			Name string `yaml:"name"`
-		} `yaml:"clientSecret"`
-		Claims struct {
-			PreferredUsername []string `yaml:"preferredUsername"`
-			Name              []string `yaml:"name"`
-			Email             []string `yaml:"email"`
-		} `yaml:"claims"`
-		URLs struct {
-			Authorize string `yaml:"authorize"`
-			Token     string `yaml:"token"`
-		} `yaml:"urls"`
-	} `yaml:"openID"`
+	OpenID                 OpenID `yaml:"openID"`
+}
+
+// OpenID provider specific data
+type OpenID struct {
+	ClientID     string       `yaml:"clientID"`
+	ClientSecret ClientSecret `yaml:"clientSecret"`
+	Claims       OpenIDClaims `yaml:"claims"`
+	URLs         OpenIDURLs   `yaml:"urls"`
+}
+
+// OpenIDClaims are the claims for an OpenID provider
+type OpenIDClaims struct {
+	PreferredUsername []string `yaml:"preferredUsername"`
+	Name              []string `yaml:"name"`
+	Email             []string `yaml:"email"`
+}
+
+// OpenIDURLs are the URLs for an OpenID provider
+type OpenIDURLs struct {
+	Authorize string `yaml:"authorize"`
+	Token     string `yaml:"token"`
 }
 
 func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderOpenID, secrets.Secret, error) {

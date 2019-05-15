@@ -12,18 +12,17 @@ import (
 //IdentityProviderGitHub is a Github specific identity provider
 type IdentityProviderGitHub struct {
 	identityProviderCommon `yaml:",inline"`
-	GitHub                 struct {
-		HostName string `yaml:"hostname"`
-		CA       struct {
-			Name string `yaml:"name"`
-		} `yaml:"ca"`
-		ClientID     string `yaml:"clientID"`
-		ClientSecret struct {
-			Name string `yaml:"name"`
-		} `yaml:"clientSecret"`
-		Organizations []string `yaml:"organizations"`
-		Teams         []string `yaml:"teams"`
-	} `yaml:"github"`
+	GitHub                 GitHub `yaml:"github"`
+}
+
+// GitHub provider specific data
+type GitHub struct {
+	HostName      string       `yaml:"hostname"`
+	CA            CA           `yaml:"ca"`
+	ClientID      string       `yaml:"clientID"`
+	ClientSecret  ClientSecret `yaml:"clientSecret"`
+	Organizations []string     `yaml:"organizations"`
+	Teams         []string     `yaml:"teams"`
 }
 
 func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitHub, secrets.Secret, error) {

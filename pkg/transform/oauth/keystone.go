@@ -25,21 +25,6 @@ type Keystone struct {
 	TLSClientKey  TLSClientKey  `yaml:"tlsClientKey"`
 }
 
-// CA secret name
-type CA struct {
-	Name string `yaml:"name"`
-}
-
-// TLSClientCert secret name
-type TLSClientCert struct {
-	Name string `yaml:"name"`
-}
-
-// TLSClientKey secret name
-type TLSClientKey struct {
-	Name string `yaml:"name"`
-}
-
 func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret, error) {
 	var (
 		idP        IdentityProviderKeystone
