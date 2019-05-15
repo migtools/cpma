@@ -71,6 +71,7 @@ type IdentityProvider struct {
 	Provider        runtime.RawExtension
 	HTFileName      string
 	HTFileData      []byte
+	CAData          []byte
 	CrtData         []byte
 	KeyData         []byte
 	UseAsChallenger bool

@@ -25,8 +25,7 @@ type BasicAuth struct {
 
 func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderBasicAuth, secrets.Secret, secrets.Secret, error) {
 	var idP IdentityProviderBasicAuth
-	var certSecret *secrets.Secret
-	var keySecret *secrets.Secret
+	var certSecret, keySecret *secrets.Secret
 
 	var basicAuth configv1.BasicAuthPasswordIdentityProvider
 	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &basicAuth)
@@ -37,14 +36,10 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (Identity
 	idP.Login = p.UseAsLogin
 	idP.MappingMethod = p.MappingMethod
 	idP.BasicAuth.URL = basicAuth.URL
-	idP.BasicAuth.CA.Name = basicAuth.CA
 
 	certSecretName := p.Name + "-client-cert-secret"
 	idP.BasicAuth.TLSClientCert.Name = certSecretName
-
-	// TODO: Fetch cert and key
-	certFile := "456This is pretend content"
-	encoded := base64.StdEncoding.EncodeToString([]byte(certFile))
+	encoded := base64.StdEncoding.EncodeToString(p.CrtData)
 	certSecret, err := secrets.GenSecret(certSecretName, encoded, "openshift-config", "basicauth")
 	if err != nil {
 		return idP, *certSecret, *keySecret, err
@@ -53,8 +48,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (Identity
 	keySecretName := p.Name + "-client-key-secret"
 	idP.BasicAuth.TLSClientKey.Name = keySecretName
 
-	keyFile := "123This is pretend content"
-	encoded = base64.StdEncoding.EncodeToString([]byte(keyFile))
+	encoded = base64.StdEncoding.EncodeToString(p.KeyData)
 	keySecret, err = secrets.GenSecret(keySecretName, encoded, "openshift-config", "basicauth")
 	if err != nil {
 		return idP, *certSecret, *keySecret, err

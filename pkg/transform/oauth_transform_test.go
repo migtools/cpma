@@ -70,7 +70,6 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	basicAuthIDP.Name = "my_remote_basic_auth_provider"
 	basicAuthIDP.MappingMethod = "claim"
 	basicAuthIDP.BasicAuth.URL = "https://www.example.com/"
-	basicAuthIDP.BasicAuth.CA.Name = "ca.file"
 	basicAuthIDP.BasicAuth.TLSClientCert.Name = "my_remote_basic_auth_provider-client-cert-secret"
 	basicAuthIDP.BasicAuth.TLSClientKey.Name = "my_remote_basic_auth_provider-client-key-secret"
 
@@ -80,7 +79,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	basicAuthCrtSecretCrd.Type = "Opaque"
 	basicAuthCrtSecretCrd.Metadata.Namespace = "openshift-config"
 	basicAuthCrtSecretCrd.Metadata.Name = "my_remote_basic_auth_provider-client-cert-secret"
-	basicAuthCrtSecretCrd.Data = secrets.BasicAuthFileSecret{BasicAuth: base64.StdEncoding.EncodeToString([]byte("456This is pretend content"))}
+	basicAuthCrtSecretCrd.Data = secrets.BasicAuthFileSecret{BasicAuth: base64.StdEncoding.EncodeToString([]byte(""))}
 
 	var basicAuthKeySecretCrd secrets.Secret
 	basicAuthKeySecretCrd.APIVersion = "v1"
@@ -88,7 +87,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	basicAuthKeySecretCrd.Type = "Opaque"
 	basicAuthKeySecretCrd.Metadata.Namespace = "openshift-config"
 	basicAuthKeySecretCrd.Metadata.Name = "my_remote_basic_auth_provider-client-key-secret"
-	basicAuthKeySecretCrd.Data = secrets.BasicAuthFileSecret{BasicAuth: base64.StdEncoding.EncodeToString([]byte("123This is pretend content"))}
+	basicAuthKeySecretCrd.Data = secrets.BasicAuthFileSecret{BasicAuth: base64.StdEncoding.EncodeToString([]byte(""))}
 
 	var githubIDP oauth.IdentityProviderGitHub
 	githubIDP.Type = "GitHub"

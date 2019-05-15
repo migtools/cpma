@@ -38,17 +38,14 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 
 		identityProviders = append(identityProviders,
 			oauth.IdentityProvider{
-				provider.Kind,
-				provider.APIVersion,
-				identityProvider.MappingMethod,
-				identityProvider.Name,
-				identityProvider.Provider,
-				provider.File,
-				nil,
-				nil,
-				nil,
-				identityProvider.UseAsChallenger,
-				identityProvider.UseAsLogin,
+				Kind:            provider.Kind,
+				APIVersion:      provider.APIVersion,
+				MappingMethod:   identityProvider.MappingMethod,
+				Name:            identityProvider.Name,
+				Provider:        identityProvider.Provider,
+				HTFileName:      provider.File,
+				UseAsChallenger: identityProvider.UseAsChallenger,
+				UseAsLogin:      identityProvider.UseAsLogin,
 			})
 	}
 
@@ -65,7 +62,6 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 	basicAuthIDP.Name = "my_remote_basic_auth_provider"
 	basicAuthIDP.MappingMethod = "claim"
 	basicAuthIDP.BasicAuth.URL = "https://www.example.com/"
-	basicAuthIDP.BasicAuth.CA.Name = "ca.file"
 	basicAuthIDP.BasicAuth.TLSClientCert.Name = "my_remote_basic_auth_provider-client-cert-secret"
 	basicAuthIDP.BasicAuth.TLSClientKey.Name = "my_remote_basic_auth_provider-client-key-secret"
 
