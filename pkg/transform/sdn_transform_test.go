@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -93,4 +94,62 @@ func TestGenYAML(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, expectedYaml, networkCRYAML)
+}
+
+func loadSDNExtraction() (SDNExtraction, error) {
+	// TODO: Something is broken here in a way that it's causing the translaters
+	// to fail. Need some help with creating test identiy providers in a way
+	// that won't crash the translator
+
+	// Build example identity providers, this is straight copy pasted from
+	// oauth test, IMO this loading of example identity providers should be
+	// some shared test helper
+	file := "testdata/network-test-master-config.yaml"
+	content, _ := ioutil.ReadFile(file)
+	var extraction SDNExtraction
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	_, _, err := serializer.Decode(content, nil, &extraction.MasterConfig)
+
+	return extraction, err
+}
+
+func TestSDNExtractionTransform(t *testing.T) {
+	var expectedManifests []Manifest
+
+	var expectedCrd NetworkCR
+	expectedCrd.APIVersion = "operator.openshift.io/v1"
+	expectedCrd.Kind = "Network"
+	expectedCrd.Spec.ClusterNetworks = []ClusterNetwork{{HostPrefix: 9, CIDR: "10.128.0.0/14"}}
+	expectedCrd.Spec.ServiceNetwork = "172.30.0.0/16"
+	expectedCrd.Spec.DefaultNetwork.Type = "OpenShiftSDN"
+	expectedCrd.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode = "Subnet"
+
+	networkCRYAML, err := yaml.Marshal(&expectedCrd)
+	require.NoError(t, err)
+
+	expectedManifests = append(expectedManifests,
+		Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML})
+
+	actualManifestsChan := make(chan []Manifest)
+
+	// Override flush method
+	manifestOutputFlush = func(manifests []Manifest) error {
+		actualManifestsChan <- manifests
+		return nil
+	}
+
+	testExtraction, err := loadSDNExtraction()
+	require.NoError(t, err)
+
+	go func() {
+		transformOutput, err := testExtraction.Transform()
+		if err != nil {
+			t.Error(err)
+		}
+		transformOutput.Flush()
+	}()
+
+	actualManifests := <-actualManifestsChan
+
+	assert.Equal(t, actualManifests, expectedManifests)
 }
