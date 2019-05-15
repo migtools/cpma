@@ -89,6 +89,8 @@ const (
 	httpdAuthSecret = "htpasswd_auth-secret"
 	// httpProviderKind is the htpasswd idp type string
 	httpProviderKind = "HTPasswdPasswordIdentityProvider"
+	// basicAuthProviderKind is the basic auth idp type string
+	basicAuthProviderKind = "BasicAuthPasswordIdentityProvider"
 )
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
@@ -143,7 +145,7 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, er
 		}
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 
-		if secret.Metadata.Name != httpdAuthSecret || p.Kind == httpProviderKind {
+		if (secret.Metadata.Name != httpdAuthSecret || p.Kind == httpProviderKind) && p.Kind != basicAuthProviderKind {
 			secretsSlice = append(secretsSlice, secret)
 		}
 	}

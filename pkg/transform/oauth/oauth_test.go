@@ -106,6 +106,6 @@ func TestGenYAML(t *testing.T) {
 	CRD := crd.GenYAML()
 	expectedYaml, _ := ioutil.ReadFile("testdata/expected-bulk-test-masterconfig-oauth.yaml")
 
-	assert.Equal(t, 10, len(manifests))
+	assert.Equal(t, 9, len(manifests))
 	assert.Equal(t, expectedYaml, CRD)
 }
