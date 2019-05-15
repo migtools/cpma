@@ -63,9 +63,6 @@ type Output interface {
 	Flush() error
 }
 
-// GetFile allows to mock file retrieval
-var GetFile = io.GetFile
-
 //Start generating manifests to be used with Openshift 4
 func Start() {
 	config := LoadConfig()
@@ -99,7 +96,7 @@ func LoadConfig() Config {
 func (config *Config) Fetch(path string) ([]byte, error) {
 	dst := filepath.Join(config.OutputDir, config.Hostname, path)
 	logrus.Infof("Fetching file: %s", dst)
-	f, err := GetFile(config.Hostname, path, dst)
+	f, err := io.GetFile(config.Hostname, path, dst)
 	if err != nil {
 		return nil, err
 	}

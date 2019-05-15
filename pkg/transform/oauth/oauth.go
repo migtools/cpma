@@ -84,13 +84,6 @@ var (
 	GetFile = io.GetFile
 )
 
-const (
-	// httpdAuthSecret is the htpasswd auth secret string
-	httpdAuthSecret = "htpasswd_auth-secret"
-	// httpProviderKind is the htpasswd idp type string
-	httpProviderKind = "HTPasswdPasswordIdentityProvider"
-)
-
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
 func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, error) {
 	var err error
@@ -115,14 +108,19 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, er
 		switch kind {
 		case "GitHubIdentityProvider":
 			idP, secret, err = buildGitHubIP(serializer, p)
+			secretsSlice = append(secretsSlice, secret)
 		case "GitLabIdentityProvider":
 			idP, secret, err = buildGitLabIP(serializer, p)
+			secretsSlice = append(secretsSlice, secret)
 		case "GoogleIdentityProvider":
 			idP, secret, err = buildGoogleIP(serializer, p)
+			secretsSlice = append(secretsSlice, secret)
 		case "HTPasswdPasswordIdentityProvider":
 			idP, secret, err = buildHTPasswdIP(serializer, p)
+			secretsSlice = append(secretsSlice, secret)
 		case "OpenIDIdentityProvider":
 			idP, secret, err = buildOpenIDIP(serializer, p)
+			secretsSlice = append(secretsSlice, secret)
 		case "RequestHeaderIdentityProvider":
 			idP = buildRequestHeaderIP(serializer, p)
 		case "LDAPPasswordIdentityProvider":
@@ -151,10 +149,6 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, er
 		}
 
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
-
-		if secret.Metadata.Name != httpdAuthSecret || p.Kind == httpProviderKind {
-			secretsSlice = append(secretsSlice, secret)
-		}
 	}
 
 	return &oauthCrd, secretsSlice, nil
