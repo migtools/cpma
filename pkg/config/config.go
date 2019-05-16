@@ -11,8 +11,6 @@ import (
 // reference:
 // https://docs.openshift.com/container-platform/3.11/install_config/master_node_configuration.html
 
-// TODO: we may want to be OCP3 minor version aware here
-
 // Config contains CPMA configuration information
 type Config struct {
 	OutputDir string

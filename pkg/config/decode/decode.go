@@ -11,6 +11,7 @@ func init() {
 }
 
 // MasterConfig unmarshals OCP3 Master
+// There is no known differences between OCP3 minor versions of the master config
 func MasterConfig(content []byte) (*configv1.MasterConfig, error) {
 	var masterConfig = new(configv1.MasterConfig)
 
@@ -24,6 +25,7 @@ func MasterConfig(content []byte) (*configv1.MasterConfig, error) {
 }
 
 // NodeConfig unmarshals OCP3 Node
+// Unknown differences between OCP3 minor versions of the node config
 func NodeConfig(content []byte) (*configv1.NodeConfig, error) {
 	var nodeConfig = new(configv1.NodeConfig)
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
