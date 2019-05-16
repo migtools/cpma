@@ -123,9 +123,9 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, er
 			idP, secret, err = buildOpenIDIP(serializer, p)
 			secretsSlice = append(secretsSlice, secret)
 		case "RequestHeaderIdentityProvider":
-			idP = buildRequestHeaderIP(serializer, p)
+			idP, err = buildRequestHeaderIP(serializer, p)
 		case "LDAPPasswordIdentityProvider":
-			idP = buildLdapIP(serializer, p)
+			idP, err = buildLdapIP(serializer, p)
 		case "KeystonePasswordIdentityProvider":
 			idP, certSecret, keySecret, err = buildKeystoneIP(serializer, p)
 			if certSecret != (secrets.Secret{}) {

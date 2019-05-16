@@ -33,7 +33,10 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 		keySecret  = new(secrets.Secret)
 		err        error
 	)
-	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &keystone)
+	_, _, err = serializer.Decode(p.Provider.Raw, nil, &keystone)
+	if err != nil {
+		return idP, *certSecret, *keySecret, err
+	}
 
 	idP.Type = "Keystone"
 	idP.Name = p.Name

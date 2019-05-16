@@ -21,9 +21,16 @@ type Google struct {
 }
 
 func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGoogle, secrets.Secret, error) {
-	var idP IdentityProviderGoogle
-	var google configv1.GoogleIdentityProvider
-	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &google)
+	var (
+		err    error
+		idP    IdentityProviderGoogle
+		google configv1.GoogleIdentityProvider
+		secret *secrets.Secret
+	)
+	_, _, err = serializer.Decode(p.Provider.Raw, nil, &google)
+	if err != nil {
+		return idP, *secret, err
+	}
 
 	idP.Type = "Google"
 	idP.Name = p.Name
@@ -35,7 +42,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 
 	secretName := p.Name + "-secret"
 	idP.Google.ClientSecret.Name = secretName
-	secret, err := secrets.GenSecret(secretName, google.ClientSecret.Value, "openshift-config", "literal")
+	secret, err = secrets.GenSecret(secretName, google.ClientSecret.Value, "openshift-config", "literal")
 	if err != nil {
 		return idP, *secret, err
 	}
