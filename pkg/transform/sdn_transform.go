@@ -177,7 +177,7 @@ func GenYAML(networkCR NetworkCR) ([]byte, error) {
 	return yamlBytes, nil
 }
 
-// Type retrurn transform type
-func (e SDNTransform) Type() string {
+// Name returns a human readable name for the transform
+func (e SDNTransform) Name() string {
 	return "SDN"
 }

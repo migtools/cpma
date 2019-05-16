@@ -55,7 +55,7 @@ type Extraction interface {
 // Transform is a generic transform
 type Transform interface {
 	Extract() (Extraction, error)
-	Type() string
+	Name() string
 }
 
 // Output is a generic output type
@@ -116,23 +116,23 @@ func (r Runner) Transform(transforms []Transform) {
 	for _, transform := range transforms {
 		extraction, err := transform.Extract()
 		if err != nil {
-			HandleError(err, transform.Type())
+			HandleError(err, transform.Name())
 			continue
 		}
 
 		if err := extraction.Validate(); err != nil {
-			HandleError(err, transform.Type())
+			HandleError(err, transform.Name())
 			continue
 		}
 
 		output, err := extraction.Transform()
 		if err != nil {
-			HandleError(err, transform.Type())
+			HandleError(err, transform.Name())
 			continue
 		}
 
 		if err := output.Flush(); err != nil {
-			HandleError(err, transform.Type())
+			HandleError(err, transform.Name())
 			continue
 		}
 	}

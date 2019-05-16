@@ -107,7 +107,7 @@ func (e RegistriesExtraction) Validate() error {
 	return nil
 }
 
-// Type retrurn transform type
-func (e RegistriesTransform) Type() string {
+// Name returns a human readable name for the transform
+func (e RegistriesTransform) Name() string {
 	return "Registries"
 }
