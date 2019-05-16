@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/config/decode"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform/oauth"
-	"github.com/sirupsen/logrus"
-	"k8s.io/client-go/kubernetes/scheme"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
-	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"github.com/sirupsen/logrus"
 )
 
 // OAuthExtraction holds OAuth data extracted from OCP3
@@ -20,7 +19,7 @@ type OAuthExtraction struct {
 
 // OAuthTransform is an OAuth specific transform
 type OAuthTransform struct {
-	Config *Config
+	Config *config.Config
 }
 
 // Transform converts data collected from an OCP3 cluster to OCP4 CR's
@@ -70,15 +69,14 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 		return nil, err
 	}
 
-	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	var masterConfig configv1.MasterConfig
-	var extraction OAuthExtraction
-	var htContent, caContent, crtContent, keyContent []byte
-
-	_, _, err = serializer.Decode(content, nil, &masterConfig)
+	var masterConfig *configv1.MasterConfig
+	masterConfig, err = decode.MasterConfig(content)
 	if err != nil {
 		return nil, err
 	}
+
+	var extraction OAuthExtraction
+	var htContent, caContent, crtContent, keyContent []byte
 
 	if masterConfig.OAuthConfig != nil {
 		for _, identityProvider := range masterConfig.OAuthConfig.IdentityProviders {
