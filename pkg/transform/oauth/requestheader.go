@@ -24,10 +24,16 @@ type RequestHeader struct {
 	PreferredUsernameHeaders []string `yaml:"preferredUsernameHeaders"`
 }
 
-func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) IdentityProviderRequestHeader {
-	var idP IdentityProviderRequestHeader
-	var requestHeader configv1.RequestHeaderIdentityProvider
-	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &requestHeader)
+func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderRequestHeader, error) {
+	var (
+		err           error
+		idP           IdentityProviderRequestHeader
+		requestHeader configv1.RequestHeaderIdentityProvider
+	)
+	_, _, err = serializer.Decode(p.Provider.Raw, nil, &requestHeader)
+	if err != nil {
+		return idP, err
+	}
 
 	idP.Type = "RequestHeader"
 	idP.Name = p.Name
@@ -43,5 +49,5 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) Ident
 	idP.RequestHeader.NameHeaders = requestHeader.NameHeaders
 	idP.RequestHeader.PreferredUsernameHeaders = requestHeader.PreferredUsernameHeaders
 
-	return idP
+	return idP, nil
 }

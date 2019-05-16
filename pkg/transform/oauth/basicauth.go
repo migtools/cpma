@@ -24,11 +24,18 @@ type BasicAuth struct {
 }
 
 func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderBasicAuth, secrets.Secret, secrets.Secret, error) {
-	var idP IdentityProviderBasicAuth
-	var certSecret, keySecret *secrets.Secret
+	var (
+		err                   error
+		idP                   IdentityProviderBasicAuth
+		certSecret, keySecret *secrets.Secret
 
-	var basicAuth configv1.BasicAuthPasswordIdentityProvider
-	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &basicAuth)
+		basicAuth configv1.BasicAuthPasswordIdentityProvider
+	)
+
+	_, _, err = serializer.Decode(p.Provider.Raw, nil, &basicAuth)
+	if err != nil {
+		return idP, *certSecret, *keySecret, err
+	}
 
 	idP.Type = "BasicAuth"
 	idP.Name = p.Name
@@ -40,7 +47,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (Identity
 	certSecretName := p.Name + "-client-cert-secret"
 	idP.BasicAuth.TLSClientCert.Name = certSecretName
 	encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-	certSecret, err := secrets.GenSecret(certSecretName, encoded, "openshift-config", "basicauth")
+	certSecret, err = secrets.GenSecret(certSecretName, encoded, "openshift-config", "basicauth")
 	if err != nil {
 		return idP, *certSecret, *keySecret, err
 	}

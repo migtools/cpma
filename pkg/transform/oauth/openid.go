@@ -35,9 +35,16 @@ type OpenIDURLs struct {
 }
 
 func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderOpenID, secrets.Secret, error) {
-	var idP IdentityProviderOpenID
-	var openID configv1.OpenIDIdentityProvider
-	_, _, _ = serializer.Decode(p.Provider.Raw, nil, &openID)
+	var (
+		err    error
+		secret *secrets.Secret
+		idP    IdentityProviderOpenID
+		openID configv1.OpenIDIdentityProvider
+	)
+	_, _, err = serializer.Decode(p.Provider.Raw, nil, &openID)
+	if err != nil {
+		return idP, *secret, err
+	}
 
 	idP.Type = "OpenID"
 	idP.Name = p.Name
@@ -53,7 +60,7 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 
 	secretName := p.Name + "-secret"
 	idP.OpenID.ClientSecret.Name = secretName
-	secret, err := secrets.GenSecret(secretName, openID.ClientSecret.Value, "openshift-config", "literal")
+	secret, err = secrets.GenSecret(secretName, openID.ClientSecret.Value, "openshift-config", "literal")
 	if err != nil {
 		return idP, *secret, err
 	}
