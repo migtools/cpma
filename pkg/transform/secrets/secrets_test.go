@@ -1,12 +1,12 @@
 package secrets
 
 import (
-	"github.com/stretchr/testify/require"
 	"encoding/base64"
 	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenSecretFileHtpasswd(t *testing.T) {
