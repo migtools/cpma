@@ -2,6 +2,7 @@ package io
 
 import (
 	"io/ioutil"
+	"os"
 
 	"github.com/fusor/cpma/pkg/io/sftpclient"
 )
@@ -13,8 +14,9 @@ var GetFile = fetchFile
 // If it fails then connects to Hostname to retrieve file and stores it locally
 // To force a network connection remove outputDir/... prior to exec.
 func fetchFile(host, src, target string) ([]byte, error) {
-	f, err := ioutil.ReadFile(target)
-	if err != nil {
+	if fileExists(target) {
+		return ioutil.ReadFile(target)
+	} else {
 		sftpclient.Fetch(host, src, target)
 		netFile, err := ioutil.ReadFile(target)
 		if err != nil {
@@ -22,5 +24,12 @@ func fetchFile(host, src, target string) ([]byte, error) {
 		}
 		return netFile, nil
 	}
-	return f, nil
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
