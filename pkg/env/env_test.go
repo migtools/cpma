@@ -16,32 +16,35 @@ func TestInitConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expectedHomeDir, _ := homedir.Dir()
-	actualHomeDir := viperConfig.GetString("home")
-	assert.Equal(t, expectedHomeDir, actualHomeDir)
+	expectedHomeDir, err := homedir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	expectedConfigFilePath := ConfigFile
-	actualConfigFilePath := viperConfig.ConfigFileUsed()
-	assert.Equal(t, expectedConfigFilePath, actualConfigFilePath)
+	testCases := []struct {
+		name                   string
+		expectedHomeDir        string
+		expectedConfigFilePath string
+	}{
+		{
+			name:                   "Init config",
+			expectedHomeDir:        expectedHomeDir,
+			expectedConfigFilePath: ConfigFile,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actualHomeDir := viperConfig.GetString("home")
+			assert.Equal(t, tc.expectedHomeDir, actualHomeDir)
+			actualConfigFilePath := viperConfig.ConfigFileUsed()
+			assert.Equal(t, tc.expectedConfigFilePath, actualConfigFilePath)
+		})
+	}
 }
 
 func TestInitLogger(t *testing.T) {
-	InitLogger()
-	logger := logrus.StandardLogger()
-
-	// Test if info level is set by default
-	expectedLogLevel := logrus.InfoLevel
-	assert.Equal(t, expectedLogLevel, logger.GetLevel())
-
-	// Test formatter
-	expectedFormatter := &logrus.TextFormatter{
-		FullTimestamp:   true,
-		TimestampFormat: time.RFC822,
-	}
-	assert.Equal(t, expectedFormatter, logger.Formatter)
-
-	// Test if hook is set right
-	expectedFileHook, _ := NewLogFileHook(
+	expectedFileHook, err := NewLogFileHook(
 		LogFileConfig{
 			Filename: logFile,
 			MaxSize:  5, // MiB
@@ -51,11 +54,51 @@ func TestInitLogger(t *testing.T) {
 			},
 		},
 	)
-	assert.Equal(t, expectedFileHook, logger.Hooks[logrus.InfoLevel][0])
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// Test if debug is set from config
-	viperConfig.Set("debug", true)
-	InitLogger()
-	expectedLogLevel = logrus.DebugLevel
-	assert.Equal(t, expectedLogLevel, logger.GetLevel())
+	testCases := []struct {
+		name              string
+		expectedLogLevel  logrus.Level
+		expectedFormatter *logrus.TextFormatter
+		expectedFileHook  logrus.Hook
+		debugLevel        bool
+	}{
+		{
+			name:             "init logger",
+			expectedLogLevel: logrus.InfoLevel,
+			expectedFormatter: &logrus.TextFormatter{
+				FullTimestamp:   true,
+				TimestampFormat: time.RFC822,
+			},
+			expectedFileHook: expectedFileHook,
+			debugLevel:       false,
+		},
+		{
+			name:             "init logger",
+			expectedLogLevel: logrus.DebugLevel,
+			expectedFormatter: &logrus.TextFormatter{
+				FullTimestamp:   true,
+				TimestampFormat: time.RFC822,
+			},
+			expectedFileHook: expectedFileHook,
+			debugLevel:       true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			viperConfig.Set("debug", tc.debugLevel)
+			InitLogger()
+			logger := logrus.StandardLogger()
+			if tc.debugLevel {
+				assert.Equal(t, tc.expectedLogLevel, logger.GetLevel())
+			} else {
+				assert.Equal(t, tc.expectedLogLevel, logger.GetLevel())
+				assert.Equal(t, tc.expectedFormatter, logger.Formatter)
+				assert.Equal(t, tc.expectedFileHook, logger.Hooks[logrus.InfoLevel][0])
+			}
+		})
+	}
 }

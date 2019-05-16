@@ -78,8 +78,7 @@ func buildData(secretType, secretContent string) (interface{}, error) {
 	case "basicauth":
 		data = BasicAuthFileSecret{BasicAuth: secretContent}
 	default:
-		errorMsg := "Not valid secret type " + secretType
-		return nil, errors.New(errorMsg)
+		return nil, errors.New("Not valid secret type " + secretType)
 	}
 
 	return data, nil

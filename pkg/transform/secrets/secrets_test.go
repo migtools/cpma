@@ -1,7 +1,7 @@
 package secrets
 
 import (
-	"encoding/base64"
+	"errors"
 	"io/ioutil"
 	"testing"
 
@@ -9,103 +9,136 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenSecretFileHtpasswd(t *testing.T) {
-	htpasswdFile := "testfile1"
-	encoded := base64.StdEncoding.EncodeToString([]byte(htpasswdFile))
-	resSecret, err := GenSecret("htpasswd-test", encoded, "openshift-config", "htpasswd")
-	require.NoError(t, err)
-
-	var data = HTPasswdFileSecret{HTPasswd: encoded}
-	var expectedSecret = Secret{
-		APIVersion: APIVersion,
-		Data:       data,
-		Kind:       "Secret",
-		Type:       "Opaque",
-		Metadata: MetaData{
-			Name:      "htpasswd-test",
-			Namespace: "openshift-config",
+func TestGenSecret(t *testing.T) {
+	testCases := []struct {
+		name            string
+		inputSecretName string
+		inputSecretFile string
+		inputSecretType string
+		expected        Secret
+		expectederr     bool
+	}{
+		{
+			name:            "generate htpasswd secret",
+			inputSecretName: "htpasswd-test",
+			inputSecretFile: "testfile1",
+			inputSecretType: "htpasswd",
+			expected: Secret{
+				APIVersion: APIVersion,
+				Data:       HTPasswdFileSecret{HTPasswd: "testfile1"},
+				Kind:       "Secret",
+				Type:       "Opaque",
+				Metadata: MetaData{
+					Name:      "htpasswd-test",
+					Namespace: "openshift-config",
+				},
+			},
+			expectederr: false,
+		},
+		{
+			name:            "generate keystone secret",
+			inputSecretName: "keystone-test",
+			inputSecretFile: "testfile2",
+			inputSecretType: "keystone",
+			expected: Secret{
+				APIVersion: APIVersion,
+				Data:       KeystoneFileSecret{Keystone: "testfile2"},
+				Kind:       "Secret",
+				Type:       "Opaque",
+				Metadata: MetaData{
+					Name:      "keystone-test",
+					Namespace: "openshift-config",
+				},
+			},
+			expectederr: false,
+		},
+		{
+			name:            "generate basic auth secret",
+			inputSecretName: "basicauth-test",
+			inputSecretFile: "testfile3",
+			inputSecretType: "basicauth",
+			expected: Secret{
+				APIVersion: APIVersion,
+				Data:       BasicAuthFileSecret{BasicAuth: "testfile3"},
+				Kind:       "Secret",
+				Type:       "Opaque",
+				Metadata: MetaData{
+					Name:      "basicauth-test",
+					Namespace: "openshift-config",
+				},
+			},
+			expectederr: false,
+		},
+		{
+			name:            "generate litetal secret",
+			inputSecretName: "literal-secret",
+			inputSecretFile: "some-value",
+			inputSecretType: "literal",
+			expected: Secret{
+				APIVersion: APIVersion,
+				Data:       LiteralSecret{ClientSecret: "some-value"},
+				Kind:       "Secret",
+				Type:       "Opaque",
+				Metadata: MetaData{
+					Name:      "literal-secret",
+					Namespace: "openshift-config",
+				},
+			},
+			expectederr: false,
+		},
+		{
+			name:            "fail generating invalid secret",
+			inputSecretName: "notvalid-secret",
+			inputSecretFile: "some-value",
+			inputSecretType: "notvalidtype",
+			expectederr:     true,
 		},
 	}
 
-	assert.Equal(t, &expectedSecret, resSecret)
-}
-func TestGenSecretFileKeystone(t *testing.T) {
-	keystoneFile := "testfile2"
-	encoded := base64.StdEncoding.EncodeToString([]byte(keystoneFile))
-	resSecret, err := GenSecret("keystone-test", encoded, "openshift-config", "keystone")
-	require.NoError(t, err)
-
-	var data = KeystoneFileSecret{Keystone: encoded}
-	var expectedSecret = Secret{
-		APIVersion: APIVersion,
-		Data:       data,
-		Kind:       "Secret",
-		Type:       "Opaque",
-		Metadata: MetaData{
-			Name:      "keystone-test",
-			Namespace: "openshift-config",
-		},
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resSecret, err := GenSecret(tc.inputSecretName, tc.inputSecretFile, "openshift-config", tc.inputSecretType)
+			if tc.expectederr {
+				err := errors.New("Not valid secret type " + "notvalidtype")
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, &tc.expected, resSecret)
+			}
+		})
 	}
-
-	assert.Equal(t, &expectedSecret, resSecret)
-}
-func TestGenSecretFileBasicAuth(t *testing.T) {
-	basicAuth := "testfile2"
-	encoded := base64.StdEncoding.EncodeToString([]byte(basicAuth))
-	resSecret, err := GenSecret("keystone-test", encoded, "openshift-config", "basicauth")
-	require.NoError(t, err)
-
-	var data = BasicAuthFileSecret{BasicAuth: encoded}
-	var expectedSecret = Secret{
-		APIVersion: APIVersion,
-		Data:       data,
-		Kind:       "Secret",
-		Type:       "Opaque",
-		Metadata: MetaData{
-			Name:      "keystone-test",
-			Namespace: "openshift-config",
-		},
-	}
-
-	assert.Equal(t, &expectedSecret, resSecret)
-}
-func TestGenSecretLiteral(t *testing.T) {
-	resSecret, err := GenSecret("literal-secret", "some-value", "openshift-config", "literal")
-	require.NoError(t, err)
-
-	var data = LiteralSecret{ClientSecret: "some-value"}
-	var expectedSecret = Secret{
-		APIVersion: APIVersion,
-		Data:       data,
-		Kind:       "Secret",
-		Type:       "Opaque",
-		Metadata: MetaData{
-			Name:      "literal-secret",
-			Namespace: "openshift-config",
-		},
-	}
-
-	assert.Equal(t, &expectedSecret, resSecret)
 }
 
 func TestGenYaml(t *testing.T) {
-	var data = LiteralSecret{ClientSecret: "some-value"}
-	var secret = Secret{
-		APIVersion: APIVersion,
-		Data:       data,
-		Kind:       "Secret",
-		Type:       "Opaque",
-		Metadata: MetaData{
-			Name:      "literal-secret",
-			Namespace: "openshift-config",
-		},
-	}
-
-	manifest, err := secret.GenYAML()
-	require.NoError(t, err)
-
 	expectedYaml, err := ioutil.ReadFile("testdata/expected-secret.yaml")
 	require.NoError(t, err)
 
-	assert.Equal(t, expectedYaml, manifest)
+	testCases := []struct {
+		name         string
+		inputSecret  Secret
+		expectedYaml []byte
+	}{
+		{
+			name: "generate yaml from secret",
+			inputSecret: Secret{
+				APIVersion: APIVersion,
+				Data:       LiteralSecret{ClientSecret: "some-value"},
+				Kind:       "Secret",
+				Type:       "Opaque",
+				Metadata: MetaData{
+					Name:      "literal-secret",
+					Namespace: "openshift-config",
+				},
+			},
+			expectedYaml: expectedYaml,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifest, err := tc.inputSecret.GenYAML()
+			require.NoError(t, err)
+			assert.Equal(t, expectedYaml, manifest)
+		})
+	}
 }

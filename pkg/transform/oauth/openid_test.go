@@ -70,7 +70,21 @@ func TestTransformMasterConfigOpenID(t *testing.T) {
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, openidIDP)
 
-	resCrd, _, err := oauth.Translate(identityProviders)
-	require.NoError(t, err)
-	assert.Equal(t, &expectedCrd, resCrd)
+	testCases := []struct {
+		name        string
+		expectedCrd *oauth.CRD
+	}{
+		{
+			name:        "build openid provider",
+			expectedCrd: &expectedCrd,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resCrd, _, err := oauth.Translate(identityProviders)
+			require.NoError(t, err)
+			assert.Equal(t, tc.expectedCrd, resCrd)
+		})
+	}
 }

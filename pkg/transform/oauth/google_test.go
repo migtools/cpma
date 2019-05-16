@@ -66,7 +66,21 @@ func TestTransformMasterConfigGoogle(t *testing.T) {
 	googleIDP.Google.HostedDomain = "test.example.com"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, googleIDP)
 
-	resCrd, _, err := oauth.Translate(identityProviders)
-	require.NoError(t, err)
-	assert.Equal(t, &expectedCrd, resCrd)
+	testCases := []struct {
+		name        string
+		expectedCrd *oauth.CRD
+	}{
+		{
+			name:        "build google provider",
+			expectedCrd: &expectedCrd,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resCrd, _, err := oauth.Translate(identityProviders)
+			require.NoError(t, err)
+			assert.Equal(t, tc.expectedCrd, resCrd)
+		})
+	}
 }
