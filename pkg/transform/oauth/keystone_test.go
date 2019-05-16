@@ -73,7 +73,21 @@ func TestTransformMasterConfigKeystone(t *testing.T) {
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, keystoneIDP)
 
-	resCrd, _, err := oauth.Translate(identityProviders)
-	require.NoError(t, err)
-	assert.Equal(t, &expectedCrd, resCrd)
+	testCases := []struct {
+		name        string
+		expectedCrd *oauth.CRD
+	}{
+		{
+			name:        "build keystone provider",
+			expectedCrd: &expectedCrd,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resCrd, _, err := oauth.Translate(identityProviders)
+			require.NoError(t, err)
+			assert.Equal(t, tc.expectedCrd, resCrd)
+		})
+	}
 }

@@ -59,19 +59,31 @@ func TestTransformMasterConfig(t *testing.T) {
 			})
 	}
 
-	resCrd, _, err := oauth.Translate(identityProviders)
-	require.NoError(t, err)
+	testCases := []struct {
+		name string
+	}{
+		{
+			name: "transform master config",
+		},
+	}
 
-	assert.Equal(t, len(resCrd.Spec.IdentityProviders), 9)
-	assert.Equal(t, resCrd.Spec.IdentityProviders[0].(oauth.IdentityProviderBasicAuth).Type, "BasicAuth")
-	assert.Equal(t, resCrd.Spec.IdentityProviders[1].(oauth.IdentityProviderGitHub).Type, "GitHub")
-	assert.Equal(t, resCrd.Spec.IdentityProviders[2].(oauth.IdentityProviderGitLab).Type, "GitLab")
-	assert.Equal(t, resCrd.Spec.IdentityProviders[3].(oauth.IdentityProviderGoogle).Type, "Google")
-	assert.Equal(t, resCrd.Spec.IdentityProviders[4].(oauth.IdentityProviderHTPasswd).Type, "HTPasswd")
-	assert.Equal(t, resCrd.Spec.IdentityProviders[5].(oauth.IdentityProviderKeystone).Type, "Keystone")
-	assert.Equal(t, resCrd.Spec.IdentityProviders[6].(oauth.IdentityProviderLDAP).Type, "LDAP")
-	assert.Equal(t, resCrd.Spec.IdentityProviders[7].(oauth.IdentityProviderRequestHeader).Type, "RequestHeader")
-	assert.Equal(t, resCrd.Spec.IdentityProviders[8].(oauth.IdentityProviderOpenID).Type, "OpenID")
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resCrd, _, err := oauth.Translate(identityProviders)
+			require.NoError(t, err)
+			assert.Equal(t, len(resCrd.Spec.IdentityProviders), 9)
+			assert.Equal(t, resCrd.Spec.IdentityProviders[0].(oauth.IdentityProviderBasicAuth).Type, "BasicAuth")
+			assert.Equal(t, resCrd.Spec.IdentityProviders[1].(oauth.IdentityProviderGitHub).Type, "GitHub")
+			assert.Equal(t, resCrd.Spec.IdentityProviders[2].(oauth.IdentityProviderGitLab).Type, "GitLab")
+			assert.Equal(t, resCrd.Spec.IdentityProviders[3].(oauth.IdentityProviderGoogle).Type, "Google")
+			assert.Equal(t, resCrd.Spec.IdentityProviders[4].(oauth.IdentityProviderHTPasswd).Type, "HTPasswd")
+			assert.Equal(t, resCrd.Spec.IdentityProviders[5].(oauth.IdentityProviderKeystone).Type, "Keystone")
+			assert.Equal(t, resCrd.Spec.IdentityProviders[6].(oauth.IdentityProviderLDAP).Type, "LDAP")
+			assert.Equal(t, resCrd.Spec.IdentityProviders[7].(oauth.IdentityProviderRequestHeader).Type, "RequestHeader")
+			assert.Equal(t, resCrd.Spec.IdentityProviders[8].(oauth.IdentityProviderOpenID).Type, "OpenID")
+		})
+	}
+
 }
 
 func TestGenYAML(t *testing.T) {
@@ -111,16 +123,31 @@ func TestGenYAML(t *testing.T) {
 			})
 	}
 
-	crd, manifests, err := oauth.Translate(identityProviders)
-
-	require.NoError(t, err)
-
-	CRD, err := crd.GenYAML()
-	require.NoError(t, err)
-
 	expectedYaml, err := ioutil.ReadFile("testdata/expected-bulk-test-masterconfig-oauth.yaml")
 	require.NoError(t, err)
 
-	assert.Equal(t, 9, len(manifests))
-	assert.Equal(t, expectedYaml, CRD)
+	testCases := []struct {
+		name                   string
+		inputIdentityProviders []oauth.IdentityProvider
+		expectedYaml           []byte
+	}{
+		{
+			name:                   "generate yaml for oauth providers",
+			inputIdentityProviders: identityProviders,
+			expectedYaml:           expectedYaml,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			crd, manifests, err := oauth.Translate(identityProviders)
+			require.NoError(t, err)
+
+			CRD, err := crd.GenYAML()
+			require.NoError(t, err)
+
+			assert.Equal(t, 9, len(manifests))
+			assert.Equal(t, expectedYaml, CRD)
+		})
+	}
 }

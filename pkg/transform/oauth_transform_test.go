@@ -295,28 +295,41 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	expectedManifests = append(expectedManifests,
 		Manifest{Name: "100_CPMA-cluster-config-secret-my_openid_connect-secret.yaml", CRD: openidSecretManifest})
 
-	actualManifestsChan := make(chan []Manifest)
-
-	// Override flush method
-	manifestOutputFlush = func(manifests []Manifest) error {
-		actualManifestsChan <- manifests
-		return nil
+	testCases := []struct {
+		name              string
+		expectedManifests []Manifest
+	}{
+		{
+			name:              "transform registries extraction",
+			expectedManifests: expectedManifests,
+		},
 	}
 
-	testExtraction := OAuthExtraction{
-		IdentityProviders: loadTestIdentityProviders(),
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actualManifestsChan := make(chan []Manifest)
+
+			// Override flush method
+			manifestOutputFlush = func(manifests []Manifest) error {
+				actualManifestsChan <- manifests
+				return nil
+			}
+
+			testExtraction := OAuthExtraction{
+				IdentityProviders: loadTestIdentityProviders(),
+			}
+
+			go func() {
+				transformOutput, err := testExtraction.Transform()
+				if err != nil {
+					t.Error(err)
+				}
+				transformOutput.Flush()
+			}()
+
+			actualManifests := <-actualManifestsChan
+
+			assert.Equal(t, actualManifests, tc.expectedManifests)
+		})
 	}
-
-	go func() {
-		transformOutput, err := testExtraction.Transform()
-		if err != nil {
-			t.Error(err)
-		}
-		transformOutput.Flush()
-	}()
-
-	actualManifests := <-actualManifestsChan
-
-	assert.Equal(t, actualManifests, expectedManifests)
-
 }

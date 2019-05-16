@@ -43,27 +43,39 @@ func TestRegistriesExtractionTransform(t *testing.T) {
 	expectedManifests = append(expectedManifests,
 		Manifest{Name: "100_CPMA-cluster-config-registries.yaml", CRD: imageCRYAML})
 
-	actualManifestsChan := make(chan []Manifest)
-
-	// Override flush method
-	manifestOutputFlush = func(manifests []Manifest) error {
-		actualManifestsChan <- manifests
-		return nil
+	testCases := []struct {
+		name              string
+		expectedManifests []Manifest
+	}{
+		{
+			name:              "transform registries extraction",
+			expectedManifests: expectedManifests,
+		},
 	}
 
-	testExtraction, err := loadRegistriesExtraction()
-	require.NoError(t, err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actualManifestsChan := make(chan []Manifest)
 
-	go func() {
-		transformOutput, err := testExtraction.Transform()
-		if err != nil {
-			t.Error(err)
-		}
-		transformOutput.Flush()
-	}()
+			// Override flush method
+			manifestOutputFlush = func(manifests []Manifest) error {
+				actualManifestsChan <- manifests
+				return nil
+			}
 
-	actualManifests := <-actualManifestsChan
+			testExtraction, err := loadRegistriesExtraction()
+			require.NoError(t, err)
 
-	assert.Equal(t, actualManifests, expectedManifests)
+			go func() {
+				transformOutput, err := testExtraction.Transform()
+				if err != nil {
+					t.Error(err)
+				}
+				transformOutput.Flush()
+			}()
 
+			actualManifests := <-actualManifestsChan
+			assert.Equal(t, actualManifests, tc.expectedManifests)
+		})
+	}
 }

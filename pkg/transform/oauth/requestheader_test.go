@@ -71,7 +71,21 @@ func TestTransformMasterConfigRequestHeader(t *testing.T) {
 	requestHeaderIDP.RequestHeader.PreferredUsernameHeaders = []string{"X-Remote-User-Login"}
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, requestHeaderIDP)
 
-	resCrd, _, err := oauth.Translate(identityProviders)
-	require.NoError(t, err)
-	assert.Equal(t, &expectedCrd, resCrd)
+	testCases := []struct {
+		name        string
+		expectedCrd *oauth.CRD
+	}{
+		{
+			name:        "build request header provider",
+			expectedCrd: &expectedCrd,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resCrd, _, err := oauth.Translate(identityProviders)
+			require.NoError(t, err)
+			assert.Equal(t, tc.expectedCrd, resCrd)
+		})
+	}
 }

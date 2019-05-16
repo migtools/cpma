@@ -25,51 +25,127 @@ func TestTransformMasterConfig(t *testing.T) {
 	_, _, err = serializer.Decode(content, nil, &extraction.MasterConfig)
 	require.NoError(t, err)
 
-	networkCR, err := SDNTranslate(extraction.MasterConfig)
-	require.NoError(t, err)
+	testCases := []struct {
+		name                           string
+		expectedAPIVersion             string
+		expectedKind                   string
+		expectedCIDR                   string
+		expectedHostPrefix             uint32
+		expectedServiceNetwork         string
+		expectedDefaultNetwork         string
+		expectedOpenshiftSDNConfigMode string
+	}{
+		{
+			expectedAPIVersion:             "operator.openshift.io/v1",
+			expectedKind:                   "Network",
+			expectedCIDR:                   "10.128.0.0/14",
+			expectedHostPrefix:             uint32(9),
+			expectedServiceNetwork:         "172.30.0.0/16",
+			expectedDefaultNetwork:         "OpenShiftSDN",
+			expectedOpenshiftSDNConfigMode: "Subnet",
+		},
+	}
 
-	// Check if network CR was translated correctly
-	assert.Equal(t, networkCR.APIVersion, "operator.openshift.io/v1")
-	assert.Equal(t, networkCR.Kind, "Network")
-	assert.Equal(t, networkCR.Spec.ClusterNetworks[0].CIDR, "10.128.0.0/14")
-	assert.Equal(t, networkCR.Spec.ClusterNetworks[0].HostPrefix, uint32(9))
-	assert.Equal(t, networkCR.Spec.ServiceNetwork, "172.30.0.0/16")
-	assert.Equal(t, networkCR.Spec.DefaultNetwork.Type, "OpenShiftSDN")
-	assert.Equal(t, networkCR.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode, "Subnet")
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			networkCR, err := SDNTranslate(extraction.MasterConfig)
+			require.NoError(t, err)
+			// Check if network CR was translated correctly
+			assert.Equal(t, networkCR.APIVersion, "operator.openshift.io/v1")
+			assert.Equal(t, networkCR.Kind, "Network")
+			assert.Equal(t, networkCR.Spec.ClusterNetworks[0].CIDR, "10.128.0.0/14")
+			assert.Equal(t, networkCR.Spec.ClusterNetworks[0].HostPrefix, uint32(9))
+			assert.Equal(t, networkCR.Spec.ServiceNetwork, "172.30.0.0/16")
+			assert.Equal(t, networkCR.Spec.DefaultNetwork.Type, "OpenShiftSDN")
+			assert.Equal(t, networkCR.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode, "Subnet")
+
+		})
+	}
 }
 
 func TestSelectNetworkPlugin(t *testing.T) {
-	resPluginName, err := SelectNetworkPlugin("redhat/openshift-ovs-multitenant")
-	require.NoError(t, err)
+	testCases := []struct {
+		name        string
+		input       string
+		output      string
+		expectederr bool
+	}{
+		{
+			name:        "translate multitenant",
+			input:       "redhat/openshift-ovs-multitenant",
+			output:      "Multitenant",
+			expectederr: false,
+		},
+		{
+			name:        "translate networkpolicy",
+			input:       "redhat/openshift-ovs-networkpolicy",
+			output:      "NetworkPolicy",
+			expectederr: false,
+		},
+		{
+			name:        "translate subnet",
+			input:       "redhat/openshift-ovs-subnet",
+			output:      "Subnet",
+			expectederr: false,
+		},
+		{
+			name:        "error on invalid plugin",
+			input:       "123",
+			output:      "error",
+			expectederr: true,
+		},
+	}
 
-	assert.Equal(t, "Multitenant", resPluginName)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resPluginName, err := SelectNetworkPlugin(tc.input)
 
-	resPluginName, err = SelectNetworkPlugin("redhat/openshift-ovs-networkpolicy")
-	require.NoError(t, err)
-
-	assert.Equal(t, "NetworkPolicy", resPluginName)
-
-	resPluginName, err = SelectNetworkPlugin("redhat/openshift-ovs-subnet")
-	require.NoError(t, err)
-
-	assert.Equal(t, "Subnet", resPluginName)
-
-	_, err = SelectNetworkPlugin("123")
-	expectedErr := errors.New("Network plugin not supported")
-	assert.Error(t, expectedErr, err)
+			if tc.expectederr {
+				err := errors.New("Network plugin not supported")
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tc.output, resPluginName)
+			}
+		})
+	}
 }
 
 func TestTransformClusterNetworks(t *testing.T) {
-	var clusterNeworkEntries []configv1.ClusterNetworkEntry
-	clusterNetwork1 := configv1.ClusterNetworkEntry{CIDR: "10.128.0.0/14", HostSubnetLength: uint32(9)}
-	clusterNetwork2 := configv1.ClusterNetworkEntry{CIDR: "10.127.0.0/14", HostSubnetLength: uint32(10)}
-	clusterNeworkEntries = append(clusterNeworkEntries, clusterNetwork1, clusterNetwork2)
+	testCases := []struct {
+		name   string
+		input  []configv1.ClusterNetworkEntry
+		output []ClusterNetwork
+	}{
+		{
+			name: "transform cluster networks",
+			input: []configv1.ClusterNetworkEntry{
+				configv1.ClusterNetworkEntry{CIDR: "10.128.0.0/14",
+					HostSubnetLength: uint32(9),
+				},
+				configv1.ClusterNetworkEntry{CIDR: "10.127.0.0/14",
+					HostSubnetLength: uint32(10),
+				},
+			},
+			output: []ClusterNetwork{
+				ClusterNetwork{
+					CIDR:       "10.128.0.0/14",
+					HostPrefix: uint32(9),
+				},
+				ClusterNetwork{
+					CIDR:       "10.127.0.0/14",
+					HostPrefix: uint32(10),
+				},
+			},
+		},
+	}
 
-	translatedClusterNetworks := TranslateClusterNetworks(clusterNeworkEntries)
-	assert.Equal(t, translatedClusterNetworks[0].CIDR, "10.128.0.0/14")
-	assert.Equal(t, translatedClusterNetworks[0].HostPrefix, uint32(9))
-	assert.Equal(t, translatedClusterNetworks[1].CIDR, "10.127.0.0/14")
-	assert.Equal(t, translatedClusterNetworks[1].HostPrefix, uint32(10))
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			translatedClusterNetworks := TranslateClusterNetworks(tc.input)
+			assert.Equal(t, tc.output, translatedClusterNetworks)
+		})
+	}
 }
 
 func TestGenYAML(t *testing.T) {
@@ -87,13 +163,28 @@ func TestGenYAML(t *testing.T) {
 	networkCR, err := SDNTranslate(extraction.MasterConfig)
 	require.NoError(t, err)
 
-	networkCRYAML, err := GenYAML(networkCR)
-	require.NoError(t, err)
-
 	expectedYaml, err := ioutil.ReadFile("testdata/expected-network-cr-master.yaml")
 	require.NoError(t, err)
 
-	assert.Equal(t, expectedYaml, networkCRYAML)
+	testCases := []struct {
+		name      string
+		networkCR NetworkCR
+		output    []byte
+	}{
+		{
+			name:      "generate yaml for sdn",
+			networkCR: networkCR,
+			output:    expectedYaml,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			networkCRYAML, err := GenYAML(tc.networkCR)
+			require.NoError(t, err)
+			assert.Equal(t, tc.output, networkCRYAML)
+		})
+	}
 }
 
 func loadSDNExtraction() (SDNExtraction, error) {
@@ -130,26 +221,38 @@ func TestSDNExtractionTransform(t *testing.T) {
 	expectedManifests = append(expectedManifests,
 		Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML})
 
-	actualManifestsChan := make(chan []Manifest)
-
-	// Override flush method
-	manifestOutputFlush = func(manifests []Manifest) error {
-		actualManifestsChan <- manifests
-		return nil
+	testCases := []struct {
+		name              string
+		expectedManifests []Manifest
+	}{
+		{
+			name:              "transform sdn extraction",
+			expectedManifests: expectedManifests,
+		},
 	}
 
-	testExtraction, err := loadSDNExtraction()
-	require.NoError(t, err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actualManifestsChan := make(chan []Manifest)
+			// Override flush method
+			manifestOutputFlush = func(manifests []Manifest) error {
+				actualManifestsChan <- manifests
+				return nil
+			}
 
-	go func() {
-		transformOutput, err := testExtraction.Transform()
-		if err != nil {
-			t.Error(err)
-		}
-		transformOutput.Flush()
-	}()
+			testExtraction, err := loadSDNExtraction()
+			require.NoError(t, err)
 
-	actualManifests := <-actualManifestsChan
+			go func() {
+				transformOutput, err := testExtraction.Transform()
+				if err != nil {
+					t.Error(err)
+				}
+				transformOutput.Flush()
+			}()
 
-	assert.Equal(t, actualManifests, expectedManifests)
+			actualManifests := <-actualManifestsChan
+			assert.Equal(t, actualManifests, tc.expectedManifests)
+		})
+	}
 }
