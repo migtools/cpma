@@ -48,17 +48,14 @@ func TestTransformMasterConfig(t *testing.T) {
 
 		identityProviders = append(identityProviders,
 			oauth.IdentityProvider{
-				provider.Kind,
-				provider.APIVersion,
-				identityProvider.MappingMethod,
-				identityProvider.Name,
-				identityProvider.Provider,
-				provider.File,
-				nil,
-				nil,
-				nil,
-				identityProvider.UseAsChallenger,
-				identityProvider.UseAsLogin,
+				Kind:            provider.Kind,
+				APIVersion:      provider.APIVersion,
+				MappingMethod:   identityProvider.MappingMethod,
+				Name:            identityProvider.Name,
+				Provider:        identityProvider.Provider,
+				HTFileName:      provider.File,
+				UseAsChallenger: identityProvider.UseAsChallenger,
+				UseAsLogin:      identityProvider.UseAsLogin,
 			})
 	}
 
@@ -103,17 +100,14 @@ func TestGenYAML(t *testing.T) {
 
 		identityProviders = append(identityProviders,
 			oauth.IdentityProvider{
-				provider.Kind,
-				provider.APIVersion,
-				identityProvider.MappingMethod,
-				identityProvider.Name,
-				identityProvider.Provider,
-				provider.File,
-				nil,
-				nil,
-				nil,
-				identityProvider.UseAsChallenger,
-				identityProvider.UseAsLogin,
+				Kind:            provider.Kind,
+				APIVersion:      provider.APIVersion,
+				MappingMethod:   identityProvider.MappingMethod,
+				Name:            identityProvider.Name,
+				Provider:        identityProvider.Provider,
+				HTFileName:      provider.File,
+				UseAsChallenger: identityProvider.UseAsChallenger,
+				UseAsLogin:      identityProvider.UseAsLogin,
 			})
 	}
 

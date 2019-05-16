@@ -13,7 +13,7 @@ spec:
     basicAuth:
       url: https://www.example.com/
       ca:
-        name: ca.file
+        name: ""
       tlsClientCert:
         name: my_remote_basic_auth_provider-client-cert-secret
       tlsClientKey:
