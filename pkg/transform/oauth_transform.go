@@ -145,7 +145,7 @@ func (e OAuthExtraction) Validate() error {
 	return nil // Simulate fine
 }
 
-// Type retrurn transform type
-func (e OAuthTransform) Type() string {
+// Name returns a human readable name for the transform
+func (e OAuthTransform) Name() string {
 	return "OAuth"
 }
