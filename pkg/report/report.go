@@ -1,10 +1,25 @@
 package report
 
 import (
-	"github.com/sirupsen/logrus"
+	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/transform"
 )
 
-//Start generating a component transform confidence report
+//Start generating reports about what we can migrate to OCP4
 func Start() {
-	logrus.Info("Not Implemented")
+	env.Config().Set("mode", "report")
+	config := transform.LoadConfig()
+	runner := transform.NewRunner(config)
+
+	runner.Transform([]transform.Transform{
+		transform.OAuthTransform{
+			Config: &config,
+		},
+		transform.SDNTransform{
+			Config: &config,
+		},
+		transform.RegistriesTransform{
+			Config: &config,
+		},
+	})
 }

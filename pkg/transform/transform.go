@@ -65,6 +65,8 @@ type Output interface {
 
 //Start generating manifests to be used with Openshift 4
 func Start() {
+	env.Config().Set("mode", "transform")
+
 	config := LoadConfig()
 	runner := NewRunner(config)
 

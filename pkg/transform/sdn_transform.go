@@ -78,9 +78,15 @@ func (e SDNExtraction) Transform() (Output, error) {
 	manifest := Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML}
 	manifests = append(manifests, manifest)
 
-	return ManifestOutput{
-		Manifests: manifests,
-	}, nil
+	if env.Config().GetString("mode") == "transform" {
+		return ManifestOutput{
+			Manifests: manifests,
+		}, nil
+	} else {
+		return ReportOutput{
+			Manifests: manifests,
+		}, nil
+	}
 }
 
 // SDNTranslate is called by Transform to do the majority of the work in converting data
