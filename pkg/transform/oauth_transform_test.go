@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/etl"
+
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/stretchr/testify/assert"
@@ -55,7 +57,7 @@ func loadTestIdentityProviders() []oauth.IdentityProvider {
 }
 
 func TestOAuthExtractionTransform(t *testing.T) {
-	var expectedManifests []Manifest
+	var expectedManifests []etl.Data
 
 	var expectedCrd oauth.CRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
@@ -275,29 +277,29 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: expectedManifest})
+		etl.Data{Name: "100_CPMA-cluster-config-oauth.yaml", Type: "manifests", File: expectedManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-my_remote_basic_auth_provider-client-cert-secret.yaml", CRD: basicAuthCrtSecretManifest})
+		etl.Data{Name: "100_CPMA-cluster-config-secret-my_remote_basic_auth_provider-client-cert-secret.yaml", Type: "manifests", File: basicAuthCrtSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-my_remote_basic_auth_provider-client-key-secret.yaml", CRD: basicAuthKeySecretManifest})
+		etl.Data{Name: "100_CPMA-cluster-config-secret-my_remote_basic_auth_provider-client-key-secret.yaml", Type: "manifests", File: basicAuthKeySecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-github123456789-secret.yaml", CRD: githubSecretManifest})
+		etl.Data{Name: "100_CPMA-cluster-config-secret-github123456789-secret.yaml", Type: "manifests", File: githubSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-gitlab123456789-secret.yaml", CRD: gitlabSecretManifest})
+		etl.Data{Name: "100_CPMA-cluster-config-secret-gitlab123456789-secret.yaml", Type: "manifests", File: gitlabSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-google123456789123456789-secret.yaml", CRD: googleSecretManifest})
+		etl.Data{Name: "100_CPMA-cluster-config-secret-google123456789123456789-secret.yaml", Type: "manifests", File: googleSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-htpasswd_auth-secret.yaml", CRD: htpasswdSecretManifest})
+		etl.Data{Name: "100_CPMA-cluster-config-secret-htpasswd_auth-secret.yaml", Type: "manifests", File: htpasswdSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-my_keystone_provider-client-cert-secret.yaml", CRD: keystoneCrtSecretManifest})
+		etl.Data{Name: "100_CPMA-cluster-config-secret-my_keystone_provider-client-cert-secret.yaml", Type: "manifests", File: keystoneCrtSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-my_keystone_provider-client-key-secret.yaml", CRD: keystoneKeySecretManifest})
+		etl.Data{Name: "100_CPMA-cluster-config-secret-my_keystone_provider-client-key-secret.yaml", Type: "manifests", File: keystoneKeySecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-my_openid_connect-secret.yaml", CRD: openidSecretManifest})
+		etl.Data{Name: "100_CPMA-cluster-config-secret-my_openid_connect-secret.yaml", Type: "manifests", File: openidSecretManifest})
 
 	testCases := []struct {
 		name              string
-		expectedManifests []Manifest
+		expectedManifests []etl.Data
 	}{
 		{
 			name:              "transform registries extraction",
@@ -307,10 +309,10 @@ func TestOAuthExtractionTransform(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actualManifestsChan := make(chan []Manifest)
+			actualManifestsChan := make(chan []etl.Data)
 
 			// Override flush method
-			manifestOutputFlush = func(manifests []Manifest) error {
+			etl.DataOutputFlush = func(manifests []etl.Data) error {
 				actualManifestsChan <- manifests
 				return nil
 			}

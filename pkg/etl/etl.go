@@ -1,0 +1,126 @@
+package etl
+
+import (
+	"path/filepath"
+
+	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/transform/oauth"
+	"github.com/fusor/cpma/pkg/transform/secrets"
+	"github.com/sirupsen/logrus"
+)
+
+// Cluster contains a cluster
+type Cluster struct {
+	Master Master
+}
+
+// Master is a cluster Master
+type Master struct {
+	OAuth   oauth.CRD
+	Secrets []secrets.Secret
+}
+
+// Data to be exported for use with OCP 4
+type Data struct {
+	Type string
+	Name string
+	File []byte
+}
+
+// Config contains CPMA configuration information
+type Config struct {
+	OutputDir string
+	Hostname  string
+}
+
+// Runner a generic transform runner
+type Runner struct {
+	Config string
+}
+
+// Extraction is a generic data extraction
+type Extraction interface {
+	Transform() (Output, error)
+	Validate() error
+}
+
+// Transform is a generic transform
+type Transform interface {
+	Extract() (Extraction, error)
+	Name() string
+}
+
+// Output is a generic output type
+type Output interface {
+	Flush() error
+}
+
+// LoadConfig collects and stores configuration for CPMA
+func LoadConfig() Config {
+	logrus.Info("Loaded config")
+
+	config := Config{}
+	config.OutputDir = env.Config().GetString("OutputDir")
+	config.Hostname = env.Config().GetString("Source")
+
+	return config
+}
+
+// Fetch files from the OCP3 cluster
+func (config *Config) Fetch(path string) ([]byte, error) {
+	dst := filepath.Join(config.OutputDir, config.Hostname, path)
+	logrus.Infof("Fetching file: %s", dst)
+	f, err := io.GetFile(config.Hostname, path, dst)
+	if err != nil {
+		return nil, err
+	}
+	logrus.Infof("File successfully loaded: %v", dst)
+
+	return f, nil
+}
+
+// Transform is the process run to complete a transform
+func (r Runner) Transform(transforms []Transform) {
+	logrus.Info("TransformRunner::Transform")
+
+	// For each transform, extract the data, validate it, and run the transform.
+	// Handle any errors, and finally flush the output to it's desired destination
+	// NOTE: This should be parallelized with channels unless the transforms have
+	// some dependency on the outputs of others
+	for _, transform := range transforms {
+		extraction, err := transform.Extract()
+		if err != nil {
+			HandleError(err, transform.Name())
+			continue
+		}
+
+		if err := extraction.Validate(); err != nil {
+			HandleError(err, transform.Name())
+			continue
+		}
+
+		output, err := extraction.Transform()
+		if err != nil {
+			HandleError(err, transform.Name())
+			continue
+		}
+
+		if err := output.Flush(); err != nil {
+			HandleError(err, transform.Name())
+			continue
+		}
+	}
+}
+
+// NewRunner creates a new Runner
+func NewRunner(config Config) *Runner {
+	return &Runner{}
+}
+
+// HandleError handles errors
+func HandleError(err error, transformType string) error {
+	logrus.Warnf("Skipping %s, see error below\n", transformType)
+	logrus.Warnf("%s\n", err)
+	return err
+}

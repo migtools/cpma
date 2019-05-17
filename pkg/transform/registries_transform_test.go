@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fusor/cpma/pkg/etl"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
@@ -27,7 +28,7 @@ func loadRegistriesExtraction() (RegistriesExtraction, error) {
 }
 
 func TestRegistriesExtractionTransform(t *testing.T) {
-	var expectedManifests []Manifest
+	var expectedManifests []etl.Data
 
 	var expectedCrd ImageCR
 	expectedCrd.APIVersion = "config.openshift.io/v1"
@@ -41,11 +42,11 @@ func TestRegistriesExtractionTransform(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-registries.yaml", CRD: imageCRYAML})
+		etl.Data{Name: "100_CPMA-cluster-config-registries.yaml", Type: "manifests", File: imageCRYAML})
 
 	testCases := []struct {
 		name              string
-		expectedManifests []Manifest
+		expectedManifests []etl.Data
 	}{
 		{
 			name:              "transform registries extraction",
@@ -55,10 +56,10 @@ func TestRegistriesExtractionTransform(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actualManifestsChan := make(chan []Manifest)
+			actualManifestsChan := make(chan []etl.Data)
 
 			// Override flush method
-			manifestOutputFlush = func(manifests []Manifest) error {
+			etl.DataOutputFlush = func(manifests []etl.Data) error {
 				actualManifestsChan <- manifests
 				return nil
 			}

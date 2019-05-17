@@ -1,10 +1,15 @@
 package report
 
-import (
-	"github.com/sirupsen/logrus"
-)
+import "github.com/fusor/cpma/pkg/etl"
 
 //Start generating a component transform confidence report
 func Start() {
-	logrus.Info("Not Implemented")
+	config := etl.LoadConfig()
+	runner := etl.NewRunner(config)
+
+	runner.Transform([]etl.Transform{
+		SDNReport{
+			Config: &config,
+		},
+	})
 }

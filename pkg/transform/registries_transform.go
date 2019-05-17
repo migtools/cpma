@@ -5,6 +5,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/etl"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
@@ -46,13 +47,13 @@ type RegistrySources struct {
 
 // RegistriesTransform is a registry specific transform
 type RegistriesTransform struct {
-	Config *Config
+	Config *etl.Config
 }
 
 // Transform contains registry configuration collected from an OCP3 cluster
-func (e RegistriesExtraction) Transform() (Output, error) {
+func (e RegistriesExtraction) Transform() (etl.Output, error) {
 	logrus.Info("RegistriesTransform::Extraction")
-	var manifests []Manifest
+	var manifests []etl.Data
 
 	const (
 		apiVersion = "config.openshift.io/v1"
@@ -76,16 +77,16 @@ func (e RegistriesExtraction) Transform() (Output, error) {
 		return nil, err
 	}
 
-	manifest := Manifest{Name: "100_CPMA-cluster-config-registries.yaml", CRD: imageCRYAML}
+	manifest := etl.Data{Name: "100_CPMA-cluster-config-registries.yaml", Type: "manifests", File: imageCRYAML}
 	manifests = append(manifests, manifest)
 
-	return ManifestOutput{
-		Manifests: manifests,
+	return etl.DataOutput{
+		DataList: manifests,
 	}, nil
 }
 
 // Extract collects registry information from an OCP3 cluster
-func (e RegistriesTransform) Extract() (Extraction, error) {
+func (e RegistriesTransform) Extract() (etl.Extraction, error) {
 	logrus.Info("RegistriesTransform::Extract")
 	content, err := e.Config.Fetch(env.Config().GetString("RegistriesConfigFile"))
 	if err != nil {

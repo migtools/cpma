@@ -1,10 +1,11 @@
-package transform
+package report
 
 import (
 	"errors"
 	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/etl"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
@@ -30,7 +31,7 @@ func TestTransformMasterConfig(t *testing.T) {
 		expectedAPIVersion             string
 		expectedKind                   string
 		expectedCIDR                   string
-		expectedHostPrefix             uint32
+		expectedHostPrefix             int
 		expectedServiceNetwork         string
 		expectedDefaultNetwork         string
 		expectedOpenshiftSDNConfigMode string
@@ -39,7 +40,7 @@ func TestTransformMasterConfig(t *testing.T) {
 			expectedAPIVersion:             "operator.openshift.io/v1",
 			expectedKind:                   "Network",
 			expectedCIDR:                   "10.128.0.0/14",
-			expectedHostPrefix:             uint32(9),
+			expectedHostPrefix:             23,
 			expectedServiceNetwork:         "172.30.0.0/16",
 			expectedDefaultNetwork:         "OpenShiftSDN",
 			expectedOpenshiftSDNConfigMode: "Subnet",
@@ -48,17 +49,18 @@ func TestTransformMasterConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			networkCR, err := SDNTranslate(extraction.MasterConfig)
+			networkCR, installConfig, err := SDNTranslate(extraction.MasterConfig)
 			require.NoError(t, err)
 			// Check if network CR was translated correctly
 			assert.Equal(t, networkCR.APIVersion, "operator.openshift.io/v1")
 			assert.Equal(t, networkCR.Kind, "Network")
-			assert.Equal(t, networkCR.Spec.ClusterNetworks[0].CIDR, "10.128.0.0/14")
-			assert.Equal(t, networkCR.Spec.ClusterNetworks[0].HostPrefix, uint32(9))
-			assert.Equal(t, networkCR.Spec.ServiceNetwork, "172.30.0.0/16")
 			assert.Equal(t, networkCR.Spec.DefaultNetwork.Type, "OpenShiftSDN")
 			assert.Equal(t, networkCR.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode, "Subnet")
 
+			// Check installconfig
+			assert.Equal(t, installConfig.ClusterNetworks[0].CIDR, "10.128.0.0/14")
+			assert.Equal(t, installConfig.ClusterNetworks[0].HostPrefix, 23)
+			assert.Equal(t, installConfig.ServiceNetwork[0], "172.30.0.0/16")
 		})
 	}
 }
@@ -130,11 +132,11 @@ func TestTransformClusterNetworks(t *testing.T) {
 			output: []ClusterNetwork{
 				ClusterNetwork{
 					CIDR:       "10.128.0.0/14",
-					HostPrefix: uint32(9),
+					HostPrefix: 23,
 				},
 				ClusterNetwork{
 					CIDR:       "10.127.0.0/14",
-					HostPrefix: uint32(10),
+					HostPrefix: 23,
 				},
 			},
 		},
@@ -160,21 +162,28 @@ func TestGenYAML(t *testing.T) {
 	_, _, err = serializer.Decode(content, nil, &extraction.MasterConfig)
 	require.NoError(t, err)
 
-	networkCR, err := SDNTranslate(extraction.MasterConfig)
+	networkCR, installConfig, err := SDNTranslate(extraction.MasterConfig)
 	require.NoError(t, err)
 
-	expectedYaml, err := ioutil.ReadFile("testdata/expected-network-cr-master.yaml")
+	expectedCRYaml, err := ioutil.ReadFile("testdata/expected-network-cr-master.yaml")
+	require.NoError(t, err)
+
+	expectedInstallConfigYaml, err := ioutil.ReadFile("testdata/expected-install-config.yaml")
 	require.NoError(t, err)
 
 	testCases := []struct {
-		name      string
-		networkCR NetworkCR
-		output    []byte
+		name                string
+		networkCR           NetworkCR
+		installConfig       SDNInstallConfig
+		outputCR            []byte
+		outputInstallconfig []byte
 	}{
 		{
-			name:      "generate yaml for sdn",
-			networkCR: networkCR,
-			output:    expectedYaml,
+			name:                "generate yaml for sdn",
+			networkCR:           networkCR,
+			installConfig:       installConfig,
+			outputCR:            expectedCRYaml,
+			outputInstallconfig: expectedInstallConfigYaml,
 		},
 	}
 
@@ -182,7 +191,11 @@ func TestGenYAML(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			networkCRYAML, err := GenYAML(tc.networkCR)
 			require.NoError(t, err)
-			assert.Equal(t, tc.output, networkCRYAML)
+			assert.Equal(t, tc.outputCR, networkCRYAML)
+
+			installConfigYAML, err := GenYAML(tc.installConfig)
+			require.NoError(t, err)
+			assert.Equal(t, tc.outputInstallconfig, installConfigYAML)
 		})
 	}
 }
@@ -205,38 +218,50 @@ func loadSDNExtraction() (SDNExtraction, error) {
 }
 
 func TestSDNExtractionTransform(t *testing.T) {
-	var expectedManifests []Manifest
+	var expectedReports []etl.Data
 
 	var expectedCrd NetworkCR
 	expectedCrd.APIVersion = "operator.openshift.io/v1"
 	expectedCrd.Kind = "Network"
-	expectedCrd.Spec.ClusterNetworks = []ClusterNetwork{{HostPrefix: 9, CIDR: "10.128.0.0/14"}}
-	expectedCrd.Spec.ServiceNetwork = "172.30.0.0/16"
 	expectedCrd.Spec.DefaultNetwork.Type = "OpenShiftSDN"
 	expectedCrd.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode = "Subnet"
+
+	var expectedInstallConfig SDNInstallConfig
+	expectedInstallConfig.ClusterNetworks = []ClusterNetwork{{HostPrefix: 23, CIDR: "10.128.0.0/14"}}
+	expectedInstallConfig.ServiceNetwork = []string{"172.30.0.0/16"}
 
 	networkCRYAML, err := yaml.Marshal(&expectedCrd)
 	require.NoError(t, err)
 
-	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML})
+	installConfigYAML, err := yaml.Marshal(&expectedInstallConfig)
+	require.NoError(t, err)
+
+	expectedReports = append(expectedReports,
+		etl.Data{Name: "SDN-operator-config-sdn.yaml", Type: "reports", File: networkCRYAML})
+
+	expectedReports = append(expectedReports,
+		etl.Data{Name: "SDN-install-config.yaml", Type: "reports", File: installConfigYAML})
+
+	readmeByteSlice := []byte(readme)
+	expectedReports = append(expectedReports,
+		etl.Data{Name: "SDN-readme.md", Type: "reports", File: readmeByteSlice})
 
 	testCases := []struct {
-		name              string
-		expectedManifests []Manifest
+		name            string
+		expectedReports []etl.Data
 	}{
 		{
-			name:              "transform sdn extraction",
-			expectedManifests: expectedManifests,
+			name:            "transform sdn extraction",
+			expectedReports: expectedReports,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actualManifestsChan := make(chan []Manifest)
+			actualReportsChan := make(chan []etl.Data)
 			// Override flush method
-			manifestOutputFlush = func(manifests []Manifest) error {
-				actualManifestsChan <- manifests
+			etl.DataOutputFlush = func(reports []etl.Data) error {
+				actualReportsChan <- reports
 				return nil
 			}
 
@@ -251,8 +276,8 @@ func TestSDNExtractionTransform(t *testing.T) {
 				transformOutput.Flush()
 			}()
 
-			actualManifests := <-actualManifestsChan
-			assert.Equal(t, actualManifests, tc.expectedManifests)
+			actualReports := <-actualReportsChan
+			assert.Equal(t, tc.expectedReports, actualReports)
 		})
 	}
 }

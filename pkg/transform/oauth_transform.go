@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/etl"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -20,14 +21,14 @@ type OAuthExtraction struct {
 
 // OAuthTransform is an OAuth specific transform
 type OAuthTransform struct {
-	Config *Config
+	Config *etl.Config
 }
 
 // Transform converts data collected from an OCP3 cluster to OCP4 CR's
-func (e OAuthExtraction) Transform() (Output, error) {
+func (e OAuthExtraction) Transform() (etl.Output, error) {
 	logrus.Info("OAuthTransform::Transform")
 
-	var ocp4Cluster Cluster
+	var ocp4Cluster etl.Cluster
 
 	oauth, secrets, err := oauth.Translate(e.IdentityProviders)
 	if err != nil {
@@ -37,14 +38,14 @@ func (e OAuthExtraction) Transform() (Output, error) {
 	ocp4Cluster.Master.OAuth = *oauth
 	ocp4Cluster.Master.Secrets = secrets
 
-	var manifests []Manifest
+	var manifests []etl.Data
 	if ocp4Cluster.Master.OAuth.Kind != "" {
 		oauthCRD, err := ocp4Cluster.Master.OAuth.GenYAML()
 		if err != nil {
 			return nil, err
 		}
 
-		manifest := Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: oauthCRD}
+		manifest := etl.Data{Name: "100_CPMA-cluster-config-oauth.yaml", Type: "manifests", File: oauthCRD}
 		manifests = append(manifests, manifest)
 
 		for _, secret := range ocp4Cluster.Master.Secrets {
@@ -54,16 +55,18 @@ func (e OAuthExtraction) Transform() (Output, error) {
 			}
 
 			filename := "100_CPMA-cluster-config-secret-" + secret.Metadata.Name + ".yaml"
-			m := Manifest{Name: filename, CRD: secretCR}
+			m := etl.Data{Name: filename, Type: "manifests", File: secretCR}
 			manifests = append(manifests, m)
 		}
 	}
 
-	return ManifestOutput{Manifests: manifests}, nil
+	return etl.DataOutput{
+		DataList: manifests,
+	}, nil
 }
 
 // Extract collects OAuth configuration from an OCP3 cluster
-func (e OAuthTransform) Extract() (Extraction, error) {
+func (e OAuthTransform) Extract() (etl.Extraction, error) {
 	logrus.Info("OAuthTransform::Extract")
 	content, err := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
 	if err != nil {

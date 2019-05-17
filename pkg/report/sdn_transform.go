@@ -1,9 +1,10 @@
-package transform
+package report
 
 import (
 	"errors"
 
 	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/etl"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -26,46 +27,50 @@ type NetworkCR struct {
 
 // SDNSpec is a SDN specific spec
 type SDNSpec struct {
-	ClusterNetworks []ClusterNetwork `yaml:"clusterNetwork"`
-	ServiceNetwork  string           `yaml:"serviceNetwork"`
-	DefaultNetwork  `yaml:"defaultNetwork"`
+	DefaultNetwork `yaml:"defaultNetwork"`
 }
 
 // ClusterNetwork contains CIDR and address size to assign to each node
 type ClusterNetwork struct {
 	CIDR       string `yaml:"cidr"`
-	HostPrefix uint32 `yaml:"hostPrefix"`
+	HostPrefix int    `yaml:"hostPrefix"`
 }
 
 // DefaultNetwork containts network type and SDN plugin name
 type DefaultNetwork struct {
-	Type               string             `yaml:"type"`
-	OpenshiftSDNConfig OpenshiftSDNConfig `yaml:"openshiftSDNConfig"`
+	Type               string `yaml:"type"`
+	OpenshiftSDNConfig struct {
+		Mode string `yaml:"mode"`
+	} `yaml:"openshiftSDNConfig"`
 }
 
-// OpenshiftSDNConfig is the Openshift SDN Configured Mode
-type OpenshiftSDNConfig struct {
-	Mode string `yaml:"mode"`
+// SDNInstallConfig is a yaml snippet of install config
+type SDNInstallConfig struct {
+	ClusterNetworks []ClusterNetwork `yaml:"clusterNetwork"`
+	ServiceNetwork  []string         `yaml:"serviceNetwork"`
 }
 
-// SDNTransform is an SDN specific transform
-type SDNTransform struct {
-	Config *Config
+// SDNReport is an SDN specific transform
+type SDNReport struct {
+	Config *etl.Config
 }
 
 const (
 	apiVersion         = "operator.openshift.io/v1"
 	kind               = "Network"
 	defaultNetworkType = "OpenShiftSDN"
+	readme             = `Migrating IP adresses in a Day 1 operation, it's required to copy values from sdn-install-config.yaml snippet and place them under "networking" section in instal-config.yaml.
+In order to migrate network plugin, cluster-config-sdn.yaml should be placed in manifests directory.
+`
 )
 
 // Transform convers OCP3 data to configuration useful for OCP4
-func (e SDNExtraction) Transform() (Output, error) {
-	logrus.Info("SDNTransform::Transform")
+func (e SDNExtraction) Transform() (etl.Output, error) {
+	logrus.Info("SDNReport::Transform")
 
-	var manifests []Manifest
+	var reports []etl.Data
 
-	networkCR, err := SDNTranslate(e.MasterConfig)
+	networkCR, sdnInstallConfig, err := SDNTranslate(e.MasterConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -75,41 +80,56 @@ func (e SDNExtraction) Transform() (Output, error) {
 		return nil, err
 	}
 
-	manifest := Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML}
-	manifests = append(manifests, manifest)
+	report := etl.Data{Name: "SDN-operator-config-sdn.yaml", Type: "reports", File: networkCRYAML}
+	reports = append(reports, report)
 
-	return ManifestOutput{
-		Manifests: manifests,
+	sdnInstallConfigYAML, err := GenYAML(sdnInstallConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	report = etl.Data{Name: "SDN-install-config.yaml", Type: "reports", File: sdnInstallConfigYAML}
+	reports = append(reports, report)
+
+	readmeByteSlice := []byte(readme)
+	report = etl.Data{Name: "SDN-readme.md", Type: "reports", File: readmeByteSlice}
+	reports = append(reports, report)
+
+	return etl.DataOutput{
+		DataList: reports,
 	}, nil
 }
 
 // SDNTranslate is called by Transform to do the majority of the work in converting data
-func SDNTranslate(masterConfig configv1.MasterConfig) (NetworkCR, error) {
+func SDNTranslate(masterConfig configv1.MasterConfig) (NetworkCR, SDNInstallConfig, error) {
 	networkConfig := masterConfig.NetworkConfig
 	var networkCR NetworkCR
+	var sdnInstallConfig SDNInstallConfig
 
 	networkCR.APIVersion = apiVersion
 	networkCR.Kind = kind
-	networkCR.Spec.ServiceNetwork = networkConfig.ServiceNetworkCIDR
 	networkCR.Spec.DefaultNetwork.Type = defaultNetworkType
 
 	// Translate CIDRs and adress size for each node
 	translatedClusterNetworks := TranslateClusterNetworks(networkConfig.ClusterNetworks)
-	networkCR.Spec.ClusterNetworks = translatedClusterNetworks
 
 	// Translate network plugin name
 	selectedNetworkPlugin, err := SelectNetworkPlugin(networkConfig.NetworkPluginName)
 	if err != nil {
-		return networkCR, err
+		return networkCR, sdnInstallConfig, err
 	}
 	networkCR.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode = selectedNetworkPlugin
 
-	return networkCR, nil
+	// Put IP adresses to a yaml snippet of install-config
+	sdnInstallConfig.ServiceNetwork = []string{networkConfig.ServiceNetworkCIDR}
+	sdnInstallConfig.ClusterNetworks = translatedClusterNetworks
+
+	return networkCR, sdnInstallConfig, nil
 }
 
 // Extract collects SDN configuration information from an OCP3 cluster
-func (e SDNTransform) Extract() (Extraction, error) {
-	logrus.Info("SDNTransform::Extract")
+func (e SDNReport) Extract() (etl.Extraction, error) {
+	logrus.Info("SDNReport::Extract")
 	content, err := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
 	if err != nil {
 		return nil, err
@@ -140,7 +160,8 @@ func TranslateClusterNetworks(clusterNeworkEntries []configv1.ClusterNetworkEntr
 		var translatedClusterNetwork ClusterNetwork
 
 		translatedClusterNetwork.CIDR = networkConfig.CIDR
-		translatedClusterNetwork.HostPrefix = networkConfig.HostSubnetLength
+		// host prefix default value is 23, we should mention this in readme
+		translatedClusterNetwork.HostPrefix = 23
 
 		translatedClusterNetworks = append(translatedClusterNetworks, translatedClusterNetwork)
 	}
@@ -167,9 +188,9 @@ func SelectNetworkPlugin(pluginName string) (string, error) {
 	return selectedName, nil
 }
 
-// GenYAML returns a YAML of the OAuthCRD
-func GenYAML(networkCR NetworkCR) ([]byte, error) {
-	yamlBytes, err := yaml.Marshal(networkCR)
+// GenYAML returns a YAML of the OAuthCRD or install config snippet
+func GenYAML(parsableStuct interface{}) ([]byte, error) {
+	yamlBytes, err := yaml.Marshal(parsableStuct)
 	if err != nil {
 		return nil, err
 	}
@@ -178,6 +199,6 @@ func GenYAML(networkCR NetworkCR) ([]byte, error) {
 }
 
 // Name returns a human readable name for the transform
-func (e SDNTransform) Name() string {
+func (e SDNReport) Name() string {
 	return "SDN"
 }
