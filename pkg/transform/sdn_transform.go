@@ -49,9 +49,7 @@ type OpenshiftSDNConfig struct {
 }
 
 // SDNTransform is an SDN specific transform
-type SDNTransform struct {
-	Config *Config
-}
+type SDNTransform struct{}
 
 const (
 	apiVersion         = "operator.openshift.io/v1"
@@ -110,7 +108,7 @@ func SDNTranslate(masterConfig configv1.MasterConfig) (NetworkCR, error) {
 // Extract collects SDN configuration information from an OCP3 cluster
 func (e SDNTransform) Extract() (Extraction, error) {
 	logrus.Info("SDNTransform::Extract")
-	content, err := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
+	content, err := Fetch(env.Config().GetString("MasterConfigFile"))
 	if err != nil {
 		return nil, err
 	}

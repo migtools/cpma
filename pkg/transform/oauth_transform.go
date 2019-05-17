@@ -19,9 +19,7 @@ type OAuthExtraction struct {
 }
 
 // OAuthTransform is an OAuth specific transform
-type OAuthTransform struct {
-	Config *Config
-}
+type OAuthTransform struct{}
 
 // Transform converts data collected from an OCP3 cluster to OCP4 CR's
 func (e OAuthExtraction) Transform() (Output, error) {
@@ -65,7 +63,7 @@ func (e OAuthExtraction) Transform() (Output, error) {
 // Extract collects OAuth configuration from an OCP3 cluster
 func (e OAuthTransform) Extract() (Extraction, error) {
 	logrus.Info("OAuthTransform::Extract")
-	content, err := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
+	content, err := Fetch(env.Config().GetString("MasterConfigFile"))
 	if err != nil {
 		return nil, err
 	}
@@ -94,25 +92,25 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 			}
 
 			if provider.File != "" {
-				htContent, err = e.Config.Fetch(provider.File)
+				htContent, err = Fetch(provider.File)
 				if err != nil {
 					return nil, err
 				}
 			}
 			if provider.CA != "" {
-				caContent, err = e.Config.Fetch(provider.CA)
+				caContent, err = Fetch(provider.CA)
 				if err != nil {
 					return nil, err
 				}
 			}
 			if provider.CertFile != "" {
-				crtContent, err = e.Config.Fetch(provider.CertFile)
+				crtContent, err = Fetch(provider.CertFile)
 				if err != nil {
 					return nil, err
 				}
 			}
 			if provider.KeyFile != "" {
-				keyContent, err = e.Config.Fetch(provider.KeyFile)
+				keyContent, err = Fetch(provider.KeyFile)
 				if err != nil {
 					return nil, err
 				}

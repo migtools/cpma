@@ -45,9 +45,7 @@ type RegistrySources struct {
 }
 
 // RegistriesTransform is a registry specific transform
-type RegistriesTransform struct {
-	Config *Config
-}
+type RegistriesTransform struct{}
 
 // Transform contains registry configuration collected from an OCP3 cluster
 func (e RegistriesExtraction) Transform() (Output, error) {
@@ -87,7 +85,7 @@ func (e RegistriesExtraction) Transform() (Output, error) {
 // Extract collects registry information from an OCP3 cluster
 func (e RegistriesTransform) Extract() (Extraction, error) {
 	logrus.Info("RegistriesTransform::Extract")
-	content, err := e.Config.Fetch(env.Config().GetString("RegistriesConfigFile"))
+	content, err := Fetch(env.Config().GetString("RegistriesConfigFile"))
 	if err != nil {
 		return nil, err
 	}
