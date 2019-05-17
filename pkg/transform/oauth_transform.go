@@ -8,7 +8,6 @@ import (
 	"github.com/fusor/cpma/pkg/config/decode"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform/oauth"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
 )
 
@@ -69,8 +68,7 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 		return nil, err
 	}
 
-	var masterConfig *configv1.MasterConfig
-	masterConfig, err = decode.MasterConfig(content)
+	masterConfig, err := decode.MasterConfig(content)
 	if err != nil {
 		return nil, err
 	}
