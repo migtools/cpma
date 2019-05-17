@@ -34,9 +34,8 @@ func (c *Config) Fetch(path string) ([]byte, error) {
 func LoadConfig() Config {
 	logrus.Info("Loaded config")
 
-	config := Config{}
-	config.OutputDir = env.Config().GetString("OutputDir")
-	config.Hostname = env.Config().GetString("Source")
-
-	return config
+	return Config{
+		OutputDir: env.Config().GetString("OutputDir"),
+		Hostname:  env.Config().GetString("Source"),
+	}
 }
