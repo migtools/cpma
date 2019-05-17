@@ -1,10 +1,7 @@
 package transform
 
 import (
-	"path/filepath"
-
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/sirupsen/logrus"
@@ -35,12 +32,6 @@ type Manifest struct {
 	CRD  []byte
 }
 
-// Config contains CPMA configuration information
-type Config struct {
-	OutputDir string
-	Hostname  string
-}
-
 // Runner a generic transform runner
 type Runner struct {
 	Config string
@@ -65,7 +56,7 @@ type Output interface {
 
 //Start generating manifests to be used with Openshift 4
 func Start() {
-	config := LoadConfig()
+	config := config.LoadConfig()
 	runner := NewRunner(config)
 
 	runner.Transform([]Transform{
@@ -79,30 +70,6 @@ func Start() {
 			Config: &config,
 		},
 	})
-}
-
-// LoadConfig collects and stores configuration for CPMA
-func LoadConfig() Config {
-	logrus.Info("Loaded config")
-
-	config := Config{}
-	config.OutputDir = env.Config().GetString("OutputDir")
-	config.Hostname = env.Config().GetString("Source")
-
-	return config
-}
-
-// Fetch files from the OCP3 cluster
-func (config *Config) Fetch(path string) ([]byte, error) {
-	dst := filepath.Join(config.OutputDir, config.Hostname, path)
-	logrus.Infof("Fetching file: %s", dst)
-	f, err := io.GetFile(config.Hostname, path, dst)
-	if err != nil {
-		return nil, err
-	}
-	logrus.Infof("File successfully loaded: %v", dst)
-
-	return f, nil
 }
 
 // Transform is the process run to complete a transform
@@ -139,7 +106,7 @@ func (r Runner) Transform(transforms []Transform) {
 }
 
 // NewRunner creates a new Runner
-func NewRunner(config Config) *Runner {
+func NewRunner(config config.Config) *Runner {
 	return &Runner{}
 }
 

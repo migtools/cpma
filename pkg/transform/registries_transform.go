@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -46,7 +47,7 @@ type RegistrySources struct {
 
 // RegistriesTransform is a registry specific transform
 type RegistriesTransform struct {
-	Config *Config
+	Config *config.Config
 }
 
 // Transform contains registry configuration collected from an OCP3 cluster

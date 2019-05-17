@@ -3,13 +3,13 @@ package transform
 import (
 	"errors"
 
+	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/config/decode"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
-	"k8s.io/client-go/kubernetes/scheme"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
-	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 // SDNExtraction is an SDN specific extraction
@@ -50,7 +50,7 @@ type OpenshiftSDNConfig struct {
 
 // SDNTransform is an SDN specific transform
 type SDNTransform struct {
-	Config *Config
+	Config *config.Config
 }
 
 const (
@@ -110,18 +110,19 @@ func SDNTranslate(masterConfig configv1.MasterConfig) (NetworkCR, error) {
 // Extract collects SDN configuration information from an OCP3 cluster
 func (e SDNTransform) Extract() (Extraction, error) {
 	logrus.Info("SDNTransform::Extract")
+
 	content, err := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
 	if err != nil {
 		return nil, err
 	}
 
-	var extraction SDNExtraction
-
-	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	_, _, err = serializer.Decode(content, nil, &extraction.MasterConfig)
+	masterConfig, err := decode.MasterConfig(content)
 	if err != nil {
 		return nil, err
 	}
+
+	var extraction SDNExtraction
+	extraction.MasterConfig = *masterConfig
 
 	return extraction, nil
 }
