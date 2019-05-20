@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,16 +14,7 @@ import (
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-var _GetFile = io.GetFile
-
-func mockGetFile(a, b, c string) ([]byte, error) {
-	return []byte("This is test file content"), nil
-}
-
 func TestTransformMasterConfig(t *testing.T) {
-	defer func() { io.GetFile = _GetFile }()
-	oauth.GetFile = mockGetFile
-
 	file := "testdata/bulk-test-master-config.yaml"
 
 	content, err := ioutil.ReadFile(file)
@@ -87,9 +77,6 @@ func TestTransformMasterConfig(t *testing.T) {
 }
 
 func TestGenYAML(t *testing.T) {
-	defer func() { oauth.GetFile = _GetFile }()
-	oauth.GetFile = mockGetFile
-
 	file := "testdata/bulk-test-master-config.yaml"
 
 	content, err := ioutil.ReadFile(file)

@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,9 +15,6 @@ import (
 )
 
 func TestTransformMasterConfigHtpasswd(t *testing.T) {
-	defer func() { io.GetFile = _GetFile }()
-	oauth.GetFile = mockGetFile
-
 	file := "testdata/htpasswd-test-master-config.yaml"
 
 	content, err := ioutil.ReadFile(file)
