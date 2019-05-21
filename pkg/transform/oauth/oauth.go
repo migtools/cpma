@@ -1,7 +1,6 @@
 package oauth
 
 import (
-	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -78,12 +77,8 @@ type IdentityProvider struct {
 	UseAsLogin      bool
 }
 
-var (
-	// APIVersion is the apiVersion string
-	APIVersion = "config.openshift.io/v1"
-	// GetFile allows to mock file retrieval
-	GetFile = io.GetFile
-)
+// APIVersion is the apiVersion string
+var APIVersion = "config.openshift.io/v1"
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
 func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, error) {
