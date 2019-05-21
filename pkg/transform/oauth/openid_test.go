@@ -52,7 +52,7 @@ func TestTransformMasterConfigOpenID(t *testing.T) {
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = "openshift-config"
+	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
 	var openidIDP oauth.IdentityProviderOpenID
 	openidIDP.Type = "OpenID"
@@ -82,7 +82,7 @@ func TestTransformMasterConfigOpenID(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
 		})

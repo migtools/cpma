@@ -53,7 +53,7 @@ func TestTransformMasterConfigGitlab(t *testing.T) {
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = "openshift-config"
+	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
 	var gitlabIDP oauth.IdentityProviderGitLab
 	gitlabIDP.Type = "GitLab"
@@ -62,7 +62,7 @@ func TestTransformMasterConfigGitlab(t *testing.T) {
 	gitlabIDP.MappingMethod = "claim"
 	gitlabIDP.Name = "gitlab123456789"
 	gitlabIDP.GitLab.URL = "https://gitlab.com/"
-	gitlabIDP.GitLab.CA.Name = "gitlab.crt"
+	gitlabIDP.GitLab.CA.Name = "gitlab-configmap"
 	gitlabIDP.GitLab.ClientID = "fake-id"
 	gitlabIDP.GitLab.ClientSecret.Name = "gitlab123456789-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, gitlabIDP)
@@ -79,7 +79,7 @@ func TestTransformMasterConfigGitlab(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
 		})

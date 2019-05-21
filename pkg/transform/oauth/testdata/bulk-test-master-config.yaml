@@ -38,6 +38,7 @@ oauthConfig:
     provider:
       apiVersion: v1
       kind: GitLabIdentityProvider
+      ca: gitlab.crt
       legacy: true
       url: https://gitlab.com/
       clientID: fake-id

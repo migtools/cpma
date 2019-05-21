@@ -59,7 +59,7 @@ func TestTransformMasterConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, len(resCrd.Spec.IdentityProviders), 9)
 			assert.Equal(t, resCrd.Spec.IdentityProviders[0].(oauth.IdentityProviderBasicAuth).Type, "BasicAuth")
@@ -127,13 +127,14 @@ func TestGenYAML(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			crd, manifests, err := oauth.Translate(identityProviders)
+			crd, secrets, configMaps, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 
 			CRD, err := crd.GenYAML()
 			require.NoError(t, err)
 
-			assert.Equal(t, 9, len(manifests))
+			assert.Equal(t, 9, len(secrets))
+			assert.Equal(t, 6, len(configMaps))
 			assert.Equal(t, expectedYaml, CRD)
 		})
 	}

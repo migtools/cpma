@@ -53,7 +53,7 @@ func TestTransformMasterConfigKeystone(t *testing.T) {
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = "openshift-config"
+	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
 	var keystoneIDP oauth.IdentityProviderKeystone
 	keystoneIDP.Type = "Keystone"
@@ -63,7 +63,7 @@ func TestTransformMasterConfigKeystone(t *testing.T) {
 	keystoneIDP.MappingMethod = "claim"
 	keystoneIDP.Keystone.DomainName = "default"
 	keystoneIDP.Keystone.URL = "http://fake.url:5000"
-	keystoneIDP.Keystone.CA.Name = "keystone.pem"
+	keystoneIDP.Keystone.CA.Name = "keystone-configmap"
 	keystoneIDP.Keystone.TLSClientCert.Name = "my_keystone_provider-client-cert-secret"
 	keystoneIDP.Keystone.TLSClientKey.Name = "my_keystone_provider-client-key-secret"
 
@@ -81,7 +81,7 @@ func TestTransformMasterConfigKeystone(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
 		})

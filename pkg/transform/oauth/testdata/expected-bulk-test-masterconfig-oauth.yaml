@@ -13,7 +13,7 @@ spec:
     basicAuth:
       url: https://www.example.com/
       ca:
-        name: ""
+        name: basicauth-configmap
       tlsClientCert:
         name: my_remote_basic_auth_provider-client-cert-secret
       tlsClientKey:
@@ -26,7 +26,7 @@ spec:
     github:
       hostname: test.example.com
       ca:
-        name: github.crt
+        name: github-configmap
       clientID: 2d85ea3f45d6777bffd7
       clientSecret:
         name: github123456789-secret
@@ -44,7 +44,7 @@ spec:
     gitlab:
       url: https://gitlab.com/
       ca:
-        name: ""
+        name: gitlab-configmap
       clientID: fake-id
       clientSecret:
         name: gitlab123456789-secret
@@ -75,7 +75,7 @@ spec:
       domainName: default
       url: http://fake.url:5000
       ca:
-        name: keystone.pem
+        name: keystone-configmap
       tlsClientCert:
         name: my_keystone_provider-client-cert-secret
       tlsClientKey:
@@ -98,7 +98,7 @@ spec:
       bindDN: "123"
       bindPassword: ""
       ca:
-        name: my-ldap-ca-bundle.crt
+        name: ldap-configmap
       insecure: false
       url: ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid
   - name: my_request_header_provider
@@ -110,7 +110,7 @@ spec:
       challengeURL: https://example.com
       loginURL: https://example.com
       ca:
-        name: cert.crt
+        name: requestheader-configmap
       сlientCommonNames:
       - my-auth-proxy
       headers:

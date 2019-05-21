@@ -3,6 +3,7 @@ package oauth
 import (
 	"encoding/base64"
 
+	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -25,17 +26,18 @@ type Keystone struct {
 	TLSClientKey  TLSClientKey  `yaml:"tlsClientKey"`
 }
 
-func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret, error) {
+func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
-		idP        IdentityProviderKeystone
-		keystone   configv1.KeystonePasswordIdentityProvider
-		certSecret = new(secrets.Secret)
-		keySecret  = new(secrets.Secret)
-		err        error
+		idP         IdentityProviderKeystone
+		certSecret  = new(secrets.Secret)
+		keySecret   = new(secrets.Secret)
+		caConfigmap *configmaps.ConfigMap
+		err         error
+		keystone    configv1.KeystonePasswordIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &keystone)
 	if err != nil {
-		return idP, *certSecret, *keySecret, err
+		return idP, *certSecret, *keySecret, nil, err
 	}
 
 	idP.Type = "Keystone"
@@ -45,7 +47,11 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 	idP.MappingMethod = p.MappingMethod
 	idP.Keystone.DomainName = keystone.DomainName
 	idP.Keystone.URL = keystone.URL
-	idP.Keystone.CA.Name = keystone.CA
+
+	if keystone.CA != "" {
+		caConfigmap = configmaps.GenConfigMap("keystone-configmap", OAuthNamespace, p.CAData)
+		idP.Keystone.CA.Name = caConfigmap.Metadata.Name
+	}
 
 	if keystone.UseKeystoneIdentity {
 		logrus.Warn("Keystone useKeystoneIdentity value is not supported in OCP4")
@@ -55,19 +61,19 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 		certSecretName := p.Name + "-client-cert-secret"
 		idP.Keystone.TLSClientCert.Name = certSecretName
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-		certSecret, err = secrets.GenSecret(certSecretName, encoded, "openshift-config", "keystone")
+		certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, "keystone")
 		if err != nil {
-			return idP, *certSecret, *keySecret, nil
+			return idP, *certSecret, *keySecret, nil, nil
 		}
 
 		keySecretName := p.Name + "-client-key-secret"
 		idP.Keystone.TLSClientKey.Name = keySecretName
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
-		keySecret, err = secrets.GenSecret(keySecretName, encoded, "openshift-config", "keystone")
+		keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, "keystone")
 		if err != nil {
-			return idP, *certSecret, *keySecret, nil
+			return idP, *certSecret, *keySecret, nil, nil
 		}
 	}
 
-	return idP, *certSecret, *keySecret, nil
+	return idP, *certSecret, *keySecret, caConfigmap, nil
 }

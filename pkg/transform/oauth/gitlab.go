@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
@@ -21,16 +22,17 @@ type GitLab struct {
 	ClientSecret ClientSecret `yaml:"clientSecret"`
 }
 
-func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitLab, secrets.Secret, error) {
+func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitLab, secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
-		err    error
-		idP    IdentityProviderGitLab
-		gitlab configv1.GitLabIdentityProvider
-		secret *secrets.Secret
+		err         error
+		idP         IdentityProviderGitLab
+		secret      *secrets.Secret
+		caConfigmap *configmaps.ConfigMap
+		gitlab      configv1.GitLabIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &gitlab)
 	if err != nil {
-		return idP, *secret, err
+		return idP, *secret, nil, err
 	}
 
 	idP.Type = "GitLab"
@@ -42,12 +44,17 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 	idP.GitLab.CA.Name = gitlab.CA
 	idP.GitLab.ClientID = gitlab.ClientID
 
-	secretName := p.Name + "-secret"
-	idP.GitLab.ClientSecret.Name = secretName
-	secret, err = secrets.GenSecret(secretName, gitlab.ClientSecret.Value, "openshift-config", "literal")
-	if err != nil {
-		return idP, *secret, err
+	if gitlab.CA != "" {
+		caConfigmap = configmaps.GenConfigMap("gitlab-configmap", OAuthNamespace, p.CAData)
+		idP.GitLab.CA.Name = caConfigmap.Metadata.Name
 	}
 
-	return idP, *secret, nil
+	secretName := p.Name + "-secret"
+	idP.GitLab.ClientSecret.Name = secretName
+	secret, err = secrets.GenSecret(secretName, gitlab.ClientSecret.Value, OAuthNamespace, "literal")
+	if err != nil {
+		return idP, *secret, nil, err
+	}
+
+	return idP, *secret, caConfigmap, nil
 }

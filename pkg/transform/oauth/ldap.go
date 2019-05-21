@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -30,15 +31,16 @@ type LDAPAttributes struct {
 	PreferredUsername []string `yaml:"preferredUsername"`
 }
 
-func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderLDAP, error) {
+func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderLDAP, *configmaps.ConfigMap, error) {
 	var (
-		err  error
-		idP  IdentityProviderLDAP
-		ldap configv1.LDAPPasswordIdentityProvider
+		err         error
+		idP         IdentityProviderLDAP
+		caConfigmap *configmaps.ConfigMap
+		ldap        configv1.LDAPPasswordIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &ldap)
 	if err != nil {
-		return idP, err
+		return idP, nil, err
 	}
 
 	idP.Type = "LDAP"
@@ -51,9 +53,14 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (IdentityProvi
 	idP.LDAP.Attributes.Name = ldap.Attributes.Name
 	idP.LDAP.Attributes.PreferredUsername = ldap.Attributes.PreferredUsername
 	idP.LDAP.BindDN = ldap.BindDN
-	idP.LDAP.CA.Name = ldap.CA
+
+	if ldap.CA != "" {
+		caConfigmap = configmaps.GenConfigMap("ldap-configmap", OAuthNamespace, p.CAData)
+		idP.LDAP.CA.Name = caConfigmap.Metadata.Name
+	}
+
 	idP.LDAP.Insecure = ldap.Insecure
 	idP.LDAP.URL = ldap.URL
 
-	return idP, nil
+	return idP, caConfigmap, nil
 }

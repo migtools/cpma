@@ -24,8 +24,8 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 	var (
 		err    error
 		idP    IdentityProviderGoogle
-		google configv1.GoogleIdentityProvider
 		secret *secrets.Secret
+		google configv1.GoogleIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &google)
 	if err != nil {
@@ -42,7 +42,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 
 	secretName := p.Name + "-secret"
 	idP.Google.ClientSecret.Name = secretName
-	secret, err = secrets.GenSecret(secretName, google.ClientSecret.Value, "openshift-config", "literal")
+	secret, err = secrets.GenSecret(secretName, google.ClientSecret.Value, OAuthNamespace, "literal")
 	if err != nil {
 		return idP, *secret, err
 	}
