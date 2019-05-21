@@ -17,7 +17,7 @@ type IdentityProviderGoogle struct {
 type Google struct {
 	ClientID     string       `yaml:"clientID"`
 	ClientSecret ClientSecret `yaml:"clientSecret"`
-	HostedDomain string       `yaml:"hostedDomain"`
+	HostedDomain string       `yaml:"hostedDomain,omitempty"`
 }
 
 func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGoogle, secrets.Secret, error) {

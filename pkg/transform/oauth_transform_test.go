@@ -72,9 +72,9 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	basicAuthIDP.Name = "my_remote_basic_auth_provider"
 	basicAuthIDP.MappingMethod = "claim"
 	basicAuthIDP.BasicAuth.URL = "https://www.example.com/"
-	basicAuthIDP.BasicAuth.TLSClientCert.Name = "my_remote_basic_auth_provider-client-cert-secret"
-	basicAuthIDP.BasicAuth.TLSClientKey.Name = "my_remote_basic_auth_provider-client-key-secret"
-	basicAuthIDP.BasicAuth.CA.Name = "basicauth-configmap"
+	basicAuthIDP.BasicAuth.TLSClientCert = &oauth.TLSClientCert{Name: "my_remote_basic_auth_provider-client-cert-secret"}
+	basicAuthIDP.BasicAuth.TLSClientKey = &oauth.TLSClientKey{Name: "my_remote_basic_auth_provider-client-key-secret"}
+	basicAuthIDP.BasicAuth.CA = &oauth.CA{Name: "basicauth-configmap"}
 
 	var basicAuthCrtSecretCrd secrets.Secret
 	basicAuthCrtSecretCrd.APIVersion = "v1"
@@ -106,7 +106,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	githubIDP.MappingMethod = "claim"
 	githubIDP.Name = "github123456789"
 	githubIDP.GitHub.HostName = "test.example.com"
-	githubIDP.GitHub.CA.Name = "github-configmap"
+	githubIDP.GitHub.CA = &oauth.CA{Name: "github-configmap"}
 	githubIDP.GitHub.ClientID = "2d85ea3f45d6777bffd7"
 	githubIDP.GitHub.Organizations = []string{"myorganization1", "myorganization2"}
 	githubIDP.GitHub.Teams = []string{"myorganization1/team-a", "myorganization2/team-b"}
@@ -134,7 +134,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	gitlabIDP.Login = true
 	gitlabIDP.MappingMethod = "claim"
 	gitlabIDP.GitLab.URL = "https://gitlab.com/"
-	gitlabIDP.GitLab.CA.Name = "gitlab-configmap"
+	gitlabIDP.GitLab.CA = &oauth.CA{Name: "gitlab-configmap"}
 	gitlabIDP.GitLab.ClientID = "fake-id"
 	gitlabIDP.GitLab.ClientSecret.Name = "gitlab123456789-secret"
 
@@ -179,9 +179,9 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	keystoneIDP.MappingMethod = "claim"
 	keystoneIDP.Keystone.DomainName = "default"
 	keystoneIDP.Keystone.URL = "http://fake.url:5000"
-	keystoneIDP.Keystone.CA.Name = "keystone-configmap"
-	keystoneIDP.Keystone.TLSClientCert.Name = "my_keystone_provider-client-cert-secret"
-	keystoneIDP.Keystone.TLSClientKey.Name = "my_keystone_provider-client-key-secret"
+	keystoneIDP.Keystone.CA = &oauth.CA{Name: "keystone-configmap"}
+	keystoneIDP.Keystone.TLSClientCert = &oauth.TLSClientCert{Name: "my_keystone_provider-client-cert-secret"}
+	keystoneIDP.Keystone.TLSClientKey = &oauth.TLSClientKey{Name: "my_keystone_provider-client-key-secret"}
 
 	var keystoneConfigMap configmaps.ConfigMap
 	keystoneConfigMap.APIVersion = "v1"
@@ -233,7 +233,8 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	ldapIDP.LDAP.Attributes.Name = []string{"cn"}
 	ldapIDP.LDAP.Attributes.PreferredUsername = []string{"uid"}
 	ldapIDP.LDAP.BindDN = "123"
-	ldapIDP.LDAP.CA.Name = "ldap-configmap"
+	ldapIDP.LDAP.BindPassword = "321"
+	ldapIDP.LDAP.CA = &oauth.CA{Name: "ldap-configmap"}
 	ldapIDP.LDAP.Insecure = false
 	ldapIDP.LDAP.URL = "ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid"
 
@@ -252,7 +253,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	requestHeaderIDP.MappingMethod = "claim"
 	requestHeaderIDP.RequestHeader.ChallengeURL = "https://example.com"
 	requestHeaderIDP.RequestHeader.LoginURL = "https://example.com"
-	requestHeaderIDP.RequestHeader.CA.Name = "requestheader-configmap"
+	requestHeaderIDP.RequestHeader.CA = &oauth.CA{Name: "requestheader-configmap"}
 	requestHeaderIDP.RequestHeader.ClientCommonNames = []string{"my-auth-proxy"}
 	requestHeaderIDP.RequestHeader.Headers = []string{"X-Remote-User", "SSO-User"}
 	requestHeaderIDP.RequestHeader.EmailHeaders = []string{"X-Remote-User-Email"}

@@ -65,7 +65,8 @@ func TestTransformMasterConfigLDAP(t *testing.T) {
 	ldapIDP.LDAP.Attributes.Name = []string{"cn"}
 	ldapIDP.LDAP.Attributes.PreferredUsername = []string{"uid"}
 	ldapIDP.LDAP.BindDN = "123"
-	ldapIDP.LDAP.CA.Name = "ldap-configmap"
+	ldapIDP.LDAP.BindPassword = "321"
+	ldapIDP.LDAP.CA = &oauth.CA{Name: "ldap-configmap"}
 	ldapIDP.LDAP.Insecure = false
 	ldapIDP.LDAP.URL = "ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid"
 

@@ -17,20 +17,22 @@ type IdentityProviderBasicAuth struct {
 }
 
 // BasicAuth provider specific data
+// BasicAuth provider specific data
 type BasicAuth struct {
-	URL           string        `yaml:"url"`
-	CA            CA            `yaml:"ca"`
-	TLSClientCert TLSClientCert `yaml:"tlsClientCert"`
-	TLSClientKey  TLSClientKey  `yaml:"tlsClientKey"`
+	URL           string         `yaml:"url"`
+	CA            *CA            `yaml:"ca,omitempty"`
+	TLSClientCert *TLSClientCert `yaml:"tlsClientCert,omitempty"`
+	TLSClientKey  *TLSClientKey  `yaml:"tlsClientKey,omitempty"`
 }
 
 func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderBasicAuth, secrets.Secret, secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
-		err                   error
-		idP                   IdentityProviderBasicAuth
-		certSecret, keySecret *secrets.Secret
-		caConfigmap           *configmaps.ConfigMap
-		basicAuth             configv1.BasicAuthPasswordIdentityProvider
+		err         error
+		idP         IdentityProviderBasicAuth
+		certSecret  = &secrets.Secret{}
+		keySecret   = &secrets.Secret{}
+		caConfigmap *configmaps.ConfigMap
+		basicAuth   configv1.BasicAuthPasswordIdentityProvider
 	)
 
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &basicAuth)
@@ -46,25 +48,28 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (Identity
 	idP.BasicAuth.URL = basicAuth.URL
 
 	if basicAuth.CA != "" {
-		caConfigmap = configmaps.GenConfigMap("basicauth-configmap", OAuthNamespace, p.CAData)
-		idP.BasicAuth.CA.Name = caConfigmap.Metadata.Name
+		caConfigmap = configmaps.GenConfigMap("basicauth-configmap", "openshift-config", p.CAData)
+		idP.BasicAuth.CA = &CA{Name: caConfigmap.Metadata.Name}
 	}
 
-	certSecretName := p.Name + "-client-cert-secret"
-	idP.BasicAuth.TLSClientCert.Name = certSecretName
-	encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-	certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, "basicauth")
-	if err != nil {
-		return idP, *certSecret, *keySecret, nil, err
-	}
+	if basicAuth.CertFile != "" {
+		certSecretName := p.Name + "-client-cert-secret"
+		idP.BasicAuth.TLSClientCert = &TLSClientCert{Name: certSecretName}
 
-	keySecretName := p.Name + "-client-key-secret"
-	idP.BasicAuth.TLSClientKey.Name = keySecretName
+		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
+		certSecret, err = secrets.GenSecret(certSecretName, encoded, "openshift-config", "basicauth")
+		if err != nil {
+			return idP, *certSecret, *keySecret, nil, err
+		}
 
-	encoded = base64.StdEncoding.EncodeToString(p.KeyData)
-	keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, "basicauth")
-	if err != nil {
-		return idP, *certSecret, *keySecret, nil, err
+		keySecretName := p.Name + "-client-key-secret"
+		idP.BasicAuth.TLSClientKey = &TLSClientKey{Name: keySecretName}
+
+		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
+		keySecret, err = secrets.GenSecret(keySecretName, encoded, "openshift-config", "basicauth")
+		if err != nil {
+			return idP, *certSecret, *keySecret, nil, err
+		}
 	}
 
 	return idP, *certSecret, *keySecret, caConfigmap, nil

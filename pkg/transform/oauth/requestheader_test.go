@@ -63,7 +63,7 @@ func TestTransformMasterConfigRequestHeader(t *testing.T) {
 	requestHeaderIDP.MappingMethod = "claim"
 	requestHeaderIDP.RequestHeader.ChallengeURL = "https://example.com"
 	requestHeaderIDP.RequestHeader.LoginURL = "https://example.com"
-	requestHeaderIDP.RequestHeader.CA.Name = "requestheader-configmap"
+	requestHeaderIDP.RequestHeader.CA = &oauth.CA{Name: "requestheader-configmap"}
 	requestHeaderIDP.RequestHeader.ClientCommonNames = []string{"my-auth-proxy"}
 	requestHeaderIDP.RequestHeader.Headers = []string{"X-Remote-User", "SSO-User"}
 	requestHeaderIDP.RequestHeader.EmailHeaders = []string{"X-Remote-User-Email"}

@@ -15,10 +15,10 @@ type IdentityProviderRequestHeader struct {
 
 // RequestHeader provider specific data
 type RequestHeader struct {
-	ChallengeURL             string   `yaml:"challengeURL"`
-	LoginURL                 string   `yaml:"loginURL"`
-	CA                       CA       `yaml:"ca"`
-	ClientCommonNames        []string `yaml:"сlientCommonNames"`
+	ChallengeURL             string   `yaml:"challengeURL,omitempty"`
+	LoginURL                 string   `yaml:"loginURL,omitempty"`
+	CA                       *CA      `yaml:"ca,omitempty"`
+	ClientCommonNames        []string `yaml:"сlientCommonNames,omitempty"`
 	Headers                  []string `yaml:"headers"`
 	EmailHeaders             []string `yaml:"emailHeaders"`
 	NameHeaders              []string `yaml:"nameHeaders"`
@@ -47,7 +47,7 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (Iden
 
 	if requestHeader.ClientCA != "" {
 		caConfigmap = configmaps.GenConfigMap("requestheader-configmap", OAuthNamespace, p.CAData)
-		idP.RequestHeader.CA.Name = caConfigmap.Metadata.Name
+		idP.RequestHeader.CA = &CA{Name: caConfigmap.Metadata.Name}
 	}
 
 	idP.RequestHeader.ClientCommonNames = requestHeader.ClientCommonNames

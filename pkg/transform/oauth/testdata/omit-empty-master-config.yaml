@@ -1,0 +1,137 @@
+oauthConfig:
+  assetPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com/console/
+  grantConfig:
+    method: auto
+  identityProviders:
+  - name: my_remote_basic_auth_provider 
+    challenge: true 
+    login: true 
+    mappingMethod: claim 
+    provider:
+      apiVersion: v1
+      kind: BasicAuthPasswordIdentityProvider
+      url: https://www.example.com/
+  - name: github123456789
+    challenge: false
+    login: true
+    mappingMethod: claim
+    provider:
+      apiVersion: v1
+      kind: GitHubIdentityProvider
+      clientID: 2d85ea3f45d6777bffd7
+      clientSecret: e16a59ad33d7c29fd4354f46059f0950c609a7ea
+  - name: gitlab123456789
+    challenge: true
+    login: true
+    mappingMethod: claim
+    provider:
+      apiVersion: v1
+      kind: GitLabIdentityProvider
+      legacy: true
+      url: https://gitlab.com/
+      clientID: fake-id
+      clientSecret: fake-secret
+  - name: google123456789123456789
+    challenge: false
+    login: true
+    mappingMethod: claim
+    provider:
+      apiVersion: v1
+      kind: GoogleIdentityProvider
+      clientID: 82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com
+      clientSecret: e16a59ad33d7c29fd4354f46059f0950c609a7ea
+  - name: htpasswd_auth
+    login: true
+    mappingMethod: claim
+    challenge: true
+    provider:
+      apiVersion: v1
+      file: /etc/origin/master/htpasswd
+      kind: HTPasswdPasswordIdentityProvider
+  - name: my_keystone_provider 
+    challenge: true 
+    login: true 
+    mappingMethod: claim 
+    provider:
+      apiVersion: v1
+      kind: KeystonePasswordIdentityProvider
+      domainName: default 
+      url: http://fake.url:5000
+      useKeystoneIdentity: false  
+  - name: "my_ldap_provider" 
+    challenge: true 
+    login: true 
+    mappingMethod: claim 
+    provider:
+      apiVersion: v1
+      kind: LDAPPasswordIdentityProvider
+      attributes:
+        id: 
+        - dn
+        email: 
+        - mail
+        name: 
+        - cn
+        preferredUsername: 
+        - uid
+      insecure: false 
+      url: "ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid"
+  - name: my_request_header_provider
+    challenge: true
+    login: true
+    mappingMethod: claim
+    provider:
+      apiVersion: v1
+      kind: RequestHeaderIdentityProvider
+      headers:
+      - X-Remote-User
+      - SSO-User
+      emailHeaders:
+      - X-Remote-User-Email
+      nameHeaders:
+      - X-Remote-User-Display-Name
+      preferredUsernameHeaders:
+      - X-Remote-User-Login
+  - name: my_openid_connect
+    challenge: false
+    login: true
+    mappingMethod: claim
+    provider:
+      apiVersion: v1
+      kind: OpenIDIdentityProvider
+      clientID: testid
+      clientSecret: testsecret
+      ca: my-openid-ca-bundle.crt 
+      extraScopes: 
+      - email
+      - profile
+      extraAuthorizeParameters: 
+        include_granted_scopes: "true"
+      claims:
+        id: 
+        - custom_id_claim
+        - sub
+        preferredUsername: 
+        - preferred_username
+        - email
+        name: 
+        - nickname
+        - given_name
+        - name
+        email: 
+        - custom_email_claim
+        - email
+      urls:
+        authorize: https://myidp.example.com/oauth2/authorize
+        token: https://myidp.example.com/oauth2/token
+        userInfo: https://myidp.example.com/oauth2/userinfo
+  masterCA: ca-bundle.crt
+  masterPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com:443
+  masterURL: https://openshift.internal.gildub2.lab.pnq2.cee.redhat.com:443
+  sessionConfig:
+    sessionMaxAgeSeconds: 3600
+    sessionName: ssn
+    sessionSecretsFile: /etc/origin/master/session-secrets.yaml
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 86400
+    authorizeTokenMaxAgeSeconds: 500

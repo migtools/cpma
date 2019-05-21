@@ -19,11 +19,11 @@ type IdentityProviderKeystone struct {
 
 // Keystone specific Provider data
 type Keystone struct {
-	DomainName    string        `yaml:"domainName"`
-	URL           string        `yaml:"url"`
-	CA            CA            `yaml:"ca"`
-	TLSClientCert TLSClientCert `yaml:"tlsClientCert"`
-	TLSClientKey  TLSClientKey  `yaml:"tlsClientKey"`
+	DomainName    string         `yaml:"domainName"`
+	URL           string         `yaml:"url"`
+	CA            *CA            `yaml:"ca,omitempty"`
+	TLSClientCert *TLSClientCert `yaml:"tlsClientCert,omitempty"`
+	TLSClientKey  *TLSClientKey  `yaml:"tlsClientKey,omitempty"`
 }
 
 func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret, *configmaps.ConfigMap, error) {
@@ -50,7 +50,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 
 	if keystone.CA != "" {
 		caConfigmap = configmaps.GenConfigMap("keystone-configmap", OAuthNamespace, p.CAData)
-		idP.Keystone.CA.Name = caConfigmap.Metadata.Name
+		idP.Keystone.CA = &CA{Name: caConfigmap.Metadata.Name}
 	}
 
 	if keystone.UseKeystoneIdentity {
@@ -59,7 +59,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 
 	if keystone.CertFile != "" {
 		certSecretName := p.Name + "-client-cert-secret"
-		idP.Keystone.TLSClientCert.Name = certSecretName
+		idP.Keystone.TLSClientCert = &TLSClientCert{Name: certSecretName}
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
 		certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, "keystone")
 		if err != nil {
@@ -67,7 +67,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 		}
 
 		keySecretName := p.Name + "-client-key-secret"
-		idP.Keystone.TLSClientKey.Name = keySecretName
+		idP.Keystone.TLSClientKey = &TLSClientKey{Name: keySecretName}
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
 		keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, "keystone")
 		if err != nil {
