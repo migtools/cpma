@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -77,36 +78,43 @@ type IdentityProvider struct {
 	UseAsLogin      bool
 }
 
-// APIVersion is the apiVersion string
-var APIVersion = "config.openshift.io/v1"
+const (
+	// APIVersion is the apiVersion string
+	APIVersion = "config.openshift.io/v1"
+	// OAuthNamespace is namespace for oauth manifests
+	OAuthNamespace = "openshift-config"
+)
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, error) {
+func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, []*configmaps.ConfigMap, error) {
 	var err error
 	var idP interface{}
 	var secretsSlice []secrets.Secret
+	var сonfigMapSlice []*configmaps.ConfigMap
 	var secret, certSecret, keySecret secrets.Secret
 
 	var oauthCrd CRD
 	oauthCrd.APIVersion = APIVersion
 	oauthCrd.Kind = "OAuth"
 	oauthCrd.Metadata.Name = "cluster"
-	oauthCrd.Metadata.NameSpace = "openshift-config"
+	oauthCrd.Metadata.NameSpace = OAuthNamespace
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	for _, p := range identityProviders {
+		var caConfigMap *configmaps.ConfigMap
+
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 
 		kind := p.Kind
 
 		switch kind {
 		case "GitHubIdentityProvider":
-			idP, secret, err = buildGitHubIP(serializer, p)
+			idP, secret, caConfigMap, err = buildGitHubIP(serializer, p)
 			secretsSlice = append(secretsSlice, secret)
 		case "GitLabIdentityProvider":
-			idP, secret, err = buildGitLabIP(serializer, p)
+			idP, secret, caConfigMap, err = buildGitLabIP(serializer, p)
 			secretsSlice = append(secretsSlice, secret)
 		case "GoogleIdentityProvider":
 			idP, secret, err = buildGoogleIP(serializer, p)
@@ -118,17 +126,17 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, er
 			idP, secret, err = buildOpenIDIP(serializer, p)
 			secretsSlice = append(secretsSlice, secret)
 		case "RequestHeaderIdentityProvider":
-			idP, err = buildRequestHeaderIP(serializer, p)
+			idP, caConfigMap, err = buildRequestHeaderIP(serializer, p)
 		case "LDAPPasswordIdentityProvider":
-			idP, err = buildLdapIP(serializer, p)
+			idP, caConfigMap, err = buildLdapIP(serializer, p)
 		case "KeystonePasswordIdentityProvider":
-			idP, certSecret, keySecret, err = buildKeystoneIP(serializer, p)
+			idP, certSecret, keySecret, caConfigMap, err = buildKeystoneIP(serializer, p)
 			if certSecret != (secrets.Secret{}) {
 				secretsSlice = append(secretsSlice, certSecret)
 				secretsSlice = append(secretsSlice, keySecret)
 			}
 		case "BasicAuthPasswordIdentityProvider":
-			idP, certSecret, keySecret, err = buildBasicAuthIP(serializer, p)
+			idP, certSecret, keySecret, caConfigMap, err = buildBasicAuthIP(serializer, p)
 			if certSecret != (secrets.Secret{}) {
 				secretsSlice = append(secretsSlice, certSecret)
 				secretsSlice = append(secretsSlice, keySecret)
@@ -144,10 +152,15 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, er
 			continue
 		}
 
+		// Check if config map is not empty
+		if caConfigMap != nil {
+			сonfigMapSlice = append(сonfigMapSlice, caConfigMap)
+		}
+
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 	}
 
-	return &oauthCrd, secretsSlice, nil
+	return &oauthCrd, secretsSlice, сonfigMapSlice, nil
 }
 
 // GenYAML returns a YAML of the CRD

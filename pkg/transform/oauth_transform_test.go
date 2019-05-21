@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/transform/configmaps"
+
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/stretchr/testify/assert"
@@ -61,7 +63,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = "openshift-config"
+	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
 	var basicAuthIDP oauth.IdentityProviderBasicAuth
 	basicAuthIDP.Type = "BasicAuth"
@@ -72,12 +74,13 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	basicAuthIDP.BasicAuth.URL = "https://www.example.com/"
 	basicAuthIDP.BasicAuth.TLSClientCert.Name = "my_remote_basic_auth_provider-client-cert-secret"
 	basicAuthIDP.BasicAuth.TLSClientKey.Name = "my_remote_basic_auth_provider-client-key-secret"
+	basicAuthIDP.BasicAuth.CA.Name = "basicauth-configmap"
 
 	var basicAuthCrtSecretCrd secrets.Secret
 	basicAuthCrtSecretCrd.APIVersion = "v1"
 	basicAuthCrtSecretCrd.Kind = "Secret"
 	basicAuthCrtSecretCrd.Type = "Opaque"
-	basicAuthCrtSecretCrd.Metadata.Namespace = "openshift-config"
+	basicAuthCrtSecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	basicAuthCrtSecretCrd.Metadata.Name = "my_remote_basic_auth_provider-client-cert-secret"
 	basicAuthCrtSecretCrd.Data = secrets.BasicAuthFileSecret{BasicAuth: base64.StdEncoding.EncodeToString([]byte(""))}
 
@@ -85,9 +88,16 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	basicAuthKeySecretCrd.APIVersion = "v1"
 	basicAuthKeySecretCrd.Kind = "Secret"
 	basicAuthKeySecretCrd.Type = "Opaque"
-	basicAuthKeySecretCrd.Metadata.Namespace = "openshift-config"
+	basicAuthKeySecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	basicAuthKeySecretCrd.Metadata.Name = "my_remote_basic_auth_provider-client-key-secret"
 	basicAuthKeySecretCrd.Data = secrets.BasicAuthFileSecret{BasicAuth: base64.StdEncoding.EncodeToString([]byte(""))}
+
+	var basicAuthConfigMap configmaps.ConfigMap
+	basicAuthConfigMap.APIVersion = "v1"
+	basicAuthConfigMap.Kind = "ConfigMap"
+	basicAuthConfigMap.Metadata.Name = "basicauth-configmap"
+	basicAuthConfigMap.Metadata.Namespace = oauth.OAuthNamespace
+	basicAuthConfigMap.Data.CAData = ""
 
 	var githubIDP oauth.IdentityProviderGitHub
 	githubIDP.Type = "GitHub"
@@ -96,7 +106,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	githubIDP.MappingMethod = "claim"
 	githubIDP.Name = "github123456789"
 	githubIDP.GitHub.HostName = "test.example.com"
-	githubIDP.GitHub.CA.Name = "github.crt"
+	githubIDP.GitHub.CA.Name = "github-configmap"
 	githubIDP.GitHub.ClientID = "2d85ea3f45d6777bffd7"
 	githubIDP.GitHub.Organizations = []string{"myorganization1", "myorganization2"}
 	githubIDP.GitHub.Teams = []string{"myorganization1/team-a", "myorganization2/team-b"}
@@ -106,9 +116,16 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	githubSecretCrd.APIVersion = "v1"
 	githubSecretCrd.Kind = "Secret"
 	githubSecretCrd.Type = "Opaque"
-	githubSecretCrd.Metadata.Namespace = "openshift-config"
+	githubSecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	githubSecretCrd.Metadata.Name = "github123456789-secret"
 	githubSecretCrd.Data = secrets.LiteralSecret{ClientSecret: base64.StdEncoding.EncodeToString([]byte("e16a59ad33d7c29fd4354f46059f0950c609a7ea"))}
+
+	var githubConfigMap configmaps.ConfigMap
+	githubConfigMap.APIVersion = "v1"
+	githubConfigMap.Kind = "ConfigMap"
+	githubConfigMap.Metadata.Name = "github-configmap"
+	githubConfigMap.Metadata.Namespace = oauth.OAuthNamespace
+	githubConfigMap.Data.CAData = ""
 
 	var gitlabIDP oauth.IdentityProviderGitLab
 	gitlabIDP.Name = "gitlab123456789"
@@ -117,7 +134,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	gitlabIDP.Login = true
 	gitlabIDP.MappingMethod = "claim"
 	gitlabIDP.GitLab.URL = "https://gitlab.com/"
-	//gitlabIDP.GitLab.CA.Name = "gitlab.crt"
+	gitlabIDP.GitLab.CA.Name = "gitlab-configmap"
 	gitlabIDP.GitLab.ClientID = "fake-id"
 	gitlabIDP.GitLab.ClientSecret.Name = "gitlab123456789-secret"
 
@@ -125,9 +142,16 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	gitlabSecretCrd.APIVersion = "v1"
 	gitlabSecretCrd.Kind = "Secret"
 	gitlabSecretCrd.Type = "Opaque"
-	gitlabSecretCrd.Metadata.Namespace = "openshift-config"
+	gitlabSecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	gitlabSecretCrd.Metadata.Name = "gitlab123456789-secret"
 	gitlabSecretCrd.Data = secrets.LiteralSecret{ClientSecret: "fake-secret"}
+
+	var gitlabConfigMap configmaps.ConfigMap
+	gitlabConfigMap.APIVersion = "v1"
+	gitlabConfigMap.Kind = "ConfigMap"
+	gitlabConfigMap.Metadata.Name = "gitlab-configmap"
+	gitlabConfigMap.Metadata.Namespace = oauth.OAuthNamespace
+	gitlabConfigMap.Data.CAData = ""
 
 	var googleIDP oauth.IdentityProviderGoogle
 	googleIDP.Type = "Google"
@@ -143,7 +167,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	googleSecretCrd.APIVersion = "v1"
 	googleSecretCrd.Kind = "Secret"
 	googleSecretCrd.Type = "Opaque"
-	googleSecretCrd.Metadata.Namespace = "openshift-config"
+	googleSecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	googleSecretCrd.Metadata.Name = "google123456789123456789-secret"
 	googleSecretCrd.Data = secrets.LiteralSecret{ClientSecret: "e16a59ad33d7c29fd4354f46059f0950c609a7ea"}
 
@@ -155,9 +179,16 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	keystoneIDP.MappingMethod = "claim"
 	keystoneIDP.Keystone.DomainName = "default"
 	keystoneIDP.Keystone.URL = "http://fake.url:5000"
-	keystoneIDP.Keystone.CA.Name = "keystone.pem"
+	keystoneIDP.Keystone.CA.Name = "keystone-configmap"
 	keystoneIDP.Keystone.TLSClientCert.Name = "my_keystone_provider-client-cert-secret"
 	keystoneIDP.Keystone.TLSClientKey.Name = "my_keystone_provider-client-key-secret"
+
+	var keystoneConfigMap configmaps.ConfigMap
+	keystoneConfigMap.APIVersion = "v1"
+	keystoneConfigMap.Kind = "ConfigMap"
+	keystoneConfigMap.Metadata.Name = "keystone-configmap"
+	keystoneConfigMap.Metadata.Namespace = oauth.OAuthNamespace
+	keystoneConfigMap.Data.CAData = ""
 
 	var htpasswdIDP oauth.IdentityProviderHTPasswd
 	htpasswdIDP.Name = "htpasswd_auth"
@@ -171,7 +202,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	htpasswdSecretCrd.APIVersion = "v1"
 	htpasswdSecretCrd.Kind = "Secret"
 	htpasswdSecretCrd.Type = "Opaque"
-	htpasswdSecretCrd.Metadata.Namespace = "openshift-config"
+	htpasswdSecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	htpasswdSecretCrd.Metadata.Name = "htpasswd_auth-secret"
 	htpasswdSecretCrd.Data = secrets.HTPasswdFileSecret{HTPasswd: ""}
 
@@ -179,7 +210,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	keystoneCrtSecretCrd.APIVersion = "v1"
 	keystoneCrtSecretCrd.Kind = "Secret"
 	keystoneCrtSecretCrd.Type = "Opaque"
-	keystoneCrtSecretCrd.Metadata.Namespace = "openshift-config"
+	keystoneCrtSecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	keystoneCrtSecretCrd.Metadata.Name = "my_keystone_provider-client-cert-secret"
 	keystoneCrtSecretCrd.Data = secrets.KeystoneFileSecret{Keystone: ""}
 
@@ -187,7 +218,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	keystoneKeySecretCrd.APIVersion = "v1"
 	keystoneKeySecretCrd.Kind = "Secret"
 	keystoneKeySecretCrd.Type = "Opaque"
-	keystoneKeySecretCrd.Metadata.Namespace = "openshift-config"
+	keystoneKeySecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	keystoneKeySecretCrd.Metadata.Name = "my_keystone_provider-client-key-secret"
 	keystoneKeySecretCrd.Data = secrets.KeystoneFileSecret{Keystone: ""}
 
@@ -202,9 +233,16 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	ldapIDP.LDAP.Attributes.Name = []string{"cn"}
 	ldapIDP.LDAP.Attributes.PreferredUsername = []string{"uid"}
 	ldapIDP.LDAP.BindDN = "123"
-	ldapIDP.LDAP.CA.Name = "my-ldap-ca-bundle.crt"
+	ldapIDP.LDAP.CA.Name = "ldap-configmap"
 	ldapIDP.LDAP.Insecure = false
 	ldapIDP.LDAP.URL = "ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid"
+
+	var ldapConfigMap configmaps.ConfigMap
+	ldapConfigMap.APIVersion = "v1"
+	ldapConfigMap.Kind = "ConfigMap"
+	ldapConfigMap.Metadata.Name = "ldap-configmap"
+	ldapConfigMap.Metadata.Namespace = oauth.OAuthNamespace
+	ldapConfigMap.Data.CAData = ""
 
 	var requestHeaderIDP oauth.IdentityProviderRequestHeader
 	requestHeaderIDP.Type = "RequestHeader"
@@ -214,12 +252,19 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	requestHeaderIDP.MappingMethod = "claim"
 	requestHeaderIDP.RequestHeader.ChallengeURL = "https://example.com"
 	requestHeaderIDP.RequestHeader.LoginURL = "https://example.com"
-	requestHeaderIDP.RequestHeader.CA.Name = "cert.crt"
+	requestHeaderIDP.RequestHeader.CA.Name = "requestheader-configmap"
 	requestHeaderIDP.RequestHeader.ClientCommonNames = []string{"my-auth-proxy"}
 	requestHeaderIDP.RequestHeader.Headers = []string{"X-Remote-User", "SSO-User"}
 	requestHeaderIDP.RequestHeader.EmailHeaders = []string{"X-Remote-User-Email"}
 	requestHeaderIDP.RequestHeader.NameHeaders = []string{"X-Remote-User-Display-Name"}
 	requestHeaderIDP.RequestHeader.PreferredUsernameHeaders = []string{"X-Remote-User-Login"}
+
+	var requestheaderConfigMap configmaps.ConfigMap
+	requestheaderConfigMap.APIVersion = "v1"
+	requestheaderConfigMap.Kind = "ConfigMap"
+	requestheaderConfigMap.Metadata.Name = "requestheader-configmap"
+	requestheaderConfigMap.Metadata.Namespace = oauth.OAuthNamespace
+	requestheaderConfigMap.Data.CAData = ""
 
 	var openidIDP oauth.IdentityProviderOpenID
 	openidIDP.Type = "OpenID"
@@ -239,7 +284,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	openidSecretCrd.APIVersion = "v1"
 	openidSecretCrd.Kind = "Secret"
 	openidSecretCrd.Type = "Opaque"
-	openidSecretCrd.Metadata.Namespace = "openshift-config"
+	openidSecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	openidSecretCrd.Metadata.Name = "my_openid_connect-secret"
 	openidSecretCrd.Data = secrets.LiteralSecret{ClientSecret: "testsecret"}
 
@@ -274,6 +319,19 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	openidSecretManifest, err := openidSecretCrd.GenYAML()
 	require.NoError(t, err)
 
+	basicAuthConfigMapManifest, err := basicAuthConfigMap.GenYAML()
+	require.NoError(t, err)
+	githubConfigMapManifest, err := githubConfigMap.GenYAML()
+	require.NoError(t, err)
+	gitlabConfigMapManifest, err := gitlabConfigMap.GenYAML()
+	require.NoError(t, err)
+	keystoneConfigMapManifest, err := keystoneConfigMap.GenYAML()
+	require.NoError(t, err)
+	ldapConfigMapManifest, err := ldapConfigMap.GenYAML()
+	require.NoError(t, err)
+	requestheaderConfigMapManifest, err := requestheaderConfigMap.GenYAML()
+	require.NoError(t, err)
+
 	expectedManifests = append(expectedManifests,
 		Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: expectedManifest})
 	expectedManifests = append(expectedManifests,
@@ -294,6 +352,18 @@ func TestOAuthExtractionTransform(t *testing.T) {
 		Manifest{Name: "100_CPMA-cluster-config-secret-my_keystone_provider-client-key-secret.yaml", CRD: keystoneKeySecretManifest})
 	expectedManifests = append(expectedManifests,
 		Manifest{Name: "100_CPMA-cluster-config-secret-my_openid_connect-secret.yaml", CRD: openidSecretManifest})
+	expectedManifests = append(expectedManifests,
+		Manifest{Name: "100_CPMA-cluster-config-configmap-basicauth-configmap.yaml", CRD: basicAuthConfigMapManifest})
+	expectedManifests = append(expectedManifests,
+		Manifest{Name: "100_CPMA-cluster-config-configmap-github-configmap.yaml", CRD: githubConfigMapManifest})
+	expectedManifests = append(expectedManifests,
+		Manifest{Name: "100_CPMA-cluster-config-configmap-gitlab-configmap.yaml", CRD: gitlabConfigMapManifest})
+	expectedManifests = append(expectedManifests,
+		Manifest{Name: "100_CPMA-cluster-config-configmap-keystone-configmap.yaml", CRD: keystoneConfigMapManifest})
+	expectedManifests = append(expectedManifests,
+		Manifest{Name: "100_CPMA-cluster-config-configmap-ldap-configmap.yaml", CRD: ldapConfigMapManifest})
+	expectedManifests = append(expectedManifests,
+		Manifest{Name: "100_CPMA-cluster-config-configmap-requestheader-configmap.yaml", CRD: requestheaderConfigMapManifest})
 
 	testCases := []struct {
 		name              string
@@ -328,7 +398,6 @@ func TestOAuthExtractionTransform(t *testing.T) {
 			}()
 
 			actualManifests := <-actualManifestsChan
-
 			assert.Equal(t, actualManifests, tc.expectedManifests)
 		})
 	}

@@ -3,6 +3,7 @@ package oauth
 import (
 	"encoding/base64"
 
+	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
@@ -25,18 +26,18 @@ type GitHub struct {
 	Teams         []string     `yaml:"teams"`
 }
 
-func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitHub, secrets.Secret, error) {
+func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitHub, secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
-		err    error
-		idP    IdentityProviderGitHub
-		secret *secrets.Secret
-
-		github configv1.GitHubIdentityProvider
+		err         error
+		idP         IdentityProviderGitHub
+		secret      *secrets.Secret
+		caConfigmap *configmaps.ConfigMap
+		github      configv1.GitHubIdentityProvider
 	)
 
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &github)
 	if err != nil {
-		return idP, *secret, err
+		return idP, *secret, nil, err
 	}
 
 	idP.Type = "GitHub"
@@ -50,14 +51,19 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 	idP.GitHub.Organizations = github.Organizations
 	idP.GitHub.Teams = github.Teams
 
+	if github.CA != "" {
+		caConfigmap = configmaps.GenConfigMap("github-configmap", OAuthNamespace, p.CAData)
+		idP.GitHub.CA.Name = caConfigmap.Metadata.Name
+	}
+
 	secretName := p.Name + "-secret"
 	idP.GitHub.ClientSecret.Name = secretName
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(github.ClientSecret.Value))
-	secret, err = secrets.GenSecret(secretName, encoded, "openshift-config", "literal")
+	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, "literal")
 	if err != nil {
-		return idP, *secret, err
+		return idP, *secret, nil, err
 	}
 
-	return idP, *secret, nil
+	return idP, *secret, caConfigmap, nil
 }

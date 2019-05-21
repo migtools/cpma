@@ -27,13 +27,14 @@ func (e OAuthExtraction) Transform() (Output, error) {
 
 	var ocp4Cluster Cluster
 
-	oauth, secrets, err := oauth.Translate(e.IdentityProviders)
+	oauth, secrets, configMaps, err := oauth.Translate(e.IdentityProviders)
 	if err != nil {
 		return nil, errors.New("Unable to generate OAuth CRD")
 	}
 
 	ocp4Cluster.Master.OAuth = *oauth
 	ocp4Cluster.Master.Secrets = secrets
+	ocp4Cluster.Master.ConfigMaps = configMaps
 
 	var manifests []Manifest
 	if ocp4Cluster.Master.OAuth.Kind != "" {
@@ -53,6 +54,17 @@ func (e OAuthExtraction) Transform() (Output, error) {
 
 			filename := "100_CPMA-cluster-config-secret-" + secret.Metadata.Name + ".yaml"
 			m := Manifest{Name: filename, CRD: secretCR}
+			manifests = append(manifests, m)
+		}
+
+		for _, configMap := range ocp4Cluster.Master.ConfigMaps {
+			configMapYAML, err := configMap.GenYAML()
+			if err != nil {
+				return nil, err
+			}
+
+			filename := "100_CPMA-cluster-config-configmap-" + configMap.Metadata.Name + ".yaml"
+			m := Manifest{Name: filename, CRD: configMapYAML}
 			manifests = append(manifests, m)
 		}
 	}
@@ -78,6 +90,7 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 
 	if masterConfig.OAuthConfig != nil {
 		for _, identityProvider := range masterConfig.OAuthConfig.IdentityProviders {
+
 			providerJSON, err := identityProvider.Provider.MarshalJSON()
 			if err != nil {
 				return nil, err

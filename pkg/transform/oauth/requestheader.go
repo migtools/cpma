@@ -3,6 +3,7 @@ package oauth
 import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
+	"github.com/fusor/cpma/pkg/transform/configmaps"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
@@ -24,15 +25,16 @@ type RequestHeader struct {
 	PreferredUsernameHeaders []string `yaml:"preferredUsernameHeaders"`
 }
 
-func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderRequestHeader, error) {
+func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderRequestHeader, *configmaps.ConfigMap, error) {
 	var (
 		err           error
 		idP           IdentityProviderRequestHeader
+		caConfigmap   *configmaps.ConfigMap
 		requestHeader configv1.RequestHeaderIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &requestHeader)
 	if err != nil {
-		return idP, err
+		return idP, nil, err
 	}
 
 	idP.Type = "RequestHeader"
@@ -42,12 +44,17 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (Iden
 	idP.MappingMethod = p.MappingMethod
 	idP.RequestHeader.ChallengeURL = requestHeader.ChallengeURL
 	idP.RequestHeader.LoginURL = requestHeader.LoginURL
-	idP.RequestHeader.CA.Name = requestHeader.ClientCA
+
+	if requestHeader.ClientCA != "" {
+		caConfigmap = configmaps.GenConfigMap("requestheader-configmap", OAuthNamespace, p.CAData)
+		idP.RequestHeader.CA.Name = caConfigmap.Metadata.Name
+	}
+
 	idP.RequestHeader.ClientCommonNames = requestHeader.ClientCommonNames
 	idP.RequestHeader.Headers = requestHeader.Headers
 	idP.RequestHeader.EmailHeaders = requestHeader.EmailHeaders
 	idP.RequestHeader.NameHeaders = requestHeader.NameHeaders
 	idP.RequestHeader.PreferredUsernameHeaders = requestHeader.PreferredUsernameHeaders
 
-	return idP, nil
+	return idP, caConfigmap, nil
 }

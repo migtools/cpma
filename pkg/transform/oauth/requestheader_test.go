@@ -52,7 +52,7 @@ func TestTransformMasterConfigRequestHeader(t *testing.T) {
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = "openshift-config"
+	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
 	var requestHeaderIDP oauth.IdentityProviderRequestHeader
 
@@ -63,7 +63,7 @@ func TestTransformMasterConfigRequestHeader(t *testing.T) {
 	requestHeaderIDP.MappingMethod = "claim"
 	requestHeaderIDP.RequestHeader.ChallengeURL = "https://example.com"
 	requestHeaderIDP.RequestHeader.LoginURL = "https://example.com"
-	requestHeaderIDP.RequestHeader.CA.Name = "cert.crt"
+	requestHeaderIDP.RequestHeader.CA.Name = "requestheader-configmap"
 	requestHeaderIDP.RequestHeader.ClientCommonNames = []string{"my-auth-proxy"}
 	requestHeaderIDP.RequestHeader.Headers = []string{"X-Remote-User", "SSO-User"}
 	requestHeaderIDP.RequestHeader.EmailHeaders = []string{"X-Remote-User-Email"}
@@ -83,7 +83,7 @@ func TestTransformMasterConfigRequestHeader(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
 		})

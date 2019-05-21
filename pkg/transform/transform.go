@@ -2,6 +2,7 @@ package transform
 
 import (
 	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/sirupsen/logrus"
@@ -22,8 +23,9 @@ type Cluster struct {
 
 // Master is a cluster Master
 type Master struct {
-	OAuth   oauth.CRD
-	Secrets []secrets.Secret
+	OAuth      oauth.CRD
+	Secrets    []secrets.Secret
+	ConfigMaps []*configmaps.ConfigMap
 }
 
 // Manifest to be exported for use with OCP 4

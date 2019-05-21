@@ -52,7 +52,7 @@ func TestTransformMasterConfigLDAP(t *testing.T) {
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = "openshift-config"
+	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
 	var ldapIDP oauth.IdentityProviderLDAP
 	ldapIDP.Name = "my_ldap_provider"
@@ -65,7 +65,7 @@ func TestTransformMasterConfigLDAP(t *testing.T) {
 	ldapIDP.LDAP.Attributes.Name = []string{"cn"}
 	ldapIDP.LDAP.Attributes.PreferredUsername = []string{"uid"}
 	ldapIDP.LDAP.BindDN = "123"
-	ldapIDP.LDAP.CA.Name = "my-ldap-ca-bundle.crt"
+	ldapIDP.LDAP.CA.Name = "ldap-configmap"
 	ldapIDP.LDAP.Insecure = false
 	ldapIDP.LDAP.URL = "ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid"
 
@@ -83,7 +83,7 @@ func TestTransformMasterConfigLDAP(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
 		})

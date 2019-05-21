@@ -53,7 +53,7 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = "openshift-config"
+	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
 	var basicAuthIDP oauth.IdentityProviderBasicAuth
 	basicAuthIDP.Type = "BasicAuth"
@@ -64,6 +64,7 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 	basicAuthIDP.BasicAuth.URL = "https://www.example.com/"
 	basicAuthIDP.BasicAuth.TLSClientCert.Name = "my_remote_basic_auth_provider-client-cert-secret"
 	basicAuthIDP.BasicAuth.TLSClientKey.Name = "my_remote_basic_auth_provider-client-key-secret"
+	basicAuthIDP.BasicAuth.CA.Name = "basicauth-configmap"
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, basicAuthIDP)
 
@@ -79,7 +80,7 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
 		})

@@ -40,6 +40,7 @@ oauthConfig:
       kind: GitLabIdentityProvider
       legacy: true
       url: https://gitlab.com/
+      ca: gitlab.crt
       clientID: fake-id
       clientSecret: fake-secret
   - name: google123456789123456789

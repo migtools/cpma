@@ -26,11 +26,12 @@ type FileData struct {
 }
 
 func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderHTPasswd, secrets.Secret, error) {
-	var err error
-	var idP IdentityProviderHTPasswd
-	var secret *secrets.Secret
-
-	var htpasswd configv1.HTPasswdPasswordIdentityProvider
+	var (
+		err      error
+		idP      IdentityProviderHTPasswd
+		secret   *secrets.Secret
+		htpasswd configv1.HTPasswdPasswordIdentityProvider
+	)
 
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
 	if err != nil {
@@ -49,7 +50,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 
 	encoded := base64.StdEncoding.EncodeToString(p.HTFileData)
 
-	secret, err = secrets.GenSecret(secretName, encoded, "openshift-config", "htpasswd")
+	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, "htpasswd")
 	if err != nil {
 		return idP, *secret, err
 	}

@@ -54,7 +54,7 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
 	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = "openshift-config"
+	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
 	var githubIDP oauth.IdentityProviderGitHub
 	githubIDP.Type = "GitHub"
@@ -63,7 +63,7 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 	githubIDP.MappingMethod = "claim"
 	githubIDP.Name = "github123456789"
 	githubIDP.GitHub.HostName = "test.example.com"
-	githubIDP.GitHub.CA.Name = "github.crt"
+	githubIDP.GitHub.CA.Name = "github-configmap"
 	githubIDP.GitHub.ClientID = "2d85ea3f45d6777bffd7"
 	githubIDP.GitHub.Organizations = []string{"myorganization1", "myorganization2"}
 	githubIDP.GitHub.Teams = []string{"myorganization1/team-a", "myorganization2/team-b"}
@@ -82,7 +82,7 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
 		})
