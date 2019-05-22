@@ -50,7 +50,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 
 	secretName := p.Name + "-secret"
 	idP.GitLab.ClientSecret.Name = secretName
-	secret, err = secrets.GenSecret(secretName, gitlab.ClientSecret.Value, OAuthNamespace, "literal")
+	secret, err = secrets.GenSecret(secretName, gitlab.ClientSecret.Value, OAuthNamespace, secrets.LiteralSecretType)
 	if err != nil {
 		return nil, nil, nil, err
 	}

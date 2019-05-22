@@ -60,7 +60,7 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 
 	secretName := p.Name + "-secret"
 	idP.OpenID.ClientSecret.Name = secretName
-	secret, err = secrets.GenSecret(secretName, openID.ClientSecret.Value, OAuthNamespace, "literal")
+	secret, err = secrets.GenSecret(secretName, openID.ClientSecret.Value, OAuthNamespace, secrets.LiteralSecretType)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -50,7 +50,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 
 	encoded := base64.StdEncoding.EncodeToString(p.HTFileData)
 
-	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, "htpasswd")
+	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.HtpasswdSecretType)
 	if err != nil {
 		return nil, nil, err
 	}

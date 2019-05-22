@@ -60,7 +60,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 		certSecretName := p.Name + "-client-cert-secret"
 		idP.Keystone.TLSClientCert = &TLSClientCert{Name: certSecretName}
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-		certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, "keystone")
+		certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType)
 		if err != nil {
 			return nil, nil, nil, nil, err
 		}
@@ -68,7 +68,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 		keySecretName := p.Name + "-client-key-secret"
 		idP.Keystone.TLSClientKey = &TLSClientKey{Name: keySecretName}
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
-		keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, "keystone")
+		keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType)
 		if err != nil {
 			return nil, nil, nil, nil, err
 		}
