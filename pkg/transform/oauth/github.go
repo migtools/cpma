@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"encoding/base64"
+	"errors"
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -65,4 +66,33 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	}
 
 	return idP, secret, caConfigmap, nil
+}
+
+// ValidateGithubProvider validate github identity provider
+func ValidateGithubProvider(serializer *json.Serializer, p IdentityProvider) error {
+	var github configv1.GitHubIdentityProvider
+
+	_, _, err := serializer.Decode(p.Provider.Raw, nil, &github)
+	if err != nil {
+		return err
+	}
+
+	if p.Name == "" {
+		return errors.New("Name can't be empty")
+	}
+
+	if err := validateMappingMethod(p.MappingMethod); err != nil {
+		return err
+	}
+
+	// WIP - need a better validation for hostname
+	if github.Hostname == "" {
+		return errors.New("Not valid hostname")
+	}
+
+	if github.ClientID == "" {
+		return errors.New("Client ID can't be empty")
+	}
+
+	return nil
 }

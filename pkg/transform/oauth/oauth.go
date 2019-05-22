@@ -1,6 +1,8 @@
 package oauth
 
 import (
+	"errors"
+
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/sirupsen/logrus"
@@ -170,4 +172,16 @@ func (oauth *CRD) GenYAML() ([]byte, error) {
 	}
 
 	return yamlBytes, nil
+}
+
+func validateMappingMethod(method string) error {
+	switch method {
+	case "claim":
+	case "lookup":
+	case "generate":
+	case "add":
+		return nil
+	}
+
+	return errors.New("Not valid mapping method")
 }
