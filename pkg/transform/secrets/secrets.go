@@ -42,11 +42,32 @@ type MetaData struct {
 	Namespace string `yaml:"namespace"`
 }
 
+// SecretType is an enumerator for secret types
+type SecretType int
+
+const (
+	// KeystoneSecretType - keystone type for Secret
+	KeystoneSecretType = iota
+	// HtpasswdSecretType - htpasswd type for Secret
+	HtpasswdSecretType
+	// LiteralSecretType - literal type for Secret
+	LiteralSecretType
+	// BasicAuthSecretType - basicauth type for Secret
+	BasicAuthSecretType
+)
+
+var typeArray = []string{
+	"KeystoneSecretType",
+	"HtpasswdSecretType",
+	"LiteralSecretType",
+	"BasicAuthSecretType",
+}
+
 // APIVersion is the apiVersion string
 var APIVersion = "v1"
 
 // GenSecret generates a secret
-func GenSecret(name string, secretContent string, namespace string, secretType string) (*Secret, error) {
+func GenSecret(name string, secretContent string, namespace string, secretType SecretType) (*Secret, error) {
 	data, err := buildData(secretType, secretContent)
 	if err != nil {
 		return nil, err
@@ -65,20 +86,20 @@ func GenSecret(name string, secretContent string, namespace string, secretType s
 	return &secret, nil
 }
 
-func buildData(secretType, secretContent string) (interface{}, error) {
+func buildData(secretType SecretType, secretContent string) (interface{}, error) {
 	var data interface{}
 
 	switch secretType {
-	case "keystone":
+	case KeystoneSecretType:
 		data = KeystoneFileSecret{Keystone: secretContent}
-	case "htpasswd":
+	case HtpasswdSecretType:
 		data = HTPasswdFileSecret{HTPasswd: secretContent}
-	case "literal":
+	case LiteralSecretType:
 		data = LiteralSecret{ClientSecret: secretContent}
-	case "basicauth":
+	case BasicAuthSecretType:
 		data = BasicAuthFileSecret{BasicAuth: secretContent}
 	default:
-		return nil, errors.New("Not valid secret type " + secretType)
+		return nil, errors.New("Not a valid secret type " + secretType.String())
 	}
 
 	return data, nil
@@ -92,4 +113,12 @@ func (secret *Secret) GenYAML() ([]byte, error) {
 		return nil, err
 	}
 	return yamlBytes, nil
+}
+
+// SecretType.String returns a string representation for SecretType enum
+func (secType SecretType) String() string {
+	if secType >= KeystoneSecretType && int(secType) < len(typeArray) {
+		return typeArray[secType]
+	}
+	return "unknown"
 }

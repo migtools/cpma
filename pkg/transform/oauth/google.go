@@ -42,7 +42,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 
 	secretName := p.Name + "-secret"
 	idP.Google.ClientSecret.Name = secretName
-	secret, err = secrets.GenSecret(secretName, google.ClientSecret.Value, OAuthNamespace, "literal")
+	secret, err = secrets.GenSecret(secretName, google.ClientSecret.Value, OAuthNamespace, secrets.LiteralSecretType)
 	if err != nil {
 		return idP, *secret, err
 	}

@@ -14,7 +14,7 @@ func TestGenSecret(t *testing.T) {
 		name            string
 		inputSecretName string
 		inputSecretFile string
-		inputSecretType string
+		inputSecretType SecretType
 		expected        Secret
 		expectederr     bool
 	}{
@@ -22,7 +22,7 @@ func TestGenSecret(t *testing.T) {
 			name:            "generate htpasswd secret",
 			inputSecretName: "htpasswd-test",
 			inputSecretFile: "testfile1",
-			inputSecretType: "htpasswd",
+			inputSecretType: HtpasswdSecretType,
 			expected: Secret{
 				APIVersion: APIVersion,
 				Data:       HTPasswdFileSecret{HTPasswd: "testfile1"},
@@ -39,7 +39,7 @@ func TestGenSecret(t *testing.T) {
 			name:            "generate keystone secret",
 			inputSecretName: "keystone-test",
 			inputSecretFile: "testfile2",
-			inputSecretType: "keystone",
+			inputSecretType: KeystoneSecretType,
 			expected: Secret{
 				APIVersion: APIVersion,
 				Data:       KeystoneFileSecret{Keystone: "testfile2"},
@@ -56,7 +56,7 @@ func TestGenSecret(t *testing.T) {
 			name:            "generate basic auth secret",
 			inputSecretName: "basicauth-test",
 			inputSecretFile: "testfile3",
-			inputSecretType: "basicauth",
+			inputSecretType: BasicAuthSecretType,
 			expected: Secret{
 				APIVersion: APIVersion,
 				Data:       BasicAuthFileSecret{BasicAuth: "testfile3"},
@@ -73,7 +73,7 @@ func TestGenSecret(t *testing.T) {
 			name:            "generate litetal secret",
 			inputSecretName: "literal-secret",
 			inputSecretFile: "some-value",
-			inputSecretType: "literal",
+			inputSecretType: LiteralSecretType,
 			expected: Secret{
 				APIVersion: APIVersion,
 				Data:       LiteralSecret{ClientSecret: "some-value"},
@@ -90,7 +90,7 @@ func TestGenSecret(t *testing.T) {
 			name:            "fail generating invalid secret",
 			inputSecretName: "notvalid-secret",
 			inputSecretFile: "some-value",
-			inputSecretType: "notvalidtype",
+			inputSecretType: 42, // Unknown secret type value
 			expectederr:     true,
 		},
 	}

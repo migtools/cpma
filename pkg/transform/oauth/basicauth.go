@@ -48,7 +48,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (Identity
 	idP.BasicAuth.URL = basicAuth.URL
 
 	if basicAuth.CA != "" {
-		caConfigmap = configmaps.GenConfigMap("basicauth-configmap", "openshift-config", p.CAData)
+		caConfigmap = configmaps.GenConfigMap("basicauth-configmap", OAuthNamespace, p.CAData)
 		idP.BasicAuth.CA = &CA{Name: caConfigmap.Metadata.Name}
 	}
 
@@ -57,7 +57,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (Identity
 		idP.BasicAuth.TLSClientCert = &TLSClientCert{Name: certSecretName}
 
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-		certSecret, err = secrets.GenSecret(certSecretName, encoded, "openshift-config", "basicauth")
+		certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType)
 		if err != nil {
 			return idP, *certSecret, *keySecret, nil, err
 		}
@@ -66,7 +66,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (Identity
 		idP.BasicAuth.TLSClientKey = &TLSClientKey{Name: keySecretName}
 
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
-		keySecret, err = secrets.GenSecret(keySecretName, encoded, "openshift-config", "basicauth")
+		keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType)
 		if err != nil {
 			return idP, *certSecret, *keySecret, nil, err
 		}
