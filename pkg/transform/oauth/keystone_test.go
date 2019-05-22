@@ -55,7 +55,7 @@ func TestTransformMasterConfigKeystone(t *testing.T) {
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
-	var keystoneIDP oauth.IdentityProviderKeystone
+	var keystoneIDP = &oauth.IdentityProviderKeystone{}
 	keystoneIDP.Type = "Keystone"
 	keystoneIDP.Challenge = true
 	keystoneIDP.Login = true

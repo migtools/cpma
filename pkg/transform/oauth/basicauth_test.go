@@ -55,7 +55,7 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
-	var basicAuthIDP oauth.IdentityProviderBasicAuth
+	var basicAuthIDP = &oauth.IdentityProviderBasicAuth{}
 	basicAuthIDP.Type = "BasicAuth"
 	basicAuthIDP.Challenge = true
 	basicAuthIDP.Login = true

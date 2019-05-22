@@ -25,19 +25,18 @@ type BasicAuth struct {
 	TLSClientKey  *TLSClientKey  `yaml:"tlsClientKey,omitempty"`
 }
 
-func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderBasicAuth, secrets.Secret, secrets.Secret, *configmaps.ConfigMap, error) {
+func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderBasicAuth, *secrets.Secret, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
-		err         error
-		idP         IdentityProviderBasicAuth
-		certSecret  = &secrets.Secret{}
-		keySecret   = &secrets.Secret{}
-		caConfigmap *configmaps.ConfigMap
-		basicAuth   configv1.BasicAuthPasswordIdentityProvider
+		err                   error
+		idP                   = &IdentityProviderBasicAuth{}
+		certSecret, keySecret *secrets.Secret
+		caConfigmap           *configmaps.ConfigMap
+		basicAuth             configv1.BasicAuthPasswordIdentityProvider
 	)
 
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &basicAuth)
 	if err != nil {
-		return idP, *certSecret, *keySecret, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	idP.Type = "BasicAuth"
@@ -59,7 +58,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (Identity
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
 		certSecret, err = secrets.GenSecret(certSecretName, encoded, "openshift-config", "basicauth")
 		if err != nil {
-			return idP, *certSecret, *keySecret, nil, err
+			return nil, nil, nil, nil, err
 		}
 
 		keySecretName := p.Name + "-client-key-secret"
@@ -68,9 +67,9 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (Identity
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
 		keySecret, err = secrets.GenSecret(keySecretName, encoded, "openshift-config", "basicauth")
 		if err != nil {
-			return idP, *certSecret, *keySecret, nil, err
+			return nil, nil, nil, nil, err
 		}
 	}
 
-	return idP, *certSecret, *keySecret, caConfigmap, nil
+	return idP, certSecret, keySecret, caConfigmap, nil
 }

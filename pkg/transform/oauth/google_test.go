@@ -55,7 +55,7 @@ func TestTransformMasterConfigGoogle(t *testing.T) {
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
-	var googleIDP oauth.IdentityProviderGoogle
+	var googleIDP = &oauth.IdentityProviderGoogle{}
 	googleIDP.Type = "Google"
 	googleIDP.Challenge = false
 	googleIDP.Login = true

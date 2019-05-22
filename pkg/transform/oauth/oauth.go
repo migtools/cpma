@@ -86,12 +86,11 @@ const (
 )
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, []*configmaps.ConfigMap, error) {
+func Translate(identityProviders []IdentityProvider) (*CRD, []*secrets.Secret, []*configmaps.ConfigMap, error) {
 	var err error
 	var idP interface{}
-	var secretsSlice []secrets.Secret
+	var secretsSlice []*secrets.Secret
 	var сonfigMapSlice []*configmaps.ConfigMap
-	var secret, certSecret, keySecret secrets.Secret
 
 	var oauthCrd CRD
 	oauthCrd.APIVersion = APIVersion
@@ -100,6 +99,7 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, []
 	oauthCrd.Metadata.NameSpace = OAuthNamespace
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	for _, p := range identityProviders {
+		var secret, certSecret, keySecret *secrets.Secret
 		var caConfigMap *configmaps.ConfigMap
 
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
@@ -112,35 +112,22 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, []
 		switch kind {
 		case "GitHubIdentityProvider":
 			idP, secret, caConfigMap, err = buildGitHubIP(serializer, p)
-			secretsSlice = append(secretsSlice, secret)
 		case "GitLabIdentityProvider":
 			idP, secret, caConfigMap, err = buildGitLabIP(serializer, p)
-			secretsSlice = append(secretsSlice, secret)
 		case "GoogleIdentityProvider":
 			idP, secret, err = buildGoogleIP(serializer, p)
-			secretsSlice = append(secretsSlice, secret)
 		case "HTPasswdPasswordIdentityProvider":
 			idP, secret, err = buildHTPasswdIP(serializer, p)
-			secretsSlice = append(secretsSlice, secret)
 		case "OpenIDIdentityProvider":
 			idP, secret, err = buildOpenIDIP(serializer, p)
-			secretsSlice = append(secretsSlice, secret)
 		case "RequestHeaderIdentityProvider":
 			idP, caConfigMap, err = buildRequestHeaderIP(serializer, p)
 		case "LDAPPasswordIdentityProvider":
 			idP, caConfigMap, err = buildLdapIP(serializer, p)
 		case "KeystonePasswordIdentityProvider":
 			idP, certSecret, keySecret, caConfigMap, err = buildKeystoneIP(serializer, p)
-			if certSecret != (secrets.Secret{}) {
-				secretsSlice = append(secretsSlice, certSecret)
-				secretsSlice = append(secretsSlice, keySecret)
-			}
 		case "BasicAuthPasswordIdentityProvider":
 			idP, certSecret, keySecret, caConfigMap, err = buildBasicAuthIP(serializer, p)
-			if certSecret != (secrets.Secret{}) {
-				secretsSlice = append(secretsSlice, certSecret)
-				secretsSlice = append(secretsSlice, keySecret)
-			}
 		default:
 			logrus.Infof("Can't handle %s OAuth kind", kind)
 			continue
@@ -150,6 +137,17 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []secrets.Secret, []
 		if err != nil {
 			logrus.Error("Can't handle ", kind, " skipping.. error:", err)
 			continue
+		}
+
+		// Check if secret is not empty
+		if secret != nil {
+			secretsSlice = append(secretsSlice, secret)
+		}
+
+		// Check if certSecret is not empty
+		if certSecret != nil {
+			secretsSlice = append(secretsSlice, certSecret)
+			secretsSlice = append(secretsSlice, keySecret)
 		}
 
 		// Check if config map is not empty

@@ -55,7 +55,7 @@ func TestTransformMasterConfigHtpasswd(t *testing.T) {
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
-	var htpasswdIDP oauth.IdentityProviderHTPasswd
+	var htpasswdIDP = &oauth.IdentityProviderHTPasswd{}
 	htpasswdIDP.Name = "htpasswd_auth"
 	htpasswdIDP.Type = "HTPasswd"
 	htpasswdIDP.Challenge = true

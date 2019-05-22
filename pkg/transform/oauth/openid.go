@@ -34,16 +34,16 @@ type OpenIDURLs struct {
 	Token     string `yaml:"token"`
 }
 
-func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderOpenID, secrets.Secret, error) {
+func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderOpenID, *secrets.Secret, error) {
 	var (
 		err    error
 		secret *secrets.Secret
-		idP    IdentityProviderOpenID
+		idP    = &IdentityProviderOpenID{}
 		openID configv1.OpenIDIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &openID)
 	if err != nil {
-		return idP, *secret, err
+		return nil, nil, err
 	}
 
 	idP.Type = "OpenID"
@@ -62,8 +62,8 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 	idP.OpenID.ClientSecret.Name = secretName
 	secret, err = secrets.GenSecret(secretName, openID.ClientSecret.Value, OAuthNamespace, "literal")
 	if err != nil {
-		return idP, *secret, err
+		return nil, nil, err
 	}
 
-	return idP, *secret, nil
+	return idP, secret, nil
 }

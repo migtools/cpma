@@ -26,18 +26,17 @@ type Keystone struct {
 	TLSClientKey  *TLSClientKey  `yaml:"tlsClientKey,omitempty"`
 }
 
-func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderKeystone, secrets.Secret, secrets.Secret, *configmaps.ConfigMap, error) {
+func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderKeystone, *secrets.Secret, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
-		idP         IdentityProviderKeystone
-		certSecret  = new(secrets.Secret)
-		keySecret   = new(secrets.Secret)
-		caConfigmap *configmaps.ConfigMap
-		err         error
-		keystone    configv1.KeystonePasswordIdentityProvider
+		idP                   = &IdentityProviderKeystone{}
+		certSecret, keySecret *secrets.Secret
+		caConfigmap           *configmaps.ConfigMap
+		err                   error
+		keystone              configv1.KeystonePasswordIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &keystone)
 	if err != nil {
-		return idP, *certSecret, *keySecret, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	idP.Type = "Keystone"
@@ -63,7 +62,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
 		certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, "keystone")
 		if err != nil {
-			return idP, *certSecret, *keySecret, nil, nil
+			return nil, nil, nil, nil, err
 		}
 
 		keySecretName := p.Name + "-client-key-secret"
@@ -71,9 +70,9 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
 		keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, "keystone")
 		if err != nil {
-			return idP, *certSecret, *keySecret, nil, nil
+			return nil, nil, nil, nil, err
 		}
 	}
 
-	return idP, *certSecret, *keySecret, caConfigmap, nil
+	return idP, certSecret, keySecret, caConfigmap, nil
 }

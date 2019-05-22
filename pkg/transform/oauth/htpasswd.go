@@ -25,17 +25,17 @@ type FileData struct {
 	Name string `yaml:"name"`
 }
 
-func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderHTPasswd, secrets.Secret, error) {
+func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderHTPasswd, *secrets.Secret, error) {
 	var (
 		err      error
-		idP      IdentityProviderHTPasswd
+		idP      = &IdentityProviderHTPasswd{}
 		secret   *secrets.Secret
 		htpasswd configv1.HTPasswdPasswordIdentityProvider
 	)
 
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
 	if err != nil {
-		return idP, *secret, err
+		return nil, nil, err
 	}
 
 	idP.Name = p.Name
@@ -52,8 +52,8 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (IdentityP
 
 	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, "htpasswd")
 	if err != nil {
-		return idP, *secret, err
+		return nil, nil, err
 	}
 
-	return idP, *secret, nil
+	return idP, secret, nil
 }

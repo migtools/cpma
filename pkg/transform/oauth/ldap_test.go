@@ -54,7 +54,7 @@ func TestTransformMasterConfigLDAP(t *testing.T) {
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
-	var ldapIDP oauth.IdentityProviderLDAP
+	var ldapIDP = &oauth.IdentityProviderLDAP{}
 	ldapIDP.Name = "my_ldap_provider"
 	ldapIDP.Type = "LDAP"
 	ldapIDP.Challenge = true

@@ -56,7 +56,7 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
-	var githubIDP oauth.IdentityProviderGitHub
+	var githubIDP = &oauth.IdentityProviderGitHub{}
 	githubIDP.Type = "GitHub"
 	githubIDP.Challenge = false
 	githubIDP.Login = true

@@ -31,16 +31,16 @@ type LDAPAttributes struct {
 	PreferredUsername []string `yaml:"preferredUsername"`
 }
 
-func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderLDAP, *configmaps.ConfigMap, error) {
+func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderLDAP, *configmaps.ConfigMap, error) {
 	var (
 		err         error
-		idP         IdentityProviderLDAP
+		idP         = &IdentityProviderLDAP{}
 		caConfigmap *configmaps.ConfigMap
 		ldap        configv1.LDAPPasswordIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &ldap)
 	if err != nil {
-		return idP, nil, err
+		return nil, nil, err
 	}
 
 	idP.Type = "LDAP"
