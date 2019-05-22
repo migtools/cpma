@@ -24,7 +24,7 @@ type Cluster struct {
 // Master is a cluster Master
 type Master struct {
 	OAuth      oauth.CRD
-	Secrets    []secrets.Secret
+	Secrets    []*secrets.Secret
 	ConfigMaps []*configmaps.ConfigMap
 }
 

@@ -20,16 +20,16 @@ type Google struct {
 	HostedDomain string       `yaml:"hostedDomain,omitempty"`
 }
 
-func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGoogle, secrets.Secret, error) {
+func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGoogle, *secrets.Secret, error) {
 	var (
 		err    error
-		idP    IdentityProviderGoogle
+		idP    = &IdentityProviderGoogle{}
 		secret *secrets.Secret
 		google configv1.GoogleIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &google)
 	if err != nil {
-		return idP, *secret, err
+		return nil, nil, err
 	}
 
 	idP.Type = "Google"
@@ -44,8 +44,8 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 	idP.Google.ClientSecret.Name = secretName
 	secret, err = secrets.GenSecret(secretName, google.ClientSecret.Value, OAuthNamespace, "literal")
 	if err != nil {
-		return idP, *secret, err
+		return nil, nil, err
 	}
 
-	return idP, *secret, nil
+	return idP, secret, nil
 }

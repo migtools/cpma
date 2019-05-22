@@ -55,7 +55,7 @@ func TestTransformMasterConfigGitlab(t *testing.T) {
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
-	var gitlabIDP oauth.IdentityProviderGitLab
+	var gitlabIDP = &oauth.IdentityProviderGitLab{}
 	gitlabIDP.Type = "GitLab"
 	gitlabIDP.Challenge = true
 	gitlabIDP.Login = true

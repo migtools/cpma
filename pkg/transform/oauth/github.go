@@ -26,10 +26,10 @@ type GitHub struct {
 	Teams         []string     `yaml:"teams,omitempty"`
 }
 
-func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitHub, secrets.Secret, *configmaps.ConfigMap, error) {
+func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGitHub, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
 		err         error
-		idP         IdentityProviderGitHub
+		idP         = &IdentityProviderGitHub{}
 		secret      *secrets.Secret
 		caConfigmap *configmaps.ConfigMap
 		github      configv1.GitHubIdentityProvider
@@ -37,7 +37,7 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &github)
 	if err != nil {
-		return idP, *secret, nil, err
+		return nil, nil, nil, err
 	}
 
 	idP.Type = "GitHub"
@@ -61,8 +61,8 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 	encoded := base64.StdEncoding.EncodeToString([]byte(github.ClientSecret.Value))
 	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, "literal")
 	if err != nil {
-		return idP, *secret, nil, err
+		return nil, nil, nil, err
 	}
 
-	return idP, *secret, caConfigmap, nil
+	return idP, secret, caConfigmap, nil
 }

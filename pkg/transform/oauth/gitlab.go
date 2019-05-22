@@ -22,17 +22,17 @@ type GitLab struct {
 	ClientSecret ClientSecret `yaml:"clientSecret"`
 }
 
-func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitLab, secrets.Secret, *configmaps.ConfigMap, error) {
+func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGitLab, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
 		err         error
-		idP         IdentityProviderGitLab
+		idP         = &IdentityProviderGitLab{}
 		secret      *secrets.Secret
 		caConfigmap *configmaps.ConfigMap
 		gitlab      configv1.GitLabIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &gitlab)
 	if err != nil {
-		return idP, *secret, nil, err
+		return nil, nil, nil, err
 	}
 
 	idP.Type = "GitLab"
@@ -52,8 +52,8 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 	idP.GitLab.ClientSecret.Name = secretName
 	secret, err = secrets.GenSecret(secretName, gitlab.ClientSecret.Value, OAuthNamespace, "literal")
 	if err != nil {
-		return idP, *secret, nil, err
+		return nil, nil, nil, err
 	}
 
-	return idP, *secret, caConfigmap, nil
+	return idP, secret, caConfigmap, nil
 }

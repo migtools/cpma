@@ -54,7 +54,7 @@ func TestTransformMasterConfigOpenID(t *testing.T) {
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
-	var openidIDP oauth.IdentityProviderOpenID
+	var openidIDP = &oauth.IdentityProviderOpenID{}
 	openidIDP.Type = "OpenID"
 	openidIDP.Challenge = false
 	openidIDP.Login = true

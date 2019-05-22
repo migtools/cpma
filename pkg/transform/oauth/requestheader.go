@@ -25,16 +25,16 @@ type RequestHeader struct {
 	PreferredUsernameHeaders []string `yaml:"preferredUsernameHeaders"`
 }
 
-func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderRequestHeader, *configmaps.ConfigMap, error) {
+func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderRequestHeader, *configmaps.ConfigMap, error) {
 	var (
 		err           error
-		idP           IdentityProviderRequestHeader
+		idP           = &IdentityProviderRequestHeader{}
 		caConfigmap   *configmaps.ConfigMap
 		requestHeader configv1.RequestHeaderIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &requestHeader)
 	if err != nil {
-		return idP, nil, err
+		return nil, nil, err
 	}
 
 	idP.Type = "RequestHeader"

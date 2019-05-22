@@ -54,7 +54,7 @@ func TestTransformMasterConfigRequestHeader(t *testing.T) {
 	expectedCrd.Metadata.Name = "cluster"
 	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
 
-	var requestHeaderIDP oauth.IdentityProviderRequestHeader
+	var requestHeaderIDP = &oauth.IdentityProviderRequestHeader{}
 
 	requestHeaderIDP.Type = "RequestHeader"
 	requestHeaderIDP.Name = "my_request_header_provider"
