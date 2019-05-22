@@ -63,7 +63,7 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 	githubIDP.MappingMethod = "claim"
 	githubIDP.Name = "github123456789"
 	githubIDP.GitHub.HostName = "test.example.com"
-	githubIDP.GitHub.CA.Name = "github-configmap"
+	githubIDP.GitHub.CA = &oauth.CA{Name: "github-configmap"}
 	githubIDP.GitHub.ClientID = "2d85ea3f45d6777bffd7"
 	githubIDP.GitHub.Organizations = []string{"myorganization1", "myorganization2"}
 	githubIDP.GitHub.Teams = []string{"myorganization1/team-a", "myorganization2/team-b"}

@@ -18,12 +18,12 @@ type IdentityProviderGitHub struct {
 
 // GitHub provider specific data
 type GitHub struct {
-	HostName      string       `yaml:"hostname"`
-	CA            CA           `yaml:"ca"`
+	HostName      string       `yaml:"hostname,omitempty"`
+	CA            *CA          `yaml:"ca,omitempty"`
 	ClientID      string       `yaml:"clientID"`
 	ClientSecret  ClientSecret `yaml:"clientSecret"`
-	Organizations []string     `yaml:"organizations"`
-	Teams         []string     `yaml:"teams"`
+	Organizations []string     `yaml:"organizations,omitempty"`
+	Teams         []string     `yaml:"teams,omitempty"`
 }
 
 func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityProviderGitHub, secrets.Secret, *configmaps.ConfigMap, error) {
@@ -46,14 +46,13 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 	idP.Login = p.UseAsLogin
 	idP.MappingMethod = p.MappingMethod
 	idP.GitHub.HostName = github.Hostname
-	idP.GitHub.CA.Name = github.CA
 	idP.GitHub.ClientID = github.ClientID
 	idP.GitHub.Organizations = github.Organizations
 	idP.GitHub.Teams = github.Teams
 
 	if github.CA != "" {
 		caConfigmap = configmaps.GenConfigMap("github-configmap", OAuthNamespace, p.CAData)
-		idP.GitHub.CA.Name = caConfigmap.Metadata.Name
+		idP.GitHub.CA = &CA{Name: caConfigmap.Metadata.Name}
 	}
 
 	secretName := p.Name + "-secret"

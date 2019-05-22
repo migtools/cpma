@@ -16,9 +16,9 @@ type IdentityProviderLDAP struct {
 // LDAP provider specific data
 type LDAP struct {
 	Attributes   LDAPAttributes `yaml:"attributes"`
-	BindDN       string         `yaml:"bindDN"`
-	BindPassword string         `yaml:"bindPassword"`
-	CA           CA             `yaml:"ca"`
+	BindDN       string         `yaml:"bindDN,omitempty"`
+	BindPassword string         `yaml:"bindPassword,omitempty"`
+	CA           *CA            `yaml:"ca,omitempty"`
 	Insecure     bool           `yaml:"insecure"`
 	URL          string         `yaml:"url"`
 }
@@ -53,10 +53,11 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (IdentityProvi
 	idP.LDAP.Attributes.Name = ldap.Attributes.Name
 	idP.LDAP.Attributes.PreferredUsername = ldap.Attributes.PreferredUsername
 	idP.LDAP.BindDN = ldap.BindDN
+	idP.LDAP.BindPassword = ldap.BindPassword.Value
 
 	if ldap.CA != "" {
 		caConfigmap = configmaps.GenConfigMap("ldap-configmap", OAuthNamespace, p.CAData)
-		idP.LDAP.CA.Name = caConfigmap.Metadata.Name
+		idP.LDAP.CA = &CA{Name: caConfigmap.Metadata.Name}
 	}
 
 	idP.LDAP.Insecure = ldap.Insecure

@@ -63,9 +63,9 @@ func TestTransformMasterConfigKeystone(t *testing.T) {
 	keystoneIDP.MappingMethod = "claim"
 	keystoneIDP.Keystone.DomainName = "default"
 	keystoneIDP.Keystone.URL = "http://fake.url:5000"
-	keystoneIDP.Keystone.CA.Name = "keystone-configmap"
-	keystoneIDP.Keystone.TLSClientCert.Name = "my_keystone_provider-client-cert-secret"
-	keystoneIDP.Keystone.TLSClientKey.Name = "my_keystone_provider-client-key-secret"
+	keystoneIDP.Keystone.CA = &oauth.CA{Name: "keystone-configmap"}
+	keystoneIDP.Keystone.TLSClientCert = &oauth.TLSClientCert{Name: "my_keystone_provider-client-cert-secret"}
+	keystoneIDP.Keystone.TLSClientKey = &oauth.TLSClientKey{Name: "my_keystone_provider-client-key-secret"}
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, keystoneIDP)
 

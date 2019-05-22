@@ -62,9 +62,9 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 	basicAuthIDP.Name = "my_remote_basic_auth_provider"
 	basicAuthIDP.MappingMethod = "claim"
 	basicAuthIDP.BasicAuth.URL = "https://www.example.com/"
-	basicAuthIDP.BasicAuth.TLSClientCert.Name = "my_remote_basic_auth_provider-client-cert-secret"
-	basicAuthIDP.BasicAuth.TLSClientKey.Name = "my_remote_basic_auth_provider-client-key-secret"
-	basicAuthIDP.BasicAuth.CA.Name = "basicauth-configmap"
+	basicAuthIDP.BasicAuth.TLSClientCert = &oauth.TLSClientCert{Name: "my_remote_basic_auth_provider-client-cert-secret"}
+	basicAuthIDP.BasicAuth.TLSClientKey = &oauth.TLSClientKey{Name: "my_remote_basic_auth_provider-client-key-secret"}
+	basicAuthIDP.BasicAuth.CA = &oauth.CA{Name: "basicauth-configmap"}
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, basicAuthIDP)
 

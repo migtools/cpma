@@ -17,7 +17,7 @@ type IdentityProviderGitLab struct {
 // GitLab provider specific data
 type GitLab struct {
 	URL          string       `yaml:"url"`
-	CA           CA           `yaml:"ca"`
+	CA           *CA          `yaml:"ca,omitempty"`
 	ClientID     string       `yaml:"clientID"`
 	ClientSecret ClientSecret `yaml:"clientSecret"`
 }
@@ -41,12 +41,11 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (IdentityPro
 	idP.Login = p.UseAsLogin
 	idP.MappingMethod = p.MappingMethod
 	idP.GitLab.URL = gitlab.URL
-	idP.GitLab.CA.Name = gitlab.CA
 	idP.GitLab.ClientID = gitlab.ClientID
 
 	if gitlab.CA != "" {
 		caConfigmap = configmaps.GenConfigMap("gitlab-configmap", OAuthNamespace, p.CAData)
-		idP.GitLab.CA.Name = caConfigmap.Metadata.Name
+		idP.GitLab.CA = &CA{Name: caConfigmap.Metadata.Name}
 	}
 
 	secretName := p.Name + "-secret"

@@ -12,30 +12,15 @@ spec:
     type: BasicAuth
     basicAuth:
       url: https://www.example.com/
-      ca:
-        name: basicauth-configmap
-      tlsClientCert:
-        name: my_remote_basic_auth_provider-client-cert-secret
-      tlsClientKey:
-        name: my_remote_basic_auth_provider-client-key-secret
   - name: github123456789
     challenge: false
     login: true
     mappingMethod: claim
     type: GitHub
     github:
-      hostname: test.example.com
-      ca:
-        name: github-configmap
       clientID: 2d85ea3f45d6777bffd7
       clientSecret:
         name: github123456789-secret
-      organizations:
-      - myorganization1
-      - myorganization2
-      teams:
-      - myorganization1/team-a
-      - myorganization2/team-b
   - name: gitlab123456789
     challenge: true
     login: true
@@ -43,8 +28,6 @@ spec:
     type: GitLab
     gitlab:
       url: https://gitlab.com/
-      ca:
-        name: gitlab-configmap
       clientID: fake-id
       clientSecret:
         name: gitlab123456789-secret
@@ -57,7 +40,6 @@ spec:
       clientID: 82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com
       clientSecret:
         name: google123456789123456789-secret
-      hostedDomain: test.example.com
   - name: htpasswd_auth
     challenge: true
     login: true
@@ -74,12 +56,6 @@ spec:
     keystone:
       domainName: default
       url: http://fake.url:5000
-      ca:
-        name: keystone-configmap
-      tlsClientCert:
-        name: my_keystone_provider-client-cert-secret
-      tlsClientKey:
-        name: my_keystone_provider-client-key-secret
   - name: my_ldap_provider
     challenge: true
     login: true
@@ -95,10 +71,6 @@ spec:
         - cn
         preferredUsername:
         - uid
-      bindDN: "123"
-      bindPassword: "321"
-      ca:
-        name: ldap-configmap
       insecure: false
       url: ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid
   - name: my_request_header_provider
@@ -107,12 +79,6 @@ spec:
     mappingMethod: claim
     type: RequestHeader
     requestHeader:
-      challengeURL: https://example.com
-      loginURL: https://example.com
-      ca:
-        name: requestheader-configmap
-      сlientCommonNames:
-      - my-auth-proxy
       headers:
       - X-Remote-User
       - SSO-User

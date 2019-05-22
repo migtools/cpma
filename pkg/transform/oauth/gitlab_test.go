@@ -62,7 +62,7 @@ func TestTransformMasterConfigGitlab(t *testing.T) {
 	gitlabIDP.MappingMethod = "claim"
 	gitlabIDP.Name = "gitlab123456789"
 	gitlabIDP.GitLab.URL = "https://gitlab.com/"
-	gitlabIDP.GitLab.CA.Name = "gitlab-configmap"
+	gitlabIDP.GitLab.CA = &oauth.CA{Name: "gitlab-configmap"}
 	gitlabIDP.GitLab.ClientID = "fake-id"
 	gitlabIDP.GitLab.ClientSecret.Name = "gitlab123456789-secret"
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, gitlabIDP)
