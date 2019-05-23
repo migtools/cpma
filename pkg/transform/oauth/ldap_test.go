@@ -1,52 +1,19 @@
 package oauth_test
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
-	"k8s.io/client-go/kubernetes/scheme"
-
-	configv1 "github.com/openshift/api/legacyconfig/v1"
-	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
+	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 )
 
 func TestTransformMasterConfigLDAP(t *testing.T) {
-	file := "testdata/ldap-test-master-config.yaml"
-
-	content, err := ioutil.ReadFile(file)
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/ldap/test-master-config.yaml")
 	require.NoError(t, err)
-
-	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	var masterV3 configv1.MasterConfig
-
-	_, _, err = serializer.Decode(content, nil, &masterV3)
-	require.NoError(t, err)
-
-	var identityProviders []oauth.IdentityProvider
-	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
-		providerJSON, err := identityProvider.Provider.MarshalJSON()
-		require.NoError(t, err)
-
-		provider := oauth.Provider{}
-		json.Unmarshal(providerJSON, &provider)
-
-		identityProviders = append(identityProviders,
-			oauth.IdentityProvider{
-				Kind:            provider.Kind,
-				APIVersion:      provider.APIVersion,
-				MappingMethod:   identityProvider.MappingMethod,
-				Name:            identityProvider.Name,
-				Provider:        identityProvider.Provider,
-				HTFileName:      provider.File,
-				UseAsChallenger: identityProvider.UseAsChallenger,
-				UseAsLogin:      identityProvider.UseAsLogin,
-			})
-	}
 
 	var expectedCrd oauth.CRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
@@ -87,6 +54,78 @@ func TestTransformMasterConfigLDAP(t *testing.T) {
 			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
+		})
+	}
+}
+
+func TestLDAPValidation(t *testing.T) {
+	testCases := []struct {
+		name         string
+		requireError bool
+		inputFile    string
+		expectedErr  error
+	}{
+		{
+			name:         "validate ldap provider",
+			requireError: false,
+			inputFile:    "testdata/ldap/test-master-config.yaml",
+		},
+		{
+			name:         "fail on invalid name in ldap provider",
+			requireError: true,
+			inputFile:    "testdata/ldap/invalid-name-master-config.yaml",
+			expectedErr:  errors.New("Name can't be empty"),
+		},
+		{
+			name:         "fail on invalid mapping method in ldap provider",
+			requireError: true,
+			inputFile:    "testdata/ldap/invalid-mapping-master-config.yaml",
+			expectedErr:  errors.New("Not valid mapping method"),
+		},
+		{
+			name:         "fail on invalid ids in ldap provider",
+			requireError: true,
+			inputFile:    "testdata/ldap/invalid-ids-master-config.yaml",
+			expectedErr:  errors.New("ID can't be empty"),
+		},
+		{
+			name:         "fail on invalid emails in ldap provider",
+			requireError: true,
+			inputFile:    "testdata/ldap/invalid-emails-master-config.yaml",
+			expectedErr:  errors.New("Email can't be empty"),
+		},
+		{
+			name:         "fail on invalid names in ldap provider",
+			requireError: true,
+			inputFile:    "testdata/ldap/invalid-names-master-config.yaml",
+			expectedErr:  errors.New("Name can't be empty"),
+		},
+		{
+			name:         "fail on invalid preferred usernames in ldap provider",
+			requireError: true,
+			inputFile:    "testdata/ldap/invalid-usernames-master-config.yaml",
+			expectedErr:  errors.New("Preferred username can't be empty"),
+		},
+		{
+			name:         "fail on invalid url in ldap provider",
+			requireError: true,
+			inputFile:    "testdata/ldap/invalid-url-master-config.yaml",
+			expectedErr:  errors.New("URL can't be empty"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			identityProvider, err := cpmatest.LoadIPTestData(tc.inputFile)
+			require.NoError(t, err)
+
+			err = oauth.Validate(identityProvider)
+
+			if tc.requireError {
+				assert.Equal(t, tc.expectedErr, err)
+			} else {
+				require.NoError(t, err)
+			}
 		})
 	}
 }

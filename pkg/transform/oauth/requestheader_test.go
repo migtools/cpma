@@ -1,6 +1,7 @@
 package oauth_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
@@ -10,7 +11,7 @@ import (
 )
 
 func TestTransformMasterConfigRequestHeader(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIPTestData("testdata/requestheader-test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/requestheader/test-master-config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD
@@ -51,6 +52,54 @@ func TestTransformMasterConfigRequestHeader(t *testing.T) {
 			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
+		})
+	}
+}
+
+func TestRequestHeaderValidation(t *testing.T) {
+	testCases := []struct {
+		name         string
+		requireError bool
+		inputFile    string
+		expectedErr  error
+	}{
+		{
+			name:         "validate requestheader provider",
+			requireError: false,
+			inputFile:    "testdata/requestheader/test-master-config.yaml",
+		},
+		{
+			name:         "fail on invalid name in requestheader provider",
+			requireError: true,
+			inputFile:    "testdata/requestheader/invalid-name-master-config.yaml",
+			expectedErr:  errors.New("Name can't be empty"),
+		},
+		{
+			name:         "fail on invalid mapping method in requestheader provider",
+			requireError: true,
+			inputFile:    "testdata/requestheader/invalid-mapping-master-config.yaml",
+			expectedErr:  errors.New("Not valid mapping method"),
+		},
+		{
+			name:         "fail on invalid headers in requestheader provider",
+			requireError: true,
+			inputFile:    "testdata/requestheader/invalid-headers-master-config.yaml",
+			expectedErr:  errors.New("Headers can't be empty"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			identityProvider, err := cpmatest.LoadIPTestData(tc.inputFile)
+			require.NoError(t, err)
+
+			err = oauth.Validate(identityProvider)
+
+			if tc.requireError {
+				assert.Equal(t, tc.expectedErr, err)
+			} else {
+				require.NoError(t, err)
+			}
 		})
 	}
 }

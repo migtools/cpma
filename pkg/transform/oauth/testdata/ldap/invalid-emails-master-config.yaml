@@ -1,0 +1,34 @@
+oauthConfig:
+  assetPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com/console/
+  grantConfig:
+    method: auto
+  identityProviders:
+  - name: "my_ldap_provider" 
+    challenge: true 
+    login: true 
+    mappingMethod: claim 
+    provider:
+      apiVersion: v1
+      kind: LDAPPasswordIdentityProvider
+      attributes:
+        id: 
+        - dn
+        name: 
+        - cn
+        preferredUsername: 
+        - uid
+      bindDN: "123" 
+      bindPassword: "321" 
+      ca: my-ldap-ca-bundle.crt 
+      insecure: false 
+      url: "ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid"
+  masterCA: ca-bundle.crt
+  masterPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com:443
+  masterURL: https://openshift.internal.gildub2.lab.pnq2.cee.redhat.com:443
+  sessionConfig:
+    sessionMaxAgeSeconds: 3600
+    sessionName: ssn
+    sessionSecretsFile: /etc/origin/master/session-secrets.yaml
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 86400
+    authorizeTokenMaxAgeSeconds: 500

@@ -96,6 +96,10 @@ func validateLDAPProvider(serializer *json.Serializer, p IdentityProvider) error
 		return errors.New("Name can't be empty")
 	}
 
+	if len(ldap.Attributes.PreferredUsername) == 0 {
+		return errors.New("Preferred username can't be empty")
+	}
+
 	if ldap.URL == "" {
 		return errors.New("URL can't be empty")
 	}
