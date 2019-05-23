@@ -20,9 +20,9 @@ type RequestHeader struct {
 	CA                       *CA      `yaml:"ca,omitempty"`
 	ClientCommonNames        []string `yaml:"сlientCommonNames,omitempty"`
 	Headers                  []string `yaml:"headers"`
-	EmailHeaders             []string `yaml:"emailHeaders"`
-	NameHeaders              []string `yaml:"nameHeaders"`
-	PreferredUsernameHeaders []string `yaml:"preferredUsernameHeaders"`
+	EmailHeaders             []string `yaml:"emailHeaders,omitempty"`
+	NameHeaders              []string `yaml:"nameHeaders,omitempty"`
+	PreferredUsernameHeaders []string `yaml:"preferredUsernameHeaders,omitempty"`
 }
 
 func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderRequestHeader, *configmaps.ConfigMap, error) {
