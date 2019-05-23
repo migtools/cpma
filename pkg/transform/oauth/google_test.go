@@ -10,7 +10,7 @@ import (
 )
 
 func TestTransformMasterConfigGoogle(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/google-test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/google-test-master-config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD

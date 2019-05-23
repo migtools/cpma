@@ -343,7 +343,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 				return nil
 			}
 
-			identityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/bulk-test-master-config.yaml")
+			identityProviders, err := cpmatest.LoadIPTestData("testdata/bulk-test-master-config.yaml")
 			require.NoError(t, err)
 
 			testExtraction := OAuthExtraction{

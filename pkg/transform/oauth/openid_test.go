@@ -10,7 +10,7 @@ import (
 )
 
 func TestTransformMasterConfigOpenID(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/openid-test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/openid-test-master-config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD

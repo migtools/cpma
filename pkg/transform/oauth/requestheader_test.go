@@ -10,7 +10,7 @@ import (
 )
 
 func TestTransformMasterConfigRequestHeader(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/requestheader-test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/requestheader-test-master-config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD

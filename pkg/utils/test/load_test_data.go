@@ -12,8 +12,8 @@ import (
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-// LoadIdentityProvidersTestData load identity providers from file
-func LoadIdentityProvidersTestData(file string) ([]oauth.IdentityProvider, error) {
+// LoadIPTestData load identity providers from file
+func LoadIPTestData(file string) ([]oauth.IdentityProvider, error) {
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, err

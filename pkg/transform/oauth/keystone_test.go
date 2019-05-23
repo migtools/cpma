@@ -10,7 +10,7 @@ import (
 )
 
 func TestTransformMasterConfigKeystone(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/keystone-test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/keystone-test-master-config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD

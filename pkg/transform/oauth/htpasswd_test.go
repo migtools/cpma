@@ -10,7 +10,7 @@ import (
 )
 
 func TestTransformMasterConfigHtpasswd(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/htpasswd-test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/htpasswd-test-master-config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD

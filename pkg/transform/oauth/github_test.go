@@ -11,7 +11,7 @@ import (
 )
 
 func TestTransformMasterConfigGithub(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/github/test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/github/test-master-config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD
@@ -54,19 +54,19 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 }
 
 func TestGithubValidation(t *testing.T) {
-	validIdentityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/github/test-master-config.yaml")
+	validIP, err := cpmatest.LoadIPTestData("testdata/github/test-master-config.yaml")
 	require.NoError(t, err)
 
-	invalidNameIdentityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/github/invalid-name-master-config.yaml")
+	invalidNameIP, err := cpmatest.LoadIPTestData("testdata/github/invalid-name-master-config.yaml")
 	require.NoError(t, err)
 
-	invalidMappingMethodIdentityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/github/invalid-mapping-master-config.yaml")
+	invalidMappingMethodIP, err := cpmatest.LoadIPTestData("testdata/github/invalid-mapping-master-config.yaml")
 	require.NoError(t, err)
 
-	invalidClientIDProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/github/invalid-clientid-master-config.yaml")
+	invalidClientIdIP, err := cpmatest.LoadIPTestData("testdata/github/invalid-clientid-master-config.yaml")
 	require.NoError(t, err)
 
-	invalidClientSecretProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/github/invalid-clientsecret-master-config.yaml")
+	invalidClientSecretIP, err := cpmatest.LoadIPTestData("testdata/github/invalid-clientsecret-master-config.yaml")
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -78,30 +78,30 @@ func TestGithubValidation(t *testing.T) {
 		{
 			name:         "validate github provider",
 			requireError: false,
-			inputData:    validIdentityProviders,
+			inputData:    validIP,
 		},
 		{
 			name:         "fail on invalid name in github provider",
 			requireError: true,
-			inputData:    invalidNameIdentityProviders,
+			inputData:    invalidNameIP,
 			expectedErr:  errors.New("Name can't be empty"),
 		},
 		{
 			name:         "fail on invalid mapping method in github provider",
 			requireError: true,
-			inputData:    invalidMappingMethodIdentityProviders,
+			inputData:    invalidMappingMethodIP,
 			expectedErr:  errors.New("Not valid mapping method"),
 		},
 		{
 			name:         "fail on invalid clientid in github provider",
 			requireError: true,
-			inputData:    invalidClientIDProviders,
+			inputData:    invalidClientIdIP,
 			expectedErr:  errors.New("Client ID can't be empty"),
 		},
 		{
 			name:         "fail on invalid client secret in github provider",
 			requireError: true,
-			inputData:    invalidClientSecretProviders,
+			inputData:    invalidClientSecretIP,
 			expectedErr:  errors.New("Client Secret can't be empty"),
 		},
 	}

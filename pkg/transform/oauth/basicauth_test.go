@@ -11,7 +11,7 @@ import (
 )
 
 func TestTransformMasterConfigBasicAuth(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/basicauth/test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/basicauth/test-master-config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD
@@ -53,19 +53,19 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 }
 
 func TestBasicAuthValidation(t *testing.T) {
-	validIdentityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/basicauth/test-master-config.yaml")
+	validIP, err := cpmatest.LoadIPTestData("testdata/basicauth/test-master-config.yaml")
 	require.NoError(t, err)
 
-	invalidNameIdentityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/basicauth/invalid-name-master-config.yaml")
+	invalidNameIP, err := cpmatest.LoadIPTestData("testdata/basicauth/invalid-name-master-config.yaml")
 	require.NoError(t, err)
 
-	invalidMappingMethodIdentityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/basicauth/invalid-mapping-master-config.yaml")
+	invalidMappingMethodIP, err := cpmatest.LoadIPTestData("testdata/basicauth/invalid-mapping-master-config.yaml")
 	require.NoError(t, err)
 
-	invalidURLIdentityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/basicauth/invalid-url-master-config.yaml")
+	invalidURLIP, err := cpmatest.LoadIPTestData("testdata/basicauth/invalid-url-master-config.yaml")
 	require.NoError(t, err)
 
-	invalidKeyFileIdentityProviders, err := cpmatest.LoadIdentityProvidersTestData("testdata/basicauth/invalid-keyfile-master-config.yaml")
+	invalidKeyFileIP, err := cpmatest.LoadIPTestData("testdata/basicauth/invalid-keyfile-master-config.yaml")
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -77,30 +77,30 @@ func TestBasicAuthValidation(t *testing.T) {
 		{
 			name:         "validate basic auth provider",
 			requireError: false,
-			inputData:    validIdentityProviders,
+			inputData:    validIP,
 		},
 		{
 			name:         "fail on invalid name in basic auth provider",
 			requireError: true,
-			inputData:    invalidNameIdentityProviders,
+			inputData:    invalidNameIP,
 			expectedErr:  errors.New("Name can't be empty"),
 		},
 		{
 			name:         "fail on invalid mapping method in basic auth provider",
 			requireError: true,
-			inputData:    invalidMappingMethodIdentityProviders,
+			inputData:    invalidMappingMethodIP,
 			expectedErr:  errors.New("Not valid mapping method"),
 		},
 		{
 			name:         "fail on invalid url in basic auth provider",
 			requireError: true,
-			inputData:    invalidURLIdentityProviders,
+			inputData:    invalidURLIP,
 			expectedErr:  errors.New("URL can't be empty"),
 		},
 		{
 			name:         "fail on invalid key file in basic auth provider",
 			requireError: true,
-			inputData:    invalidKeyFileIdentityProviders,
+			inputData:    invalidKeyFileIP,
 			expectedErr:  errors.New("Key file can't be empty if cert file is specified"),
 		},
 	}
