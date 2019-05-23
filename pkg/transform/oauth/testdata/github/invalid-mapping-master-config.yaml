@@ -1,0 +1,32 @@
+oauthConfig:
+  assetPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com/console/
+  grantConfig:
+    method: auto
+  identityProviders:
+  - name: github123456789
+    challenge: false
+    login: true
+    mappingMethod: notvalid
+    provider:
+      apiVersion: v1
+      kind: GitHubIdentityProvider
+      ca: github.crt
+      clientID: 2d85ea3f45d6777bffd7
+      clientSecret: e16a59ad33d7c29fd4354f46059f0950c609a7ea
+      hostname: test.example.com
+      organizations:
+      - myorganization1
+      - myorganization2
+      teams:
+      - myorganization1/team-a
+      - myorganization2/team-b
+  masterCA: ca-bundle.crt
+  masterPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com:443
+  masterURL: https://openshift.internal.gildub2.lab.pnq2.cee.redhat.com:443
+  sessionConfig:
+    sessionMaxAgeSeconds: 3600
+    sessionName: ssn
+    sessionSecretsFile: /etc/origin/master/session-secrets.yaml
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 86400
+    authorizeTokenMaxAgeSeconds: 500

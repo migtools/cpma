@@ -84,10 +84,6 @@ func validateGithubProvider(serializer *json.Serializer, p IdentityProvider) err
 		return err
 	}
 
-	if github.Hostname == "" {
-		return errors.New("Not valid hostname")
-	}
-
 	if err := validateClientData(github.ClientID, github.ClientSecret); err != nil {
 		return err
 	}
