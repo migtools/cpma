@@ -82,12 +82,6 @@ spec:
       headers:
       - X-Remote-User
       - SSO-User
-      emailHeaders:
-      - X-Remote-User-Email
-      nameHeaders:
-      - X-Remote-User-Display-Name
-      preferredUsernameHeaders:
-      - X-Remote-User-Login
   - name: my_openid_connect
     challenge: false
     login: true
