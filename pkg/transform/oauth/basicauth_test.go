@@ -53,61 +53,49 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 }
 
 func TestBasicAuthValidation(t *testing.T) {
-	validIP, err := cpmatest.LoadIPTestData("testdata/basicauth/test-master-config.yaml")
-	require.NoError(t, err)
-
-	invalidNameIP, err := cpmatest.LoadIPTestData("testdata/basicauth/invalid-name-master-config.yaml")
-	require.NoError(t, err)
-
-	invalidMappingMethodIP, err := cpmatest.LoadIPTestData("testdata/basicauth/invalid-mapping-master-config.yaml")
-	require.NoError(t, err)
-
-	invalidURLIP, err := cpmatest.LoadIPTestData("testdata/basicauth/invalid-url-master-config.yaml")
-	require.NoError(t, err)
-
-	invalidKeyFileIP, err := cpmatest.LoadIPTestData("testdata/basicauth/invalid-keyfile-master-config.yaml")
-	require.NoError(t, err)
-
 	testCases := []struct {
 		name         string
 		requireError bool
-		inputData    []oauth.IdentityProvider
+		inputFile    string
 		expectedErr  error
 	}{
 		{
 			name:         "validate basic auth provider",
 			requireError: false,
-			inputData:    validIP,
+			inputFile:    "testdata/basicauth/test-master-config.yaml",
 		},
 		{
 			name:         "fail on invalid name in basic auth provider",
 			requireError: true,
-			inputData:    invalidNameIP,
+			inputFile:    "testdata/basicauth/invalid-name-master-config.yaml",
 			expectedErr:  errors.New("Name can't be empty"),
 		},
 		{
 			name:         "fail on invalid mapping method in basic auth provider",
 			requireError: true,
-			inputData:    invalidMappingMethodIP,
+			inputFile:    "testdata/basicauth/invalid-mapping-master-config.yaml",
 			expectedErr:  errors.New("Not valid mapping method"),
 		},
 		{
 			name:         "fail on invalid url in basic auth provider",
 			requireError: true,
-			inputData:    invalidURLIP,
+			inputFile:    "testdata/basicauth/invalid-url-master-config.yaml",
 			expectedErr:  errors.New("URL can't be empty"),
 		},
 		{
 			name:         "fail on invalid key file in basic auth provider",
 			requireError: true,
-			inputData:    invalidKeyFileIP,
+			inputFile:    "testdata/basicauth/invalid-keyfile-master-config.yaml",
 			expectedErr:  errors.New("Key file can't be empty if cert file is specified"),
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err = oauth.Validate(tc.inputData)
+			identityProvider, err := cpmatest.LoadIPTestData(tc.inputFile)
+			require.NoError(t, err)
+
+			err = oauth.Validate(identityProvider)
 
 			if tc.requireError {
 				assert.Equal(t, tc.expectedErr, err)

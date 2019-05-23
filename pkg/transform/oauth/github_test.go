@@ -54,61 +54,49 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 }
 
 func TestGithubValidation(t *testing.T) {
-	validIP, err := cpmatest.LoadIPTestData("testdata/github/test-master-config.yaml")
-	require.NoError(t, err)
-
-	invalidNameIP, err := cpmatest.LoadIPTestData("testdata/github/invalid-name-master-config.yaml")
-	require.NoError(t, err)
-
-	invalidMappingMethodIP, err := cpmatest.LoadIPTestData("testdata/github/invalid-mapping-master-config.yaml")
-	require.NoError(t, err)
-
-	invalidClientIdIP, err := cpmatest.LoadIPTestData("testdata/github/invalid-clientid-master-config.yaml")
-	require.NoError(t, err)
-
-	invalidClientSecretIP, err := cpmatest.LoadIPTestData("testdata/github/invalid-clientsecret-master-config.yaml")
-	require.NoError(t, err)
-
 	testCases := []struct {
 		name         string
 		requireError bool
-		inputData    []oauth.IdentityProvider
+		inputFile    string
 		expectedErr  error
 	}{
 		{
 			name:         "validate github provider",
 			requireError: false,
-			inputData:    validIP,
+			inputFile:    "testdata/github/test-master-config.yaml",
 		},
 		{
 			name:         "fail on invalid name in github provider",
 			requireError: true,
-			inputData:    invalidNameIP,
+			inputFile:    "testdata/github/invalid-name-master-config.yaml",
 			expectedErr:  errors.New("Name can't be empty"),
 		},
 		{
 			name:         "fail on invalid mapping method in github provider",
 			requireError: true,
-			inputData:    invalidMappingMethodIP,
+			inputFile:    "testdata/github/invalid-mapping-master-config.yaml",
 			expectedErr:  errors.New("Not valid mapping method"),
 		},
 		{
 			name:         "fail on invalid clientid in github provider",
 			requireError: true,
-			inputData:    invalidClientIdIP,
+			inputFile:    "testdata/github/invalid-clientid-master-config.yaml",
 			expectedErr:  errors.New("Client ID can't be empty"),
 		},
 		{
 			name:         "fail on invalid client secret in github provider",
 			requireError: true,
-			inputData:    invalidClientSecretIP,
+			inputFile:    "testdata/github/invalid-clientsecret-master-config.yaml",
 			expectedErr:  errors.New("Client Secret can't be empty"),
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err = oauth.Validate(tc.inputData)
+			identityProvider, err := cpmatest.LoadIPTestData(tc.inputFile)
+			require.NoError(t, err)
+
+			err = oauth.Validate(identityProvider)
 
 			if tc.requireError {
 				assert.Equal(t, tc.expectedErr, err)
