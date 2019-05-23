@@ -1,6 +1,8 @@
 package oauth
 
 import (
+	"errors"
+
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -56,4 +58,31 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	}
 
 	return idP, secret, caConfigmap, nil
+}
+
+func validateGitLabProvider(serializer *json.Serializer, p IdentityProvider) error {
+	var gitlab configv1.GitLabIdentityProvider
+
+	_, _, err := serializer.Decode(p.Provider.Raw, nil, &gitlab)
+	if err != nil {
+		return err
+	}
+
+	if p.Name == "" {
+		return errors.New("Name can't be empty")
+	}
+
+	if err := validateMappingMethod(p.MappingMethod); err != nil {
+		return err
+	}
+
+	if gitlab.URL == "" {
+		return errors.New("URL can't be empty")
+	}
+
+	if err := validateClientData(gitlab.ClientID, gitlab.ClientSecret); err != nil {
+		return err
+	}
+
+	return nil
 }

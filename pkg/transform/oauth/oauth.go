@@ -174,14 +174,56 @@ func (oauth *CRD) GenYAML() ([]byte, error) {
 	return yamlBytes, nil
 }
 
+// Validate validate oauth providers
+func Validate(identityProviders []IdentityProvider) error {
+	var err error
+	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+
+	for _, identityProvider := range identityProviders {
+		switch identityProvider.Kind {
+		case "BasicAuthPasswordIdentityProvider":
+			err = validateBasicAuthProvider(serializer, identityProvider)
+		case "GitHubIdentityProvider":
+			err = validateGithubProvider(serializer, identityProvider)
+		case "GitLabIdentityProvider":
+			err = validateGitLabProvider(serializer, identityProvider)
+		case "GoogleIdentityProvider":
+			err = validateGoogleProvider(serializer, identityProvider)
+		case "HTPasswdPasswordIdentityProvider":
+			err = validateHTPasswdProvider(serializer, identityProvider)
+		case "KeystonePasswordIdentityProvider":
+			err = validateKeystoneProvider(serializer, identityProvider)
+		case "LDAPPasswordIdentityProvider":
+			err = validateLDAPProvider(serializer, identityProvider)
+		case "OpenIDIdentityProvider":
+			err = validateOpenIDProvider(serializer, identityProvider)
+		case "RequestHeaderIdentityProvider":
+			err = validateRequestHeaderProvider(serializer, identityProvider)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func validateMappingMethod(method string) error {
 	switch method {
-	case "claim":
-	case "lookup":
-	case "generate":
-	case "add":
+	case "claim", "lookup", "generate", "add":
 		return nil
 	}
 
 	return errors.New("Not valid mapping method")
+}
+
+func validateClientData(clientID string, clientSecret configv1.StringSource) error {
+	if clientID == "" {
+		return errors.New("Client ID can't be empty")
+	}
+
+	if clientSecret.Value == "" && clientSecret.Env == "" && clientSecret.File == "" {
+		return errors.New("Client Secret can't be empty")
+	}
+
+	return nil
 }

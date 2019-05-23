@@ -9,8 +9,6 @@ import (
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/sirupsen/logrus"
-	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
-	"k8s.io/client-go/kubernetes/scheme"
 )
 
 // OAuthExtraction holds OAuth data extracted from OCP3
@@ -152,19 +150,9 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 
 // Validate confirms we have recieved good OAuth configuration data during Extract
 func (e OAuthExtraction) Validate() error {
-	var err error
-
-	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-
-	for _, identityProvider := range e.IdentityProviders {
-		switch identityProvider.Kind {
-		case "GitHubIdentityProvider":
-			err = oauth.ValidateGithubProvider(serializer, identityProvider)
-		}
-
-		if err != nil {
-			return err
-		}
+	err := oauth.Validate(e.IdentityProviders)
+	if err != nil {
+		return err
 	}
 
 	return nil

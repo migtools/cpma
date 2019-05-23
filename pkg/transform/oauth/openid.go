@@ -1,6 +1,8 @@
 package oauth
 
 import (
+	"errors"
+
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
@@ -66,4 +68,39 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	}
 
 	return idP, secret, nil
+}
+
+func validateOpenIDProvider(serializer *json.Serializer, p IdentityProvider) error {
+	var openID configv1.OpenIDIdentityProvider
+
+	_, _, err := serializer.Decode(p.Provider.Raw, nil, &openID)
+	if err != nil {
+		return err
+	}
+
+	if p.Name == "" {
+		return errors.New("Name can't be empty")
+	}
+
+	if err := validateMappingMethod(p.MappingMethod); err != nil {
+		return err
+	}
+
+	if err := validateClientData(openID.ClientID, openID.ClientSecret); err != nil {
+		return err
+	}
+
+	if len(openID.Claims.ID) == 0 && len(openID.Claims.PreferredUsername) == 0 && len(openID.Claims.Name) == 0 && len(openID.Claims.Email) == 0 {
+		return errors.New("All claims are empty. At least one is required")
+	}
+
+	if openID.URLs.Authorize == "" {
+		return errors.New("Authorization endpoint can't be empty")
+	}
+
+	if openID.URLs.Token == "" {
+		return errors.New("Token endpoint can't be empty")
+	}
+
+	return nil
 }

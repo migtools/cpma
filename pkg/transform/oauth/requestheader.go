@@ -1,6 +1,8 @@
 package oauth
 
 import (
+	"errors"
+
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
@@ -57,4 +59,27 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*Ide
 	idP.RequestHeader.PreferredUsernameHeaders = requestHeader.PreferredUsernameHeaders
 
 	return idP, caConfigmap, nil
+}
+
+func validateRequestHeaderProvider(serializer *json.Serializer, p IdentityProvider) error {
+	var requestHeader configv1.RequestHeaderIdentityProvider
+
+	_, _, err := serializer.Decode(p.Provider.Raw, nil, &requestHeader)
+	if err != nil {
+		return err
+	}
+
+	if p.Name == "" {
+		return errors.New("Name can't be empty")
+	}
+
+	if err := validateMappingMethod(p.MappingMethod); err != nil {
+		return err
+	}
+
+	if len(requestHeader.Headers) == 0 {
+		return errors.New("Headers can't be empty")
+	}
+
+	return nil
 }

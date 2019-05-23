@@ -68,8 +68,7 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	return idP, secret, caConfigmap, nil
 }
 
-// ValidateGithubProvider validate github identity provider
-func ValidateGithubProvider(serializer *json.Serializer, p IdentityProvider) error {
+func validateGithubProvider(serializer *json.Serializer, p IdentityProvider) error {
 	var github configv1.GitHubIdentityProvider
 
 	_, _, err := serializer.Decode(p.Provider.Raw, nil, &github)
@@ -85,13 +84,12 @@ func ValidateGithubProvider(serializer *json.Serializer, p IdentityProvider) err
 		return err
 	}
 
-	// WIP - need a better validation for hostname
 	if github.Hostname == "" {
 		return errors.New("Not valid hostname")
 	}
 
-	if github.ClientID == "" {
-		return errors.New("Client ID can't be empty")
+	if err := validateClientData(github.ClientID, github.ClientSecret); err != nil {
+		return err
 	}
 
 	return nil

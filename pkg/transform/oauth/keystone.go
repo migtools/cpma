@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"encoding/base64"
+	"errors"
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -75,4 +76,35 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 	}
 
 	return idP, certSecret, keySecret, caConfigmap, nil
+}
+
+func validateKeystoneProvider(serializer *json.Serializer, p IdentityProvider) error {
+	var keystone configv1.KeystonePasswordIdentityProvider
+
+	_, _, err := serializer.Decode(p.Provider.Raw, nil, &keystone)
+	if err != nil {
+		return err
+	}
+
+	if p.Name == "" {
+		return errors.New("Name can't be empty")
+	}
+
+	if err := validateMappingMethod(p.MappingMethod); err != nil {
+		return err
+	}
+
+	if keystone.DomainName == "" {
+		return errors.New("Domain name can't be empty")
+	}
+
+	if keystone.URL == "" {
+		return errors.New("URL can't be empty")
+	}
+
+	if keystone.CertFile != "" && keystone.KeyFile == "" {
+		return errors.New("Key file can't be empty if cert file is specified")
+	}
+
+	return nil
 }
