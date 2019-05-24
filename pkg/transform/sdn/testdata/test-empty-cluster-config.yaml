@@ -1,0 +1,6 @@
+networkConfig:
+  clusterNetworks:
+  externalIPNetworkCIDRs:
+  - 0.0.0.0/0
+  networkPluginName: redhat/openshift-ovs-subnet
+  serviceNetworkCIDR: 172.30.0.0/16

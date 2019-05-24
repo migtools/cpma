@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"github.com/fusor/cpma/pkg/transform"
 	"github.com/fusor/cpma/pkg/transform/oauth"
-
-	"k8s.io/client-go/kubernetes/scheme"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 // LoadIPTestData load identity providers from file
@@ -55,4 +54,14 @@ func LoadIPTestData(file string) ([]oauth.IdentityProvider, error) {
 	}
 
 	return identityProviders, nil
+}
+
+// LoadSDNExtraction load SDN test data from config file
+func LoadSDNExtraction(file string) (transform.SDNExtraction, error) {
+	content, _ := ioutil.ReadFile(file)
+	var extraction transform.SDNExtraction
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	_, _, err := serializer.Decode(content, nil, &extraction.MasterConfig)
+
+	return extraction, err
 }
