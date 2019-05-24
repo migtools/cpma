@@ -1,16 +1,12 @@
 package transform
 
 import (
-	"errors"
-	"net"
-
 	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/config/decode"
 	"github.com/fusor/cpma/pkg/env"
-	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
-
+	"github.com/fusor/cpma/pkg/transform/sdn"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/sirupsen/logrus"
 )
 
 // SDNExtraction is an SDN specific extraction
@@ -18,47 +14,10 @@ type SDNExtraction struct {
 	configv1.MasterConfig
 }
 
-// NetworkCR describes Network CR for OCP4
-type NetworkCR struct {
-	APIVersion string  `yaml:"apiVersion"`
-	Kind       string  `yaml:"kind"`
-	Spec       SDNSpec `yaml:"spec"`
-}
-
-// SDNSpec is a SDN specific spec
-type SDNSpec struct {
-	ClusterNetworks []ClusterNetwork `yaml:"clusterNetwork"`
-	ServiceNetwork  string           `yaml:"serviceNetwork"`
-	DefaultNetwork  `yaml:"defaultNetwork"`
-}
-
-// ClusterNetwork contains CIDR and address size to assign to each node
-type ClusterNetwork struct {
-	CIDR       string `yaml:"cidr"`
-	HostPrefix int    `yaml:"hostPrefix"`
-}
-
-// DefaultNetwork containts network type and SDN plugin name
-type DefaultNetwork struct {
-	Type               string             `yaml:"type"`
-	OpenshiftSDNConfig OpenshiftSDNConfig `yaml:"openshiftSDNConfig"`
-}
-
-// OpenshiftSDNConfig is the Openshift SDN Configured Mode
-type OpenshiftSDNConfig struct {
-	Mode string `yaml:"mode"`
-}
-
 // SDNTransform is an SDN specific transform
 type SDNTransform struct {
 	Config *config.Config
 }
-
-const (
-	apiVersion         = "operator.openshift.io/v1"
-	kind               = "Network"
-	defaultNetworkType = "OpenShiftSDN"
-)
 
 // Transform convers OCP3 data to configuration useful for OCP4
 func (e SDNExtraction) Transform() (Output, error) {
@@ -66,12 +25,12 @@ func (e SDNExtraction) Transform() (Output, error) {
 
 	var manifests []Manifest
 
-	networkCR, err := SDNTranslate(e.MasterConfig)
+	networkCR, err := sdn.Translate(e.MasterConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	networkCRYAML, err := GenYAML(networkCR)
+	networkCRYAML, err := sdn.GenYAML(networkCR)
 	if err != nil {
 		return nil, err
 	}
@@ -82,30 +41,6 @@ func (e SDNExtraction) Transform() (Output, error) {
 	return ManifestOutput{
 		Manifests: manifests,
 	}, nil
-}
-
-// SDNTranslate is called by Transform to do the majority of the work in converting data
-func SDNTranslate(masterConfig configv1.MasterConfig) (NetworkCR, error) {
-	networkConfig := masterConfig.NetworkConfig
-	var networkCR NetworkCR
-
-	networkCR.APIVersion = apiVersion
-	networkCR.Kind = kind
-	networkCR.Spec.ServiceNetwork = networkConfig.ServiceNetworkCIDR
-	networkCR.Spec.DefaultNetwork.Type = defaultNetworkType
-
-	// Translate CIDRs and adress size for each node
-	translatedClusterNetworks := TranslateClusterNetworks(networkConfig.ClusterNetworks)
-	networkCR.Spec.ClusterNetworks = translatedClusterNetworks
-
-	// Translate network plugin name
-	selectedNetworkPlugin, err := SelectNetworkPlugin(networkConfig.NetworkPluginName)
-	if err != nil {
-		return networkCR, err
-	}
-	networkCR.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode = selectedNetworkPlugin
-
-	return networkCR, nil
 }
 
 // Extract collects SDN configuration information from an OCP3 cluster
@@ -130,83 +65,12 @@ func (e SDNTransform) Extract() (Extraction, error) {
 
 // Validate the data extracted from the OCP3 cluster
 func (e SDNExtraction) Validate() error {
-	networkConfig := e.MasterConfig.NetworkConfig
-
-	if len(networkConfig.ServiceNetworkCIDR) == 0 {
-		return errors.New("Service network CIDR can't be empty")
-	}
-
-	_, _, err := net.ParseCIDR(networkConfig.ServiceNetworkCIDR)
+	err := sdn.Validate(e.MasterConfig)
 	if err != nil {
-		return errors.New("Not valid service network CIDR")
-	}
-
-	if len(networkConfig.ClusterNetworks) == 0 {
-		return errors.New("Cluster network must have at least 1 entry")
-	}
-
-	for _, cnet := range networkConfig.ClusterNetworks {
-		if len(cnet.CIDR) == 0 {
-			return errors.New("Cluster network CIDR can't be empty")
-		}
-
-		_, _, err := net.ParseCIDR(cnet.CIDR)
-		if err != nil {
-			return errors.New("Not valid cluster network CIDR")
-		}
-	}
-
-	if len(networkConfig.NetworkPluginName) == 0 {
-		return errors.New("Plugin name can't be empty")
+		return err
 	}
 
 	return nil
-}
-
-// TranslateClusterNetworks converts Cluster Networks from OCP3 to OCP4
-func TranslateClusterNetworks(clusterNeworkEntries []configv1.ClusterNetworkEntry) []ClusterNetwork {
-	var translatedClusterNetworks []ClusterNetwork
-
-	for _, networkConfig := range clusterNeworkEntries {
-		var translatedClusterNetwork ClusterNetwork
-
-		translatedClusterNetwork.CIDR = networkConfig.CIDR
-		// host prefix is missing in OCP3 config, default is 23
-		translatedClusterNetwork.HostPrefix = 23
-
-		translatedClusterNetworks = append(translatedClusterNetworks, translatedClusterNetwork)
-	}
-
-	return translatedClusterNetworks
-}
-
-// SelectNetworkPlugin selects the correct plugin for networks
-func SelectNetworkPlugin(pluginName string) (string, error) {
-	var selectedName string
-
-	switch pluginName {
-	case "redhat/openshift-ovs-multitenant":
-		selectedName = "Multitenant"
-	case "redhat/openshift-ovs-networkpolicy":
-		selectedName = "NetworkPolicy"
-	case "redhat/openshift-ovs-subnet":
-		selectedName = "Subnet"
-	default:
-		err := errors.New("Network plugin not supported")
-		return "", err
-	}
-
-	return selectedName, nil
-}
-
-// GenYAML returns a YAML of the OAuthCRD
-func GenYAML(networkCR NetworkCR) ([]byte, error) {
-	yamlBytes, err := yaml.Marshal(networkCR)
-	if err != nil {
-		return nil, err
-	}
-
-	return yamlBytes, nil
 }
 
 // Name returns a human readable name for the transform
