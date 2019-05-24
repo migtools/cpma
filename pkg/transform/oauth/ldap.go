@@ -1,6 +1,8 @@
 package oauth
 
 import (
+	"errors"
+
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
@@ -64,4 +66,43 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 	idP.LDAP.URL = ldap.URL
 
 	return idP, caConfigmap, nil
+}
+
+func validateLDAPProvider(serializer *json.Serializer, p IdentityProvider) error {
+	var ldap configv1.LDAPPasswordIdentityProvider
+
+	_, _, err := serializer.Decode(p.Provider.Raw, nil, &ldap)
+	if err != nil {
+		return err
+	}
+
+	if p.Name == "" {
+		return errors.New("Name can't be empty")
+	}
+
+	if err := validateMappingMethod(p.MappingMethod); err != nil {
+		return err
+	}
+
+	if len(ldap.Attributes.ID) == 0 {
+		return errors.New("ID can't be empty")
+	}
+
+	if len(ldap.Attributes.Email) == 0 {
+		return errors.New("Email can't be empty")
+	}
+
+	if len(ldap.Attributes.Name) == 0 {
+		return errors.New("Name can't be empty")
+	}
+
+	if len(ldap.Attributes.PreferredUsername) == 0 {
+		return errors.New("Preferred username can't be empty")
+	}
+
+	if ldap.URL == "" {
+		return errors.New("URL can't be empty")
+	}
+
+	return nil
 }

@@ -1,53 +1,18 @@
 package oauth_test
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"errors"
 	"testing"
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
+	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/client-go/kubernetes/scheme"
-
-	configv1 "github.com/openshift/api/legacyconfig/v1"
-	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 func TestTransformMasterConfigHtpasswd(t *testing.T) {
-	file := "testdata/htpasswd-test-master-config.yaml"
-
-	content, err := ioutil.ReadFile(file)
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/htpasswd/test-master-config.yaml")
 	require.NoError(t, err)
-
-	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	var masterV3 configv1.MasterConfig
-
-	_, _, err = serializer.Decode(content, nil, &masterV3)
-	require.NoError(t, err)
-
-	var identityProviders []oauth.IdentityProvider
-	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
-		providerJSON, err := identityProvider.Provider.MarshalJSON()
-		require.NoError(t, err)
-
-		provider := oauth.Provider{}
-
-		err = json.Unmarshal(providerJSON, &provider)
-		require.NoError(t, err)
-
-		identityProviders = append(identityProviders,
-			oauth.IdentityProvider{
-				Kind:            provider.Kind,
-				APIVersion:      provider.APIVersion,
-				MappingMethod:   identityProvider.MappingMethod,
-				Name:            identityProvider.Name,
-				Provider:        identityProvider.Provider,
-				HTFileName:      provider.File,
-				UseAsChallenger: identityProvider.UseAsChallenger,
-				UseAsLogin:      identityProvider.UseAsLogin,
-			})
-	}
 
 	var expectedCrd oauth.CRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
@@ -79,6 +44,54 @@ func TestTransformMasterConfigHtpasswd(t *testing.T) {
 			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
+		})
+	}
+}
+
+func TestHTPasswdValidation(t *testing.T) {
+	testCases := []struct {
+		name         string
+		requireError bool
+		inputFile    string
+		expectedErr  error
+	}{
+		{
+			name:         "validate htpasswd provider",
+			requireError: false,
+			inputFile:    "testdata/htpasswd/test-master-config.yaml",
+		},
+		{
+			name:         "fail on invalid name in htpasswd provider",
+			requireError: true,
+			inputFile:    "testdata/htpasswd/invalid-name-master-config.yaml",
+			expectedErr:  errors.New("Name can't be empty"),
+		},
+		{
+			name:         "fail on invalid mapping method in htpasswd provider",
+			requireError: true,
+			inputFile:    "testdata/htpasswd/invalid-mapping-master-config.yaml",
+			expectedErr:  errors.New("Not valid mapping method"),
+		},
+		{
+			name:         "fail on invalid file in htpasswd provider",
+			requireError: true,
+			inputFile:    "testdata/htpasswd/invalid-file-master-config.yaml",
+			expectedErr:  errors.New("File can't be empty"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			identityProvider, err := cpmatest.LoadIPTestData(tc.inputFile)
+			require.NoError(t, err)
+
+			err = oauth.Validate(identityProvider)
+
+			if tc.requireError {
+				assert.Equal(t, tc.expectedErr, err)
+			} else {
+				require.NoError(t, err)
+			}
 		})
 	}
 }

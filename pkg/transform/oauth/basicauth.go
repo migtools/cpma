@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"encoding/base64"
+	"errors"
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -72,4 +73,31 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Identit
 	}
 
 	return idP, certSecret, keySecret, caConfigmap, nil
+}
+
+func validateBasicAuthProvider(serializer *json.Serializer, p IdentityProvider) error {
+	var basicAuth configv1.BasicAuthPasswordIdentityProvider
+
+	_, _, err := serializer.Decode(p.Provider.Raw, nil, &basicAuth)
+	if err != nil {
+		return err
+	}
+
+	if p.Name == "" {
+		return errors.New("Name can't be empty")
+	}
+
+	if err := validateMappingMethod(p.MappingMethod); err != nil {
+		return err
+	}
+
+	if basicAuth.URL == "" {
+		return errors.New("URL can't be empty")
+	}
+
+	if basicAuth.CertFile != "" && basicAuth.KeyFile == "" {
+		return errors.New("Key file can't be empty if cert file is specified")
+	}
+
+	return nil
 }

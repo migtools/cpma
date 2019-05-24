@@ -1,0 +1,26 @@
+oauthConfig:
+  assetPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com/console/
+  grantConfig:
+    method: auto
+  identityProviders:
+  - name:
+    challenge: true 
+    login: true 
+    mappingMethod: claim 
+    provider:
+      apiVersion: v1
+      kind: BasicAuthPasswordIdentityProvider
+      url: https://www.example.com/
+      ca: ca.file 
+      certFile: client.crt 
+      keyFile: client.key 
+  masterCA: ca-bundle.crt
+  masterPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com:443
+  masterURL: https://openshift.internal.gildub2.lab.pnq2.cee.redhat.com:443
+  sessionConfig:
+    sessionMaxAgeSeconds: 3600
+    sessionName: ssn
+    sessionSecretsFile: /etc/origin/master/session-secrets.yaml
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 86400
+    authorizeTokenMaxAgeSeconds: 500

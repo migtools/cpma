@@ -150,8 +150,12 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 
 // Validate confirms we have recieved good OAuth configuration data during Extract
 func (e OAuthExtraction) Validate() error {
-	logrus.Warn("Oauth Transform Validation Not Implmeneted")
-	return nil // Simulate fine
+	err := oauth.Validate(e.IdentityProviders)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Name returns a human readable name for the transform

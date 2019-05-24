@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"encoding/base64"
+	"errors"
 
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -56,4 +57,27 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 	}
 
 	return idP, secret, nil
+}
+
+func validateHTPasswdProvider(serializer *json.Serializer, p IdentityProvider) error {
+	var htpasswd configv1.HTPasswdPasswordIdentityProvider
+
+	_, _, err := serializer.Decode(p.Provider.Raw, nil, &htpasswd)
+	if err != nil {
+		return err
+	}
+
+	if p.Name == "" {
+		return errors.New("Name can't be empty")
+	}
+
+	if err := validateMappingMethod(p.MappingMethod); err != nil {
+		return err
+	}
+
+	if htpasswd.File == "" {
+		return errors.New("File can't be empty")
+	}
+
+	return nil
 }

@@ -2,59 +2,16 @@ package transform
 
 import (
 	"encoding/base64"
-	"encoding/json"
-	"io/ioutil"
 	"testing"
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
+	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	configv1 "github.com/openshift/api/legacyconfig/v1"
-	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
-	"k8s.io/client-go/kubernetes/scheme"
 )
-
-func loadTestIdentityProviders() []oauth.IdentityProvider {
-	// TODO: Something is broken here in a way that it's causing the translaters
-	// to fail. Need some help with creating test identiy providers in a way
-	// that won't crash the translator
-
-	// Build example identity providers, this is straight copy pasted from
-	// oauth test, IMO this loading of example identity providers should be
-	// some shared test helper
-	file := "testdata/bulk-test-master-config.yaml" // File copied into transform pkg testdata
-	content, _ := ioutil.ReadFile(file)
-	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	var masterV3 configv1.MasterConfig
-	_, _, _ = serializer.Decode(content, nil, &masterV3)
-
-	var identityProviders []oauth.IdentityProvider
-	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
-		providerJSON, _ := identityProvider.Provider.MarshalJSON()
-		provider := oauth.Provider{}
-		json.Unmarshal(providerJSON, &provider)
-
-		identityProviders = append(identityProviders,
-			oauth.IdentityProvider{
-				Kind:            provider.Kind,
-				APIVersion:      provider.APIVersion,
-				MappingMethod:   identityProvider.MappingMethod,
-				Name:            identityProvider.Name,
-				Provider:        identityProvider.Provider,
-				HTFileName:      provider.File,
-				HTFileData:      nil,
-				CrtData:         nil,
-				KeyData:         nil,
-				UseAsChallenger: identityProvider.UseAsChallenger,
-				UseAsLogin:      identityProvider.UseAsLogin,
-			})
-	}
-	return identityProviders
-}
 
 func TestOAuthExtractionTransform(t *testing.T) {
 	var expectedManifests []Manifest
@@ -386,8 +343,11 @@ func TestOAuthExtractionTransform(t *testing.T) {
 				return nil
 			}
 
+			identityProviders, err := cpmatest.LoadIPTestData("testdata/bulk-test-master-config.yaml")
+			require.NoError(t, err)
+
 			testExtraction := OAuthExtraction{
-				IdentityProviders: loadTestIdentityProviders(),
+				IdentityProviders: identityProviders,
 			}
 
 			go func() {

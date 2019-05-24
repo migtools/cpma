@@ -1,6 +1,8 @@
 package oauth
 
 import (
+	"errors"
+
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
@@ -48,4 +50,27 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	}
 
 	return idP, secret, nil
+}
+
+func validateGoogleProvider(serializer *json.Serializer, p IdentityProvider) error {
+	var google configv1.GoogleIdentityProvider
+
+	_, _, err := serializer.Decode(p.Provider.Raw, nil, &google)
+	if err != nil {
+		return err
+	}
+
+	if p.Name == "" {
+		return errors.New("Name can't be empty")
+	}
+
+	if err := validateMappingMethod(p.MappingMethod); err != nil {
+		return err
+	}
+
+	if err := validateClientData(google.ClientID, google.ClientSecret); err != nil {
+		return err
+	}
+
+	return nil
 }

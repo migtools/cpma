@@ -1,0 +1,35 @@
+oauthConfig:
+  assetPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com/console/
+  grantConfig:
+    method: auto
+  identityProviders:
+  - name: my_openid_connect
+    challenge: false
+    login: true
+    mappingMethod: claim
+    provider:
+      apiVersion: v1
+      kind: OpenIDIdentityProvider
+      clientID: testid
+      clientSecret: testsecret
+      ca: my-openid-ca-bundle.crt 
+      extraScopes: 
+      - email
+      - profile
+      extraAuthorizeParameters: 
+        include_granted_scopes: "true"
+      claims:
+      urls:
+        authorize: https://myidp.example.com/oauth2/authorize
+        token: https://myidp.example.com/oauth2/token
+        userInfo: https://myidp.example.com/oauth2/userinfo
+  masterCA: ca-bundle.crt
+  masterPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com:443
+  masterURL: https://openshift.internal.gildub2.lab.pnq2.cee.redhat.com:443
+  sessionConfig:
+    sessionMaxAgeSeconds: 3600
+    sessionName: ssn
+    sessionSecretsFile: /etc/origin/master/session-secrets.yaml
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 86400
+    authorizeTokenMaxAgeSeconds: 500
