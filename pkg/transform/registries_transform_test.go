@@ -1,16 +1,17 @@
-package transform
+package transform_test
 
 import (
 	"io/ioutil"
 	"testing"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fusor/cpma/pkg/transform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 )
 
-func loadRegistriesExtraction() (RegistriesExtraction, error) {
+func loadRegistriesExtraction() (transform.RegistriesExtraction, error) {
 	// TODO: Something is broken here in a way that it's causing the translaters
 	// to fail. Need some help with creating test identiy providers in a way
 	// that won't crash the translator
@@ -20,16 +21,16 @@ func loadRegistriesExtraction() (RegistriesExtraction, error) {
 	// some shared test helper
 	file := "testdata/registries.conf" // File copied into transform pkg testdata
 	content, _ := ioutil.ReadFile(file)
-	var extraction RegistriesExtraction
+	var extraction transform.RegistriesExtraction
 	_, err := toml.Decode(string(content), &extraction)
 
 	return extraction, err
 }
 
 func TestRegistriesExtractionTransform(t *testing.T) {
-	var expectedManifests []Manifest
+	var expectedManifests []transform.Manifest
 
-	var expectedCrd ImageCR
+	var expectedCrd transform.ImageCR
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "Image"
 	expectedCrd.Metadata.Name = "cluster"
@@ -41,11 +42,11 @@ func TestRegistriesExtractionTransform(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-registries.yaml", CRD: imageCRYAML})
+		transform.Manifest{Name: "100_CPMA-cluster-config-registries.yaml", CRD: imageCRYAML})
 
 	testCases := []struct {
 		name              string
-		expectedManifests []Manifest
+		expectedManifests []transform.Manifest
 	}{
 		{
 			name:              "transform registries extraction",
@@ -55,10 +56,10 @@ func TestRegistriesExtractionTransform(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actualManifestsChan := make(chan []Manifest)
+			actualManifestsChan := make(chan []transform.Manifest)
 
 			// Override flush method
-			manifestOutputFlush = func(manifests []Manifest) error {
+			transform.ManifestOutputFlush = func(manifests []transform.Manifest) error {
 				actualManifestsChan <- manifests
 				return nil
 			}

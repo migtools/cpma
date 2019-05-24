@@ -15,7 +15,8 @@ type ManifestOutput struct {
 	Manifests []Manifest
 }
 
-var manifestOutputFlush = func(manifests []Manifest) error {
+// ManifestOutputFlush flush manifests to disk
+var ManifestOutputFlush = func(manifests []Manifest) error {
 	logrus.Info("Flushing manifests to disk")
 	DumpManifests(manifests)
 	return nil
@@ -23,7 +24,7 @@ var manifestOutputFlush = func(manifests []Manifest) error {
 
 // Flush manifests to files
 func (m ManifestOutput) Flush() error {
-	return manifestOutputFlush(m.Manifests)
+	return ManifestOutputFlush(m.Manifests)
 }
 
 // DumpManifests creates OCDs files

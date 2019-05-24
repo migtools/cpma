@@ -2,6 +2,7 @@ package transform
 
 import (
 	"errors"
+	"net"
 
 	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/config/decode"
@@ -34,7 +35,7 @@ type SDNSpec struct {
 // ClusterNetwork contains CIDR and address size to assign to each node
 type ClusterNetwork struct {
 	CIDR       string `yaml:"cidr"`
-	HostPrefix uint32 `yaml:"hostPrefix"`
+	HostPrefix int    `yaml:"hostPrefix"`
 }
 
 // DefaultNetwork containts network type and SDN plugin name
@@ -129,8 +130,37 @@ func (e SDNTransform) Extract() (Extraction, error) {
 
 // Validate the data extracted from the OCP3 cluster
 func (e SDNExtraction) Validate() error {
-	logrus.Warn("SDN Transform Validation Not Implmeneted")
-	return nil // Simulate fine
+	networkConfig := e.MasterConfig.NetworkConfig
+
+	if len(networkConfig.ServiceNetworkCIDR) == 0 {
+		return errors.New("Service network CIDR can't be empty")
+	}
+
+	_, _, err := net.ParseCIDR(networkConfig.ServiceNetworkCIDR)
+	if err != nil {
+		return errors.New("Not valid service network CIDR")
+	}
+
+	if len(networkConfig.ClusterNetworks) == 0 {
+		return errors.New("Cluster network must have at least 1 entry")
+	}
+
+	for _, cnet := range networkConfig.ClusterNetworks {
+		if len(cnet.CIDR) == 0 {
+			return errors.New("Cluster network CIDR can't be empty")
+		}
+
+		_, _, err := net.ParseCIDR(cnet.CIDR)
+		if err != nil {
+			return errors.New("Not valid cluster network CIDR")
+		}
+	}
+
+	if len(networkConfig.NetworkPluginName) == 0 {
+		return errors.New("Plugin name can't be empty")
+	}
+
+	return nil
 }
 
 // TranslateClusterNetworks converts Cluster Networks from OCP3 to OCP4
@@ -141,7 +171,8 @@ func TranslateClusterNetworks(clusterNeworkEntries []configv1.ClusterNetworkEntr
 		var translatedClusterNetwork ClusterNetwork
 
 		translatedClusterNetwork.CIDR = networkConfig.CIDR
-		translatedClusterNetwork.HostPrefix = networkConfig.HostSubnetLength
+		// host prefix is missing in OCP3 config, default is 23
+		translatedClusterNetwork.HostPrefix = 23
 
 		translatedClusterNetworks = append(translatedClusterNetworks, translatedClusterNetwork)
 	}

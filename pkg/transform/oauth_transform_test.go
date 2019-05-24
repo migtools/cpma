@@ -1,4 +1,4 @@
-package transform
+package transform_test
 
 import (
 	"encoding/base64"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 
+	"github.com/fusor/cpma/pkg/transform"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
@@ -14,7 +15,7 @@ import (
 )
 
 func TestOAuthExtractionTransform(t *testing.T) {
-	var expectedManifests []Manifest
+	var expectedManifests []transform.Manifest
 
 	var expectedCrd oauth.CRD
 	expectedCrd.APIVersion = "config.openshift.io/v1"
@@ -291,41 +292,41 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: expectedManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: expectedManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-my_remote_basic_auth_provider-client-cert-secret.yaml", CRD: basicAuthCrtSecretManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-my_remote_basic_auth_provider-client-cert-secret.yaml", CRD: basicAuthCrtSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-my_remote_basic_auth_provider-client-key-secret.yaml", CRD: basicAuthKeySecretManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-my_remote_basic_auth_provider-client-key-secret.yaml", CRD: basicAuthKeySecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-github123456789-secret.yaml", CRD: githubSecretManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-github123456789-secret.yaml", CRD: githubSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-gitlab123456789-secret.yaml", CRD: gitlabSecretManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-gitlab123456789-secret.yaml", CRD: gitlabSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-google123456789123456789-secret.yaml", CRD: googleSecretManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-google123456789123456789-secret.yaml", CRD: googleSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-htpasswd_auth-secret.yaml", CRD: htpasswdSecretManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-htpasswd_auth-secret.yaml", CRD: htpasswdSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-my_keystone_provider-client-cert-secret.yaml", CRD: keystoneCrtSecretManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-my_keystone_provider-client-cert-secret.yaml", CRD: keystoneCrtSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-my_keystone_provider-client-key-secret.yaml", CRD: keystoneKeySecretManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-my_keystone_provider-client-key-secret.yaml", CRD: keystoneKeySecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-secret-my_openid_connect-secret.yaml", CRD: openidSecretManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-my_openid_connect-secret.yaml", CRD: openidSecretManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-configmap-basicauth-configmap.yaml", CRD: basicAuthConfigMapManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-configmap-basicauth-configmap.yaml", CRD: basicAuthConfigMapManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-configmap-github-configmap.yaml", CRD: githubConfigMapManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-configmap-github-configmap.yaml", CRD: githubConfigMapManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-configmap-gitlab-configmap.yaml", CRD: gitlabConfigMapManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-configmap-gitlab-configmap.yaml", CRD: gitlabConfigMapManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-configmap-keystone-configmap.yaml", CRD: keystoneConfigMapManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-configmap-keystone-configmap.yaml", CRD: keystoneConfigMapManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-configmap-ldap-configmap.yaml", CRD: ldapConfigMapManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-configmap-ldap-configmap.yaml", CRD: ldapConfigMapManifest})
 	expectedManifests = append(expectedManifests,
-		Manifest{Name: "100_CPMA-cluster-config-configmap-requestheader-configmap.yaml", CRD: requestheaderConfigMapManifest})
+		transform.Manifest{Name: "100_CPMA-cluster-config-configmap-requestheader-configmap.yaml", CRD: requestheaderConfigMapManifest})
 
 	testCases := []struct {
 		name              string
-		expectedManifests []Manifest
+		expectedManifests []transform.Manifest
 	}{
 		{
 			name:              "transform registries extraction",
@@ -335,10 +336,10 @@ func TestOAuthExtractionTransform(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actualManifestsChan := make(chan []Manifest)
+			actualManifestsChan := make(chan []transform.Manifest)
 
 			// Override flush method
-			manifestOutputFlush = func(manifests []Manifest) error {
+			transform.ManifestOutputFlush = func(manifests []transform.Manifest) error {
 				actualManifestsChan <- manifests
 				return nil
 			}
@@ -346,7 +347,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 			identityProviders, err := cpmatest.LoadIPTestData("testdata/bulk-test-master-config.yaml")
 			require.NoError(t, err)
 
-			testExtraction := OAuthExtraction{
+			testExtraction := transform.OAuthExtraction{
 				IdentityProviders: identityProviders,
 			}
 
