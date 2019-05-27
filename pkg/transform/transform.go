@@ -6,6 +6,7 @@ import (
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
 // OCP4InstallMsg message about using generated manifests
@@ -117,4 +118,14 @@ func HandleError(err error, transformType string) error {
 	logrus.Warnf("Skipping %s, see error below\n", transformType)
 	logrus.Warnf("%s\n", err)
 	return err
+}
+
+// GenYAML returns a YAML of the CR
+func GenYAML(CR interface{}) ([]byte, error) {
+	yamlBytes, err := yaml.Marshal(CR)
+	if err != nil {
+		return nil, err
+	}
+
+	return yamlBytes, nil
 }

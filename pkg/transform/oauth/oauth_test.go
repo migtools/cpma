@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/transform"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
@@ -141,7 +142,7 @@ func TestGenYAML(t *testing.T) {
 			crd, secrets, configMaps, err := oauth.Translate(identityProviders, &config)
 			require.NoError(t, err)
 
-			CRD, err := crd.GenYAML()
+			CRD, err := transform.GenYAML(crd)
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.expectedSecretsLength, len(secrets))

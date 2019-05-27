@@ -39,7 +39,7 @@ func (e OAuthExtraction) Transform() (Output, error) {
 
 	var manifests []Manifest
 	if ocp4Cluster.Master.OAuth.Kind != "" {
-		oauthCRD, err := ocp4Cluster.Master.OAuth.GenYAML()
+		oauthCRD, err := GenYAML(ocp4Cluster.Master.OAuth)
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func (e OAuthExtraction) Transform() (Output, error) {
 		manifests = append(manifests, manifest)
 
 		for _, secret := range ocp4Cluster.Master.Secrets {
-			secretCR, err := secret.GenYAML()
+			secretCR, err := GenYAML(secret)
 			if err != nil {
 				return nil, err
 			}
@@ -59,7 +59,7 @@ func (e OAuthExtraction) Transform() (Output, error) {
 		}
 
 		for _, configMap := range ocp4Cluster.Master.ConfigMaps {
-			configMapYAML, err := configMap.GenYAML()
+			configMapYAML, err := GenYAML(configMap)
 			if err != nil {
 				return nil, err
 			}
