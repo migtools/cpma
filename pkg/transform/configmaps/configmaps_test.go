@@ -1,9 +1,11 @@
-package configmaps
+package configmaps_test
 
 import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/transform"
+	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,20 +16,20 @@ func TestGenConfigMap(t *testing.T) {
 		configMapname string
 		CAData        []byte
 		namespace     string
-		expected      ConfigMap
+		expected      configmaps.ConfigMap
 	}{
 		{
 			name:          "generate configmap",
 			configMapname: "testname",
 			CAData:        []byte("testdata"),
 			namespace:     "openshift-config",
-			expected: ConfigMap{
-				APIVersion: APIVersion,
-				Data: Data{
+			expected: configmaps.ConfigMap{
+				APIVersion: configmaps.APIVersion,
+				Data: configmaps.Data{
 					CAData: "testdata",
 				},
-				Kind: Kind,
-				Metadata: MetaData{
+				Kind: configmaps.Kind,
+				Metadata: configmaps.MetaData{
 					Name:      "testname",
 					Namespace: "openshift-config",
 				},
@@ -37,7 +39,7 @@ func TestGenConfigMap(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resConfigMap := GenConfigMap(tc.configMapname, tc.namespace, tc.CAData)
+			resConfigMap := configmaps.GenConfigMap(tc.configMapname, tc.namespace, tc.CAData)
 			assert.Equal(t, &tc.expected, resConfigMap)
 		})
 	}
@@ -49,18 +51,18 @@ func TestGenYaml(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		inputConfigMap ConfigMap
+		inputConfigMap configmaps.ConfigMap
 		expectedYaml   []byte
 	}{
 		{
 			name: "generate yaml from configmap",
-			inputConfigMap: ConfigMap{
-				APIVersion: APIVersion,
-				Data: Data{
+			inputConfigMap: configmaps.ConfigMap{
+				APIVersion: configmaps.APIVersion,
+				Data: configmaps.Data{
 					CAData: "testval: 123",
 				},
-				Kind: Kind,
-				Metadata: MetaData{
+				Kind: configmaps.Kind,
+				Metadata: configmaps.MetaData{
 					Name:      "testname",
 					Namespace: "openshift-config",
 				},
@@ -71,7 +73,7 @@ func TestGenYaml(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			manifest, err := tc.inputConfigMap.GenYAML()
+			manifest, err := transform.GenYAML(tc.inputConfigMap)
 			require.NoError(t, err)
 			assert.Equal(t, expectedYaml, manifest)
 		})

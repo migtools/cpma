@@ -1,10 +1,5 @@
 package configmaps
 
-import (
-	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
-)
-
 // ConfigMap represent configmap definition
 type ConfigMap struct {
 	APIVersion string   `yaml:"apiVersion"`
@@ -44,14 +39,4 @@ func GenConfigMap(name string, namespace string, CAData []byte) *ConfigMap {
 			Namespace: namespace,
 		},
 	}
-}
-
-// GenYAML returns a YAML of the configMap
-func (configMap *ConfigMap) GenYAML() ([]byte, error) {
-	yamlBytes, err := yaml.Marshal(&configMap)
-	if err != nil {
-		logrus.Debugf("Error in config map, config map - %+v", configMap)
-		return nil, err
-	}
-	return yamlBytes, nil
 }

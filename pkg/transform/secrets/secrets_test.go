@@ -1,9 +1,13 @@
-package secrets
+package secrets_test
 
 import (
 	"errors"
 	"io/ioutil"
 	"testing"
+
+	"github.com/fusor/cpma/pkg/transform/secrets"
+
+	"github.com/fusor/cpma/pkg/transform"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,21 +18,21 @@ func TestGenSecret(t *testing.T) {
 		name            string
 		inputSecretName string
 		inputSecretFile string
-		inputSecretType SecretType
-		expected        Secret
+		inputSecretType secrets.SecretType
+		expected        secrets.Secret
 		expectederr     bool
 	}{
 		{
 			name:            "generate htpasswd secret",
 			inputSecretName: "htpasswd-test",
 			inputSecretFile: "testfile1",
-			inputSecretType: HtpasswdSecretType,
-			expected: Secret{
-				APIVersion: APIVersion,
-				Data:       HTPasswdFileSecret{HTPasswd: "testfile1"},
+			inputSecretType: secrets.HtpasswdSecretType,
+			expected: secrets.Secret{
+				APIVersion: secrets.APIVersion,
+				Data:       secrets.HTPasswdFileSecret{HTPasswd: "testfile1"},
 				Kind:       "Secret",
 				Type:       "Opaque",
-				Metadata: MetaData{
+				Metadata: secrets.MetaData{
 					Name:      "htpasswd-test",
 					Namespace: "openshift-config",
 				},
@@ -39,13 +43,13 @@ func TestGenSecret(t *testing.T) {
 			name:            "generate keystone secret",
 			inputSecretName: "keystone-test",
 			inputSecretFile: "testfile2",
-			inputSecretType: KeystoneSecretType,
-			expected: Secret{
-				APIVersion: APIVersion,
-				Data:       KeystoneFileSecret{Keystone: "testfile2"},
+			inputSecretType: secrets.KeystoneSecretType,
+			expected: secrets.Secret{
+				APIVersion: secrets.APIVersion,
+				Data:       secrets.KeystoneFileSecret{Keystone: "testfile2"},
 				Kind:       "Secret",
 				Type:       "Opaque",
-				Metadata: MetaData{
+				Metadata: secrets.MetaData{
 					Name:      "keystone-test",
 					Namespace: "openshift-config",
 				},
@@ -56,13 +60,13 @@ func TestGenSecret(t *testing.T) {
 			name:            "generate basic auth secret",
 			inputSecretName: "basicauth-test",
 			inputSecretFile: "testfile3",
-			inputSecretType: BasicAuthSecretType,
-			expected: Secret{
-				APIVersion: APIVersion,
-				Data:       BasicAuthFileSecret{BasicAuth: "testfile3"},
+			inputSecretType: secrets.BasicAuthSecretType,
+			expected: secrets.Secret{
+				APIVersion: secrets.APIVersion,
+				Data:       secrets.BasicAuthFileSecret{BasicAuth: "testfile3"},
 				Kind:       "Secret",
 				Type:       "Opaque",
-				Metadata: MetaData{
+				Metadata: secrets.MetaData{
 					Name:      "basicauth-test",
 					Namespace: "openshift-config",
 				},
@@ -73,13 +77,13 @@ func TestGenSecret(t *testing.T) {
 			name:            "generate litetal secret",
 			inputSecretName: "literal-secret",
 			inputSecretFile: "some-value",
-			inputSecretType: LiteralSecretType,
-			expected: Secret{
-				APIVersion: APIVersion,
-				Data:       LiteralSecret{ClientSecret: "some-value"},
+			inputSecretType: secrets.LiteralSecretType,
+			expected: secrets.Secret{
+				APIVersion: secrets.APIVersion,
+				Data:       secrets.LiteralSecret{ClientSecret: "some-value"},
 				Kind:       "Secret",
 				Type:       "Opaque",
-				Metadata: MetaData{
+				Metadata: secrets.MetaData{
 					Name:      "literal-secret",
 					Namespace: "openshift-config",
 				},
@@ -97,7 +101,7 @@ func TestGenSecret(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resSecret, err := GenSecret(tc.inputSecretName, tc.inputSecretFile, "openshift-config", tc.inputSecretType)
+			resSecret, err := secrets.GenSecret(tc.inputSecretName, tc.inputSecretFile, "openshift-config", tc.inputSecretType)
 			if tc.expectederr {
 				err := errors.New("Not valid secret type " + "notvalidtype")
 				require.Error(t, err)
@@ -115,17 +119,17 @@ func TestGenYaml(t *testing.T) {
 
 	testCases := []struct {
 		name         string
-		inputSecret  Secret
+		inputSecret  secrets.Secret
 		expectedYaml []byte
 	}{
 		{
 			name: "generate yaml from secret",
-			inputSecret: Secret{
-				APIVersion: APIVersion,
-				Data:       LiteralSecret{ClientSecret: "some-value"},
+			inputSecret: secrets.Secret{
+				APIVersion: secrets.APIVersion,
+				Data:       secrets.LiteralSecret{ClientSecret: "some-value"},
 				Kind:       "Secret",
 				Type:       "Opaque",
-				Metadata: MetaData{
+				Metadata: secrets.MetaData{
 					Name:      "literal-secret",
 					Namespace: "openshift-config",
 				},
@@ -136,7 +140,7 @@ func TestGenYaml(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			manifest, err := tc.inputSecret.GenYAML()
+			manifest, err := transform.GenYAML(tc.inputSecret)
 			require.NoError(t, err)
 			assert.Equal(t, expectedYaml, manifest)
 		})
