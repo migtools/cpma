@@ -14,6 +14,7 @@ import (
 // OAuthExtraction holds OAuth data extracted from OCP3
 type OAuthExtraction struct {
 	IdentityProviders []oauth.IdentityProvider
+	Config            *config.Config
 }
 
 // OAuthTransform is an OAuth specific transform
@@ -27,7 +28,7 @@ func (e OAuthExtraction) Transform() (Output, error) {
 
 	var ocp4Cluster Cluster
 
-	oauth, secrets, configMaps, err := oauth.Translate(e.IdentityProviders)
+	oauth, secrets, configMaps, err := oauth.Translate(e.IdentityProviders, e.Config)
 	if err != nil {
 		return nil, errors.New("Unable to generate OAuth CRD")
 	}
@@ -86,6 +87,8 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 	}
 
 	var extraction OAuthExtraction
+	extraction.Config = e.Config
+
 	var htContent, caContent, crtContent, keyContent []byte
 
 	if masterConfig.OAuthConfig != nil {

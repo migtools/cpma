@@ -2,7 +2,9 @@ package oauth
 
 import (
 	"errors"
+	"strings"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/sirupsen/logrus"
@@ -88,7 +90,7 @@ const (
 )
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(identityProviders []IdentityProvider) (*CRD, []*secrets.Secret, []*configmaps.ConfigMap, error) {
+func Translate(identityProviders []IdentityProvider, config *config.Config) (*CRD, []*secrets.Secret, []*configmaps.ConfigMap, error) {
 	var err error
 	var idP interface{}
 	var secretsSlice []*secrets.Secret
@@ -115,7 +117,7 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []*secrets.Secret, [
 		case "GitHubIdentityProvider":
 			idP, secret, caConfigMap, err = buildGitHubIP(serializer, p)
 		case "GitLabIdentityProvider":
-			idP, secret, caConfigMap, err = buildGitLabIP(serializer, p)
+			idP, secret, caConfigMap, err = buildGitLabIP(serializer, p, config)
 		case "GoogleIdentityProvider":
 			idP, secret, err = buildGoogleIP(serializer, p)
 		case "HTPasswdPasswordIdentityProvider":
@@ -226,4 +228,31 @@ func validateClientData(clientID string, clientSecret configv1.StringSource) err
 	}
 
 	return nil
+}
+
+func fetchSecret(secret configv1.StringSource, config *config.Config) (string, error) {
+	if secret.Value != "" {
+		return secret.Value, nil
+	}
+
+	if secret.File != "" {
+		secretFileContent, err := config.Fetch(secret.File)
+		if err != nil {
+			return "", nil
+		}
+
+		secretFileString := strings.TrimSuffix(string(secretFileContent), "\n")
+		return secretFileString, nil
+	}
+
+	if secret.Env != "" {
+		secretEnv, err := config.Env(secret.Env)
+		if err != nil {
+			return "", nil
+		}
+
+		return secretEnv, nil
+	}
+
+	return "", nil
 }
