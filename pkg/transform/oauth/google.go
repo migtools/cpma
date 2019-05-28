@@ -1,12 +1,13 @@
 package oauth
 
 import (
+	"encoding/base64"
 	"errors"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 //IdentityProviderGoogle is a Google specific identity provider
@@ -22,7 +23,7 @@ type Google struct {
 	HostedDomain string       `yaml:"hostedDomain,omitempty"`
 }
 
-func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGoogle, *secrets.Secret, error) {
+func buildGoogleIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderGoogle, *secrets.Secret, error) {
 	var (
 		err    error
 		idP    = &IdentityProviderGoogle{}
@@ -44,7 +45,10 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 
 	secretName := p.Name + "-secret"
 	idP.Google.ClientSecret.Name = secretName
-	secret, err = secrets.GenSecret(secretName, google.ClientSecret.Value, OAuthNamespace, secrets.LiteralSecretType)
+	secretContent, err := fetchStringSource(google.ClientSecret, config)
+
+	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
+	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -66,6 +70,10 @@ func validateGoogleProvider(serializer *json.Serializer, p IdentityProvider) err
 
 	if err := validateMappingMethod(p.MappingMethod); err != nil {
 		return err
+	}
+
+	if google.ClientSecret.KeyFile != "" {
+		return errors.New("Usage of encrypted files as secret value is not supported")
 	}
 
 	if err := validateClientData(google.ClientID, google.ClientSecret); err != nil {

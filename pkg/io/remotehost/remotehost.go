@@ -1,4 +1,4 @@
-package sftpclient
+package remotehost
 
 import (
 	"errors"
@@ -23,21 +23,21 @@ type Client struct {
 	*sftp.Client
 }
 
-// NewClient creates a new SFTP client
-func NewClient(source string) (Client, error) {
+// CreateConnection create ssh connection
+func CreateConnection(source string) (*ssh.Client, error) {
 	sshCreds := env.Config().GetStringMapString("SSHCreds")
 
 	key, err := ioutil.ReadFile(sshCreds["privatekey"])
 	if err != nil {
 		logrus.Errorf("Unable to read private key: %s", sshCreds["privatekey"])
-		return Client{}, err
+		return nil, err
 	}
 
 	// Create the Signer for this private key.
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
 		logrus.Error("Unable to parse private key")
-		return Client{}, err
+		return nil, err
 	}
 
 	knownHostsFile := filepath.Join(env.Config().GetString("home"), ".ssh", "known_hosts")
@@ -45,7 +45,7 @@ func NewClient(source string) (Client, error) {
 	hostKeyCallback, err := kh.New(knownHostsFile)
 	if err != nil {
 		logrus.Errorf("Unable to get hostkey in %s", knownHostsFile)
-		return Client{}, err
+		return nil, err
 	}
 
 	sshConfig := &ssh.ClientConfig{
@@ -62,27 +62,53 @@ func NewClient(source string) (Client, error) {
 	if p := sshCreds["port"]; p != "" {
 		port, err = strconv.Atoi(p)
 		if err != nil || port < 1 || port > 65535 {
-			return Client{}, errors.New("Port number " + p + " is wrong.")
+			return nil, errors.New("Port number " + p + " is wrong.")
 		}
 	}
 
 	addr := fmt.Sprintf("%s:%d", source, port)
-	logrus.Debug("Connecting to", addr)
+	logrus.Debugf("Connecting to %s", addr)
 
 	connection, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
 		logrus.Errorf("Cannot connect to %s", addr)
-		return Client{}, err
+		return nil, err
+	}
+
+	return connection, nil
+}
+
+// NewClient creates a new SFTP client
+func NewClient(source string) (*Client, error) {
+	connection, err := CreateConnection(source)
+	if err != nil {
+		return nil, err
 	}
 
 	// create new SFTP client
 	client, err := sftp.NewClient(connection)
 	if err != nil {
 		logrus.Error("Unable to create new SFTP client")
-		return Client{}, err
+		return nil, err
 	}
 
-	return Client{client}, nil
+	return &Client{client}, nil
+}
+
+// NewSSHSession Start new ssh session
+func NewSSHSession(source string) (*ssh.Session, error) {
+	connection, err := CreateConnection(source)
+	if err != nil {
+		return nil, err
+	}
+
+	session, err := connection.NewSession()
+	if err != nil {
+		logrus.Errorf("Cannot start session")
+		return nil, err
+	}
+
+	return session, nil
 }
 
 // GetFile copies source file to destination file
@@ -127,4 +153,20 @@ func Fetch(hostname, src, dst string) error {
 
 	logrus.Printf("SFTP: %s:%s: %d bytes copied", hostname, src, bytes)
 	return nil
+}
+
+// GetEnvVar get env var from remote host
+func GetEnvVar(hostname, envVar string) (string, error) {
+	session, err := NewSSHSession(hostname)
+	if err != nil {
+		return "", err
+	}
+
+	cmd := fmt.Sprintf("print $%s", envVar)
+	output, err := session.Output(cmd)
+	if err != nil {
+		return "", err
+	}
+
+	return string(output), nil
 }

@@ -3,10 +3,10 @@ package oauth
 import (
 	"errors"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 // IdentityProviderLDAP is a LDAP specific identity provider
@@ -33,7 +33,7 @@ type LDAPAttributes struct {
 	PreferredUsername []string `yaml:"preferredUsername"`
 }
 
-func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderLDAP, *configmaps.ConfigMap, error) {
+func buildLdapIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderLDAP, *configmaps.ConfigMap, error) {
 	var (
 		err         error
 		idP         = &IdentityProviderLDAP{}
@@ -55,7 +55,15 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 	idP.LDAP.Attributes.Name = ldap.Attributes.Name
 	idP.LDAP.Attributes.PreferredUsername = ldap.Attributes.PreferredUsername
 	idP.LDAP.BindDN = ldap.BindDN
-	idP.LDAP.BindPassword = ldap.BindPassword.Value
+
+	if ldap.BindPassword.Value != "" || ldap.BindPassword.File != "" || ldap.BindPassword.Env != "" {
+		bindPassword, err := fetchStringSource(ldap.BindPassword, config)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		idP.LDAP.BindPassword = bindPassword
+	}
 
 	if ldap.CA != "" {
 		caConfigmap = configmaps.GenConfigMap("ldap-configmap", OAuthNamespace, p.CAData)
@@ -102,6 +110,10 @@ func validateLDAPProvider(serializer *json.Serializer, p IdentityProvider) error
 
 	if ldap.URL == "" {
 		return errors.New("URL can't be empty")
+	}
+
+	if ldap.BindPassword.KeyFile != "" {
+		return errors.New("Usage of encrypted files as bind password value is not supported")
 	}
 
 	return nil

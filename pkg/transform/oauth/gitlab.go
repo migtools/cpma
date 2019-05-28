@@ -1,13 +1,14 @@
 package oauth
 
 import (
+	"encoding/base64"
 	"errors"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 // IdentityProviderGitLab is a Gitlab specific identity provider
@@ -24,7 +25,7 @@ type GitLab struct {
 	ClientSecret ClientSecret `yaml:"clientSecret"`
 }
 
-func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGitLab, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildGitLabIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderGitLab, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
 		err         error
 		idP         = &IdentityProviderGitLab{}
@@ -52,7 +53,10 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 
 	secretName := p.Name + "-secret"
 	idP.GitLab.ClientSecret.Name = secretName
-	secret, err = secrets.GenSecret(secretName, gitlab.ClientSecret.Value, OAuthNamespace, secrets.LiteralSecretType)
+	secretContent, err := fetchStringSource(gitlab.ClientSecret, config)
+
+	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
+	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -78,6 +82,10 @@ func validateGitLabProvider(serializer *json.Serializer, p IdentityProvider) err
 
 	if gitlab.URL == "" {
 		return errors.New("URL can't be empty")
+	}
+
+	if gitlab.ClientSecret.KeyFile != "" {
+		return errors.New("Usage of encrypted files as secret value is not supported")
 	}
 
 	if err := validateClientData(gitlab.ClientID, gitlab.ClientSecret); err != nil {

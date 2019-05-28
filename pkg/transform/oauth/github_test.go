@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	"github.com/stretchr/testify/assert"
@@ -11,6 +12,7 @@ import (
 )
 
 func TestTransformMasterConfigGithub(t *testing.T) {
+	config := config.LoadConfig()
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/github/test-master-config.yaml")
 	require.NoError(t, err)
 
@@ -46,7 +48,7 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders, &config)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
 		})
@@ -88,6 +90,12 @@ func TestGithubValidation(t *testing.T) {
 			requireError: true,
 			inputFile:    "testdata/github/invalid-clientsecret-master-config.yaml",
 			expectedErr:  errors.New("Client Secret can't be empty"),
+		},
+		{
+			name:         "fail if key file is present for client secret in github provider",
+			requireError: true,
+			inputFile:    "testdata/github/invalid-keyfile-master-config.yaml",
+			expectedErr:  errors.New("Usage of encrypted files as secret value is not supported"),
 		},
 	}
 

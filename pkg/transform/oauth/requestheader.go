@@ -3,10 +3,9 @@ package oauth
 import (
 	"errors"
 
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 // IdentityProviderRequestHeader is a request header specific identity provider

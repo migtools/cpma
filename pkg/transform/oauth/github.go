@@ -4,11 +4,11 @@ import (
 	"encoding/base64"
 	"errors"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 //IdentityProviderGitHub is a Github specific identity provider
@@ -27,7 +27,7 @@ type GitHub struct {
 	Teams         []string     `yaml:"teams,omitempty"`
 }
 
-func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGitHub, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildGitHubIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderGitHub, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
 		err         error
 		idP         = &IdentityProviderGitHub{}
@@ -58,8 +58,9 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 
 	secretName := p.Name + "-secret"
 	idP.GitHub.ClientSecret.Name = secretName
+	secretContent, err := fetchStringSource(github.ClientSecret, config)
 
-	encoded := base64.StdEncoding.EncodeToString([]byte(github.ClientSecret.Value))
+	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
 	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
 	if err != nil {
 		return nil, nil, nil, err
@@ -82,6 +83,10 @@ func validateGithubProvider(serializer *json.Serializer, p IdentityProvider) err
 
 	if err := validateMappingMethod(p.MappingMethod); err != nil {
 		return err
+	}
+
+	if github.ClientSecret.KeyFile != "" {
+		return errors.New("Usage of encrypted files as secret value is not supported")
 	}
 
 	if err := validateClientData(github.ClientID, github.ClientSecret); err != nil {

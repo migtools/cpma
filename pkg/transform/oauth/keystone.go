@@ -6,10 +6,9 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
+	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
-	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
 // IdentityProviderKeystone is a Keystone specific identity provider

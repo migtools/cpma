@@ -5,16 +5,17 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/oauth"
+	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/client-go/kubernetes/scheme"
-
-	configv1 "github.com/openshift/api/legacyconfig/v1"
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 func TestTransformMasterConfig(t *testing.T) {
+	config := config.LoadConfig()
 	file := "testdata/bulk-test-master-config.yaml"
 
 	content, err := ioutil.ReadFile(file)
@@ -59,7 +60,7 @@ func TestTransformMasterConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders, &config)
 			require.NoError(t, err)
 			assert.Equal(t, len(resCrd.Spec.IdentityProviders), 9)
 			assert.Equal(t, resCrd.Spec.IdentityProviders[0].(*oauth.IdentityProviderBasicAuth).Type, "BasicAuth")
@@ -77,6 +78,7 @@ func TestTransformMasterConfig(t *testing.T) {
 }
 
 func TestGenYAML(t *testing.T) {
+	config := config.LoadConfig()
 	testCases := []struct {
 		name                    string
 		inputConfigfile         string
@@ -136,7 +138,7 @@ func TestGenYAML(t *testing.T) {
 					})
 			}
 
-			crd, secrets, configMaps, err := oauth.Translate(identityProviders)
+			crd, secrets, configMaps, err := oauth.Translate(identityProviders, &config)
 			require.NoError(t, err)
 
 			CRD, err := crd.GenYAML()

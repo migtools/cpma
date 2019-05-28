@@ -1,12 +1,13 @@
 package oauth
 
 import (
+	"encoding/base64"
 	"errors"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 // IdentityProviderOpenID is an Open ID specific identity provider
@@ -36,7 +37,7 @@ type OpenIDURLs struct {
 	Token     string `yaml:"token"`
 }
 
-func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderOpenID, *secrets.Secret, error) {
+func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderOpenID, *secrets.Secret, error) {
 	var (
 		err    error
 		secret *secrets.Secret
@@ -62,7 +63,10 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 
 	secretName := p.Name + "-secret"
 	idP.OpenID.ClientSecret.Name = secretName
-	secret, err = secrets.GenSecret(secretName, openID.ClientSecret.Value, OAuthNamespace, secrets.LiteralSecretType)
+	secretContent, err := fetchStringSource(openID.ClientSecret, config)
+
+	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
+	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -84,6 +88,10 @@ func validateOpenIDProvider(serializer *json.Serializer, p IdentityProvider) err
 
 	if err := validateMappingMethod(p.MappingMethod); err != nil {
 		return err
+	}
+
+	if openID.ClientSecret.KeyFile != "" {
+		return errors.New("Usage of encrypted files as secret value is not supported")
 	}
 
 	if err := validateClientData(openID.ClientID, openID.ClientSecret); err != nil {

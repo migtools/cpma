@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	"github.com/stretchr/testify/assert"
@@ -11,6 +12,7 @@ import (
 )
 
 func TestTransformMasterConfigOpenID(t *testing.T) {
+	config := config.LoadConfig()
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/openid/test-master-config.yaml")
 	require.NoError(t, err)
 
@@ -48,7 +50,7 @@ func TestTransformMasterConfigOpenID(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders, &config)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
 		})
@@ -108,6 +110,12 @@ func TestOpenIDValidation(t *testing.T) {
 			requireError: true,
 			inputFile:    "testdata/openid/invalid-token-master-config.yaml",
 			expectedErr:  errors.New("Token endpoint can't be empty"),
+		},
+		{
+			name:         "fail if key file is present for client secret in openid provider",
+			requireError: true,
+			inputFile:    "testdata/openid/invalid-keyfile-master-config.yaml",
+			expectedErr:  errors.New("Usage of encrypted files as secret value is not supported"),
 		},
 	}
 
