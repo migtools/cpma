@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -245,7 +246,7 @@ func fetchStringSource(stringSource configv1.StringSource, config *config.Config
 	}
 
 	if stringSource.Env != "" {
-		env, err := config.FetchEnv(stringSource.Env)
+		env, err := io.FetchEnv(config.Hostname, stringSource.Env)
 		if err != nil {
 			return "", nil
 		}

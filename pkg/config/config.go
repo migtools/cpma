@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/fusor/cpma/pkg/io/sftpclient"
 	"path/filepath"
 
 	"github.com/fusor/cpma/pkg/env"
@@ -29,17 +28,6 @@ func (c *Config) Fetch(path string) ([]byte, error) {
 	logrus.Infof("File:loaded: %v", dst)
 
 	return f, nil
-}
-
-// FetchEnv Fetch env vars from the OCP3 cluster
-func (c *Config) FetchEnv(envVar string) (string, error) {
-	output, err := sftpclient.GetEnvVar(c.Hostname, envVar)
-	if err != nil {
-		return "", err
-	}
-	logrus.Debugf("Env:loaded: %s", envVar)
-
-	return output, nil
 }
 
 // LoadConfig collects and stores configuration for CPMA
