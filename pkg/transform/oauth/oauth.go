@@ -7,14 +7,13 @@ import (
 	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
+	configv1 "github.com/openshift/api/legacyconfig/v1"
+	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
-
-	configv1 "github.com/openshift/api/legacyconfig/v1"
-	oauthv1 "github.com/openshift/api/oauth/v1"
 )
 
 func init() {

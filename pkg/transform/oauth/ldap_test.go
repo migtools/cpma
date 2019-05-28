@@ -4,14 +4,15 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTransformMasterConfigLDAP(t *testing.T) {
+	config := config.LoadConfig()
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/ldap/test-master-config.yaml")
 	require.NoError(t, err)
 
@@ -51,7 +52,7 @@ func TestTransformMasterConfigLDAP(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, _, err := oauth.Translate(identityProviders)
+			resCrd, _, _, err := oauth.Translate(identityProviders, &config)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, resCrd)
 		})

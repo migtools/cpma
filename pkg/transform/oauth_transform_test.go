@@ -76,7 +76,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	githubSecretCrd.Type = "Opaque"
 	githubSecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	githubSecretCrd.Metadata.Name = "github123456789-secret"
-	githubSecretCrd.Data = secrets.LiteralSecret{ClientSecret: base64.StdEncoding.EncodeToString([]byte("e16a59ad33d7c29fd4354f46059f0950c609a7ea"))}
+	githubSecretCrd.Data = secrets.LiteralSecret{ClientSecret: base64.StdEncoding.EncodeToString([]byte("fake-secret"))}
 
 	var githubConfigMap configmaps.ConfigMap
 	githubConfigMap.APIVersion = "v1"
@@ -102,7 +102,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	gitlabSecretCrd.Type = "Opaque"
 	gitlabSecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	gitlabSecretCrd.Metadata.Name = "gitlab123456789-secret"
-	gitlabSecretCrd.Data = secrets.LiteralSecret{ClientSecret: "fake-secret"}
+	gitlabSecretCrd.Data = secrets.LiteralSecret{ClientSecret: base64.StdEncoding.EncodeToString([]byte("fake-secret"))}
 
 	var gitlabConfigMap configmaps.ConfigMap
 	gitlabConfigMap.APIVersion = "v1"
@@ -127,7 +127,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	googleSecretCrd.Type = "Opaque"
 	googleSecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	googleSecretCrd.Metadata.Name = "google123456789123456789-secret"
-	googleSecretCrd.Data = secrets.LiteralSecret{ClientSecret: "e16a59ad33d7c29fd4354f46059f0950c609a7ea"}
+	googleSecretCrd.Data = secrets.LiteralSecret{ClientSecret: base64.StdEncoding.EncodeToString([]byte("fake-secret"))}
 
 	var keystoneIDP oauth.IdentityProviderKeystone
 	keystoneIDP.Type = "Keystone"
@@ -245,7 +245,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	openidSecretCrd.Type = "Opaque"
 	openidSecretCrd.Metadata.Namespace = oauth.OAuthNamespace
 	openidSecretCrd.Metadata.Name = "my_openid_connect-secret"
-	openidSecretCrd.Data = secrets.LiteralSecret{ClientSecret: "testsecret"}
+	openidSecretCrd.Data = secrets.LiteralSecret{ClientSecret: base64.StdEncoding.EncodeToString([]byte("testsecret"))}
 
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, basicAuthIDP)
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, githubIDP)

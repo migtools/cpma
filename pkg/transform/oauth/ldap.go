@@ -1,13 +1,12 @@
 package oauth
 
 import (
-	"github.com/fusor/cpma/pkg/config"
 	"errors"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 // IdentityProviderLDAP is a LDAP specific identity provider
@@ -57,12 +56,12 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider, config *config
 	idP.LDAP.Attributes.PreferredUsername = ldap.Attributes.PreferredUsername
 	idP.LDAP.BindDN = ldap.BindDN
 
-	if ldap.BindPassword.Value     != "" ||  ldap.BindPassword.File != "" || ldap.BindPassword.Env != "" {
+	if ldap.BindPassword.Value != "" || ldap.BindPassword.File != "" || ldap.BindPassword.Env != "" {
 		bindPassword, err := fetchStringSource(ldap.BindPassword, config)
 		if err != nil {
 			return nil, nil, err
 		}
-	
+
 		idP.LDAP.BindPassword = bindPassword
 	}
 

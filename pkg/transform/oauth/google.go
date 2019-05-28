@@ -4,10 +4,10 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/fusor/cpma/pkg/transform/secrets"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 //IdentityProviderGoogle is a Google specific identity provider

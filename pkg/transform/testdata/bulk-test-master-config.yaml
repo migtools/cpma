@@ -23,7 +23,7 @@ oauthConfig:
       kind: GitHubIdentityProvider
       ca: github.crt
       clientID: 2d85ea3f45d6777bffd7
-      clientSecret: e16a59ad33d7c29fd4354f46059f0950c609a7ea
+      clientSecret: fake-secret
       hostname: test.example.com
       organizations:
       - myorganization1
@@ -51,7 +51,7 @@ oauthConfig:
       apiVersion: v1
       kind: GoogleIdentityProvider
       clientID: 82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com
-      clientSecret: e16a59ad33d7c29fd4354f46059f0950c609a7ea
+      clientSecret: fake-secret
       hostedDomain: test.example.com
   - name: htpasswd_auth
     login: true

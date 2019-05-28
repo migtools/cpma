@@ -1,14 +1,13 @@
 package oauth
 
 import (
-	"github.com/fusor/cpma/pkg/config"
 	"encoding/base64"
 	"errors"
 
+	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 // IdentityProviderOpenID is an Open ID specific identity provider
