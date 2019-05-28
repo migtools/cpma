@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/pkg/config"
 	"errors"
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
@@ -33,7 +34,7 @@ type LDAPAttributes struct {
 	PreferredUsername []string `yaml:"preferredUsername"`
 }
 
-func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderLDAP, *configmaps.ConfigMap, error) {
+func buildLdapIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderLDAP, *configmaps.ConfigMap, error) {
 	var (
 		err         error
 		idP         = &IdentityProviderLDAP{}
@@ -55,7 +56,15 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 	idP.LDAP.Attributes.Name = ldap.Attributes.Name
 	idP.LDAP.Attributes.PreferredUsername = ldap.Attributes.PreferredUsername
 	idP.LDAP.BindDN = ldap.BindDN
-	idP.LDAP.BindPassword = ldap.BindPassword.Value
+
+	if ldap.BindPassword.Value     != "" ||  ldap.BindPassword.File != "" || ldap.BindPassword.Env != "" {
+		bindPassword, err := fetchStringSource(ldap.BindPassword, config)
+		if err != nil {
+			return nil, nil, err
+		}
+	
+		idP.LDAP.BindPassword = bindPassword
+	}
 
 	if ldap.CA != "" {
 		caConfigmap = configmaps.GenConfigMap("ldap-configmap", OAuthNamespace, p.CAData)

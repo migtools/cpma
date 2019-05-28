@@ -115,19 +115,19 @@ func Translate(identityProviders []IdentityProvider, config *config.Config) (*CR
 
 		switch kind {
 		case "GitHubIdentityProvider":
-			idP, secret, caConfigMap, err = buildGitHubIP(serializer, p)
+			idP, secret, caConfigMap, err = buildGitHubIP(serializer, p, config)
 		case "GitLabIdentityProvider":
 			idP, secret, caConfigMap, err = buildGitLabIP(serializer, p, config)
 		case "GoogleIdentityProvider":
-			idP, secret, err = buildGoogleIP(serializer, p)
+			idP, secret, err = buildGoogleIP(serializer, p, config)
 		case "HTPasswdPasswordIdentityProvider":
 			idP, secret, err = buildHTPasswdIP(serializer, p)
 		case "OpenIDIdentityProvider":
-			idP, secret, err = buildOpenIDIP(serializer, p)
+			idP, secret, err = buildOpenIDIP(serializer, p, config)
 		case "RequestHeaderIdentityProvider":
 			idP, caConfigMap, err = buildRequestHeaderIP(serializer, p)
 		case "LDAPPasswordIdentityProvider":
-			idP, caConfigMap, err = buildLdapIP(serializer, p)
+			idP, caConfigMap, err = buildLdapIP(serializer, p, config)
 		case "KeystonePasswordIdentityProvider":
 			idP, certSecret, keySecret, caConfigMap, err = buildKeystoneIP(serializer, p)
 		case "BasicAuthPasswordIdentityProvider":
@@ -230,28 +230,28 @@ func validateClientData(clientID string, clientSecret configv1.StringSource) err
 	return nil
 }
 
-func fetchSecret(secret configv1.StringSource, config *config.Config) (string, error) {
-	if secret.Value != "" {
-		return secret.Value, nil
+func fetchStringSource(stringSource configv1.StringSource, config *config.Config) (string, error) {
+	if stringSource.Value != "" {
+		return stringSource.Value, nil
 	}
 
-	if secret.File != "" {
-		secretFileContent, err := config.Fetch(secret.File)
+	if stringSource.File != "" {
+		fileContent, err := config.Fetch(stringSource.File)
 		if err != nil {
 			return "", nil
 		}
 
-		secretFileString := strings.TrimSuffix(string(secretFileContent), "\n")
-		return secretFileString, nil
+		fileString := strings.TrimSuffix(string(fileContent), "\n")
+		return fileString, nil
 	}
 
-	if secret.Env != "" {
-		secretEnv, err := config.Env(secret.Env)
+	if stringSource.Env != "" {
+		env, err := config.FetchEnv(stringSource.Env)
 		if err != nil {
 			return "", nil
 		}
 
-		return secretEnv, nil
+		return env, nil
 	}
 
 	return "", nil

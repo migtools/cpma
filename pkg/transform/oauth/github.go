@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"github.com/fusor/cpma/pkg/config"
 	"encoding/base64"
 	"errors"
 
@@ -27,7 +28,7 @@ type GitHub struct {
 	Teams         []string     `yaml:"teams,omitempty"`
 }
 
-func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGitHub, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildGitHubIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderGitHub, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
 		err         error
 		idP         = &IdentityProviderGitHub{}
@@ -58,8 +59,9 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 
 	secretName := p.Name + "-secret"
 	idP.GitHub.ClientSecret.Name = secretName
+	secretContent, err := fetchStringSource(github.ClientSecret, config)
 
-	encoded := base64.StdEncoding.EncodeToString([]byte(github.ClientSecret.Value))
+	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
 	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
 	if err != nil {
 		return nil, nil, nil, err

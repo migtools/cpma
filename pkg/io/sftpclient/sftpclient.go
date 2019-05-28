@@ -162,7 +162,7 @@ func GetEnvVar(hostname, envVar string) (string, error) {
 		return "", err
 	}
 
-	cmd := "printf $" + envVar
+	cmd := fmt.Sprintf("print $%s", envVar)
 	output, err := session.Output(cmd)
 	if err != nil {
 		return "", err

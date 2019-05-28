@@ -31,13 +31,13 @@ func (c *Config) Fetch(path string) ([]byte, error) {
 	return f, nil
 }
 
-// Env Fetch env vars from the OCP3 cluster
-func (c *Config) Env(envVar string) (string, error) {
+// FetchEnv Fetch env vars from the OCP3 cluster
+func (c *Config) FetchEnv(envVar string) (string, error) {
 	output, err := sftpclient.GetEnvVar(c.Hostname, envVar)
 	if err != nil {
 		return "", err
 	}
-	logrus.Infof("Env:loaded: %s", output)
+	logrus.Debugf("Env:loaded: %s", envVar)
 
 	return output, nil
 }
