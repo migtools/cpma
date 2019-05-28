@@ -3,7 +3,7 @@ package io
 import (
 	"io/ioutil"
 
-	"github.com/fusor/cpma/pkg/io/sftpclient"
+	"github.com/fusor/cpma/pkg/io/remotehost"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,7 +13,7 @@ import (
 var GetFile = func(host, src, target string) ([]byte, error) {
 	f, err := ioutil.ReadFile(target)
 	if err != nil {
-		sftpclient.Fetch(host, src, target)
+		remotehost.Fetch(host, src, target)
 		netFile, err := ioutil.ReadFile(target)
 		if err != nil {
 			return nil, err
@@ -25,7 +25,7 @@ var GetFile = func(host, src, target string) ([]byte, error) {
 
 // FetchEnv Fetch env vars from the OCP3 cluster
 func FetchEnv(host, envVar string) (string, error) {
-	output, err := sftpclient.GetEnvVar(host, envVar)
+	output, err := remotehost.GetEnvVar(host, envVar)
 	if err != nil {
 		return "", err
 	}

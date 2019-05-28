@@ -1,4 +1,4 @@
-package sftpclient
+package remotehost
 
 import (
 	"errors"
