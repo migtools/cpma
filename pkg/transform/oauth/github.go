@@ -59,6 +59,9 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider, config *conf
 	secretName := p.Name + "-secret"
 	idP.GitHub.ClientSecret.Name = secretName
 	secretContent, err := fetchStringSource(github.ClientSecret, config)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
 	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)

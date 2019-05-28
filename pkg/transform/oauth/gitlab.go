@@ -54,6 +54,9 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider, config *conf
 	secretName := p.Name + "-secret"
 	idP.GitLab.ClientSecret.Name = secretName
 	secretContent, err := fetchStringSource(gitlab.ClientSecret, config)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
 	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
