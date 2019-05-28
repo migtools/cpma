@@ -2,8 +2,8 @@ package transform
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/fusor/cpma/pkg/env"
@@ -31,20 +31,44 @@ func (r ReportOutput) Flush() error {
 // DumpReports creates OCDs files
 func DumpReports(r ReportOutput) {
 
-	datafile := filepath.Join(env.Config().GetString("OutputDir"), "report.txt")
-	os.MkdirAll(path.Dir(datafile), 0755)
+	jsonfile := filepath.Join(env.Config().GetString("OutputDir"), "report.json")
+	htmlfile := filepath.Join(env.Config().GetString("OutputDir"), "report.html")
 
 	jsonReports, err := json.Marshal(r)
 	if err != nil {
 		logrus.Errorf("unable to marshal reports")
 	}
 
-	f, err := os.OpenFile(datafile, os.O_APPEND|os.O_WRONLY, 0644)
+	jf, err := os.OpenFile(jsonfile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		logrus.Errorf("unable to open report file: %s", datafile)
+		logrus.Errorf("unable to open report file: %s", jsonfile)
+	}
+	defer jf.Close()
+
+	hf, err := os.OpenFile(htmlfile, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		logrus.Errorf("unable to open report file: %s", htmlfile)
+	}
+	defer hf.Close()
+
+	_, err = jf.Write(jsonReports)
+	if err != nil {
+		logrus.Errorf("unable to write to report file: %s", jsonfile)
 	}
 
-	if _, err := f.Write(jsonReports); err != nil {
-		logrus.Errorf("unable to open report file: %s", datafile)
+	_, err = jf.Write([]byte(","))
+	if err != nil {
+		logrus.Errorf("unable to write to report file: %s", jsonfile)
+	}
+
+	for _, report := range r.Reports {
+		var bgcolor string
+		switch report.Confidence {
+		case "red":
+			bgcolor = "#FF0000"
+		default:
+			bgcolor = "#00FF00"
+		}
+		hf.Write([]byte(fmt.Sprintf("<tr bgcolor=%s><td>%s</td><td>%s</td><td>%s</td><td>%v</td></tr>\n", bgcolor, r.Component, report.Name, report.Kind, report.Supported)))
 	}
 }
