@@ -8,13 +8,30 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// OCP4InstallMsg message about using generated manifests
-const OCP4InstallMsg = `To install OCP4 run the installer as follow in order to add CRDs:
+const (
+	// OCP4InstallMsg message about using generated manifests
+	OCP4InstallMsg = `To install OCP4 run the installer as follow in order to add CRDs:
 ' /openshift-install --dir $INSTALL_DIR create install-config'
 './openshift-install --dir $INSTALL_DIR create manifests'
 # Copy generated CRD manifest files  to '$INSTALL_DIR/openshift/'
 # Edit them if needed, then run installation:
 './openshift-install --dir $INSTALL_DIR  create cluster'`
+
+	// ReportOutputType identifier string for a report run
+	ReportOutputType = "report"
+
+	// ConvertOutputType identifier string for a convert run
+	ConvertOutputType = "convert"
+
+	// SDNComponentName is the registry component string
+	SDNComponentName = "SDN"
+
+	// OAuthComponentName is the registry component string
+	OAuthComponentName = "Oauth"
+
+	// RegistriesComponentName is the registry component string
+	RegistriesComponentName = "Registries"
+)
 
 // Cluster contains a cluster
 type Cluster struct {
@@ -32,6 +49,14 @@ type Master struct {
 type Manifest struct {
 	Name string
 	CRD  []byte
+}
+
+// Report of OCP 4 component configuration compatibility
+type Report struct {
+	Name       string `json:"name"`
+	Kind       string `json:"kind,omitempty"`
+	Supported  bool   `json:"supported"`
+	Confidence string `json:"confidence"`
 }
 
 // Runner a generic transform runner

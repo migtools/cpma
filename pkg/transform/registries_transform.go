@@ -49,9 +49,20 @@ type RegistrySources struct {
 type RegistriesTransform struct {
 }
 
-// Transform contains registry configuration collected from an OCP3 cluster
+// Transform contains registry configuration collected from an OCP3 into a useful output
 func (e RegistriesExtraction) Transform() (Output, error) {
 	logrus.Info("RegistriesTransform::Extraction")
+
+	switch env.Config().Get("mode") {
+	case ReportOutputType:
+		return e.buildReportOutput()
+	case ConvertOutputType:
+		return e.buildManifestOutput()
+	}
+	return nil, errors.New("Unsupported Output Type")
+}
+
+func (e RegistriesExtraction) buildManifestOutput() (Output, error) {
 	var manifests []Manifest
 
 	const (
@@ -82,6 +93,14 @@ func (e RegistriesExtraction) Transform() (Output, error) {
 	return ManifestOutput{
 		Manifests: manifests,
 	}, nil
+}
+
+func (e RegistriesExtraction) buildReportOutput() (Output, error) {
+	reportOutput := ReportOutput{
+		Component: RegistriesComponentName,
+	}
+
+	return reportOutput, nil
 }
 
 // Extract collects registry information from an OCP3 cluster

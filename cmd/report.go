@@ -16,7 +16,7 @@ package cmd
 
 import (
 	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/report"
+	"github.com/fusor/cpma/pkg/transform"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -34,6 +34,9 @@ var reportCmd = &cobra.Command{
 			logrus.Fatal(err)
 		}
 
-		report.Start()
+		env.InitLogger()
+		env.Config().Set("mode", transform.ReportOutputType)
+
+		transform.Start()
 	},
 }

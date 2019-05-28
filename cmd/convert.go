@@ -22,8 +22,8 @@ import (
 )
 
 // rootCmd represents the base command when called without any subcommands
-var transformCmd = &cobra.Command{
-	Use:   "transform",
+var convertCmd = &cobra.Command{
+	Use:   "convert",
 	Short: "Generates configuration from an Openshift 3 cluster for use on an Openshift 4",
 	Long:  "Generates configugation from an Openshift 3 cluster for use on an Openshift 4",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -33,6 +33,9 @@ var transformCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatal(err)
 		}
+
+		env.InitLogger()
+		env.Config().Set("mode", transform.ConvertOutputType)
 
 		transform.Start()
 	},

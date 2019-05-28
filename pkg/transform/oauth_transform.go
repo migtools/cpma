@@ -20,10 +20,20 @@ type OAuthExtraction struct {
 type OAuthTransform struct {
 }
 
-// Transform converts data collected from an OCP3 cluster to OCP4 CR's
+// Transform converts data collected from an OCP3 into a useful output
 func (e OAuthExtraction) Transform() (Output, error) {
 	logrus.Info("OAuthTransform::Transform")
 
+	switch env.Config().Get("mode") {
+	case ReportOutputType:
+		return e.buildReportOutput()
+	case ConvertOutputType:
+		return e.buildManifestOutput()
+	}
+	return nil, errors.New("Unsupported Output Type")
+}
+
+func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 	var ocp4Cluster Cluster
 
 	oauth, secrets, configMaps, err := oauth.Translate(e.IdentityProviders)
@@ -69,6 +79,43 @@ func (e OAuthExtraction) Transform() (Output, error) {
 	}
 
 	return ManifestOutput{Manifests: manifests}, nil
+}
+
+func (e OAuthExtraction) buildReportOutput() (Output, error) {
+	reportOutput := ReportOutput{
+		Component: OAuthComponentName,
+	}
+
+	for _, p := range e.IdentityProviders {
+		switch p.Kind {
+		case "GitHubIdentityProvider",
+			"GitLabIdentityProvider",
+			"GoogleIdentityProvider",
+			"HTPasswdPasswordIdentityProvider",
+			"OpenIDIdentityProvider",
+			"RequestHeaderIdentityProvider",
+			"LDAPPasswordIdentityProvider",
+			"KeystonePasswordIdentityProvider",
+			"BasicAuthPasswordIdentityProvider":
+			reportOutput.Reports = append(reportOutput.Reports,
+				Report{
+					Name:       p.Name,
+					Kind:       p.Kind,
+					Supported:  true,
+					Confidence: "green",
+				})
+		default:
+			reportOutput.Reports = append(reportOutput.Reports,
+				Report{
+					Name:       p.Name,
+					Kind:       p.Kind,
+					Supported:  false,
+					Confidence: "red",
+				})
+		}
+	}
+
+	return reportOutput, nil
 }
 
 // Extract collects OAuth configuration from an OCP3 cluster

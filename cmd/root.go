@@ -32,7 +32,7 @@ func init() {
 	rootCmd.PersistentFlags().StringP("output-dir", "o", path.Dir(""), "set the directory to store extracted configuration.")
 	env.Config().BindPFlag("OutputDir", rootCmd.PersistentFlags().Lookup("output-dir"))
 
-	rootCmd.AddCommand(transformCmd)
+	rootCmd.AddCommand(convertCmd)
 	rootCmd.AddCommand(reportCmd)
 }
 

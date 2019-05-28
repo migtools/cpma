@@ -1,6 +1,8 @@
 package transform
 
 import (
+	"errors"
+
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
@@ -18,10 +20,20 @@ type SDNExtraction struct {
 type SDNTransform struct {
 }
 
-// Transform convers OCP3 data to configuration useful for OCP4
+// Transform converts data collected from an OCP3 into a useful output
 func (e SDNExtraction) Transform() (Output, error) {
 	logrus.Info("SDNTransform::Transform")
 
+	switch env.Config().Get("mode") {
+	case ReportOutputType:
+		return e.buildReportOutput()
+	case ConvertOutputType:
+		return e.buildManifestOutput()
+	}
+	return nil, errors.New("Unsupported Output Type")
+}
+
+func (e SDNExtraction) buildManifestOutput() (Output, error) {
 	var manifests []Manifest
 
 	networkCR, err := sdn.Translate(e.MasterConfig)
@@ -40,6 +52,14 @@ func (e SDNExtraction) Transform() (Output, error) {
 	return ManifestOutput{
 		Manifests: manifests,
 	}, nil
+}
+
+func (e SDNExtraction) buildReportOutput() (Output, error) {
+	reportOutput := ReportOutput{
+		Component: SDNComponentName,
+	}
+
+	return reportOutput, nil
 }
 
 // Extract collects SDN configuration information from an OCP3 cluster
