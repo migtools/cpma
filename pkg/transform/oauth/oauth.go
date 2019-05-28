@@ -11,7 +11,6 @@ import (
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -163,17 +162,6 @@ func Translate(identityProviders []IdentityProvider, config *config.Config) (*CR
 	}
 
 	return &oauthCrd, secretsSlice, сonfigMapSlice, nil
-}
-
-// GenYAML returns a YAML of the CRD
-func (oauth *CRD) GenYAML() ([]byte, error) {
-	yamlBytes, err := yaml.Marshal(&oauth)
-	if err != nil {
-		logrus.Debugf("Error in OAuth CRD, OAuth CRD - %+v", yamlBytes)
-		return nil, err
-	}
-
-	return yamlBytes, nil
 }
 
 // Validate validate oauth providers

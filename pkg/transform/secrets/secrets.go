@@ -2,9 +2,6 @@ package secrets
 
 import (
 	"errors"
-
-	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 )
 
 // HTPasswdFileSecret is an htpasswd secret
@@ -103,16 +100,6 @@ func buildData(secretType SecretType, secretContent string) (interface{}, error)
 	}
 
 	return data, nil
-}
-
-// GenYAML returns a YAML of the OAuthCRD
-func (secret *Secret) GenYAML() ([]byte, error) {
-	yamlBytes, err := yaml.Marshal(&secret)
-	if err != nil {
-		logrus.Debugf("Error in secret, secret - %+v", secret)
-		return nil, err
-	}
-	return yamlBytes, nil
 }
 
 // SecretType.String returns a string representation for SecretType enum

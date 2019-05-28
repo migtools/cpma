@@ -3,17 +3,17 @@ oauthConfig:
   grantConfig:
     method: auto
   identityProviders:
-  - name: my_remote_basic_auth_provider 
-    challenge: true 
-    login: true 
-    mappingMethod: claim 
+  - name: my_remote_basic_auth_provider
+    challenge: true
+    login: true
+    mappingMethod: claim
     provider:
       apiVersion: v1
       kind: BasicAuthPasswordIdentityProvider
       url: https://www.example.com/
-      ca: ca.file 
-      certFile: client.crt 
-      keyFile: client.key 
+      ca: ca.file
+      certFile: client.crt
+      keyFile: client.key
   - name: github123456789
     challenge: false
     login: true
@@ -38,9 +38,9 @@ oauthConfig:
     provider:
       apiVersion: v1
       kind: GitLabIdentityProvider
-      ca: gitlab.crt
       legacy: true
       url: https://gitlab.com/
+      ca: gitlab.crt
       clientID: fake-id
       clientSecret: fake-secret
   - name: google123456789123456789
@@ -61,39 +61,39 @@ oauthConfig:
       apiVersion: v1
       file: /etc/origin/master/htpasswd
       kind: HTPasswdPasswordIdentityProvider
-  - name: my_keystone_provider 
-    challenge: true 
-    login: true 
-    mappingMethod: claim 
+  - name: my_keystone_provider
+    challenge: true
+    login: true
+    mappingMethod: claim
     provider:
       apiVersion: v1
       kind: KeystonePasswordIdentityProvider
-      domainName: default 
+      domainName: default
       url: http://fake.url:5000
-      ca: keystone.pem 
-      certFile: clientcert.pem 
-      keyFile: clientkey.pem 
-      useKeystoneIdentity: false  
-  - name: "my_ldap_provider" 
-    challenge: true 
-    login: true 
-    mappingMethod: claim 
+      ca: keystone.pem
+      certFile: clientcert.pem
+      keyFile: clientkey.pem
+      useKeystoneIdentity: false
+  - name: "my_ldap_provider"
+    challenge: true
+    login: true
+    mappingMethod: claim
     provider:
       apiVersion: v1
       kind: LDAPPasswordIdentityProvider
       attributes:
-        id: 
+        id:
         - dn
-        email: 
+        email:
         - mail
-        name: 
+        name:
         - cn
-        preferredUsername: 
+        preferredUsername:
         - uid
-      bindDN: "123" 
-      bindPassword: "321" 
-      ca: my-ldap-ca-bundle.crt 
-      insecure: false 
+      bindDN: "123"
+      bindPassword: "321"
+      ca: my-ldap-ca-bundle.crt
+      insecure: false
       url: "ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid"
   - name: my_request_header_provider
     challenge: true
@@ -125,24 +125,24 @@ oauthConfig:
       kind: OpenIDIdentityProvider
       clientID: testid
       clientSecret: testsecret
-      ca: my-openid-ca-bundle.crt 
-      extraScopes: 
+      ca: my-openid-ca-bundle.crt
+      extraScopes:
       - email
       - profile
-      extraAuthorizeParameters: 
+      extraAuthorizeParameters:
         include_granted_scopes: "true"
       claims:
-        id: 
+        id:
         - custom_id_claim
         - sub
-        preferredUsername: 
+        preferredUsername:
         - preferred_username
         - email
-        name: 
+        name:
         - nickname
         - given_name
         - name
-        email: 
+        email:
         - custom_email_claim
         - email
       urls:

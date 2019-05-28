@@ -2,7 +2,6 @@ package secrets
 
 import (
 	"errors"
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -105,40 +104,6 @@ func TestGenSecret(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, &tc.expected, resSecret)
 			}
-		})
-	}
-}
-
-func TestGenYaml(t *testing.T) {
-	expectedYaml, err := ioutil.ReadFile("testdata/expected-secret.yaml")
-	require.NoError(t, err)
-
-	testCases := []struct {
-		name         string
-		inputSecret  Secret
-		expectedYaml []byte
-	}{
-		{
-			name: "generate yaml from secret",
-			inputSecret: Secret{
-				APIVersion: APIVersion,
-				Data:       LiteralSecret{ClientSecret: "some-value"},
-				Kind:       "Secret",
-				Type:       "Opaque",
-				Metadata: MetaData{
-					Name:      "literal-secret",
-					Namespace: "openshift-config",
-				},
-			},
-			expectedYaml: expectedYaml,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			manifest, err := tc.inputSecret.GenYAML()
-			require.NoError(t, err)
-			assert.Equal(t, expectedYaml, manifest)
 		})
 	}
 }
