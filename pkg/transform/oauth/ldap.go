@@ -112,5 +112,9 @@ func validateLDAPProvider(serializer *json.Serializer, p IdentityProvider) error
 		return errors.New("URL can't be empty")
 	}
 
+	if ldap.BindPassword.KeyFile != "" {
+		return errors.New("Usage of encrypted files as bind password value is not supported")
+	}
+
 	return nil
 }

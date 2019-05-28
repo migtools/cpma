@@ -95,6 +95,12 @@ func TestGitlabValidation(t *testing.T) {
 			inputFile:    "testdata/gitlab/invalid-clientsecret-master-config.yaml",
 			expectedErr:  errors.New("Client Secret can't be empty"),
 		},
+		{
+			name:         "fail if key file is present for client secret in gitlab provider",
+			requireError: true,
+			inputFile:    "testdata/gitlab/invalid-keyfile-master-config.yaml",
+			expectedErr:  errors.New("Usage of encrypted files as secret value is not supported"),
+		},
 	}
 
 	for _, tc := range testCases {

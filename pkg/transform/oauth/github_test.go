@@ -91,6 +91,12 @@ func TestGithubValidation(t *testing.T) {
 			inputFile:    "testdata/github/invalid-clientsecret-master-config.yaml",
 			expectedErr:  errors.New("Client Secret can't be empty"),
 		},
+		{
+			name:         "fail if key file is present for client secret in github provider",
+			requireError: true,
+			inputFile:    "testdata/github/invalid-keyfile-master-config.yaml",
+			expectedErr:  errors.New("Usage of encrypted files as secret value is not supported"),
+		},
 	}
 
 	for _, tc := range testCases {

@@ -72,6 +72,10 @@ func validateGoogleProvider(serializer *json.Serializer, p IdentityProvider) err
 		return err
 	}
 
+	if google.ClientSecret.KeyFile != "" {
+		return errors.New("Usage of encrypted files as secret value is not supported")
+	}
+
 	if err := validateClientData(google.ClientID, google.ClientSecret); err != nil {
 		return err
 	}

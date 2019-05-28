@@ -111,6 +111,12 @@ func TestOpenIDValidation(t *testing.T) {
 			inputFile:    "testdata/openid/invalid-token-master-config.yaml",
 			expectedErr:  errors.New("Token endpoint can't be empty"),
 		},
+		{
+			name:         "fail if key file is present for client secret in openid provider",
+			requireError: true,
+			inputFile:    "testdata/openid/invalid-keyfile-master-config.yaml",
+			expectedErr:  errors.New("Usage of encrypted files as secret value is not supported"),
+		},
 	}
 
 	for _, tc := range testCases {

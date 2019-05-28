@@ -85,6 +85,10 @@ func validateGithubProvider(serializer *json.Serializer, p IdentityProvider) err
 		return err
 	}
 
+	if github.ClientSecret.KeyFile != "" {
+		return errors.New("Usage of encrypted files as secret value is not supported")
+	}
+
 	if err := validateClientData(github.ClientID, github.ClientSecret); err != nil {
 		return err
 	}

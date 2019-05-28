@@ -84,6 +84,10 @@ func validateGitLabProvider(serializer *json.Serializer, p IdentityProvider) err
 		return errors.New("URL can't be empty")
 	}
 
+	if gitlab.ClientSecret.KeyFile != "" {
+		return errors.New("Usage of encrypted files as secret value is not supported")
+	}
+
 	if err := validateClientData(gitlab.ClientID, gitlab.ClientSecret); err != nil {
 		return err
 	}

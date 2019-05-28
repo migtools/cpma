@@ -90,6 +90,10 @@ func validateOpenIDProvider(serializer *json.Serializer, p IdentityProvider) err
 		return err
 	}
 
+	if openID.ClientSecret.KeyFile != "" {
+		return errors.New("Usage of encrypted files as secret value is not supported")
+	}
+
 	if err := validateClientData(openID.ClientID, openID.ClientSecret); err != nil {
 		return err
 	}

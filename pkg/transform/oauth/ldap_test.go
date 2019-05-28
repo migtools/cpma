@@ -113,6 +113,12 @@ func TestLDAPValidation(t *testing.T) {
 			inputFile:    "testdata/ldap/invalid-url-master-config.yaml",
 			expectedErr:  errors.New("URL can't be empty"),
 		},
+		{
+			name:         "fail if key file is present for bind password in ldap provider",
+			requireError: true,
+			inputFile:    "testdata/ldap/invalid-bpass-master-config.yaml",
+			expectedErr:  errors.New("Usage of encrypted files as bind password value is not supported"),
+		},
 	}
 
 	for _, tc := range testCases {
