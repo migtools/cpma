@@ -10,6 +10,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io/remotehost"
+	"github.com/openshift/origin/pkg/cmd/server/admin"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -85,13 +86,34 @@ func FetchStringSource(stringSource legacyconfigv1.StringSource) (string, error)
 		return stringSource.Value, nil
 	}
 
+	if stringSource.KeyFile != "" {
+		fileContent, err := FetchFile(stringSource.File)
+		if err != nil {
+			return "", nil
+		}
+		fileString := strings.TrimSuffix(string(fileContent), "\n")
+
+		keyContent, err := FetchFile(stringSource.File)
+		if err != nil {
+			return "", nil
+		}
+		keyString := strings.TrimSuffix(string(keyContent), "\n")
+
+		decrypt := &admin.DecryptOptions{
+			EncryptedFile: fileString,
+			KeyFile:       keyString,
+		}
+		decrypt.Decrypt()
+		return decrypt.DecryptedFile
+	}
+
 	if stringSource.File != "" {
 		fileContent, err := FetchFile(stringSource.File)
 		if err != nil {
 			return "", nil
 		}
-
 		fileString := strings.TrimSuffix(string(fileContent), "\n")
+
 		return fileString, nil
 	}
 
