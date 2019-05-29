@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -27,7 +27,7 @@ type GitHub struct {
 	Teams         []string     `yaml:"teams,omitempty"`
 }
 
-func buildGitHubIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderGitHub, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGitHub, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
 		err         error
 		idP         = &IdentityProviderGitHub{}
@@ -58,7 +58,7 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider, config *conf
 
 	secretName := p.Name + "-secret"
 	idP.GitHub.ClientSecret.Name = secretName
-	secretContent, err := fetchStringSource(github.ClientSecret, config)
+	secretContent, err := io.FetchStringSource(github.ClientSecret)
 	if err != nil {
 		return nil, nil, nil, err
 	}

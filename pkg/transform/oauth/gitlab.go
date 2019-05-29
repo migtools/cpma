@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -25,7 +25,7 @@ type GitLab struct {
 	ClientSecret ClientSecret `yaml:"clientSecret"`
 }
 
-func buildGitLabIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderGitLab, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGitLab, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
 		err         error
 		idP         = &IdentityProviderGitLab{}
@@ -53,7 +53,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider, config *conf
 
 	secretName := p.Name + "-secret"
 	idP.GitLab.ClientSecret.Name = secretName
-	secretContent, err := fetchStringSource(gitlab.ClientSecret, config)
+	secretContent, err := io.FetchStringSource(gitlab.ClientSecret)
 	if err != nil {
 		return nil, nil, nil, err
 	}

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/fusor/cpma/pkg/config"
-	"github.com/fusor/cpma/pkg/config/decode"
+	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/sirupsen/logrus"
 )
@@ -14,12 +14,10 @@ import (
 // OAuthExtraction holds OAuth data extracted from OCP3
 type OAuthExtraction struct {
 	IdentityProviders []oauth.IdentityProvider
-	Config            *config.Config
 }
 
 // OAuthTransform is an OAuth specific transform
 type OAuthTransform struct {
-	Config *config.Config
 }
 
 // Transform converts data collected from an OCP3 cluster to OCP4 CR's
@@ -28,7 +26,7 @@ func (e OAuthExtraction) Transform() (Output, error) {
 
 	var ocp4Cluster Cluster
 
-	oauth, secrets, configMaps, err := oauth.Translate(e.IdentityProviders, e.Config)
+	oauth, secrets, configMaps, err := oauth.Translate(e.IdentityProviders)
 	if err != nil {
 		return nil, errors.New("Unable to generate OAuth CRD")
 	}
@@ -76,7 +74,7 @@ func (e OAuthExtraction) Transform() (Output, error) {
 // Extract collects OAuth configuration from an OCP3 cluster
 func (e OAuthTransform) Extract() (Extraction, error) {
 	logrus.Info("OAuthTransform::Extract")
-	content, err := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
+	content, err := io.FetchFile(env.Config().GetString("MasterConfigFile"))
 	if err != nil {
 		return nil, err
 	}
@@ -87,8 +85,6 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 	}
 
 	var extraction OAuthExtraction
-	extraction.Config = e.Config
-
 	var htContent, caContent, crtContent, keyContent []byte
 
 	if masterConfig.OAuthConfig != nil {
@@ -106,25 +102,25 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 			}
 
 			if provider.File != "" {
-				htContent, err = e.Config.Fetch(provider.File)
+				htContent, err = io.FetchFile(provider.File)
 				if err != nil {
 					return nil, err
 				}
 			}
 			if provider.CA != "" {
-				caContent, err = e.Config.Fetch(provider.CA)
+				caContent, err = io.FetchFile(provider.CA)
 				if err != nil {
 					return nil, err
 				}
 			}
 			if provider.CertFile != "" {
-				crtContent, err = e.Config.Fetch(provider.CertFile)
+				crtContent, err = io.FetchFile(provider.CertFile)
 				if err != nil {
 					return nil, err
 				}
 			}
 			if provider.KeyFile != "" {
-				keyContent, err = e.Config.Fetch(provider.KeyFile)
+				keyContent, err = io.FetchFile(provider.KeyFile)
 				if err != nil {
 					return nil, err
 				}

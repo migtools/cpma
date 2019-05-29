@@ -2,19 +2,26 @@ package io
 
 import (
 	"io/ioutil"
+	"path/filepath"
+	"strings"
 
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io/remotehost"
 	"github.com/sirupsen/logrus"
+
+	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-// GetFile first tries to retrieve file from local disk (outputDir/<Hostname>/).
+// FetchFile first tries to retrieve file from local disk (outputDir/<Hostname>/).
 // If it fails then connects to Hostname to retrieve file and stores it locally
 // To force a network connection remove outputDir/... prior to exec.
-var GetFile = func(host, src, target string) ([]byte, error) {
-	f, err := ioutil.ReadFile(target)
+var FetchFile = func(src string) ([]byte, error) {
+	dst := filepath.Join(env.Config().GetString("OutputDir"), env.Config().GetString("Source"), src)
+	f, err := ioutil.ReadFile(dst)
 	if err != nil {
-		remotehost.Fetch(host, src, target)
-		netFile, err := ioutil.ReadFile(target)
+		host := env.Config().GetString("Source")
+		remotehost.Fetch(host, src, dst)
+		netFile, err := ioutil.ReadFile(src)
 		if err != nil {
 			return nil, err
 		}
@@ -32,4 +39,32 @@ func FetchEnv(host, envVar string) (string, error) {
 	logrus.Debugf("Env:loaded: %s", envVar)
 
 	return output, nil
+}
+
+// FetchStringSource fetches a string from an OCP3 cluster
+func FetchStringSource(stringSource configv1.StringSource) (string, error) {
+	if stringSource.Value != "" {
+		return stringSource.Value, nil
+	}
+
+	if stringSource.File != "" {
+		fileContent, err := FetchFile(stringSource.File)
+		if err != nil {
+			return "", nil
+		}
+
+		fileString := strings.TrimSuffix(string(fileContent), "\n")
+		return fileString, nil
+	}
+
+	if stringSource.Env != "" {
+		env, err := FetchEnv(env.Config().GetString("Source"), stringSource.Env)
+		if err != nil {
+			return "", nil
+		}
+
+		return env, nil
+	}
+
+	return "", nil
 }

@@ -1,9 +1,9 @@
 package transform
 
 import (
-	"github.com/fusor/cpma/pkg/config"
-	"github.com/fusor/cpma/pkg/config/decode"
+	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/sdn"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
@@ -16,7 +16,6 @@ type SDNExtraction struct {
 
 // SDNTransform is an SDN specific transform
 type SDNTransform struct {
-	Config *config.Config
 }
 
 // Transform convers OCP3 data to configuration useful for OCP4
@@ -47,7 +46,7 @@ func (e SDNExtraction) Transform() (Output, error) {
 func (e SDNTransform) Extract() (Extraction, error) {
 	logrus.Info("SDNTransform::Extract")
 
-	content, err := e.Config.Fetch(env.Config().GetString("MasterConfigFile"))
+	content, err := io.FetchFile(env.Config().GetString("MasterConfigFile"))
 	if err != nil {
 		return nil, err
 	}

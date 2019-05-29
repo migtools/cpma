@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -17,8 +16,6 @@ import (
 )
 
 func TestOauthGenYAML(t *testing.T) {
-	config := config.LoadConfig()
-
 	testCases := []struct {
 		name                    string
 		inputConfigfile         string
@@ -78,7 +75,7 @@ func TestOauthGenYAML(t *testing.T) {
 					})
 			}
 
-			crd, secrets, configMaps, err := oauth.Translate(identityProviders, &config)
+			crd, secrets, configMaps, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 
 			CRD, err := GenYAML(crd)

@@ -3,7 +3,7 @@ package oauth
 import (
 	"errors"
 
-	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -33,7 +33,7 @@ type LDAPAttributes struct {
 	PreferredUsername []string `yaml:"preferredUsername"`
 }
 
-func buildLdapIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderLDAP, *configmaps.ConfigMap, error) {
+func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderLDAP, *configmaps.ConfigMap, error) {
 	var (
 		err         error
 		idP         = &IdentityProviderLDAP{}
@@ -57,7 +57,7 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider, config *config
 	idP.LDAP.BindDN = ldap.BindDN
 
 	if ldap.BindPassword.Value != "" || ldap.BindPassword.File != "" || ldap.BindPassword.Env != "" {
-		bindPassword, err := fetchStringSource(ldap.BindPassword, config)
+		bindPassword, err := io.FetchStringSource(ldap.BindPassword)
 		if err != nil {
 			return nil, nil, err
 		}

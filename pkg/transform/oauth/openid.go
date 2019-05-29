@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -37,7 +37,7 @@ type OpenIDURLs struct {
 	Token     string `yaml:"token"`
 }
 
-func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderOpenID, *secrets.Secret, error) {
+func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderOpenID, *secrets.Secret, error) {
 	var (
 		err    error
 		secret *secrets.Secret
@@ -63,7 +63,7 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider, config *conf
 
 	secretName := p.Name + "-secret"
 	idP.OpenID.ClientSecret.Name = secretName
-	secretContent, err := fetchStringSource(openID.ClientSecret, config)
+	secretContent, err := io.FetchStringSource(openID.ClientSecret)
 	if err != nil {
 		return nil, nil, err
 	}

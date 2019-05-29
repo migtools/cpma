@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/fusor/cpma/pkg/config"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -23,7 +23,7 @@ type Google struct {
 	HostedDomain string       `yaml:"hostedDomain,omitempty"`
 }
 
-func buildGoogleIP(serializer *json.Serializer, p IdentityProvider, config *config.Config) (*IdentityProviderGoogle, *secrets.Secret, error) {
+func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGoogle, *secrets.Secret, error) {
 	var (
 		err    error
 		idP    = &IdentityProviderGoogle{}
@@ -45,7 +45,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider, config *conf
 
 	secretName := p.Name + "-secret"
 	idP.Google.ClientSecret.Name = secretName
-	secretContent, err := fetchStringSource(google.ClientSecret, config)
+	secretContent, err := io.FetchStringSource(google.ClientSecret)
 	if err != nil {
 		return nil, nil, err
 	}

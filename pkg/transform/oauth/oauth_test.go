@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +14,6 @@ import (
 )
 
 func TestTransformMasterConfig(t *testing.T) {
-	config := config.LoadConfig()
 	file := "testdata/bulk-test-master-config.yaml"
 
 	content, err := ioutil.ReadFile(file)
@@ -60,7 +58,7 @@ func TestTransformMasterConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, _, err := oauth.Translate(identityProviders, &config)
+			resCrd, _, _, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
 			assert.Equal(t, len(resCrd.Spec.IdentityProviders), 9)
 			assert.Equal(t, resCrd.Spec.IdentityProviders[0].(*oauth.IdentityProviderBasicAuth).Type, "BasicAuth")
