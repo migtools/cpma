@@ -91,9 +91,7 @@ type Output interface {
 func Start() {
 	runner := NewRunner()
 
-	if env.Config().Get("mode") == ReportOutputType {
-		openReports()
-	}
+	openReports()
 
 	runner.Transform([]Transform{
 		OAuthTransform{},
@@ -162,16 +160,8 @@ func openReports() {
 	jsonfile := filepath.Join(env.Config().GetString("OutputDir"), "report.json")
 	os.MkdirAll(path.Dir(jsonfile), 0755)
 
-	htmlfile := filepath.Join(env.Config().GetString("OutputDir"), "report.html")
-
-	err := ioutil.WriteFile(jsonfile, []byte("["), 0644)
+	err := ioutil.WriteFile(jsonfile, []byte("[]"), 0644)
 	if err != nil {
 		logrus.Errorf("unable to open report file: %s", jsonfile)
 	}
-
-	err = ioutil.WriteFile(htmlfile, []byte("<html>\n<body>\n<table border=1>\n<tr><th>Component</th><th>Name</th><th>Kind</th><th>Supported</th></tr>\n"), 0644)
-	if err != nil {
-		logrus.Errorf("unable to open report file: %s", htmlfile)
-	}
-
 }
