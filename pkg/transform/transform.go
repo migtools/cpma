@@ -18,12 +18,6 @@ const (
 # Edit them if needed, then run installation:
 './openshift-install --dir $INSTALL_DIR  create cluster'`
 
-	// ReportOutputType identifier string for a report run
-	ReportOutputType = "report"
-
-	// ConvertOutputType identifier string for a convert run
-	ConvertOutputType = "convert"
-
 	// SDNComponentName is the registry component string
 	SDNComponentName = "SDN"
 

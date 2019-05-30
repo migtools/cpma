@@ -71,13 +71,13 @@ func FetchStringSource(stringSource configv1.StringSource) (string, error) {
 	return "", nil
 }
 
-// ReadFile reads a file and returns its contents
+// ReadFile reads a file in OutputDir and returns its contents
 func ReadFile(file string) ([]byte, error) {
 	src := filepath.Join(env.Config().GetString("OutputDir"), file)
 	return ioutil.ReadFile(src)
 }
 
-// WriteFile writes data to a file
+// WriteFile writes data to a file in OutputDir
 func WriteFile(content []byte, file string) error {
 	dst := filepath.Join(env.Config().GetString("OutputDir"), file)
 	os.MkdirAll(path.Dir(dst), 0750)
