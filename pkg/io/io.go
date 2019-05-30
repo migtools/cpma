@@ -2,6 +2,8 @@ package io
 
 import (
 	"io/ioutil"
+	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -67,4 +69,17 @@ func FetchStringSource(stringSource configv1.StringSource) (string, error) {
 	}
 
 	return "", nil
+}
+
+// ReadFile reads a file and returns its contents
+func ReadFile(file string) ([]byte, error) {
+	src := filepath.Join(env.Config().GetString("OutputDir"), file)
+	return ioutil.ReadFile(src)
+}
+
+// WriteFile writes data to a file
+func WriteFile(content []byte, file string) error {
+	dst := filepath.Join(env.Config().GetString("OutputDir"), file)
+	os.MkdirAll(path.Dir(dst), 0750)
+	return ioutil.WriteFile(dst, content, 0640)
 }

@@ -2,10 +2,8 @@ package transform
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"path/filepath"
 
-	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,14 +28,19 @@ func (r ReportOutput) Flush() error {
 // DumpReports creates OCDs files
 func DumpReports(r ReportOutput) {
 	var existingReports []ReportOutput
-	jsonfile := filepath.Join(env.Config().GetString("OutputDir"), "report.json")
 
-	jsonData, err := ioutil.ReadFile(jsonfile)
+	jsonFile := "report.json"
+
+	jsonData, err := io.ReadFile(jsonFile)
 	if err != nil {
-		logrus.Errorf("unable to read to report file: %s", jsonfile)
+		logrus.Errorf("unable to read to report file: %s", jsonFile)
 	}
 
-	json.Unmarshal(jsonData, &existingReports)
+	err = json.Unmarshal(jsonData, &existingReports)
+	if err != nil {
+		logrus.Errorf("unable to unmarshal existing report json")
+	}
+
 	existingReports = append(existingReports, r)
 
 	jsonReports, err := json.Marshal(existingReports)
@@ -45,8 +48,8 @@ func DumpReports(r ReportOutput) {
 		logrus.Errorf("unable to marshal reports")
 	}
 
-	err = ioutil.WriteFile(jsonfile, jsonReports, 0644)
+	err = io.WriteFile(jsonReports, jsonFile)
 	if err != nil {
-		logrus.Errorf("unable to write to report file: %s", jsonfile)
+		logrus.Errorf("unable to write to report file: %s", jsonFile)
 	}
 }
