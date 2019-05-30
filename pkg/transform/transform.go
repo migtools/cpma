@@ -1,12 +1,7 @@
 package transform
 
 import (
-	"io/ioutil"
-	"os"
-	"path"
-	"path/filepath"
-
-	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -157,10 +152,10 @@ func GenYAML(CR interface{}) ([]byte, error) {
 }
 
 func openReports() {
-	jsonfile := filepath.Join(env.Config().GetString("OutputDir"), "report.json")
-	os.MkdirAll(path.Dir(jsonfile), 0755)
+	jsonfile := "report.json"
+	emptyReport := []byte("[]")
 
-	err := ioutil.WriteFile(jsonfile, []byte("[]"), 0644)
+	err := io.WriteFile(emptyReport, jsonfile)
 	if err != nil {
 		logrus.Errorf("unable to open report file: %s", jsonfile)
 	}
