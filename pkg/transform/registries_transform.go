@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/BurntSushi/toml"
-	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
@@ -47,7 +47,6 @@ type RegistrySources struct {
 
 // RegistriesTransform is a registry specific transform
 type RegistriesTransform struct {
-	Config *config.Config
 }
 
 // Transform contains registry configuration collected from an OCP3 cluster
@@ -88,7 +87,7 @@ func (e RegistriesExtraction) Transform() (Output, error) {
 // Extract collects registry information from an OCP3 cluster
 func (e RegistriesTransform) Extract() (Extraction, error) {
 	logrus.Info("RegistriesTransform::Extract")
-	content, err := e.Config.Fetch(env.Config().GetString("RegistriesConfigFile"))
+	content, err := io.FetchFile(env.Config().GetString("RegistriesConfigFile"))
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +97,7 @@ func (e RegistriesTransform) Extract() (Extraction, error) {
 		return nil, err
 	}
 	return extraction, nil
+
 }
 
 // Validate registry data collected from an OCP3 cluster

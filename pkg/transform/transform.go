@@ -1,7 +1,6 @@
 package transform
 
 import (
-	"github.com/fusor/cpma/pkg/config"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -37,7 +36,6 @@ type Manifest struct {
 
 // Runner a generic transform runner
 type Runner struct {
-	Config string
 }
 
 // Extraction is a generic data extraction
@@ -59,19 +57,12 @@ type Output interface {
 
 //Start generating manifests to be used with Openshift 4
 func Start() {
-	config := config.LoadConfig()
-	runner := NewRunner(config)
+	runner := NewRunner()
 
 	runner.Transform([]Transform{
-		OAuthTransform{
-			Config: &config,
-		},
-		SDNTransform{
-			Config: &config,
-		},
-		RegistriesTransform{
-			Config: &config,
-		},
+		OAuthTransform{},
+		SDNTransform{},
+		RegistriesTransform{},
 	})
 }
 
@@ -109,7 +100,7 @@ func (r Runner) Transform(transforms []Transform) {
 }
 
 // NewRunner creates a new Runner
-func NewRunner(config config.Config) *Runner {
+func NewRunner() *Runner {
 	return &Runner{}
 }
 

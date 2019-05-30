@@ -2,10 +2,7 @@ package oauth
 
 import (
 	"errors"
-	"strings"
 
-	"github.com/fusor/cpma/pkg/config"
-	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/legacyconfig/v1"
@@ -89,7 +86,7 @@ const (
 )
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(identityProviders []IdentityProvider, config *config.Config) (*CRD, []*secrets.Secret, []*configmaps.ConfigMap, error) {
+func Translate(identityProviders []IdentityProvider) (*CRD, []*secrets.Secret, []*configmaps.ConfigMap, error) {
 	var err error
 	var idP interface{}
 	var secretsSlice []*secrets.Secret
@@ -114,19 +111,19 @@ func Translate(identityProviders []IdentityProvider, config *config.Config) (*CR
 
 		switch kind {
 		case "GitHubIdentityProvider":
-			idP, secret, caConfigMap, err = buildGitHubIP(serializer, p, config)
+			idP, secret, caConfigMap, err = buildGitHubIP(serializer, p)
 		case "GitLabIdentityProvider":
-			idP, secret, caConfigMap, err = buildGitLabIP(serializer, p, config)
+			idP, secret, caConfigMap, err = buildGitLabIP(serializer, p)
 		case "GoogleIdentityProvider":
-			idP, secret, err = buildGoogleIP(serializer, p, config)
+			idP, secret, err = buildGoogleIP(serializer, p)
 		case "HTPasswdPasswordIdentityProvider":
 			idP, secret, err = buildHTPasswdIP(serializer, p)
 		case "OpenIDIdentityProvider":
-			idP, secret, err = buildOpenIDIP(serializer, p, config)
+			idP, secret, err = buildOpenIDIP(serializer, p)
 		case "RequestHeaderIdentityProvider":
 			idP, caConfigMap, err = buildRequestHeaderIP(serializer, p)
 		case "LDAPPasswordIdentityProvider":
-			idP, caConfigMap, err = buildLdapIP(serializer, p, config)
+			idP, caConfigMap, err = buildLdapIP(serializer, p)
 		case "KeystonePasswordIdentityProvider":
 			idP, certSecret, keySecret, caConfigMap, err = buildKeystoneIP(serializer, p)
 		case "BasicAuthPasswordIdentityProvider":
@@ -216,31 +213,4 @@ func validateClientData(clientID string, clientSecret configv1.StringSource) err
 	}
 
 	return nil
-}
-
-func fetchStringSource(stringSource configv1.StringSource, config *config.Config) (string, error) {
-	if stringSource.Value != "" {
-		return stringSource.Value, nil
-	}
-
-	if stringSource.File != "" {
-		fileContent, err := config.Fetch(stringSource.File)
-		if err != nil {
-			return "", nil
-		}
-
-		fileString := strings.TrimSuffix(string(fileContent), "\n")
-		return fileString, nil
-	}
-
-	if stringSource.Env != "" {
-		env, err := io.FetchEnv(config.Hostname, stringSource.Env)
-		if err != nil {
-			return "", nil
-		}
-
-		return env, nil
-	}
-
-	return "", nil
 }
