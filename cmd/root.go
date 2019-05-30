@@ -15,10 +15,11 @@
 package cmd
 
 import (
-	"fmt"
 	"path"
 
 	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/transform"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -31,9 +32,6 @@ func init() {
 
 	rootCmd.PersistentFlags().StringP("output-dir", "o", path.Dir(""), "set the directory to store extracted configuration.")
 	env.Config().BindPFlag("OutputDir", rootCmd.PersistentFlags().Lookup("output-dir"))
-
-	rootCmd.AddCommand(convertCmd)
-	rootCmd.AddCommand(reportCmd)
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -42,7 +40,13 @@ var rootCmd = &cobra.Command{
 	Short: "Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x",
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Run cpma --help to see usage.")
+		err := env.InitConfig()
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
+		env.InitLogger()
+		transform.Start()
 	},
 }
 

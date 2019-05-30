@@ -21,16 +21,18 @@ type OAuthTransform struct {
 }
 
 // Transform converts data collected from an OCP3 into a useful output
-func (e OAuthExtraction) Transform() (Output, error) {
+func (e OAuthExtraction) Transform() ([]Output, error) {
 	logrus.Info("OAuthTransform::Transform")
-
-	switch env.Config().Get("mode") {
-	case ReportOutputType:
-		return e.buildReportOutput()
-	case ConvertOutputType:
-		return e.buildManifestOutput()
+	manifests, err := e.buildManifestOutput()
+	if err != nil {
+		return nil, err
 	}
-	return nil, errors.New("Unsupported Output Type")
+	reports, err := e.buildReportOutput()
+	if err != nil {
+		return nil, err
+	}
+	outputs := []Output{manifests, reports}
+	return outputs, nil
 }
 
 func (e OAuthExtraction) buildManifestOutput() (Output, error) {

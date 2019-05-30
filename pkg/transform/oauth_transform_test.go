@@ -336,7 +336,6 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		env.Config().Set("mode", "convert")
 		t.Run(tc.name, func(t *testing.T) {
 			actualManifestsChan := make(chan []transform.Manifest)
 

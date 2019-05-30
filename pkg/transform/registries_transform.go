@@ -50,16 +50,18 @@ type RegistriesTransform struct {
 }
 
 // Transform contains registry configuration collected from an OCP3 into a useful output
-func (e RegistriesExtraction) Transform() (Output, error) {
+func (e RegistriesExtraction) Transform() ([]Output, error) {
 	logrus.Info("RegistriesTransform::Extraction")
-
-	switch env.Config().Get("mode") {
-	case ReportOutputType:
-		return e.buildReportOutput()
-	case ConvertOutputType:
-		return e.buildManifestOutput()
+	manifests, err := e.buildManifestOutput()
+	if err != nil {
+		return nil, err
 	}
-	return nil, errors.New("Unsupported Output Type")
+	reports, err := e.buildReportOutput()
+	if err != nil {
+		return nil, err
+	}
+	outputs := []Output{manifests, reports}
+	return outputs, nil
 }
 
 func (e RegistriesExtraction) buildManifestOutput() (Output, error) {

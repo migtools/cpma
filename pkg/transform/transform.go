@@ -60,9 +60,10 @@ type Manifest struct {
 // Report of OCP 4 component configuration compatibility
 type Report struct {
 	Name       string `json:"name"`
-	Kind       string `json:"kind,omitempty"`
+	Kind       string `json:"kind"`
 	Supported  bool   `json:"supported"`
 	Confidence string `json:"confidence"`
+	Comment    string `json:"comment"`
 }
 
 // Runner a generic transform runner
@@ -71,7 +72,7 @@ type Runner struct {
 
 // Extraction is a generic data extraction
 type Extraction interface {
-	Transform() (Output, error)
+	Transform() ([]Output, error)
 	Validate() error
 }
 
@@ -121,15 +122,16 @@ func (r Runner) Transform(transforms []Transform) {
 			continue
 		}
 
-		output, err := extraction.Transform()
+		outputs, err := extraction.Transform()
 		if err != nil {
 			HandleError(err, transform.Name())
 			continue
 		}
-
-		if err := output.Flush(); err != nil {
-			HandleError(err, transform.Name())
-			continue
+		for _, output := range outputs {
+			if err := output.Flush(); err != nil {
+				HandleError(err, transform.Name())
+				continue
+			}
 		}
 	}
 }

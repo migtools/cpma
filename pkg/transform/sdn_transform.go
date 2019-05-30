@@ -1,14 +1,13 @@
 package transform
 
 import (
-	"errors"
-
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/sdn"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
+
+	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
 // SDNExtraction is an SDN specific extraction
@@ -21,16 +20,18 @@ type SDNTransform struct {
 }
 
 // Transform converts data collected from an OCP3 into a useful output
-func (e SDNExtraction) Transform() (Output, error) {
+func (e SDNExtraction) Transform() ([]Output, error) {
 	logrus.Info("SDNTransform::Transform")
-
-	switch env.Config().Get("mode") {
-	case ReportOutputType:
-		return e.buildReportOutput()
-	case ConvertOutputType:
-		return e.buildManifestOutput()
+	manifests, err := e.buildManifestOutput()
+	if err != nil {
+		return nil, err
 	}
-	return nil, errors.New("Unsupported Output Type")
+	reports, err := e.buildReportOutput()
+	if err != nil {
+		return nil, err
+	}
+	outputs := []Output{manifests, reports}
+	return outputs, nil
 }
 
 func (e SDNExtraction) buildManifestOutput() (Output, error) {
