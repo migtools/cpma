@@ -62,12 +62,12 @@ func InitConfig() error {
 		logrus.Debug("Can't read config file, all values will be prompted, err: ", err)
 	}
 
-	promtMissingValues()
+	promptMissingValues()
 
 	return nil
 }
 
-func promtMissingValues() {
+func promptMissingValues() {
 	if Config().GetString("Source") == "" {
 		hostname := ""
 		prompt := &survey.Input{
