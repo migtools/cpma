@@ -102,6 +102,26 @@ func (e RegistriesExtraction) buildReportOutput() (Output, error) {
 		Component: RegistriesComponentName,
 	}
 
+	for _, registry := range e.Registries["block"].List {
+		reportOutput.Reports = append(reportOutput.Reports,
+			Report{
+				Name:       registry,
+				Kind:       "Blocked",
+				Supported:  true,
+				Confidence: "green",
+			})
+	}
+
+	for _, registry := range e.Registries["insecure"].List {
+		reportOutput.Reports = append(reportOutput.Reports,
+			Report{
+				Name:       registry,
+				Kind:       "Insecure",
+				Supported:  true,
+				Confidence: "green",
+			})
+	}
+
 	return reportOutput, nil
 }
 

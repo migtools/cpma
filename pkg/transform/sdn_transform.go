@@ -60,6 +60,24 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 		Component: SDNComponentName,
 	}
 
+	for _, n := range e.MasterConfig.NetworkConfig.ClusterNetworks {
+		reportOutput.Reports = append(reportOutput.Reports,
+			Report{
+				Name:       n.CIDR,
+				Kind:       "ClusterNetwork",
+				Supported:  true,
+				Confidence: "yellow",
+				Comment:    "Networks must be configured during installation",
+			})
+	}
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       e.MasterConfig.NetworkConfig.ServiceNetworkCIDR,
+			Kind:       "ServiceNetwork",
+			Supported:  true,
+			Confidence: "yellow",
+			Comment:    "Networks must be configured during installation",
+		})
 	return reportOutput, nil
 }
 
