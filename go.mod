@@ -1,6 +1,7 @@
 module github.com/fusor/cpma
 
 require (
+	github.com/AlecAivazis/survey/v2 v2.0.0-20190531072418-dc4f7bbe639c
 	github.com/BurntSushi/toml v0.3.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/docker/distribution v2.7.1+incompatible // indirect
@@ -27,7 +28,7 @@ require (
 	github.com/stretchr/testify v1.2.2
 	github.com/tinylib/msgp v1.1.0 // indirect
 	github.com/ugorji/go v0.0.0-20171019201919-bdcc60b419d1 // indirect
-	golang.org/x/crypto v0.0.0-20190411191339-88737f569e3a
+	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	google.golang.org/appengine v1.5.0 // indirect

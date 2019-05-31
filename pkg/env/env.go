@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -58,10 +59,63 @@ func InitConfig() error {
 
 	// If a config file is found, read it in.
 	if err := viperConfig.ReadInConfig(); err != nil {
-		return errors.New("Can't read config file")
+		logrus.Debug("Can't read config file, all values will be prompted, err: ", err)
 	}
 
+	promptMissingValues()
+
 	return nil
+}
+
+func promptMissingValues() {
+	if Config().GetString("Source") == "" {
+		hostname := ""
+		prompt := &survey.Input{
+			Message: "OCP3 Cluster hostname",
+		}
+		survey.AskOne(prompt, &hostname, nil)
+		viperConfig.Set("Source", hostname)
+	}
+
+	sshCreds := Config().GetStringMapString("SSHCreds")
+	if sshCreds["login"] == "" {
+		login := ""
+		prompt := &survey.Input{
+			Message: "SSH login",
+		}
+		survey.AskOne(prompt, &login, nil)
+		sshCreds["login"] = login
+	}
+
+	if sshCreds["privatekey"] == "" {
+		privatekey := ""
+		prompt := &survey.Input{
+			Message: "Path to private SSH key",
+		}
+		survey.AskOne(prompt, &privatekey, nil)
+		sshCreds["privatekey"] = privatekey
+	}
+
+	if sshCreds["port"] == "" {
+		port := ""
+		prompt := &survey.Input{
+			Message: "SSH Port",
+		}
+		survey.AskOne(prompt, &port, nil)
+		sshCreds["port"] = port
+	}
+
+	if Config().GetString("OutputDir") == "." {
+		outPutDir := ""
+		prompt := &survey.Input{
+			Message: "Path to output, skip to use current directory",
+			Default: ".",
+		}
+		survey.AskOne(prompt, &outPutDir, nil)
+		viperConfig.Set("OutputDir", outPutDir)
+	}
+
+	viperConfig.Set("SSHCreds", sshCreds)
 }
 
 // InitLogger initializes stderr and logger to file
