@@ -27,12 +27,12 @@ var transformCmd = &cobra.Command{
 	Short: "Generates configuration from an Openshift 3 cluster for use on an Openshift 4",
 	Long:  "Generates configugation from an Openshift 3 cluster for use on an Openshift 4",
 	Run: func(cmd *cobra.Command, args []string) {
+		env.InitLogger()
+
 		err := env.InitConfig()
 		if err != nil {
 			logrus.Fatal(err)
 		}
-
-		env.InitLogger()
 
 		transform.Start()
 	},

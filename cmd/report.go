@@ -27,12 +27,12 @@ var reportCmd = &cobra.Command{
 	Short: "Generates a report explaining what Openshift 3 configuration can be recreated on Openshift 4",
 	Long:  "Generates a report explaining what Openshift 3 configuration can be recreated on Openshift 4",
 	Run: func(cmd *cobra.Command, args []string) {
+		env.InitLogger()
+
 		err := env.InitConfig()
 		if err != nil {
 			logrus.Fatal(err)
 		}
-
-		env.InitLogger()
 
 		report.Start()
 	},
