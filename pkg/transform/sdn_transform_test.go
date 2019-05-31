@@ -55,7 +55,9 @@ func TestSDNExtractionTransform(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				}
-				transformOutput.Flush()
+				for _, output := range transformOutput {
+					output.Flush()
+				}
 			}()
 
 			actualManifests := <-actualManifestsChan

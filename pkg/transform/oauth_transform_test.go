@@ -6,7 +6,6 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 
-	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -357,7 +356,9 @@ func TestOAuthExtractionTransform(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				}
-				transformOutput.Flush()
+				for _, output := range transformOutput {
+					output.Flush()
+				}
 			}()
 
 			actualManifests := <-actualManifestsChan
