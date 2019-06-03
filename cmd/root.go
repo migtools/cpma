@@ -40,14 +40,16 @@ var rootCmd = &cobra.Command{
 	Short: "Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x",
 	Long:  `Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x`,
 	Run: func(cmd *cobra.Command, args []string) {
+		env.InitLogger()
+
 		err := env.InitConfig()
 		if err != nil {
 			logrus.Fatal(err)
 		}
 
-		env.InitLogger()
 		transform.Start()
 	},
+	Args: cobra.MaximumNArgs(0),
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
