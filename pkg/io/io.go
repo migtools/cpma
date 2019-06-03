@@ -21,7 +21,7 @@ var FetchFile = func(src string) ([]byte, error) {
 	if err != nil {
 		host := env.Config().GetString("Source")
 		remotehost.Fetch(host, src, dst)
-		netFile, err := ioutil.ReadFile(src)
+		netFile, err := ioutil.ReadFile(dst)
 		if err != nil {
 			return nil, err
 		}
