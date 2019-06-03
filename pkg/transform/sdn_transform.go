@@ -5,8 +5,9 @@ import (
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/sdn"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
+
+	configv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
 // SDNExtraction is an SDN specific extraction
@@ -18,10 +19,22 @@ type SDNExtraction struct {
 type SDNTransform struct {
 }
 
-// Transform convers OCP3 data to configuration useful for OCP4
-func (e SDNExtraction) Transform() (Output, error) {
+// Transform converts data collected from an OCP3 into a useful output
+func (e SDNExtraction) Transform() ([]Output, error) {
 	logrus.Info("SDNTransform::Transform")
+	manifests, err := e.buildManifestOutput()
+	if err != nil {
+		return nil, err
+	}
+	reports, err := e.buildReportOutput()
+	if err != nil {
+		return nil, err
+	}
+	outputs := []Output{manifests, reports}
+	return outputs, nil
+}
 
+func (e SDNExtraction) buildManifestOutput() (Output, error) {
 	var manifests []Manifest
 
 	networkCR, err := sdn.Translate(e.MasterConfig)
@@ -40,6 +53,32 @@ func (e SDNExtraction) Transform() (Output, error) {
 	return ManifestOutput{
 		Manifests: manifests,
 	}, nil
+}
+
+func (e SDNExtraction) buildReportOutput() (Output, error) {
+	reportOutput := ReportOutput{
+		Component: SDNComponentName,
+	}
+
+	for _, n := range e.MasterConfig.NetworkConfig.ClusterNetworks {
+		reportOutput.Reports = append(reportOutput.Reports,
+			Report{
+				Name:       n.CIDR,
+				Kind:       "ClusterNetwork",
+				Supported:  true,
+				Confidence: "yellow",
+				Comment:    "Networks must be configured during installation",
+			})
+	}
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       e.MasterConfig.NetworkConfig.ServiceNetworkCIDR,
+			Kind:       "ServiceNetwork",
+			Supported:  true,
+			Confidence: "yellow",
+			Comment:    "Networks must be configured during installation",
+		})
+	return reportOutput, nil
 }
 
 // Extract collects SDN configuration information from an OCP3 cluster

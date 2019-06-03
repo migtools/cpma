@@ -1,6 +1,7 @@
 package transform
 
 import (
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -8,13 +9,24 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// OCP4InstallMsg message about using generated manifests
-const OCP4InstallMsg = `To install OCP4 run the installer as follow in order to add CRDs:
+const (
+	// OCP4InstallMsg message about using generated manifests
+	OCP4InstallMsg = `To install OCP4 run the installer as follow in order to add CRDs:
 ' /openshift-install --dir $INSTALL_DIR create install-config'
 './openshift-install --dir $INSTALL_DIR create manifests'
 # Copy generated CRD manifest files  to '$INSTALL_DIR/openshift/'
 # Edit them if needed, then run installation:
 './openshift-install --dir $INSTALL_DIR  create cluster'`
+
+	// SDNComponentName is the registry component string
+	SDNComponentName = "SDN"
+
+	// OAuthComponentName is the registry component string
+	OAuthComponentName = "Oauth"
+
+	// RegistriesComponentName is the registry component string
+	RegistriesComponentName = "Registries"
+)
 
 // Cluster contains a cluster
 type Cluster struct {
@@ -34,13 +46,22 @@ type Manifest struct {
 	CRD  []byte
 }
 
+// Report of OCP 4 component configuration compatibility
+type Report struct {
+	Name       string `json:"name"`
+	Kind       string `json:"kind"`
+	Supported  bool   `json:"supported"`
+	Confidence string `json:"confidence"`
+	Comment    string `json:"comment"`
+}
+
 // Runner a generic transform runner
 type Runner struct {
 }
 
 // Extraction is a generic data extraction
 type Extraction interface {
-	Transform() (Output, error)
+	Transform() ([]Output, error)
 	Validate() error
 }
 
@@ -58,6 +79,8 @@ type Output interface {
 //Start generating manifests to be used with Openshift 4
 func Start() {
 	runner := NewRunner()
+
+	openReports()
 
 	runner.Transform([]Transform{
 		OAuthTransform{},
@@ -86,15 +109,16 @@ func (r Runner) Transform(transforms []Transform) {
 			continue
 		}
 
-		output, err := extraction.Transform()
+		outputs, err := extraction.Transform()
 		if err != nil {
 			HandleError(err, transform.Name())
 			continue
 		}
-
-		if err := output.Flush(); err != nil {
-			HandleError(err, transform.Name())
-			continue
+		for _, output := range outputs {
+			if err := output.Flush(); err != nil {
+				HandleError(err, transform.Name())
+				continue
+			}
 		}
 	}
 }
@@ -119,4 +143,14 @@ func GenYAML(CR interface{}) ([]byte, error) {
 	}
 
 	return yamlBytes, nil
+}
+
+func openReports() {
+	jsonfile := "report.json"
+	emptyReport := []byte("[]")
+
+	err := io.WriteFile(emptyReport, jsonfile)
+	if err != nil {
+		logrus.Errorf("unable to open report file: %s", jsonfile)
+	}
 }

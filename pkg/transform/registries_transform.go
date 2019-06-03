@@ -49,9 +49,22 @@ type RegistrySources struct {
 type RegistriesTransform struct {
 }
 
-// Transform contains registry configuration collected from an OCP3 cluster
-func (e RegistriesExtraction) Transform() (Output, error) {
+// Transform contains registry configuration collected from an OCP3 into a useful output
+func (e RegistriesExtraction) Transform() ([]Output, error) {
 	logrus.Info("RegistriesTransform::Extraction")
+	manifests, err := e.buildManifestOutput()
+	if err != nil {
+		return nil, err
+	}
+	reports, err := e.buildReportOutput()
+	if err != nil {
+		return nil, err
+	}
+	outputs := []Output{manifests, reports}
+	return outputs, nil
+}
+
+func (e RegistriesExtraction) buildManifestOutput() (Output, error) {
 	var manifests []Manifest
 
 	const (
@@ -82,6 +95,34 @@ func (e RegistriesExtraction) Transform() (Output, error) {
 	return ManifestOutput{
 		Manifests: manifests,
 	}, nil
+}
+
+func (e RegistriesExtraction) buildReportOutput() (Output, error) {
+	reportOutput := ReportOutput{
+		Component: RegistriesComponentName,
+	}
+
+	for _, registry := range e.Registries["block"].List {
+		reportOutput.Reports = append(reportOutput.Reports,
+			Report{
+				Name:       registry,
+				Kind:       "Blocked",
+				Supported:  true,
+				Confidence: "green",
+			})
+	}
+
+	for _, registry := range e.Registries["insecure"].List {
+		reportOutput.Reports = append(reportOutput.Reports,
+			Report{
+				Name:       registry,
+				Kind:       "Insecure",
+				Supported:  true,
+				Confidence: "green",
+			})
+	}
+
+	return reportOutput, nil
 }
 
 // Extract collects registry information from an OCP3 cluster
