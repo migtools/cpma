@@ -90,6 +90,7 @@ func promptMissingValues() {
 		login := ""
 		prompt := &survey.Input{
 			Message: "SSH login",
+			Default: "root",
 		}
 		survey.AskOne(prompt, &login, nil)
 		sshCreds["login"] = login
@@ -108,6 +109,7 @@ func promptMissingValues() {
 		port := ""
 		prompt := &survey.Input{
 			Message: "SSH Port",
+			Default: "22",
 		}
 		survey.AskOne(prompt, &port, nil)
 		sshCreds["port"] = port
