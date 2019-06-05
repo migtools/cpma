@@ -69,18 +69,18 @@ func InitConfig() error {
 
 	getNestedArgValues()
 
-	promptMissingValues()
+	cliPromptMissingValues()
 
 	if err != nil {
-		createConfigFile()
-		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be create, err: ", err)
+		cliCreateConfigFile()
+		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", err)
 	}
 
 	return nil
 }
 
-func promptMissingValues() {
-	if Config().GetString("Source") == "" {
+func cliPromptMissingValues() {
+	if viperConfig.GetString("Source") == "" {
 		hostname := ""
 		prompt := &survey.Input{
 			Message: "OCP3 Cluster hostname",
@@ -89,7 +89,7 @@ func promptMissingValues() {
 		viperConfig.Set("Source", hostname)
 	}
 
-	sshCreds := Config().GetStringMapString("SSHCreds")
+	sshCreds := viperConfig.GetStringMapString("SSHCreds")
 	if sshCreds["login"] == "" {
 		login := ""
 		prompt := &survey.Input{
@@ -119,7 +119,7 @@ func promptMissingValues() {
 		sshCreds["port"] = port
 	}
 
-	if Config().GetString("OutputDir") == "." {
+	if viperConfig.GetString("OutputDir") == "." {
 		outPutDir := ""
 		prompt := &survey.Input{
 			Message: "Path to output, skip to use current directory",
@@ -133,7 +133,7 @@ func promptMissingValues() {
 }
 
 func getNestedArgValues() {
-	sshCreds := Config().GetStringMapString("SSHCreds")
+	sshCreds := viperConfig.GetStringMapString("SSHCreds")
 	if Login != "" {
 		sshCreds["login"] = Login
 	}
@@ -148,7 +148,7 @@ func getNestedArgValues() {
 	viperConfig.Set("SSHCreds", sshCreds)
 }
 
-func createConfigFile() {
+func cliCreateConfigFile() {
 	createConfig := ""
 	prompt := &survey.Select{
 		Message: "No config file found, do you wish to create one for future use?",
