@@ -19,6 +19,9 @@ type SDNExtraction struct {
 type SDNTransform struct {
 }
 
+const clusterNetworkComment = `Networks must be configured during installation,
+ hostSubnetLength was replaced with hostPrefix in OCP4, default value was set to 23`
+
 // Transform converts data collected from an OCP3 into a useful output
 func (e SDNExtraction) Transform() ([]Output, error) {
 	logrus.Info("SDNTransform::Transform")
@@ -67,7 +70,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 				Kind:       "ClusterNetwork",
 				Supported:  true,
 				Confidence: "yellow",
-				Comment:    "Networks must be configured during installation",
+				Comment:    clusterNetworkComment,
 			})
 	}
 	reportOutput.Reports = append(reportOutput.Reports,
