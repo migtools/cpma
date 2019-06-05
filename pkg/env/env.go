@@ -53,6 +53,7 @@ func InitConfig() error {
 	viperConfig.SetDefault("NodeConfigFile", "/etc/origin/node/node-config.yaml")
 	viperConfig.SetDefault("RegistriesConfigFile", "/etc/containers/registries.conf")
 
+	// Try to find config file if it wasn't provided as a flag
 	if ConfigFile != "" {
 		viperConfig.SetConfigFile(ConfigFile)
 	} else {
@@ -64,19 +65,22 @@ func InitConfig() error {
 	viper.AutomaticEnv()
 
 	// If a config file is found, read it in.
-	if err := viperConfig.ReadInConfig(); err != nil {
-		logrus.Debug("Can't read config file, all values will be prompted, err: ", err)
-	}
+	err = viperConfig.ReadInConfig()
 
 	getNestedArgValues()
 
-	promptMissingValues()
+	cliPromptMissingValues()
+
+	if err != nil {
+		cliCreateConfigFile()
+		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", err)
+	}
 
 	return nil
 }
 
-func promptMissingValues() {
-	if Config().GetString("Source") == "" {
+func cliPromptMissingValues() {
+	if viperConfig.GetString("Source") == "" {
 		hostname := ""
 		prompt := &survey.Input{
 			Message: "OCP3 Cluster hostname",
@@ -85,7 +89,7 @@ func promptMissingValues() {
 		viperConfig.Set("Source", hostname)
 	}
 
-	sshCreds := Config().GetStringMapString("SSHCreds")
+	sshCreds := viperConfig.GetStringMapString("SSHCreds")
 	if sshCreds["login"] == "" {
 		login := ""
 		prompt := &survey.Input{
@@ -115,7 +119,7 @@ func promptMissingValues() {
 		sshCreds["port"] = port
 	}
 
-	if Config().GetString("OutputDir") == "." {
+	if viperConfig.GetString("OutputDir") == "." {
 		outPutDir := ""
 		prompt := &survey.Input{
 			Message: "Path to output, skip to use current directory",
@@ -129,7 +133,7 @@ func promptMissingValues() {
 }
 
 func getNestedArgValues() {
-	sshCreds := Config().GetStringMapString("SSHCreds")
+	sshCreds := viperConfig.GetStringMapString("SSHCreds")
 	if Login != "" {
 		sshCreds["login"] = Login
 	}
@@ -142,6 +146,20 @@ func getNestedArgValues() {
 		sshCreds["port"] = Port
 	}
 	viperConfig.Set("SSHCreds", sshCreds)
+}
+
+func cliCreateConfigFile() {
+	createConfig := ""
+	prompt := &survey.Select{
+		Message: "No config file found, do you wish to create one for future use?",
+		Options: []string{"yes", "no"},
+	}
+	survey.AskOne(prompt, &createConfig, nil)
+
+	if createConfig == "yes" {
+		viperConfig.SetConfigFile("cpma.yaml")
+		viperConfig.WriteConfig()
+	}
 }
 
 // InitLogger initializes stderr and logger to file
