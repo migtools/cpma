@@ -21,6 +21,12 @@ const (
 var (
 	// ConfigFile - keeps full path to the configuration file
 	ConfigFile string
+	// Login ssh login
+	Login string
+	// PrivateKey private key path
+	PrivateKey string
+	// Port ssh port
+	Port string
 
 	viperConfig *viper.Viper
 )
@@ -62,6 +68,8 @@ func InitConfig() error {
 		logrus.Debug("Can't read config file, all values will be prompted, err: ", err)
 	}
 
+	getNestedArgValues()
+
 	promptMissingValues()
 
 	return nil
@@ -82,6 +90,7 @@ func promptMissingValues() {
 		login := ""
 		prompt := &survey.Input{
 			Message: "SSH login",
+			Default: "root",
 		}
 		survey.AskOne(prompt, &login, nil)
 		sshCreds["login"] = login
@@ -100,6 +109,7 @@ func promptMissingValues() {
 		port := ""
 		prompt := &survey.Input{
 			Message: "SSH Port",
+			Default: "22",
 		}
 		survey.AskOne(prompt, &port, nil)
 		sshCreds["port"] = port
@@ -115,6 +125,22 @@ func promptMissingValues() {
 		viperConfig.Set("OutputDir", outPutDir)
 	}
 
+	viperConfig.Set("SSHCreds", sshCreds)
+}
+
+func getNestedArgValues() {
+	sshCreds := Config().GetStringMapString("SSHCreds")
+	if Login != "" {
+		sshCreds["login"] = Login
+	}
+
+	if PrivateKey != "" {
+		sshCreds["privatekey"] = PrivateKey
+	}
+
+	if Port != "" {
+		sshCreds["port"] = Port
+	}
 	viperConfig.Set("SSHCreds", sshCreds)
 }
 
