@@ -21,6 +21,9 @@ const (
 	// APIComponentName is the API component string
 	APIComponentName = "API"
 
+	// ETCDComponentName is the ETCD component string
+	ETCDComponentName = "ETCD"
+
 	// SDNComponentName is the SDN component string
 	SDNComponentName = "SDN"
 
@@ -87,6 +90,7 @@ func Start() {
 
 	runner.Transform([]Transform{
 		APITransform{},
+		ETCDTransform{},
 		OAuthTransform{},
 		SDNTransform{},
 		RegistriesTransform{},
