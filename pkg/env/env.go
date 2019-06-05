@@ -1,11 +1,12 @@
 package env
 
 import (
-	"errors"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/fusor/cpma/pkg/env/clusterdiscovery"
 	"github.com/mitchellh/go-homedir"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -45,7 +46,7 @@ func InitConfig() error {
 	// Find home directory.
 	home, err := homedir.Dir()
 	if err != nil {
-		return errors.New("Can't detect home user directory")
+		return errors.Wrap(err, "Can't detect home user directory")
 	}
 	viperConfig.Set("home", home)
 
@@ -65,27 +66,47 @@ func InitConfig() error {
 	viper.AutomaticEnv()
 
 	// If a config file is found, read it in.
-	err = viperConfig.ReadInConfig()
+	readConfigErr := viperConfig.ReadInConfig()
 
 	getNestedArgValues()
 
-	cliPromptMissingValues()
-
+	err = surveyMissingValues()
 	if err != nil {
-		cliCreateConfigFile()
-		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", err)
+		return errors.Wrap(err, "Error in reading missing values")
+	}
+
+	if readConfigErr != nil {
+		surveyCreateConfigFile()
+		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", readConfigErr)
 	}
 
 	return nil
 }
 
-func cliPromptMissingValues() {
+func surveyMissingValues() error {
 	if viperConfig.GetString("Source") == "" {
+		discoverCluster := ""
 		hostname := ""
-		prompt := &survey.Input{
-			Message: "OCP3 Cluster hostname",
+		var err error
+
+		prompt := &survey.Select{
+			Message: "Do wish to find source cluster using KUBECONFIG or prompt it?",
+			Options: []string{"KUBECONFIG", "prompt"},
 		}
-		survey.AskOne(prompt, &hostname, nil)
+		survey.AskOne(prompt, &discoverCluster, nil)
+
+		if discoverCluster == "KUBECONFIG" {
+			hostname, err = clusterdiscovery.DiscoverCluster()
+			if err != nil {
+				return err
+			}
+		} else {
+			prompt := &survey.Input{
+				Message: "OCP3 Cluster hostname",
+			}
+			survey.AskOne(prompt, &hostname, nil)
+		}
+
 		viperConfig.Set("Source", hostname)
 	}
 
@@ -130,6 +151,8 @@ func cliPromptMissingValues() {
 	}
 
 	viperConfig.Set("SSHCreds", sshCreds)
+
+	return nil
 }
 
 func getNestedArgValues() {
@@ -148,7 +171,7 @@ func getNestedArgValues() {
 	viperConfig.Set("SSHCreds", sshCreds)
 }
 
-func cliCreateConfigFile() {
+func surveyCreateConfigFile() {
 	createConfig := ""
 	prompt := &survey.Select{
 		Message: "No config file found, do you wish to create one for future use?",
