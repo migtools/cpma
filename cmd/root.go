@@ -25,11 +25,24 @@ import (
 
 func init() {
 	cobra.OnInitialize()
+
+	// Get config file from CLI argument an save it to viper config
 	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (Default searches ./cpma.yaml, $HOME/cpma.yml)")
 
+	// Set log level from CLI argument
 	rootCmd.PersistentFlags().Bool("debug", false, "show debug ouput")
 	env.Config().BindPFlag("Debug", rootCmd.PersistentFlags().Lookup("debug"))
 
+	// Get OCP3 source cluster and save it to viper config
+	rootCmd.PersistentFlags().StringP("source", "s", "", "OCP3 cluster hostname")
+	env.Config().BindPFlag("Source", rootCmd.PersistentFlags().Lookup("source"))
+
+	// Get ssh config values from CLI argument
+	rootCmd.PersistentFlags().StringVarP(&env.Login, "login", "l", "", "OCP3 ssh login")
+	rootCmd.PersistentFlags().StringVarP(&env.PrivateKey, "key", "k", "", "OCP3 ssh key path")
+	rootCmd.PersistentFlags().StringVarP(&env.Port, "port", "p", "", "OCP3 ssh port")
+
+	// Get config file from CLI argument an save to viper config
 	rootCmd.PersistentFlags().StringP("output-dir", "o", path.Dir(""), "set the directory to store extracted configuration.")
 	env.Config().BindPFlag("OutputDir", rootCmd.PersistentFlags().Lookup("output-dir"))
 }
