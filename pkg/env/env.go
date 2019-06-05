@@ -53,6 +53,7 @@ func InitConfig() error {
 	viperConfig.SetDefault("NodeConfigFile", "/etc/origin/node/node-config.yaml")
 	viperConfig.SetDefault("RegistriesConfigFile", "/etc/containers/registries.conf")
 
+	// Try to find config file if it wasn't provided as a flag
 	if ConfigFile != "" {
 		viperConfig.SetConfigFile(ConfigFile)
 	} else {
@@ -64,13 +65,16 @@ func InitConfig() error {
 	viper.AutomaticEnv()
 
 	// If a config file is found, read it in.
-	if err := viperConfig.ReadInConfig(); err != nil {
-		logrus.Debug("Can't read config file, all values will be prompted, err: ", err)
-	}
+	err = viperConfig.ReadInConfig()
 
 	getNestedArgValues()
 
 	promptMissingValues()
+
+	if err != nil {
+		createConfigFile()
+		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be create, err: ", err)
+	}
 
 	return nil
 }
@@ -142,6 +146,20 @@ func getNestedArgValues() {
 		sshCreds["port"] = Port
 	}
 	viperConfig.Set("SSHCreds", sshCreds)
+}
+
+func createConfigFile() {
+	createConfig := ""
+	prompt := &survey.Select{
+		Message: "No config file found, do you wish to create one for future use?",
+		Options: []string{"yes", "no"},
+	}
+	survey.AskOne(prompt, &createConfig, nil)
+
+	if createConfig == "yes" {
+		viperConfig.SetConfigFile("cpma.yaml")
+		viperConfig.WriteConfig()
+	}
 }
 
 // InitLogger initializes stderr and logger to file
