@@ -18,11 +18,14 @@ const (
 # Edit them if needed, then run installation:
 './openshift-install --dir $INSTALL_DIR  create cluster'`
 
-	// SDNComponentName is the registry component string
+	// APIComponentName is the API component string
+	APIComponentName = "API"
+
+	// SDNComponentName is the SDN component string
 	SDNComponentName = "SDN"
 
-	// OAuthComponentName is the registry component string
-	OAuthComponentName = "Oauth"
+	// OAuthComponentName is the OAuth component string
+	OAuthComponentName = "OAuth"
 
 	// RegistriesComponentName is the registry component string
 	RegistriesComponentName = "Registries"
@@ -83,6 +86,7 @@ func Start() {
 	openReports()
 
 	runner.Transform([]Transform{
+		APITransform{},
 		OAuthTransform{},
 		SDNTransform{},
 		RegistriesTransform{},
