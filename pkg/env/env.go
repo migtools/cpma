@@ -204,7 +204,6 @@ func InitLogger() {
 		TimestampFormat: time.RFC822,
 	})
 	logrus.SetLevel(logLevel)
-	logrus.Debugf("%s is running in debug mode", AppName)
 
 	fileHook, _ := NewLogFileHook(
 		LogFileConfig{
@@ -217,4 +216,6 @@ func InitLogger() {
 		},
 	)
 	logrus.AddHook(fileHook)
+
+	logrus.Debugf("%s is running in debug mode", AppName)
 }
