@@ -84,6 +84,7 @@ require (
 	google.golang.org/appengine v1.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20170731182057-09f6ed296fc6 // indirect
 	google.golang.org/grpc v1.13.0 // indirect
+	gopkg.in/go-ini/ini.v1 v1.42.0
 	gopkg.in/inf.v0 v0.9.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/square/go-jose.v2 v2.0.0-20180411045311-89060dee6a84 // indirect
