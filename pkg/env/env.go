@@ -1,6 +1,7 @@
 package env
 
 import (
+	"io/ioutil"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -192,6 +193,10 @@ func InitLogger() {
 	if viperConfig.GetBool("debug") {
 		logLevel = logrus.DebugLevel
 		logrus.SetReportCaller(true)
+	}
+
+	if !viperConfig.GetBool("consolelogs") {
+		logrus.SetOutput(ioutil.Discard)
 	}
 
 	logrus.SetFormatter(&logrus.TextFormatter{

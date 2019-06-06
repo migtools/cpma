@@ -21,7 +21,7 @@ var (
 )
 
 // DiscoverCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
-// Parse kubeconfig and select cluster from available contexts, then get server url from context
+// parse kubeconfig and select cluster from available contexts
 // query k8s api for nodes, get node urls from api response and survey master node
 func DiscoverCluster() (string, error) {
 	err := parseKubeConfig()

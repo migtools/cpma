@@ -33,6 +33,10 @@ func init() {
 	rootCmd.PersistentFlags().Bool("debug", false, "show debug ouput")
 	env.Config().BindPFlag("Debug", rootCmd.PersistentFlags().Lookup("debug"))
 
+	// Output logs to console if true
+	rootCmd.PersistentFlags().Bool("console-logs", false, "output log to console")
+	env.Config().BindPFlag("ConsoleLogs", rootCmd.PersistentFlags().Lookup("console-logs"))
+
 	// Get OCP3 source cluster and save it to viper config
 	rootCmd.PersistentFlags().StringP("source", "s", "", "OCP3 cluster hostname")
 	env.Config().BindPFlag("Source", rootCmd.PersistentFlags().Lookup("source"))
