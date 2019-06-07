@@ -1,13 +1,14 @@
 package transform
 
 import (
+	"strconv"
+
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/sdn"
-	"github.com/sirupsen/logrus"
-
 	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/sirupsen/logrus"
 )
 
 // SDNExtraction is an SDN specific extraction
@@ -72,7 +73,16 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 				Confidence: "yellow",
 				Comment:    clusterNetworkComment,
 			})
+		reportOutput.Reports = append(reportOutput.Reports,
+			Report{
+				Name:       strconv.Itoa(int(n.HostSubnetLength)),
+				Kind:       "ClusterNetwork",
+				Supported:  false,
+				Confidence: "red",
+				Comment:    "hostSubnetLength is not supported in OCP4",
+			})
 	}
+
 	reportOutput.Reports = append(reportOutput.Reports,
 		Report{
 			Name:       e.MasterConfig.NetworkConfig.ServiceNetworkCIDR,
@@ -81,6 +91,18 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 			Confidence: "yellow",
 			Comment:    "Networks must be configured during installation",
 		})
+
+	for _, externalCIDR := range e.MasterConfig.NetworkConfig.ExternalIPNetworkCIDRs {
+		reportOutput.Reports = append(reportOutput.Reports,
+			Report{
+				Name:       externalCIDR,
+				Kind:       "ExternalIPNetworkCIDRs",
+				Supported:  false,
+				Confidence: "red",
+				Comment:    "Configuration of ExternalIPNetworkCIDRs is not supported in OCP4",
+			})
+	}
+
 	return reportOutput, nil
 }
 
