@@ -2,6 +2,7 @@ package env
 
 import (
 	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -194,16 +195,9 @@ func InitLogger() {
 		logLevel = logrus.DebugLevel
 		logrus.SetReportCaller(true)
 	}
-
-	if !viperConfig.GetBool("consolelogs") {
-		logrus.SetOutput(ioutil.Discard)
-	}
-
-	logrus.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp:   true,
-		TimestampFormat: time.RFC822,
-	})
 	logrus.SetLevel(logLevel)
+
+	logrus.SetOutput(ioutil.Discard)
 
 	fileHook, _ := NewLogFileHook(
 		LogFileConfig{
@@ -216,6 +210,38 @@ func InitLogger() {
 		},
 	)
 	logrus.AddHook(fileHook)
+
+	consoleFormatter := &logrus.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: time.RFC822,
+		ForceColors:     true,
+	}
+
+	if viperConfig.GetBool("consolelogs") {
+		stdoutHook := &ConsoleWriterHook{
+			Writer: os.Stdout,
+			LogLevels: []logrus.Level{
+				logrus.InfoLevel,
+				logrus.DebugLevel,
+				logrus.WarnLevel,
+			},
+			Formatter: consoleFormatter,
+		}
+
+		logrus.AddHook(stdoutHook)
+	}
+
+	stderrHook := &ConsoleWriterHook{
+		Writer: os.Stderr,
+		LogLevels: []logrus.Level{
+			logrus.PanicLevel,
+			logrus.FatalLevel,
+			logrus.ErrorLevel,
+		},
+		Formatter: consoleFormatter,
+	}
+
+	logrus.AddHook(stderrHook)
 
 	logrus.Debugf("%s is running in debug mode", AppName)
 }
