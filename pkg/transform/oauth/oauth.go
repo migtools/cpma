@@ -62,7 +62,7 @@ type Provider struct {
 	KeyFile    string `json:"keyFile"`
 }
 
-// IdentityProvider stroes an identity provider
+// IdentityProvider stores an identity provider
 type IdentityProvider struct {
 	Kind            string
 	APIVersion      string
@@ -78,6 +78,13 @@ type IdentityProvider struct {
 	UseAsLogin      bool
 }
 
+// Resources stores all oAuth config parts
+type Resources struct {
+	OAuthCRD   *CRD
+	Secrets    []*secrets.Secret
+	ConfigMaps []*configmaps.ConfigMap
+}
+
 const (
 	// APIVersion is the apiVersion string
 	APIVersion = "config.openshift.io/v1"
@@ -86,7 +93,7 @@ const (
 )
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(identityProviders []IdentityProvider) (*CRD, []*secrets.Secret, []*configmaps.ConfigMap, error) {
+func Translate(identityProviders []IdentityProvider) (*Resources, error) {
 	var err error
 	var idP interface{}
 	var secretsSlice []*secrets.Secret
@@ -104,7 +111,7 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []*secrets.Secret, [
 
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, err
 		}
 
 		kind := p.Kind
@@ -158,7 +165,11 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []*secrets.Secret, [
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 	}
 
-	return &oauthCrd, secretsSlice, сonfigMapSlice, nil
+	return &Resources{
+		OAuthCRD:   &oauthCrd,
+		Secrets:    secretsSlice,
+		ConfigMaps: сonfigMapSlice,
+	}, nil
 }
 
 // Validate validate oauth providers

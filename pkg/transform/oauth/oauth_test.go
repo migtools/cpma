@@ -58,18 +58,18 @@ func TestTransformMasterConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resCrd, _, _, err := oauth.Translate(identityProviders)
+			oauthResources, err := oauth.Translate(identityProviders)
 			require.NoError(t, err)
-			assert.Equal(t, len(resCrd.Spec.IdentityProviders), 9)
-			assert.Equal(t, resCrd.Spec.IdentityProviders[0].(*oauth.IdentityProviderBasicAuth).Type, "BasicAuth")
-			assert.Equal(t, resCrd.Spec.IdentityProviders[1].(*oauth.IdentityProviderGitHub).Type, "GitHub")
-			assert.Equal(t, resCrd.Spec.IdentityProviders[2].(*oauth.IdentityProviderGitLab).Type, "GitLab")
-			assert.Equal(t, resCrd.Spec.IdentityProviders[3].(*oauth.IdentityProviderGoogle).Type, "Google")
-			assert.Equal(t, resCrd.Spec.IdentityProviders[4].(*oauth.IdentityProviderHTPasswd).Type, "HTPasswd")
-			assert.Equal(t, resCrd.Spec.IdentityProviders[5].(*oauth.IdentityProviderKeystone).Type, "Keystone")
-			assert.Equal(t, resCrd.Spec.IdentityProviders[6].(*oauth.IdentityProviderLDAP).Type, "LDAP")
-			assert.Equal(t, resCrd.Spec.IdentityProviders[7].(*oauth.IdentityProviderRequestHeader).Type, "RequestHeader")
-			assert.Equal(t, resCrd.Spec.IdentityProviders[8].(*oauth.IdentityProviderOpenID).Type, "OpenID")
+			assert.Equal(t, len(oauthResources.OAuthCRD.Spec.IdentityProviders), 9)
+			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[0].(*oauth.IdentityProviderBasicAuth).Type, "BasicAuth")
+			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[1].(*oauth.IdentityProviderGitHub).Type, "GitHub")
+			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[2].(*oauth.IdentityProviderGitLab).Type, "GitLab")
+			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[3].(*oauth.IdentityProviderGoogle).Type, "Google")
+			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[4].(*oauth.IdentityProviderHTPasswd).Type, "HTPasswd")
+			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[5].(*oauth.IdentityProviderKeystone).Type, "Keystone")
+			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[6].(*oauth.IdentityProviderLDAP).Type, "LDAP")
+			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[7].(*oauth.IdentityProviderRequestHeader).Type, "RequestHeader")
+			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[8].(*oauth.IdentityProviderOpenID).Type, "OpenID")
 		})
 	}
 

@@ -38,14 +38,14 @@ func (e OAuthExtraction) Transform() ([]Output, error) {
 func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 	var ocp4Cluster Cluster
 
-	oauth, secrets, configMaps, err := oauth.Translate(e.IdentityProviders)
+	oauthResources, err := oauth.Translate(e.IdentityProviders)
 	if err != nil {
 		return nil, errors.New("Unable to generate OAuth CRD")
 	}
 
-	ocp4Cluster.Master.OAuth = *oauth
-	ocp4Cluster.Master.Secrets = secrets
-	ocp4Cluster.Master.ConfigMaps = configMaps
+	ocp4Cluster.Master.OAuth = *oauthResources.OAuthCRD
+	ocp4Cluster.Master.Secrets = oauthResources.Secrets
+	ocp4Cluster.Master.ConfigMaps = oauthResources.ConfigMaps
 
 	var manifests []Manifest
 	if ocp4Cluster.Master.OAuth.Kind != "" {
