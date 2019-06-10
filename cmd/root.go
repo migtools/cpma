@@ -37,6 +37,10 @@ func init() {
 	rootCmd.PersistentFlags().Bool("console-logs", false, "output log to console")
 	env.Config().BindPFlag("ConsoleLogs", rootCmd.PersistentFlags().Lookup("console-logs"))
 
+	// Allow insecure host key if true
+	rootCmd.PersistentFlags().Bool("insecure-key", false, "allow insecure host key")
+	env.Config().BindPFlag("InsecureHostKey", rootCmd.PersistentFlags().Lookup("insecure-key"))
+
 	// Get OCP3 source cluster and save it to viper config
 	rootCmd.PersistentFlags().StringP("source", "s", "", "OCP3 cluster hostname")
 	env.Config().BindPFlag("Source", rootCmd.PersistentFlags().Lookup("source"))

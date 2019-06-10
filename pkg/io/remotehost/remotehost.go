@@ -42,10 +42,15 @@ func CreateConnection(source string) (*ssh.Client, error) {
 
 	knownHostsFile := filepath.Join(env.Config().GetString("home"), ".ssh", "known_hosts")
 
-	hostKeyCallback, err := kh.New(knownHostsFile)
-	if err != nil {
-		logrus.Errorf("Unable to get hostkey in %s", knownHostsFile)
-		return nil, err
+	var hostKeyCallback ssh.HostKeyCallback
+	if env.Config().GetBool("InsecureHostKey") {
+		hostKeyCallback = ssh.InsecureIgnoreHostKey()
+	} else {
+		hostKeyCallback, err = kh.New(knownHostsFile)
+		if err != nil {
+			logrus.Errorf("Unable to get hostkey in %s", knownHostsFile)
+			return nil, err
+		}
 	}
 
 	sshConfig := &ssh.ClientConfig{
