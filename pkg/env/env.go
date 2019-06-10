@@ -52,6 +52,7 @@ func InitConfig() error {
 	}
 	viperConfig.Set("home", home)
 
+	viperConfig.SetDefault("CrioConfigFile", "/etc/crio/crio.conf")
 	viperConfig.SetDefault("ETCDConfigFile", "/etc/etcd/etcd.conf")
 	viperConfig.SetDefault("MasterConfigFile", "/etc/origin/master/master-config.yaml")
 	viperConfig.SetDefault("NodeConfigFile", "/etc/origin/node/node-config.yaml")
