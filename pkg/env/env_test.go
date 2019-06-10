@@ -1,6 +1,7 @@
 package env
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -58,12 +59,40 @@ func TestInitLogger(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	consoleFormatter := &logrus.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: time.RFC822,
+		ForceColors:     true,
+	}
+
+	expectedStderrHook := &ConsoleWriterHook{
+		Writer: os.Stderr,
+		LogLevels: []logrus.Level{
+			logrus.PanicLevel,
+			logrus.FatalLevel,
+			logrus.ErrorLevel,
+		},
+		Formatter: consoleFormatter,
+	}
+
+	expectedStdoutHook := &ConsoleWriterHook{
+		Writer: os.Stdout,
+		LogLevels: []logrus.Level{
+			logrus.InfoLevel,
+			logrus.DebugLevel,
+			logrus.WarnLevel,
+		},
+		Formatter: consoleFormatter,
+	}
+
 	testCases := []struct {
-		name              string
-		expectedLogLevel  logrus.Level
-		expectedFormatter *logrus.TextFormatter
-		expectedFileHook  logrus.Hook
-		debugLevel        bool
+		name               string
+		expectedLogLevel   logrus.Level
+		expectedFormatter  *logrus.TextFormatter
+		expectedFileHook   logrus.Hook
+		expectedStderrHook logrus.Hook
+		expectedStdoutHook logrus.Hook
+		debugLevel         bool
 	}{
 		{
 			name:             "init logger",
@@ -72,11 +101,13 @@ func TestInitLogger(t *testing.T) {
 				FullTimestamp:   true,
 				TimestampFormat: time.RFC822,
 			},
-			expectedFileHook: expectedFileHook,
-			debugLevel:       false,
+			expectedFileHook:   expectedFileHook,
+			expectedStderrHook: expectedStderrHook,
+			expectedStdoutHook: expectedStdoutHook,
+			debugLevel:         false,
 		},
 		{
-			name:             "init logger",
+			name:             "init logger and set log level to debug",
 			expectedLogLevel: logrus.DebugLevel,
 			expectedFormatter: &logrus.TextFormatter{
 				FullTimestamp:   true,
@@ -90,14 +121,19 @@ func TestInitLogger(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			viperConfig.Set("debug", tc.debugLevel)
+			viperConfig.Set("consolelogs", true)
 			InitLogger()
 			logger := logrus.StandardLogger()
 			if tc.debugLevel {
-				assert.Equal(t, tc.expectedLogLevel, logger.GetLevel())
+				assert.Equal(t, tc.expectedLogLevel, logrus.GetLevel())
 			} else {
 				assert.Equal(t, tc.expectedLogLevel, logger.GetLevel())
-				assert.Equal(t, tc.expectedFormatter, logger.Formatter)
+
 				assert.Equal(t, tc.expectedFileHook, logger.Hooks[logrus.InfoLevel][0])
+				assert.Equal(t, tc.expectedStdoutHook, logger.Hooks[logrus.InfoLevel][1])
+
+				assert.Equal(t, tc.expectedFileHook, logger.Hooks[logrus.ErrorLevel][0])
+				assert.Equal(t, tc.expectedStderrHook, logger.Hooks[logrus.ErrorLevel][1])
 			}
 		})
 	}
