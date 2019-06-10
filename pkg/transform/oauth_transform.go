@@ -118,6 +118,23 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 		}
 	}
 
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "AccessTokenMaxAgeSeconds",
+			Kind:       "TokenConfig",
+			Supported:  true,
+			Confidence: "green",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "AuthorizeTokenMaxAgeSeconds",
+			Kind:       "TokenConfig",
+			Supported:  false,
+			Confidence: "red",
+			Comment:    "Translation of AuthorizeTokenMaxAgeSeconds is not supported, it's value is 5 minutes in OCP4",
+		})
+
 	return reportOutput, nil
 }
 
