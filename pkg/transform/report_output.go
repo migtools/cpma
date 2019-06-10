@@ -14,7 +14,7 @@ type ReportOutput struct {
 }
 
 // ReportOutputFlush flush reports to disk
-var reportOutputFlush = func(r ReportOutput) error {
+var ReportOutputFlush = func(r ReportOutput) error {
 	logrus.Info("Flushing reports to disk")
 	DumpReports(r)
 	return nil
@@ -22,7 +22,7 @@ var reportOutputFlush = func(r ReportOutput) error {
 
 // Flush reports to files
 func (r ReportOutput) Flush() error {
-	return reportOutputFlush(r)
+	return ReportOutputFlush(r)
 }
 
 // DumpReports creates OCDs files
