@@ -103,6 +103,15 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 			})
 	}
 
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       e.MasterConfig.NetworkConfig.IngressIPNetworkCIDR,
+			Kind:       "IngressIPNetworkCIDR",
+			Supported:  false,
+			Confidence: "red",
+			Comment:    "Translation of this configuration is not supported, refer to ingress operator configuration for more information",
+		})
+
 	return reportOutput, nil
 }
 
