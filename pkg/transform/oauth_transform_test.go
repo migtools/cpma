@@ -4,9 +4,8 @@ import (
 	"encoding/base64"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/transform/configmaps"
-
 	"github.com/fusor/cpma/pkg/transform"
+	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
@@ -257,6 +256,8 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, requestHeaderIDP)
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, openidIDP)
 
+	expectedCrd.Spec.TokenConfig.AccessTokenMaxAgeSeconds = int32(86400)
+
 	expectedManifest, err := transform.GenYAML(expectedCrd)
 	require.NoError(t, err)
 	basicAuthCrtSecretManifest, err := transform.GenYAML(basicAuthCrtSecretCrd)
@@ -349,6 +350,10 @@ func TestOAuthExtractionTransform(t *testing.T) {
 
 			testExtraction := transform.OAuthExtraction{
 				IdentityProviders: identityProviders,
+				TokenConfig: oauth.TokenConfig{
+					AccessTokenMaxAgeSeconds:    int32(86400),
+					AuthorizeTokenMaxAgeSeconds: int32(500),
+				},
 			}
 
 			go func() {

@@ -58,18 +58,20 @@ func TestTransformMasterConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{})
+			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{AccessTokenMaxAgeSeconds: 42000, AuthorizeTokenMaxAgeSeconds: 42000})
 			require.NoError(t, err)
-			assert.Equal(t, len(oauthResources.OAuthCRD.Spec.IdentityProviders), 9)
-			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[0].(*oauth.IdentityProviderBasicAuth).Type, "BasicAuth")
-			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[1].(*oauth.IdentityProviderGitHub).Type, "GitHub")
-			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[2].(*oauth.IdentityProviderGitLab).Type, "GitLab")
-			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[3].(*oauth.IdentityProviderGoogle).Type, "Google")
-			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[4].(*oauth.IdentityProviderHTPasswd).Type, "HTPasswd")
-			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[5].(*oauth.IdentityProviderKeystone).Type, "Keystone")
-			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[6].(*oauth.IdentityProviderLDAP).Type, "LDAP")
-			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[7].(*oauth.IdentityProviderRequestHeader).Type, "RequestHeader")
-			assert.Equal(t, oauthResources.OAuthCRD.Spec.IdentityProviders[8].(*oauth.IdentityProviderOpenID).Type, "OpenID")
+			assert.Equal(t, 9, len(oauthResources.OAuthCRD.Spec.IdentityProviders))
+			assert.Equal(t, "BasicAuth", oauthResources.OAuthCRD.Spec.IdentityProviders[0].(*oauth.IdentityProviderBasicAuth).Type)
+			assert.Equal(t, "GitHub", oauthResources.OAuthCRD.Spec.IdentityProviders[1].(*oauth.IdentityProviderGitHub).Type)
+			assert.Equal(t, "GitLab", oauthResources.OAuthCRD.Spec.IdentityProviders[2].(*oauth.IdentityProviderGitLab).Type)
+			assert.Equal(t, "Google", oauthResources.OAuthCRD.Spec.IdentityProviders[3].(*oauth.IdentityProviderGoogle).Type)
+			assert.Equal(t, "HTPasswd", oauthResources.OAuthCRD.Spec.IdentityProviders[4].(*oauth.IdentityProviderHTPasswd).Type)
+			assert.Equal(t, "Keystone", oauthResources.OAuthCRD.Spec.IdentityProviders[5].(*oauth.IdentityProviderKeystone).Type)
+			assert.Equal(t, "LDAP", oauthResources.OAuthCRD.Spec.IdentityProviders[6].(*oauth.IdentityProviderLDAP).Type)
+			assert.Equal(t, "RequestHeader", oauthResources.OAuthCRD.Spec.IdentityProviders[7].(*oauth.IdentityProviderRequestHeader).Type)
+			assert.Equal(t, "OpenID", oauthResources.OAuthCRD.Spec.IdentityProviders[8].(*oauth.IdentityProviderOpenID).Type)
+
+			assert.Equal(t, int32(42000), oauthResources.OAuthCRD.Spec.TokenConfig.AccessTokenMaxAgeSeconds)
 		})
 	}
 

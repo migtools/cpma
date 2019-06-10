@@ -75,7 +75,10 @@ func TestOauthGenYAML(t *testing.T) {
 					})
 			}
 
-			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{})
+			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{
+				AccessTokenMaxAgeSeconds:    int32(86400),
+				AuthorizeTokenMaxAgeSeconds: int32(500),
+			})
 			require.NoError(t, err)
 
 			CRD, err := GenYAML(oauthResources.OAuthCRD)

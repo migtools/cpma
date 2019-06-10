@@ -35,7 +35,13 @@ type CRD struct {
 
 // Spec is a CRD Spec
 type Spec struct {
-	IdentityProviders []interface{} `yaml:"identityProviders"`
+	IdentityProviders []interface{}         `yaml:"identityProviders,omitempty"`
+	TokenConfig       TranslatedTokenConfig `yaml:"tokenConfig,omitempty"`
+}
+
+// TranslatedTokenConfig holds lifetime of access tokens
+type TranslatedTokenConfig struct {
+	AccessTokenMaxAgeSeconds int32 `yaml:"accessTokenMaxAgeSeconds"`
 }
 
 type identityProviderCommon struct {
@@ -172,8 +178,8 @@ func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig) (*
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 	}
 
-	// // Translate internal OAuth server’s token duration
-	// tokenConfigCR := buildTokenConfig()
+	// Translate lifetime of access tokens
+	oauthCrd.Spec.TokenConfig.AccessTokenMaxAgeSeconds = tokenConfig.AccessTokenMaxAgeSeconds
 
 	return &Resources{
 		OAuthCRD:   &oauthCrd,
