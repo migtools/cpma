@@ -14,6 +14,7 @@ import (
 // OAuthExtraction holds OAuth data extracted from OCP3
 type OAuthExtraction struct {
 	IdentityProviders []oauth.IdentityProvider
+	TokenConfig       oauth.TokenConfig
 }
 
 // OAuthTransform is an OAuth specific transform
@@ -38,14 +39,14 @@ func (e OAuthExtraction) Transform() ([]Output, error) {
 func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 	var ocp4Cluster Cluster
 
-	oauth, secrets, configMaps, err := oauth.Translate(e.IdentityProviders)
+	oauthResources, err := oauth.Translate(e.IdentityProviders, e.TokenConfig)
 	if err != nil {
 		return nil, errors.New("Unable to generate OAuth CRD")
 	}
 
-	ocp4Cluster.Master.OAuth = *oauth
-	ocp4Cluster.Master.Secrets = secrets
-	ocp4Cluster.Master.ConfigMaps = configMaps
+	ocp4Cluster.Master.OAuth = *oauthResources.OAuthCRD
+	ocp4Cluster.Master.Secrets = oauthResources.Secrets
+	ocp4Cluster.Master.ConfigMaps = oauthResources.ConfigMaps
 
 	var manifests []Manifest
 	if ocp4Cluster.Master.OAuth.Kind != "" {
@@ -117,6 +118,23 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 		}
 	}
 
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "AccessTokenMaxAgeSeconds",
+			Kind:       "TokenConfig",
+			Supported:  true,
+			Confidence: "green",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "AuthorizeTokenMaxAgeSeconds",
+			Kind:       "TokenConfig",
+			Supported:  false,
+			Confidence: "red",
+			Comment:    "Translation of AuthorizeTokenMaxAgeSeconds is not supported, it's value is 5 minutes in OCP4",
+		})
+
 	return reportOutput, nil
 }
 
@@ -133,6 +151,7 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 		return nil, err
 	}
 
+	// Parse extracted oAuth providers and fetch their configuration file contents
 	var extraction OAuthExtraction
 	var htContent, caContent, crtContent, keyContent []byte
 
@@ -191,6 +210,13 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 					UseAsLogin:      identityProvider.UseAsLogin,
 				})
 		}
+	}
+
+	// Get extracted token config
+	tokenConfig := masterConfig.OAuthConfig.TokenConfig
+	extraction.TokenConfig = oauth.TokenConfig{
+		AuthorizeTokenMaxAgeSeconds: tokenConfig.AuthorizeTokenMaxAgeSeconds,
+		AccessTokenMaxAgeSeconds:    tokenConfig.AccessTokenMaxAgeSeconds,
 	}
 
 	return extraction, nil

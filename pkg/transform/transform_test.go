@@ -75,14 +75,17 @@ func TestOauthGenYAML(t *testing.T) {
 					})
 			}
 
-			crd, secrets, configMaps, err := oauth.Translate(identityProviders)
+			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{
+				AccessTokenMaxAgeSeconds:    int32(86400),
+				AuthorizeTokenMaxAgeSeconds: int32(500),
+			})
 			require.NoError(t, err)
 
-			CRD, err := GenYAML(crd)
+			CRD, err := GenYAML(oauthResources.OAuthCRD)
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expectedSecretsLength, len(secrets))
-			assert.Equal(t, tc.expectedConfigMapsength, len(configMaps))
+			assert.Equal(t, tc.expectedSecretsLength, len(oauthResources.Secrets))
+			assert.Equal(t, tc.expectedConfigMapsength, len(oauthResources.ConfigMaps))
 			assert.Equal(t, expectedYaml, CRD)
 		})
 	}

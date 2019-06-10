@@ -35,7 +35,13 @@ type CRD struct {
 
 // Spec is a CRD Spec
 type Spec struct {
-	IdentityProviders []interface{} `yaml:"identityProviders"`
+	IdentityProviders []interface{}         `yaml:"identityProviders,omitempty"`
+	TokenConfig       TranslatedTokenConfig `yaml:"tokenConfig,omitempty"`
+}
+
+// TranslatedTokenConfig holds lifetime of access tokens
+type TranslatedTokenConfig struct {
+	AccessTokenMaxAgeSeconds int32 `yaml:"accessTokenMaxAgeSeconds"`
 }
 
 type identityProviderCommon struct {
@@ -62,7 +68,7 @@ type Provider struct {
 	KeyFile    string `json:"keyFile"`
 }
 
-// IdentityProvider stroes an identity provider
+// IdentityProvider stores an identity provider
 type IdentityProvider struct {
 	Kind            string
 	APIVersion      string
@@ -78,6 +84,19 @@ type IdentityProvider struct {
 	UseAsLogin      bool
 }
 
+// Resources stores all oAuth config parts
+type Resources struct {
+	OAuthCRD   *CRD
+	Secrets    []*secrets.Secret
+	ConfigMaps []*configmaps.ConfigMap
+}
+
+// TokenConfig store internal OAuth tokens duration
+type TokenConfig struct {
+	AuthorizeTokenMaxAgeSeconds int32
+	AccessTokenMaxAgeSeconds    int32
+}
+
 const (
 	// APIVersion is the apiVersion string
 	APIVersion = "config.openshift.io/v1"
@@ -86,12 +105,13 @@ const (
 )
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(identityProviders []IdentityProvider) (*CRD, []*secrets.Secret, []*configmaps.ConfigMap, error) {
+func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig) (*Resources, error) {
 	var err error
 	var idP interface{}
 	var secretsSlice []*secrets.Secret
 	var сonfigMapSlice []*configmaps.ConfigMap
 
+	// Translate configuration of diffent oAuth providers to CRD, secrets and config maps
 	var oauthCrd CRD
 	oauthCrd.APIVersion = APIVersion
 	oauthCrd.Kind = "OAuth"
@@ -104,7 +124,7 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []*secrets.Secret, [
 
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, err
 		}
 
 		kind := p.Kind
@@ -158,7 +178,14 @@ func Translate(identityProviders []IdentityProvider) (*CRD, []*secrets.Secret, [
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 	}
 
-	return &oauthCrd, secretsSlice, сonfigMapSlice, nil
+	// Translate lifetime of access tokens
+	oauthCrd.Spec.TokenConfig.AccessTokenMaxAgeSeconds = tokenConfig.AccessTokenMaxAgeSeconds
+
+	return &Resources{
+		OAuthCRD:   &oauthCrd,
+		Secrets:    secretsSlice,
+		ConfigMaps: сonfigMapSlice,
+	}, nil
 }
 
 // Validate validate oauth providers
