@@ -85,6 +85,12 @@ type Resources struct {
 	ConfigMaps []*configmaps.ConfigMap
 }
 
+// TokenConfig store internal OAuth tokens duration
+type TokenConfig struct {
+	AuthorizeTokenMaxAgeSeconds int32
+	AccessTokenMaxAgeSeconds    int32
+}
+
 const (
 	// APIVersion is the apiVersion string
 	APIVersion = "config.openshift.io/v1"
@@ -93,12 +99,13 @@ const (
 )
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(identityProviders []IdentityProvider) (*Resources, error) {
+func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig) (*Resources, error) {
 	var err error
 	var idP interface{}
 	var secretsSlice []*secrets.Secret
 	var сonfigMapSlice []*configmaps.ConfigMap
 
+	// Translate configuration of diffent oAuth providers to CRD, secrets and config maps
 	var oauthCrd CRD
 	oauthCrd.APIVersion = APIVersion
 	oauthCrd.Kind = "OAuth"
@@ -164,6 +171,9 @@ func Translate(identityProviders []IdentityProvider) (*Resources, error) {
 
 		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
 	}
+
+	// // Translate internal OAuth server’s token duration
+	// tokenConfigCR := buildTokenConfig()
 
 	return &Resources{
 		OAuthCRD:   &oauthCrd,

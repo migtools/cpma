@@ -75,7 +75,7 @@ func TestOauthGenYAML(t *testing.T) {
 					})
 			}
 
-			oauthResources, err := oauth.Translate(identityProviders)
+			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{})
 			require.NoError(t, err)
 
 			CRD, err := GenYAML(oauthResources.OAuthCRD)

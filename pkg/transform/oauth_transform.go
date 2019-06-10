@@ -14,6 +14,7 @@ import (
 // OAuthExtraction holds OAuth data extracted from OCP3
 type OAuthExtraction struct {
 	IdentityProviders []oauth.IdentityProvider
+	TokenConfig       oauth.TokenConfig
 }
 
 // OAuthTransform is an OAuth specific transform
@@ -38,7 +39,7 @@ func (e OAuthExtraction) Transform() ([]Output, error) {
 func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 	var ocp4Cluster Cluster
 
-	oauthResources, err := oauth.Translate(e.IdentityProviders)
+	oauthResources, err := oauth.Translate(e.IdentityProviders, e.TokenConfig)
 	if err != nil {
 		return nil, errors.New("Unable to generate OAuth CRD")
 	}
@@ -133,6 +134,7 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 		return nil, err
 	}
 
+	// Parse extracted oAuth providers and fetch their configuration file contents
 	var extraction OAuthExtraction
 	var htContent, caContent, crtContent, keyContent []byte
 
@@ -191,6 +193,13 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 					UseAsLogin:      identityProvider.UseAsLogin,
 				})
 		}
+	}
+
+	// Get extracted token config
+	tokenConfig := masterConfig.OAuthConfig.TokenConfig
+	extraction.TokenConfig = oauth.TokenConfig{
+		AuthorizeTokenMaxAgeSeconds: tokenConfig.AuthorizeTokenMaxAgeSeconds,
+		AccessTokenMaxAgeSeconds:    tokenConfig.AccessTokenMaxAgeSeconds,
 	}
 
 	return extraction, nil

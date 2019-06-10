@@ -46,7 +46,7 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			oauthResources, err := oauth.Translate(identityProviders)
+			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{})
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, oauthResources.OAuthCRD)
 		})
