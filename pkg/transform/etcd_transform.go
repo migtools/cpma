@@ -11,6 +11,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// ETCDComponentName is the ETCD component string
+const ETCDComponentName = "ETCD"
+
 // ETCDExtraction holds ETCD data extracted from OCP3
 type ETCDExtraction struct {
 	TLSCipherSuites string
@@ -37,16 +40,16 @@ func (e ETCDExtraction) buildReportOutput() (Output, error) {
 		Component: ETCDComponentName,
 	}
 
-	var TLSConfidence = "green"
+	var TLSConfidence = HighConfidence
 	var TLSMessage = "No Custom TLS Cipher Suites were found"
-	var clientPortConfidence = "green"
+	var clientPortConfidence = HighConfidence
 
 	if e.ClientPort != "2379" {
-		clientPortConfidence = "red"
+		clientPortConfidence = NoConfidence
 	}
 
 	if e.TLSCipherSuites != "" {
-		TLSConfidence = "red"
+		TLSConfidence = NoConfidence
 		TLSMessage = fmt.Sprintf("The Openshift 4 ETCD Cluster is not configurable. TLS Cipher Suite configuration was detected, %v", e.TLSCipherSuites)
 	}
 
@@ -105,5 +108,5 @@ func (e ETCDExtraction) Validate() error {
 
 // Name returns a human readable name for the transform
 func (e ETCDTransform) Name() string {
-	return "ETCD"
+	return ETCDComponentName
 }

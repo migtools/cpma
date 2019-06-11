@@ -10,6 +10,15 @@ import (
 )
 
 const (
+	// NoConfidence represents report items we can not migrate
+	NoConfidence = iota
+
+	// ModerateConfidence represents report items we can migrate with caveats
+	ModerateConfidence
+
+	// HighConfidence represents report items we can migrate without issue
+	HighConfidence
+
 	// OCP4InstallMsg message about using generated manifests
 	OCP4InstallMsg = `To install OCP4 run the installer as follow in order to add CRDs:
 ' /openshift-install --dir $INSTALL_DIR create install-config'
@@ -17,24 +26,6 @@ const (
 # Copy generated CRD manifest files  to '$INSTALL_DIR/openshift/'
 # Edit them if needed, then run installation:
 './openshift-install --dir $INSTALL_DIR  create cluster'`
-
-	// APIComponentName is the API component string
-	APIComponentName = "API"
-
-	// CrioComponentName is the Crio component string
-	CrioComponentName = "Crio"
-
-	// ETCDComponentName is the ETCD component string
-	ETCDComponentName = "ETCD"
-
-	// SDNComponentName is the SDN component string
-	SDNComponentName = "SDN"
-
-	// OAuthComponentName is the OAuth component string
-	OAuthComponentName = "OAuth"
-
-	// RegistriesComponentName is the registry component string
-	RegistriesComponentName = "Registries"
 )
 
 // Cluster contains a cluster
@@ -60,7 +51,7 @@ type Report struct {
 	Name       string `json:"name"`
 	Kind       string `json:"kind"`
 	Supported  bool   `json:"supported"`
-	Confidence string `json:"confidence"`
+	Confidence int    `json:"confidence"`
 	Comment    string `json:"comment"`
 }
 

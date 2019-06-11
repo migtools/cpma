@@ -40,7 +40,7 @@ func TestAPIExtractionTransform(t *testing.T) {
 			Name:       "API",
 			Kind:       "Port",
 			Supported:  false,
-			Confidence: "red",
+			Confidence: 0,
 			Comment:    "The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port 8443",
 		})
 	testCases := []struct {

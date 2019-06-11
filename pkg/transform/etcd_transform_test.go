@@ -43,7 +43,7 @@ func TestETCDExtractionTransform(t *testing.T) {
 			Name:       "ETCD Client Port",
 			Kind:       "Configuration",
 			Supported:  false,
-			Confidence: "green",
+			Confidence: 2,
 			Comment:    "The Openshift 4 ETCD Cluster is not configurable and uses port 2379. Your Openshift 3 Cluster is using port 2379",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
@@ -51,7 +51,7 @@ func TestETCDExtractionTransform(t *testing.T) {
 			Name:       "ETCD TLS Cipher Suites",
 			Kind:       "Configuration",
 			Supported:  false,
-			Confidence: "red",
+			Confidence: 0,
 			Comment:    "The Openshift 4 ETCD Cluster is not configurable. TLS Cipher Suite configuration was detected, TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
 		})
 	testCases := []struct {

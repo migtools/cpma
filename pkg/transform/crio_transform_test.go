@@ -55,28 +55,28 @@ func TestCrioExtractionTransform(t *testing.T) {
 			Name:       "pidsLimit",
 			Kind:       "Configuration",
 			Supported:  true,
-			Confidence: "green",
+			Confidence: 2,
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
 			Name:       "logLevel",
 			Kind:       "Configuration",
 			Supported:  true,
-			Confidence: "green",
+			Confidence: 2,
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
 			Name:       "logSizeMax",
 			Kind:       "Configuration",
 			Supported:  true,
-			Confidence: "green",
+			Confidence: 2,
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
 			Name:       "infrImage",
 			Kind:       "Configuration",
 			Supported:  true,
-			Confidence: "green",
+			Confidence: 2,
 		})
 
 	testCases := []struct {

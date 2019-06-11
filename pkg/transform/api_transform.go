@@ -11,6 +11,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// APIComponentName is the API component string
+const APIComponentName = "API"
+
 // APIExtraction holds API data extracted from OCP3
 type APIExtraction struct {
 	HTTPServingInfo ServingInfo
@@ -43,9 +46,9 @@ func (e APIExtraction) buildReportOutput() (Output, error) {
 	portArray := strings.Split(e.HTTPServingInfo.BindAddress, ":")
 	port := portArray[len(portArray)-1]
 
-	var confidence = "red"
+	var confidence = NoConfidence
 	if port == "6443" {
-		confidence = "green"
+		confidence = HighConfidence
 	}
 
 	reportOutput.Reports = append(reportOutput.Reports,
@@ -94,5 +97,5 @@ func (e APIExtraction) Validate() error {
 
 // Name returns a human readable name for the transform
 func (e APITransform) Name() string {
-	return "API"
+	return APIComponentName
 }
