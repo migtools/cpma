@@ -135,6 +135,60 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Translation of AuthorizeTokenMaxAgeSeconds is not supported, it's value is 5 minutes in OCP4",
 		})
 
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "AssetPublicURL",
+			Kind:       "AssetPublicURL",
+			Supported:  false,
+			Confidence: "red",
+			Comment:    "Translation of AssetPublicURL is not supported",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "MasterPublicURL",
+			Kind:       "MasterPublicURL",
+			Supported:  false,
+			Confidence: "red",
+			Comment:    "Translation of MasterPublicURL is not supported",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "MasterCA",
+			Kind:       "MasterCA",
+			Supported:  false,
+			Confidence: "red",
+			Comment:    "Translation of MasterCA is not supported",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "MasterURL",
+			Kind:       "MasterURL",
+			Supported:  false,
+			Confidence: "red",
+			Comment:    "Translation of MasterURL is not supported",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Kind:       "GrantConfig",
+			Name:       "GrantConfig",
+			Supported:  false,
+			Confidence: "red",
+			Comment:    "Translation of GrantConfig is not supported",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Kind:       "SessionConfig",
+			Name:       "SessionConfig",
+			Supported:  false,
+			Confidence: "red",
+			Comment:    "Translation of SessionConfig is not supported",
+		})
+
 	return reportOutput, nil
 }
 
