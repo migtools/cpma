@@ -325,23 +325,160 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	expectedManifests = append(expectedManifests,
 		transform.Manifest{Name: "100_CPMA-cluster-config-configmap-requestheader-configmap.yaml", CRD: requestheaderConfigMapManifest})
 
+	expectedReport := transform.ReportOutput{
+		Component: "OAuth",
+	}
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "my_remote_basic_auth_provider",
+			Kind:       "BasicAuthPasswordIdentityProvider",
+			Supported:  true,
+			Confidence: 2,
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "github123456789",
+			Kind:       "GitHubIdentityProvider",
+			Supported:  true,
+			Confidence: 2,
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "gitlab123456789",
+			Kind:       "GitLabIdentityProvider",
+			Supported:  true,
+			Confidence: 2,
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "google123456789123456789",
+			Kind:       "GoogleIdentityProvider",
+			Supported:  true,
+			Confidence: 2,
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "htpasswd_auth",
+			Kind:       "HTPasswdPasswordIdentityProvider",
+			Supported:  true,
+			Confidence: 2,
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "my_keystone_provider",
+			Kind:       "KeystonePasswordIdentityProvider",
+			Supported:  true,
+			Confidence: 2,
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "my_ldap_provider",
+			Kind:       "LDAPPasswordIdentityProvider",
+			Supported:  true,
+			Confidence: 2,
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "my_request_header_provider",
+			Kind:       "RequestHeaderIdentityProvider",
+			Supported:  true,
+			Confidence: 2,
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "my_openid_connect",
+			Kind:       "OpenIDIdentityProvider",
+			Supported:  true,
+			Confidence: 2,
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "AccessTokenMaxAgeSeconds",
+			Kind:       "TokenConfig",
+			Supported:  true,
+			Confidence: 2,
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "AuthorizeTokenMaxAgeSeconds",
+			Kind:       "TokenConfig",
+			Supported:  false,
+			Confidence: 0,
+			Comment:    "Translation of AuthorizeTokenMaxAgeSeconds is not supported, it's value is 5 minutes in OCP4",
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "AssetPublicURL",
+			Kind:       "AssetPublicURL",
+			Supported:  false,
+			Confidence: 0,
+			Comment:    "Translation of AssetPublicURL is not supported",
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "MasterPublicURL",
+			Kind:       "MasterPublicURL",
+			Supported:  false,
+			Confidence: 0,
+			Comment:    "Translation of MasterPublicURL is not supported",
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "MasterCA",
+			Kind:       "MasterCA",
+			Supported:  false,
+			Confidence: 0,
+			Comment:    "Translation of MasterCA is not supported",
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "MasterURL",
+			Kind:       "MasterURL",
+			Supported:  false,
+			Confidence: 0,
+			Comment:    "Translation of MasterURL is not supported",
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Kind:       "GrantConfig",
+			Name:       "GrantConfig",
+			Supported:  false,
+			Confidence: 0,
+			Comment:    "Translation of GrantConfig is not supported",
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Kind:       "SessionConfig",
+			Name:       "SessionConfig",
+			Supported:  false,
+			Confidence: 0,
+			Comment:    "Translation of SessionConfig is not supported",
+		})
+
 	testCases := []struct {
 		name              string
 		expectedManifests []transform.Manifest
+		expectedReports   transform.ReportOutput
 	}{
 		{
 			name:              "transform registries extraction",
 			expectedManifests: expectedManifests,
+			expectedReports:   expectedReport,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			actualManifestsChan := make(chan []transform.Manifest)
+			actualReportsChan := make(chan transform.ReportOutput)
 
 			// Override flush method
 			transform.ManifestOutputFlush = func(manifests []transform.Manifest) error {
 				actualManifestsChan <- manifests
+				return nil
+			}
+			transform.ReportOutputFlush = func(reports transform.ReportOutput) error {
+				actualReportsChan <- reports
 				return nil
 			}
 
@@ -368,6 +505,8 @@ func TestOAuthExtractionTransform(t *testing.T) {
 
 			actualManifests := <-actualManifestsChan
 			assert.Equal(t, actualManifests, tc.expectedManifests)
+			actualReports := <-actualReportsChan
+			assert.Equal(t, actualReports, tc.expectedReports)
 		})
 	}
 }
