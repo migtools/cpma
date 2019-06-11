@@ -125,6 +125,17 @@ func (e RegistriesExtraction) buildReportOutput() (Output, error) {
 			})
 	}
 
+	for _, registry := range e.Registries["search"].List {
+		reportOutput.Reports = append(reportOutput.Reports,
+			Report{
+				Name:       registry,
+				Kind:       "Search",
+				Supported:  false,
+				Confidence: NoConfidence,
+				Comment:    "Search registries can not be configured in OCP 4",
+			})
+	}
+
 	return reportOutput, nil
 }
 
@@ -146,8 +157,8 @@ func (e RegistriesTransform) Extract() (Extraction, error) {
 
 // Validate registry data collected from an OCP3 cluster
 func (e RegistriesExtraction) Validate() error {
-	if len(e.Registries["block"].List) == 0 && len(e.Registries["insecure"].List) == 0 {
-		return errors.New("no configured registries detected, not generating a cr")
+	if len(e.Registries["block"].List) == 0 && len(e.Registries["insecure"].List) == 0 && len(e.Registries["search"].List) == 0 {
+		return errors.New("no configured registries detected, not generating a cr or report")
 	}
 	return nil
 }
