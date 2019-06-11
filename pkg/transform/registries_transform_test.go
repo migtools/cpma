@@ -44,23 +44,48 @@ func TestRegistriesExtractionTransform(t *testing.T) {
 	expectedManifests = append(expectedManifests,
 		transform.Manifest{Name: "100_CPMA-cluster-config-registries.yaml", CRD: imageCRYAML})
 
+	expectedReport := transform.ReportOutput{
+		Component: "Registries",
+	}
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "bad.guy",
+			Kind:       "Blocked",
+			Supported:  true,
+			Confidence: 2,
+		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "insecure.guy",
+			Kind:       "Insecure",
+			Supported:  true,
+			Confidence: 2,
+		})
+
 	testCases := []struct {
 		name              string
 		expectedManifests []transform.Manifest
+		expectedReports   transform.ReportOutput
 	}{
 		{
 			name:              "transform registries extraction",
 			expectedManifests: expectedManifests,
+			expectedReports:   expectedReport,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			actualManifestsChan := make(chan []transform.Manifest)
+			actualReportsChan := make(chan transform.ReportOutput)
 
 			// Override flush method
 			transform.ManifestOutputFlush = func(manifests []transform.Manifest) error {
 				actualManifestsChan <- manifests
+				return nil
+			}
+			transform.ReportOutputFlush = func(reports transform.ReportOutput) error {
+				actualReportsChan <- reports
 				return nil
 			}
 
@@ -79,6 +104,8 @@ func TestRegistriesExtractionTransform(t *testing.T) {
 
 			actualManifests := <-actualManifestsChan
 			assert.Equal(t, actualManifests, tc.expectedManifests)
+			actualReports := <-actualReportsChan
+			assert.Equal(t, actualReports, tc.expectedReports)
 		})
 	}
 }
