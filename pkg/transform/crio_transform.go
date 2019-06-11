@@ -10,6 +10,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// CrioComponentName is the name of the Crio component
+const CrioComponentName = "Crio"
+
 // CrioExtraction holds Crio data extracted from OCP3
 type CrioExtraction struct {
 	Crio Crio `toml:"crio"`
@@ -118,7 +121,7 @@ func (e CrioExtraction) buildReportOutput() (Output, error) {
 		Component: CrioComponentName,
 	}
 
-	var confidence = "green"
+	var confidence = HighConfidence
 	var supported = true
 
 	if e.Crio.PidsLimit != 0 {
@@ -190,5 +193,5 @@ func (e CrioExtraction) Validate() error {
 
 // Name returns a human readable name for the transform
 func (e CrioTransform) Name() string {
-	return "Crio"
+	return CrioComponentName
 }

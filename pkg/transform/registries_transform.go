@@ -10,6 +10,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// RegistriesComponentName is the registry component string
+const RegistriesComponentName = "Registries"
+
 // RegistriesExtraction holds registry information extracted from an OCP3 cluster
 type RegistriesExtraction struct {
 	Registries map[string]Registries
@@ -108,7 +111,7 @@ func (e RegistriesExtraction) buildReportOutput() (Output, error) {
 				Name:       registry,
 				Kind:       "Blocked",
 				Supported:  true,
-				Confidence: "green",
+				Confidence: HighConfidence,
 			})
 	}
 
@@ -118,7 +121,7 @@ func (e RegistriesExtraction) buildReportOutput() (Output, error) {
 				Name:       registry,
 				Kind:       "Insecure",
 				Supported:  true,
-				Confidence: "green",
+				Confidence: HighConfidence,
 			})
 	}
 
@@ -151,5 +154,5 @@ func (e RegistriesExtraction) Validate() error {
 
 // Name returns a human readable name for the transform
 func (e RegistriesTransform) Name() string {
-	return "Registries"
+	return RegistriesComponentName
 }

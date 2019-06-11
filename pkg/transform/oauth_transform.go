@@ -11,6 +11,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// OAuthComponentName is the OAuth component string
+const OAuthComponentName = "OAuth"
+
 // OAuthExtraction holds OAuth data extracted from OCP3
 type OAuthExtraction struct {
 	IdentityProviders []oauth.IdentityProvider
@@ -105,7 +108,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 					Name:       p.Name,
 					Kind:       p.Kind,
 					Supported:  true,
-					Confidence: "green",
+					Confidence: HighConfidence,
 				})
 		default:
 			reportOutput.Reports = append(reportOutput.Reports,
@@ -113,7 +116,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 					Name:       p.Name,
 					Kind:       p.Kind,
 					Supported:  false,
-					Confidence: "red",
+					Confidence: NoConfidence,
 				})
 		}
 	}
@@ -123,7 +126,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Name:       "AccessTokenMaxAgeSeconds",
 			Kind:       "TokenConfig",
 			Supported:  true,
-			Confidence: "green",
+			Confidence: HighConfidence,
 		})
 
 	reportOutput.Reports = append(reportOutput.Reports,
@@ -131,7 +134,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Name:       "AuthorizeTokenMaxAgeSeconds",
 			Kind:       "TokenConfig",
 			Supported:  false,
-			Confidence: "red",
+			Confidence: NoConfidence,
 			Comment:    "Translation of AuthorizeTokenMaxAgeSeconds is not supported, it's value is 5 minutes in OCP4",
 		})
 
@@ -140,7 +143,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Name:       "AssetPublicURL",
 			Kind:       "AssetPublicURL",
 			Supported:  false,
-			Confidence: "red",
+			Confidence: NoConfidence,
 			Comment:    "Translation of AssetPublicURL is not supported",
 		})
 
@@ -149,7 +152,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Name:       "MasterPublicURL",
 			Kind:       "MasterPublicURL",
 			Supported:  false,
-			Confidence: "red",
+			Confidence: NoConfidence,
 			Comment:    "Translation of MasterPublicURL is not supported",
 		})
 
@@ -158,7 +161,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Name:       "MasterCA",
 			Kind:       "MasterCA",
 			Supported:  false,
-			Confidence: "red",
+			Confidence: NoConfidence,
 			Comment:    "Translation of MasterCA is not supported",
 		})
 
@@ -167,7 +170,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Name:       "MasterURL",
 			Kind:       "MasterURL",
 			Supported:  false,
-			Confidence: "red",
+			Confidence: NoConfidence,
 			Comment:    "Translation of MasterURL is not supported",
 		})
 
@@ -176,7 +179,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Kind:       "GrantConfig",
 			Name:       "GrantConfig",
 			Supported:  false,
-			Confidence: "red",
+			Confidence: NoConfidence,
 			Comment:    "Translation of GrantConfig is not supported",
 		})
 
@@ -185,7 +188,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Kind:       "SessionConfig",
 			Name:       "SessionConfig",
 			Supported:  false,
-			Confidence: "red",
+			Confidence: NoConfidence,
 			Comment:    "Translation of SessionConfig is not supported",
 		})
 
@@ -288,5 +291,5 @@ func (e OAuthExtraction) Validate() error {
 
 // Name returns a human readable name for the transform
 func (e OAuthTransform) Name() string {
-	return "OAuth"
+	return OAuthComponentName
 }

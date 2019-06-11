@@ -11,6 +11,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// SDNComponentName is the SDN component string
+const SDNComponentName = "SDN"
+
 // SDNExtraction is an SDN specific extraction
 type SDNExtraction struct {
 	configv1.MasterConfig
@@ -70,7 +73,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 				Name:       n.CIDR,
 				Kind:       "ClusterNetwork",
 				Supported:  true,
-				Confidence: "yellow",
+				Confidence: ModerateConfidence,
 				Comment:    clusterNetworkComment,
 			})
 		reportOutput.Reports = append(reportOutput.Reports,
@@ -78,7 +81,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 				Name:       strconv.Itoa(int(n.HostSubnetLength)),
 				Kind:       "ClusterNetwork",
 				Supported:  false,
-				Confidence: "red",
+				Confidence: NoConfidence,
 				Comment:    "hostSubnetLength is not supported in OCP4",
 			})
 	}
@@ -88,7 +91,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 			Name:       e.MasterConfig.NetworkConfig.ServiceNetworkCIDR,
 			Kind:       "ServiceNetwork",
 			Supported:  true,
-			Confidence: "yellow",
+			Confidence: ModerateConfidence,
 			Comment:    "Networks must be configured during installation",
 		})
 
@@ -98,7 +101,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 				Name:       externalCIDR,
 				Kind:       "ExternalIPNetworkCIDRs",
 				Supported:  false,
-				Confidence: "red",
+				Confidence: NoConfidence,
 				Comment:    "Configuration of ExternalIPNetworkCIDRs is not supported in OCP4",
 			})
 	}
@@ -108,7 +111,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 			Name:       e.MasterConfig.NetworkConfig.IngressIPNetworkCIDR,
 			Kind:       "IngressIPNetworkCIDR",
 			Supported:  false,
-			Confidence: "red",
+			Confidence: NoConfidence,
 			Comment:    "Translation of this configuration is not supported, refer to ingress operator configuration for more information",
 		})
 
@@ -147,5 +150,5 @@ func (e SDNExtraction) Validate() error {
 
 // Name returns a human readable name for the transform
 func (e SDNTransform) Name() string {
-	return "SDN"
+	return SDNComponentName
 }
