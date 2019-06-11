@@ -21,6 +21,9 @@ const (
 	// APIComponentName is the API component string
 	APIComponentName = "API"
 
+	// CrioComponentName is the Crio component string
+	CrioComponentName = "Crio"
+
 	// ETCDComponentName is the ETCD component string
 	ETCDComponentName = "ETCD"
 
@@ -90,6 +93,7 @@ func Start() {
 
 	runner.Transform([]Transform{
 		APITransform{},
+		CrioTransform{},
 		ETCDTransform{},
 		OAuthTransform{},
 		SDNTransform{},
