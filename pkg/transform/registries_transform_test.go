@@ -61,6 +61,14 @@ func TestRegistriesExtractionTransform(t *testing.T) {
 			Supported:  true,
 			Confidence: 2,
 		})
+	expectedReport.Reports = append(expectedReport.Reports,
+		transform.Report{
+			Name:       "search.guy",
+			Kind:       "Search",
+			Supported:  false,
+			Confidence: 0,
+			Comment:    "Search registries can not be configured in OCP 4",
+		})
 
 	testCases := []struct {
 		name              string
