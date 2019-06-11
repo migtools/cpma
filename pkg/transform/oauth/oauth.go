@@ -41,7 +41,8 @@ type Spec struct {
 
 // TranslatedTokenConfig holds lifetime of access tokens
 type TranslatedTokenConfig struct {
-	AccessTokenMaxAgeSeconds int32 `yaml:"accessTokenMaxAgeSeconds"`
+	AccessTokenMaxAgeSeconds            int32 `yaml:"accessTokenInactivityTimeoutSeconds,omitempty"`
+	AccessTokenInactivityTimeoutSeconds int32 `yaml:"accessTokenMaxAgeSeconds,omitempty"`
 }
 
 type identityProviderCommon struct {
@@ -93,8 +94,9 @@ type Resources struct {
 
 // TokenConfig store internal OAuth tokens duration
 type TokenConfig struct {
-	AuthorizeTokenMaxAgeSeconds int32
-	AccessTokenMaxAgeSeconds    int32
+	AuthorizeTokenMaxAgeSeconds         int32
+	AccessTokenMaxAgeSeconds            int32
+	AccessTokenInactivityTimeoutSeconds int32
 }
 
 const (
@@ -180,6 +182,7 @@ func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig) (*
 
 	// Translate lifetime of access tokens
 	oauthCrd.Spec.TokenConfig.AccessTokenMaxAgeSeconds = tokenConfig.AccessTokenMaxAgeSeconds
+	oauthCrd.Spec.TokenConfig.AccessTokenInactivityTimeoutSeconds = tokenConfig.AccessTokenInactivityTimeoutSeconds
 
 	return &Resources{
 		OAuthCRD:   &oauthCrd,

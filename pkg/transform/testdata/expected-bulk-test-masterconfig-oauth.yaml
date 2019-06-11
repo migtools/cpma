@@ -146,4 +146,5 @@ spec:
         authorize: https://myidp.example.com/oauth2/authorize
         token: https://myidp.example.com/oauth2/token
   tokenConfig:
+    accessTokenInactivityTimeoutSeconds: 86400
     accessTokenMaxAgeSeconds: 86400

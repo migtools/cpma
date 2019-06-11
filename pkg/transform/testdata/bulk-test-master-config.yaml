@@ -159,3 +159,4 @@ oauthConfig:
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400
     authorizeTokenMaxAgeSeconds: 500
+    accessTokenInactivityTimeoutSeconds: 86400

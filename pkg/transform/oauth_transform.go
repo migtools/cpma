@@ -128,6 +128,14 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 
 	reportOutput.Reports = append(reportOutput.Reports,
 		Report{
+			Name:       "AccessTokenInactivityTimeoutSeconds",
+			Kind:       "TokenConfig",
+			Supported:  true,
+			Confidence: "green",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
 			Name:       "AuthorizeTokenMaxAgeSeconds",
 			Kind:       "TokenConfig",
 			Supported:  false,
@@ -269,8 +277,9 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 	// Get extracted token config
 	tokenConfig := masterConfig.OAuthConfig.TokenConfig
 	extraction.TokenConfig = oauth.TokenConfig{
-		AuthorizeTokenMaxAgeSeconds: tokenConfig.AuthorizeTokenMaxAgeSeconds,
-		AccessTokenMaxAgeSeconds:    tokenConfig.AccessTokenMaxAgeSeconds,
+		AuthorizeTokenMaxAgeSeconds:         tokenConfig.AuthorizeTokenMaxAgeSeconds,
+		AccessTokenMaxAgeSeconds:            tokenConfig.AccessTokenMaxAgeSeconds,
+		AccessTokenInactivityTimeoutSeconds: *tokenConfig.AccessTokenInactivityTimeoutSeconds,
 	}
 
 	return extraction, nil

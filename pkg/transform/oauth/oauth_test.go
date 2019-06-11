@@ -58,7 +58,7 @@ func TestTransformMasterConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{AccessTokenMaxAgeSeconds: 42000, AuthorizeTokenMaxAgeSeconds: 42000})
+			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{AccessTokenMaxAgeSeconds: 42000, AuthorizeTokenMaxAgeSeconds: 42000, AccessTokenInactivityTimeoutSeconds: 42000})
 			require.NoError(t, err)
 			assert.Equal(t, 9, len(oauthResources.OAuthCRD.Spec.IdentityProviders))
 			assert.Equal(t, "BasicAuth", oauthResources.OAuthCRD.Spec.IdentityProviders[0].(*oauth.IdentityProviderBasicAuth).Type)
@@ -72,6 +72,7 @@ func TestTransformMasterConfig(t *testing.T) {
 			assert.Equal(t, "OpenID", oauthResources.OAuthCRD.Spec.IdentityProviders[8].(*oauth.IdentityProviderOpenID).Type)
 
 			assert.Equal(t, int32(42000), oauthResources.OAuthCRD.Spec.TokenConfig.AccessTokenMaxAgeSeconds)
+			assert.Equal(t, int32(42000), oauthResources.OAuthCRD.Spec.TokenConfig.AccessTokenInactivityTimeoutSeconds)
 		})
 	}
 

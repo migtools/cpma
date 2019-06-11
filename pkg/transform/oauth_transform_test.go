@@ -257,6 +257,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, openidIDP)
 
 	expectedCrd.Spec.TokenConfig.AccessTokenMaxAgeSeconds = int32(86400)
+	expectedCrd.Spec.TokenConfig.AccessTokenInactivityTimeoutSeconds = int32(86400)
 
 	expectedManifest, err := transform.GenYAML(expectedCrd)
 	require.NoError(t, err)
@@ -351,8 +352,9 @@ func TestOAuthExtractionTransform(t *testing.T) {
 			testExtraction := transform.OAuthExtraction{
 				IdentityProviders: identityProviders,
 				TokenConfig: oauth.TokenConfig{
-					AccessTokenMaxAgeSeconds:    int32(86400),
-					AuthorizeTokenMaxAgeSeconds: int32(500),
+					AccessTokenMaxAgeSeconds:            int32(86400),
+					AuthorizeTokenMaxAgeSeconds:         int32(500),
+					AccessTokenInactivityTimeoutSeconds: int32(86400),
 				},
 			}
 
