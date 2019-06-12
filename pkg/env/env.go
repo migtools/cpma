@@ -108,7 +108,7 @@ func surveyMissingValues() error {
 			prompt := &survey.Input{
 				Message: "OCP3 Cluster hostname",
 			}
-			survey.AskOne(prompt, &hostname, nil)
+			survey.AskOne(prompt, &hostname, survey.ComposeValidators(survey.Required))
 		}
 
 		viperConfig.Set("Source", hostname)
@@ -125,15 +125,6 @@ func surveyMissingValues() error {
 		sshCreds["login"] = login
 	}
 
-	if sshCreds["privatekey"] == "" {
-		privatekey := ""
-		prompt := &survey.Input{
-			Message: "Path to private SSH key",
-		}
-		survey.AskOne(prompt, &privatekey, nil)
-		sshCreds["privatekey"] = privatekey
-	}
-
 	if sshCreds["port"] == "" {
 		port := ""
 		prompt := &survey.Input{
@@ -142,6 +133,15 @@ func surveyMissingValues() error {
 		}
 		survey.AskOne(prompt, &port, nil)
 		sshCreds["port"] = port
+	}
+
+	if sshCreds["privatekey"] == "" {
+		privatekey := ""
+		prompt := &survey.Input{
+			Message: "Path to private SSH key",
+		}
+		survey.AskOne(prompt, &privatekey, survey.ComposeValidators(survey.Required))
+		sshCreds["privatekey"] = privatekey
 	}
 
 	if viperConfig.GetString("OutputDir") == "." {
