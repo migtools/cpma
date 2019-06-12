@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/transform"
 	"github.com/fusor/cpma/pkg/transform/sdn"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
@@ -164,7 +165,7 @@ func TestGenYAML(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			networkCRYAML, err := sdn.GenYAML(tc.networkCR)
+			networkCRYAML, err := transform.GenYAML(tc.networkCR)
 			require.NoError(t, err)
 			assert.Equal(t, tc.output, networkCRYAML)
 		})

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net"
 
-	"github.com/ghodss/yaml"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
@@ -138,14 +137,4 @@ func Validate(masterConfig legacyconfigv1.MasterConfig) error {
 	}
 
 	return nil
-}
-
-// GenYAML returns a YAML of the SDN CR
-func GenYAML(networkCR NetworkCR) ([]byte, error) {
-	yamlBytes, err := yaml.Marshal(networkCR)
-	if err != nil {
-		return nil, err
-	}
-
-	return yamlBytes, nil
 }
