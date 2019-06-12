@@ -6,37 +6,37 @@ import (
 
 // HTPasswdFileSecret is an htpasswd secret
 type HTPasswdFileSecret struct {
-	HTPasswd string `yaml:"htpasswd"`
+	HTPasswd string `json:"htpasswd"`
 }
 
 // KeystoneFileSecret is a keystone secret
 type KeystoneFileSecret struct {
-	Keystone string `yaml:"keystone"`
+	Keystone string `json:"keystone"`
 }
 
 // LiteralSecret is a literal secret
 type LiteralSecret struct {
-	ClientSecret string `yaml:"clientSecret"`
+	ClientSecret string `json:"clientSecret"`
 }
 
 // BasicAuthFileSecret is a basic auth secret
 type BasicAuthFileSecret struct {
-	BasicAuth string `yaml:"basicAuth"`
+	BasicAuth string `json:"basicAuth"`
 }
 
 // Secret contains a secret
 type Secret struct {
-	APIVersion string      `yaml:"apiVersion"`
-	Kind       string      `yaml:"kind"`
-	Type       string      `yaml:"type"`
-	Metadata   MetaData    `yaml:"metadata"`
-	Data       interface{} `yaml:"data"`
+	APIVersion string      `json:"apiVersion"`
+	Kind       string      `json:"kind"`
+	Type       string      `json:"type"`
+	Metadata   MetaData    `json:"metadata"`
+	Data       interface{} `json:"data"`
 }
 
 // MetaData is the Metadata for a secret
 type MetaData struct {
-	Name      string `yaml:"name"`
-	Namespace string `yaml:"namespace"`
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
 }
 
 // SecretType is an enumerator for secret types

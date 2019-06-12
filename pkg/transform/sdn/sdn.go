@@ -10,33 +10,33 @@ import (
 
 // NetworkCR describes Network CR for OCP4
 type NetworkCR struct {
-	APIVersion string `yaml:"apiVersion"`
-	Kind       string `yaml:"kind"`
-	Spec       Spec   `yaml:"spec"`
+	APIVersion string `json:"apiVersion"`
+	Kind       string `json:"kind"`
+	Spec       Spec   `json:"spec"`
 }
 
 // Spec is a SDN specific spec
 type Spec struct {
-	ClusterNetworks []ClusterNetwork `yaml:"clusterNetwork"`
-	ServiceNetwork  string           `yaml:"serviceNetwork"`
-	DefaultNetwork  `yaml:"defaultNetwork"`
+	ClusterNetworks []ClusterNetwork `json:"clusterNetwork"`
+	ServiceNetwork  string           `json:"serviceNetwork"`
+	DefaultNetwork  `json:"defaultNetwork"`
 }
 
 // ClusterNetwork contains CIDR and address size to assign to each node
 type ClusterNetwork struct {
-	CIDR       string `yaml:"cidr"`
-	HostPrefix int    `yaml:"hostPrefix"`
+	CIDR       string `json:"cidr"`
+	HostPrefix int    `json:"hostPrefix"`
 }
 
 // DefaultNetwork containts network type and SDN plugin name
 type DefaultNetwork struct {
-	Type               string             `yaml:"type"`
-	OpenshiftSDNConfig OpenshiftSDNConfig `yaml:"openshiftSDNConfig"`
+	Type               string             `json:"type"`
+	OpenshiftSDNConfig OpenshiftSDNConfig `json:"openshiftSDNConfig"`
 }
 
 // OpenshiftSDNConfig is the Openshift SDN Configured Mode
 type OpenshiftSDNConfig struct {
-	Mode string `yaml:"mode"`
+	Mode string `json:"mode"`
 }
 
 const (

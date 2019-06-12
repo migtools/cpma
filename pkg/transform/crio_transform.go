@@ -28,10 +28,10 @@ type Crio struct {
 
 // CrioCR is a is a Crio Cluster Resource
 type CrioCR struct {
-	APIVersion string       `yaml:"apiVersion"`
-	Kind       string       `yaml:"kind"`
-	Metadata   CrioMetadata `yaml:"metadata"`
-	Spec       CrioSpec     `yaml:"spec"`
+	APIVersion string       `json:"apiVersion"`
+	Kind       string       `json:"kind"`
+	Metadata   CrioMetadata `json:"metadata"`
+	Spec       CrioSpec     `json:"spec"`
 }
 
 // CrioMetadata is the Metadata for a Crio CR
@@ -41,26 +41,26 @@ type CrioMetadata struct {
 
 //CrioSpec is the Spec for a Crio CR
 type CrioSpec struct {
-	MachineConfigPoolSelector MachineConfigPoolSelector `yaml:"machineConfigPoolSelector"`
-	ContainerRuntimeConfig    ContainerRuntimeConfig    `yaml:"containerRuntimeConfig"`
+	MachineConfigPoolSelector MachineConfigPoolSelector `json:"machineConfigPoolSelector"`
+	ContainerRuntimeConfig    ContainerRuntimeConfig    `json:"containerRuntimeConfig"`
 }
 
 // MachineConfigPoolSelector is the Pool Selector for a Machine Config
 type MachineConfigPoolSelector struct {
-	MatchLabels MatchLabels `yaml:"matchLabels"`
+	MatchLabels MatchLabels `json:"matchLabels"`
 }
 
 // MatchLabels matches the labels for a Pool Selector
 type MatchLabels struct {
-	CustomCrio string `yaml:"custom-crio"`
+	CustomCrio string `json:"custom-crio"`
 }
 
 // ContainerRuntimeConfig contains a Crio Runtime Machine Config
 type ContainerRuntimeConfig struct {
-	PidsLimit  int64  `yaml:"pidsLimit,omitempty"`
-	LogLevel   string `yaml:"logLevel,omitempty"`
-	LogSizeMax int64  `yaml:"logSizeMax,omitempty"`
-	InfraImage string `yaml:"infraImage,omitempty"`
+	PidsLimit  int64  `json:"pidsLimit,omitempty"`
+	LogLevel   string `json:"logLevel,omitempty"`
+	LogSizeMax int64  `json:"logSizeMax,omitempty"`
+	InfraImage string `json:"infraImage,omitempty"`
 }
 
 // CrioTransform is an Crio specific transform

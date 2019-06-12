@@ -25,27 +25,27 @@ type Registries struct {
 
 // ImageCR is an Image Cluster Resource
 type ImageCR struct {
-	APIVersion string    `yaml:"apiVersion"`
-	Kind       string    `yaml:"kind"`
-	Metadata   Metadata  `yaml:"metadata"`
-	Spec       ImageSpec `yaml:"spec"`
+	APIVersion string    `json:"apiVersion"`
+	Kind       string    `json:"kind"`
+	Metadata   Metadata  `json:"metadata"`
+	Spec       ImageSpec `json:"spec"`
 }
 
 // Metadata is the Metadata for an Image Cluster Resource
 type Metadata struct {
 	Name        string
-	Annotations map[string]string `yaml:"annotations"`
+	Annotations map[string]string `json:"annotations"`
 }
 
 // ImageSpec is a Spec for an ImageCR
 type ImageSpec struct {
-	RegistrySources RegistrySources `yaml:"registrySources"`
+	RegistrySources RegistrySources `json:"registrySources"`
 }
 
 // RegistrySources holds lists of blocked and insecure registries from an OCP3 cluster
 type RegistrySources struct {
-	BlockedRegistries  []string `yaml:"blockedRegistries,omitempty"`
-	InsecureRegistries []string `yaml:"insecureRegistries,omitempty"`
+	BlockedRegistries  []string `json:"blockedRegistries,omitempty"`
+	InsecureRegistries []string `json:"insecureRegistries,omitempty"`
 }
 
 // RegistriesTransform is a registry specific transform
