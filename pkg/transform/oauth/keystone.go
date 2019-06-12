@@ -13,17 +13,17 @@ import (
 
 // IdentityProviderKeystone is a Keystone specific identity provider
 type IdentityProviderKeystone struct {
-	identityProviderCommon `yaml:",inline"`
-	Keystone               Keystone `yaml:"keystone"`
+	identityProviderCommon `json:",inline"`
+	Keystone               Keystone `json:"keystone"`
 }
 
 // Keystone specific Provider data
 type Keystone struct {
-	DomainName    string         `yaml:"domainName"`
-	URL           string         `yaml:"url"`
-	CA            *CA            `yaml:"ca,omitempty"`
-	TLSClientCert *TLSClientCert `yaml:"tlsClientCert,omitempty"`
-	TLSClientKey  *TLSClientKey  `yaml:"tlsClientKey,omitempty"`
+	DomainName    string         `json:"domainName"`
+	URL           string         `json:"url"`
+	CA            *CA            `json:"ca,omitempty"`
+	TLSClientCert *TLSClientCert `json:"tlsClientCert,omitempty"`
+	TLSClientKey  *TLSClientKey  `json:"tlsClientKey,omitempty"`
 }
 
 func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderKeystone, *secrets.Secret, *secrets.Secret, *configmaps.ConfigMap, error) {

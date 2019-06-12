@@ -5,92 +5,88 @@ metadata:
   namespace: openshift-config
 spec:
   identityProviders:
-  - name: my_remote_basic_auth_provider
-    challenge: true
-    login: true
-    mappingMethod: claim
-    type: BasicAuth
-    basicAuth:
-      url: https://www.example.com/
+  - basicAuth:
       ca:
         name: basicauth-configmap
       tlsClientCert:
         name: my_remote_basic_auth_provider-client-cert-secret
       tlsClientKey:
         name: my_remote_basic_auth_provider-client-key-secret
-  - name: github123456789
-    challenge: false
+      url: https://www.example.com/
+    challenge: true
     login: true
     mappingMethod: claim
-    type: GitHub
+    name: my_remote_basic_auth_provider
+    type: BasicAuth
+  - challenge: false
     github:
-      hostname: test.example.com
       ca:
         name: github-configmap
       clientID: 2d85ea3f45d6777bffd7
       clientSecret:
         name: github123456789-secret
+      hostname: test.example.com
       organizations:
       - myorganization1
       - myorganization2
       teams:
       - myorganization1/team-a
       - myorganization2/team-b
-  - name: gitlab123456789
-    challenge: true
     login: true
     mappingMethod: claim
-    type: GitLab
+    name: github123456789
+    type: GitHub
+  - challenge: true
     gitlab:
-      url: https://gitlab.com/
       ca:
         name: gitlab-configmap
       clientID: fake-id
       clientSecret:
         name: gitlab123456789-secret
-  - name: google123456789123456789
-    challenge: false
+      url: https://gitlab.com/
     login: true
     mappingMethod: claim
-    type: Google
+    name: gitlab123456789
+    type: GitLab
+  - challenge: false
     google:
       clientID: 82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com
       clientSecret:
         name: google123456789123456789-secret
       hostedDomain: test.example.com
-  - name: htpasswd_auth
-    challenge: true
     login: true
     mappingMethod: claim
-    type: HTPasswd
+    name: google123456789123456789
+    type: Google
+  - challenge: true
     htpasswd:
       fileData:
         name: htpasswd_auth-secret
-  - name: my_keystone_provider
-    challenge: true
     login: true
     mappingMethod: claim
-    type: Keystone
+    name: htpasswd_auth
+    type: HTPasswd
+  - challenge: true
     keystone:
-      domainName: default
-      url: http://fake.url:5000
       ca:
         name: keystone-configmap
+      domainName: default
       tlsClientCert:
         name: my_keystone_provider-client-cert-secret
       tlsClientKey:
         name: my_keystone_provider-client-key-secret
-  - name: my_ldap_provider
-    challenge: true
+      url: http://fake.url:5000
     login: true
     mappingMethod: claim
-    type: LDAP
+    name: my_keystone_provider
+    type: Keystone
+  - challenge: true
     ldap:
       attributes:
-        id:
-        - dn
         email:
         - mail
+        id:
+        - dn
         name:
         - cn
         preferredUsername:
@@ -101,49 +97,53 @@ spec:
         name: ldap-configmap
       insecure: false
       url: ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid
-  - name: my_request_header_provider
-    challenge: true
     login: true
     mappingMethod: claim
-    type: RequestHeader
+    name: my_ldap_provider
+    type: LDAP
+  - challenge: true
+    login: true
+    mappingMethod: claim
+    name: my_request_header_provider
     requestHeader:
-      challengeURL: https://example.com
-      loginURL: https://example.com
       ca:
         name: requestheader-configmap
-      сlientCommonNames:
-      - my-auth-proxy
+      challengeURL: https://example.com
+      emailHeaders:
+      - X-Remote-User-Email
       headers:
       - X-Remote-User
       - SSO-User
-      emailHeaders:
-      - X-Remote-User-Email
+      loginURL: https://example.com
       nameHeaders:
       - X-Remote-User-Display-Name
       preferredUsernameHeaders:
       - X-Remote-User-Login
-  - name: my_openid_connect
-    challenge: false
+      сlientCommonNames:
+      - my-auth-proxy
+    type: RequestHeader
+  - challenge: false
     login: true
     mappingMethod: claim
-    type: OpenID
+    name: my_openid_connect
     openID:
-      clientID: testid
-      clientSecret:
-        name: my_openid_connect-secret
       claims:
-        preferredUsername:
-        - preferred_username
+        email:
+        - custom_email_claim
         - email
         name:
         - nickname
         - given_name
         - name
-        email:
-        - custom_email_claim
+        preferredUsername:
+        - preferred_username
         - email
+      clientID: testid
+      clientSecret:
+        name: my_openid_connect-secret
       urls:
         authorize: https://myidp.example.com/oauth2/authorize
         token: https://myidp.example.com/oauth2/token
+    type: OpenID
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400

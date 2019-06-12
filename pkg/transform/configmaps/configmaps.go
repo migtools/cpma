@@ -2,21 +2,21 @@ package configmaps
 
 // ConfigMap represent configmap definition
 type ConfigMap struct {
-	APIVersion string   `yaml:"apiVersion"`
-	Kind       string   `yaml:"kind"`
-	Metadata   MetaData `yaml:"metadata"`
-	Data       Data     `yaml:"data"`
+	APIVersion string   `json:"apiVersion"`
+	Kind       string   `json:"kind"`
+	Metadata   MetaData `json:"metadata"`
+	Data       Data     `json:"data"`
 }
 
 // MetaData configmap's metadata
 type MetaData struct {
-	Name      string `yaml:"name"`
-	Namespace string `yaml:"namespace"`
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
 }
 
 // Data contains CA
 type Data struct {
-	CAData string `yaml:"ca"`
+	CAData string `json:"ca"`
 }
 
 const (

@@ -27,35 +27,35 @@ func init() {
 
 // CRD Shared CRD part, present in all types of OAuth CRDs
 type CRD struct {
-	APIVersion string   `yaml:"apiVersion"`
-	Kind       string   `yaml:"kind"`
-	Metadata   MetaData `yaml:"metadata"`
-	Spec       Spec     `yaml:"spec"`
+	APIVersion string   `json:"apiVersion"`
+	Kind       string   `json:"kind"`
+	Metadata   MetaData `json:"metadata"`
+	Spec       Spec     `json:"spec"`
 }
 
 // Spec is a CRD Spec
 type Spec struct {
-	IdentityProviders []interface{}         `yaml:"identityProviders,omitempty"`
-	TokenConfig       TranslatedTokenConfig `yaml:"tokenConfig,omitempty"`
+	IdentityProviders []interface{}         `json:"identityProviders,omitempty"`
+	TokenConfig       TranslatedTokenConfig `json:"tokenConfig,omitempty"`
 }
 
 // TranslatedTokenConfig holds lifetime of access tokens
 type TranslatedTokenConfig struct {
-	AccessTokenMaxAgeSeconds int32 `yaml:"accessTokenMaxAgeSeconds"`
+	AccessTokenMaxAgeSeconds int32 `json:"accessTokenMaxAgeSeconds"`
 }
 
 type identityProviderCommon struct {
-	Name          string `yaml:"name"`
-	Challenge     bool   `yaml:"challenge"`
-	Login         bool   `yaml:"login"`
-	MappingMethod string `yaml:"mappingMethod"`
-	Type          string `yaml:"type"`
+	Name          string `json:"name"`
+	Challenge     bool   `json:"challenge"`
+	Login         bool   `json:"login"`
+	MappingMethod string `json:"mappingMethod"`
+	Type          string `json:"type"`
 }
 
 // MetaData contains CRD Metadata
 type MetaData struct {
-	Name      string `yaml:"name"`
-	NameSpace string `yaml:"namespace"`
+	Name      string `json:"name"`
+	NameSpace string `json:"namespace"`
 }
 
 // Provider contains an identity providers type specific provider data

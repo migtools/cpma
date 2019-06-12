@@ -1,7 +1,7 @@
 apiVersion: v1
+data:
+  ca: 'testval: 123'
 kind: ConfigMap
 metadata:
   name: testname
   namespace: openshift-config
-data:
-  ca: 'testval: 123'

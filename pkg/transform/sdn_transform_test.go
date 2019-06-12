@@ -6,9 +6,9 @@ import (
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/fusor/cpma/pkg/transform/sdn"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
 )
 
 func TestSDNExtractionTransform(t *testing.T) {

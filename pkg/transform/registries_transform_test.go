@@ -6,9 +6,12 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/fusor/cpma/pkg/transform"
+	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
+
+	configv1 "github.com/openshift/api/config/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func loadRegistriesExtraction() (transform.RegistriesExtraction, error) {
@@ -30,11 +33,16 @@ func loadRegistriesExtraction() (transform.RegistriesExtraction, error) {
 func TestRegistriesExtractionTransform(t *testing.T) {
 	var expectedManifests []transform.Manifest
 
-	var expectedCrd transform.ImageCR
+	var expectedCrd configv1.Image
+
+	metadata := metav1.ObjectMeta{
+		Name:        "cluster",
+		Annotations: map[string]string{"release.openshift.io/create-only": "true"},
+	}
+
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "Image"
-	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.Annotations = map[string]string{"release.openshift.io/create-only": "true"}
+	expectedCrd.ObjectMeta = metadata
 	expectedCrd.Spec.RegistrySources.BlockedRegistries = []string{"bad.guy"}
 	expectedCrd.Spec.RegistrySources.InsecureRegistries = []string{"insecure.guy"}
 

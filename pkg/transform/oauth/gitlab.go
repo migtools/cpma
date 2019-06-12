@@ -13,16 +13,16 @@ import (
 
 // IdentityProviderGitLab is a Gitlab specific identity provider
 type IdentityProviderGitLab struct {
-	identityProviderCommon `yaml:",inline"`
-	GitLab                 GitLab `yaml:"gitlab"`
+	identityProviderCommon `json:",inline"`
+	GitLab                 GitLab `json:"gitlab"`
 }
 
 // GitLab provider specific data
 type GitLab struct {
-	URL          string       `yaml:"url"`
-	CA           *CA          `yaml:"ca,omitempty"`
-	ClientID     string       `yaml:"clientID"`
-	ClientSecret ClientSecret `yaml:"clientSecret"`
+	URL          string       `json:"url"`
+	CA           *CA          `json:"ca,omitempty"`
+	ClientID     string       `json:"clientID"`
+	ClientSecret ClientSecret `json:"clientSecret"`
 }
 
 func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGitLab, *secrets.Secret, *configmaps.ConfigMap, error) {
