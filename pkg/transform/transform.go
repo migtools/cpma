@@ -5,8 +5,8 @@ import (
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
+	ghodssyaml "github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -141,7 +141,7 @@ func HandleError(err error, transformType string) error {
 
 // GenYAML returns a YAML of the CR
 func GenYAML(CR interface{}) ([]byte, error) {
-	yamlBytes, err := yaml.Marshal(CR)
+	yamlBytes, err := ghodssyaml.Marshal(CR)
 	if err != nil {
 		return nil, err
 	}
