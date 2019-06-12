@@ -5,7 +5,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -38,7 +38,7 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 		err         error
 		idP         = &IdentityProviderLDAP{}
 		caConfigmap *configmaps.ConfigMap
-		ldap        configv1.LDAPPasswordIdentityProvider
+		ldap        legacyconfigv1.LDAPPasswordIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &ldap)
 	if err != nil {
@@ -77,7 +77,7 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 }
 
 func validateLDAPProvider(serializer *json.Serializer, p IdentityProvider) error {
-	var ldap configv1.LDAPPasswordIdentityProvider
+	var ldap legacyconfigv1.LDAPPasswordIdentityProvider
 
 	_, _, err := serializer.Decode(p.Provider.Raw, nil, &ldap)
 	if err != nil {

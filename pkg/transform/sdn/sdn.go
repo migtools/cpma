@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net"
 
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"gopkg.in/yaml.v2"
 )
 
@@ -46,7 +46,7 @@ const (
 )
 
 // Translate is called by Transform to do the majority of the work in converting data
-func Translate(masterConfig configv1.MasterConfig) (NetworkCR, error) {
+func Translate(masterConfig legacyconfigv1.MasterConfig) (NetworkCR, error) {
 	networkConfig := masterConfig.NetworkConfig
 	var networkCR NetworkCR
 
@@ -70,7 +70,7 @@ func Translate(masterConfig configv1.MasterConfig) (NetworkCR, error) {
 }
 
 // TranslateClusterNetworks converts Cluster Networks from OCP3 to OCP4
-func TranslateClusterNetworks(clusterNeworkEntries []configv1.ClusterNetworkEntry) []ClusterNetwork {
+func TranslateClusterNetworks(clusterNeworkEntries []legacyconfigv1.ClusterNetworkEntry) []ClusterNetwork {
 	var translatedClusterNetworks []ClusterNetwork
 
 	for _, networkConfig := range clusterNeworkEntries {
@@ -106,7 +106,7 @@ func SelectNetworkPlugin(pluginName string) (string, error) {
 }
 
 // Validate validate SDN config
-func Validate(masterConfig configv1.MasterConfig) error {
+func Validate(masterConfig legacyconfigv1.MasterConfig) error {
 	networkConfig := masterConfig.NetworkConfig
 
 	if len(networkConfig.ServiceNetworkCIDR) == 0 {

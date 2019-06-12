@@ -6,7 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -42,7 +42,7 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 		err    error
 		secret *secrets.Secret
 		idP    = &IdentityProviderOpenID{}
-		openID configv1.OpenIDIdentityProvider
+		openID legacyconfigv1.OpenIDIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &openID)
 	if err != nil {
@@ -78,7 +78,7 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 }
 
 func validateOpenIDProvider(serializer *json.Serializer, p IdentityProvider) error {
-	var openID configv1.OpenIDIdentityProvider
+	var openID legacyconfigv1.OpenIDIdentityProvider
 
 	_, _, err := serializer.Decode(p.Provider.Raw, nil, &openID)
 	if err != nil {

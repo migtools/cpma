@@ -6,7 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -31,7 +31,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Identit
 		idP                   = &IdentityProviderBasicAuth{}
 		certSecret, keySecret *secrets.Secret
 		caConfigmap           *configmaps.ConfigMap
-		basicAuth             configv1.BasicAuthPasswordIdentityProvider
+		basicAuth             legacyconfigv1.BasicAuthPasswordIdentityProvider
 	)
 
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &basicAuth)
@@ -75,7 +75,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Identit
 }
 
 func validateBasicAuthProvider(serializer *json.Serializer, p IdentityProvider) error {
-	var basicAuth configv1.BasicAuthPasswordIdentityProvider
+	var basicAuth legacyconfigv1.BasicAuthPasswordIdentityProvider
 
 	_, _, err := serializer.Decode(p.Provider.Raw, nil, &basicAuth)
 	if err != nil {

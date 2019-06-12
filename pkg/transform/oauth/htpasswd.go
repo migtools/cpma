@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -30,7 +30,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 		err      error
 		idP      = &IdentityProviderHTPasswd{}
 		secret   *secrets.Secret
-		htpasswd configv1.HTPasswdPasswordIdentityProvider
+		htpasswd legacyconfigv1.HTPasswdPasswordIdentityProvider
 	)
 
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
@@ -59,7 +59,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 }
 
 func validateHTPasswdProvider(serializer *json.Serializer, p IdentityProvider) error {
-	var htpasswd configv1.HTPasswdPasswordIdentityProvider
+	var htpasswd legacyconfigv1.HTPasswdPasswordIdentityProvider
 
 	_, _, err := serializer.Decode(p.Provider.Raw, nil, &htpasswd)
 	if err != nil {

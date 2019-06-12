@@ -7,7 +7,7 @@ import (
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -31,7 +31,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 		idP         = &IdentityProviderGitLab{}
 		secret      *secrets.Secret
 		caConfigmap *configmaps.ConfigMap
-		gitlab      configv1.GitLabIdentityProvider
+		gitlab      legacyconfigv1.GitLabIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &gitlab)
 	if err != nil {
@@ -68,7 +68,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 }
 
 func validateGitLabProvider(serializer *json.Serializer, p IdentityProvider) error {
-	var gitlab configv1.GitLabIdentityProvider
+	var gitlab legacyconfigv1.GitLabIdentityProvider
 
 	_, _, err := serializer.Decode(p.Provider.Raw, nil, &gitlab)
 	if err != nil {

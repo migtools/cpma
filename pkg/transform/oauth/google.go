@@ -6,7 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -28,7 +28,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 		err    error
 		idP    = &IdentityProviderGoogle{}
 		secret *secrets.Secret
-		google configv1.GoogleIdentityProvider
+		google legacyconfigv1.GoogleIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &google)
 	if err != nil {
@@ -60,7 +60,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 }
 
 func validateGoogleProvider(serializer *json.Serializer, p IdentityProvider) error {
-	var google configv1.GoogleIdentityProvider
+	var google legacyconfigv1.GoogleIdentityProvider
 
 	_, _, err := serializer.Decode(p.Provider.Raw, nil, &google)
 	if err != nil {

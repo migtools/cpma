@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -31,7 +31,7 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*Ide
 		err           error
 		idP           = &IdentityProviderRequestHeader{}
 		caConfigmap   *configmaps.ConfigMap
-		requestHeader configv1.RequestHeaderIdentityProvider
+		requestHeader legacyconfigv1.RequestHeaderIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &requestHeader)
 	if err != nil {
@@ -61,7 +61,7 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*Ide
 }
 
 func validateRequestHeaderProvider(serializer *json.Serializer, p IdentityProvider) error {
-	var requestHeader configv1.RequestHeaderIdentityProvider
+	var requestHeader legacyconfigv1.RequestHeaderIdentityProvider
 
 	_, _, err := serializer.Decode(p.Provider.Raw, nil, &requestHeader)
 	if err != nil {

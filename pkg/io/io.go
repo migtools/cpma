@@ -11,7 +11,7 @@ import (
 	"github.com/fusor/cpma/pkg/io/remotehost"
 	"github.com/sirupsen/logrus"
 
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
 // FetchFile first tries to retrieve file from local disk (outputDir/<Hostname>/).
@@ -44,7 +44,7 @@ func FetchEnv(host, envVar string) (string, error) {
 }
 
 // FetchStringSource fetches a string from an OCP3 cluster
-func FetchStringSource(stringSource configv1.StringSource) (string, error) {
+func FetchStringSource(stringSource legacyconfigv1.StringSource) (string, error) {
 	if stringSource.Value != "" {
 		return stringSource.Value, nil
 	}

@@ -5,7 +5,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -15,7 +15,7 @@ import (
 
 func init() {
 	oauthv1.Install(scheme.Scheme)
-	configv1.InstallLegacy(scheme.Scheme)
+	legacyconfigv1.InstallLegacy(scheme.Scheme)
 }
 
 // reference:
@@ -230,7 +230,7 @@ func validateMappingMethod(method string) error {
 	return errors.New("Not valid mapping method")
 }
 
-func validateClientData(clientID string, clientSecret configv1.StringSource) error {
+func validateClientData(clientID string, clientSecret legacyconfigv1.StringSource) error {
 	if clientID == "" {
 		return errors.New("Client ID can't be empty")
 	}
