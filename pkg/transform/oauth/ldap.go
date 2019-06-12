@@ -11,26 +11,26 @@ import (
 
 // IdentityProviderLDAP is a LDAP specific identity provider
 type IdentityProviderLDAP struct {
-	identityProviderCommon `yaml:",inline"`
-	LDAP                   LDAP `yaml:"ldap"`
+	identityProviderCommon `json:",inline"`
+	LDAP                   LDAP `json:"ldap"`
 }
 
 // LDAP provider specific data
 type LDAP struct {
-	Attributes   LDAPAttributes `yaml:"attributes"`
-	BindDN       string         `yaml:"bindDN,omitempty"`
-	BindPassword string         `yaml:"bindPassword,omitempty"`
-	CA           *CA            `yaml:"ca,omitempty"`
-	Insecure     bool           `yaml:"insecure"`
-	URL          string         `yaml:"url"`
+	Attributes   LDAPAttributes `json:"attributes"`
+	BindDN       string         `json:"bindDN,omitempty"`
+	BindPassword string         `json:"bindPassword,omitempty"`
+	CA           *CA            `json:"ca,omitempty"`
+	Insecure     bool           `json:"insecure"`
+	URL          string         `json:"url"`
 }
 
 // LDAPAttributes for an LDAP provider
 type LDAPAttributes struct {
-	ID                []string `yaml:"id"`
-	Email             []string `yaml:"email"`
-	Name              []string `yaml:"name"`
-	PreferredUsername []string `yaml:"preferredUsername"`
+	ID                []string `json:"id"`
+	Email             []string `json:"email"`
+	Name              []string `json:"name"`
+	PreferredUsername []string `json:"preferredUsername"`
 }
 
 func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderLDAP, *configmaps.ConfigMap, error) {

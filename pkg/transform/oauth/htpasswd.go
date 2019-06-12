@@ -11,18 +11,18 @@ import (
 
 // IdentityProviderHTPasswd is a htpasswd specific identity provider
 type IdentityProviderHTPasswd struct {
-	identityProviderCommon `yaml:",inline"`
-	HTPasswd               `yaml:"htpasswd"`
+	identityProviderCommon `json:",inline"`
+	HTPasswd               `json:"htpasswd"`
 }
 
 // HTPasswd contains htpasswd FileData
 type HTPasswd struct {
-	FileData FileData `yaml:"fileData"`
+	FileData FileData `json:"fileData"`
 }
 
 // FileData from htpasswd file
 type FileData struct {
-	Name string `yaml:"name"`
+	Name string `json:"name"`
 }
 
 func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderHTPasswd, *secrets.Secret, error) {

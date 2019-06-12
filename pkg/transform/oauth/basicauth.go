@@ -12,17 +12,17 @@ import (
 
 // IdentityProviderBasicAuth is a basic auth specific identity provider
 type IdentityProviderBasicAuth struct {
-	identityProviderCommon `yaml:",inline"`
-	BasicAuth              BasicAuth `yaml:"basicAuth"`
+	identityProviderCommon `json:",inline"`
+	BasicAuth              BasicAuth `json:"basicAuth"`
 }
 
 // BasicAuth provider specific data
 // BasicAuth provider specific data
 type BasicAuth struct {
-	URL           string         `yaml:"url"`
-	CA            *CA            `yaml:"ca,omitempty"`
-	TLSClientCert *TLSClientCert `yaml:"tlsClientCert,omitempty"`
-	TLSClientKey  *TLSClientKey  `yaml:"tlsClientKey,omitempty"`
+	URL           string         `json:"url"`
+	CA            *CA            `json:"ca,omitempty"`
+	TLSClientCert *TLSClientCert `json:"tlsClientCert,omitempty"`
+	TLSClientKey  *TLSClientKey  `json:"tlsClientKey,omitempty"`
 }
 
 func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderBasicAuth, *secrets.Secret, *secrets.Secret, *configmaps.ConfigMap, error) {

@@ -10,20 +10,20 @@ import (
 
 // IdentityProviderRequestHeader is a request header specific identity provider
 type IdentityProviderRequestHeader struct {
-	identityProviderCommon `yaml:",inline"`
-	RequestHeader          RequestHeader `yaml:"requestHeader"`
+	identityProviderCommon `json:",inline"`
+	RequestHeader          RequestHeader `json:"requestHeader"`
 }
 
 // RequestHeader provider specific data
 type RequestHeader struct {
-	ChallengeURL             string   `yaml:"challengeURL,omitempty"`
-	LoginURL                 string   `yaml:"loginURL,omitempty"`
-	CA                       *CA      `yaml:"ca,omitempty"`
-	ClientCommonNames        []string `yaml:"сlientCommonNames,omitempty"`
-	Headers                  []string `yaml:"headers"`
-	EmailHeaders             []string `yaml:"emailHeaders,omitempty"`
-	NameHeaders              []string `yaml:"nameHeaders,omitempty"`
-	PreferredUsernameHeaders []string `yaml:"preferredUsernameHeaders,omitempty"`
+	ChallengeURL             string   `json:"challengeURL,omitempty"`
+	LoginURL                 string   `json:"loginURL,omitempty"`
+	CA                       *CA      `json:"ca,omitempty"`
+	ClientCommonNames        []string `json:"сlientCommonNames,omitempty"`
+	Headers                  []string `json:"headers"`
+	EmailHeaders             []string `json:"emailHeaders,omitempty"`
+	NameHeaders              []string `json:"nameHeaders,omitempty"`
+	PreferredUsernameHeaders []string `json:"preferredUsernameHeaders,omitempty"`
 }
 
 func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderRequestHeader, *configmaps.ConfigMap, error) {
