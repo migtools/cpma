@@ -7,7 +7,7 @@ import (
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/sdn"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,7 +16,7 @@ const SDNComponentName = "SDN"
 
 // SDNExtraction is an SDN specific extraction
 type SDNExtraction struct {
-	configv1.MasterConfig
+	legacyconfigv1.MasterConfig
 }
 
 // SDNTransform is an SDN specific transform

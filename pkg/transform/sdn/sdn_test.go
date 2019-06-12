@@ -8,7 +8,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/sdn"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -106,16 +106,16 @@ func TestSelectNetworkPlugin(t *testing.T) {
 func TestTransformClusterNetworks(t *testing.T) {
 	testCases := []struct {
 		name   string
-		input  []configv1.ClusterNetworkEntry
+		input  []legacyconfigv1.ClusterNetworkEntry
 		output []sdn.ClusterNetwork
 	}{
 		{
 			name: "transform cluster networks",
-			input: []configv1.ClusterNetworkEntry{
-				configv1.ClusterNetworkEntry{CIDR: "10.128.0.0/14",
+			input: []legacyconfigv1.ClusterNetworkEntry{
+				legacyconfigv1.ClusterNetworkEntry{CIDR: "10.128.0.0/14",
 					HostSubnetLength: uint32(9),
 				},
-				configv1.ClusterNetworkEntry{CIDR: "10.127.0.0/14",
+				legacyconfigv1.ClusterNetworkEntry{CIDR: "10.127.0.0/14",
 					HostSubnetLength: uint32(9),
 				},
 			},

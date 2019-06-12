@@ -6,7 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
@@ -32,7 +32,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 		certSecret, keySecret *secrets.Secret
 		caConfigmap           *configmaps.ConfigMap
 		err                   error
-		keystone              configv1.KeystonePasswordIdentityProvider
+		keystone              legacyconfigv1.KeystonePasswordIdentityProvider
 	)
 	_, _, err = serializer.Decode(p.Provider.Raw, nil, &keystone)
 	if err != nil {
@@ -78,7 +78,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 }
 
 func validateKeystoneProvider(serializer *json.Serializer, p IdentityProvider) error {
-	var keystone configv1.KeystonePasswordIdentityProvider
+	var keystone legacyconfigv1.KeystonePasswordIdentityProvider
 
 	_, _, err := serializer.Decode(p.Provider.Raw, nil, &keystone)
 	if err != nil {
