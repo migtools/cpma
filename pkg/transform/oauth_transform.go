@@ -3,6 +3,7 @@ package transform
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
@@ -105,18 +106,20 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			"BasicAuthPasswordIdentityProvider":
 			reportOutput.Reports = append(reportOutput.Reports,
 				Report{
-					Name:       p.Name,
-					Kind:       p.Kind,
+					Name:       p.Kind,
+					Kind:       "IdentityProviders",
 					Supported:  true,
 					Confidence: HighConfidence,
+					Comment:    fmt.Sprintf("Identity provider %s is supported in OCP4", p.Name),
 				})
 		default:
 			reportOutput.Reports = append(reportOutput.Reports,
 				Report{
-					Name:       p.Name,
-					Kind:       p.Kind,
+					Name:       p.Kind,
+					Kind:       "IdentityProviders",
 					Supported:  false,
 					Confidence: NoConfidence,
+					Comment:    fmt.Sprintf("Identity provider %s is not supported in OCP4", p.Name),
 				})
 		}
 	}
@@ -140,7 +143,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 
 	reportOutput.Reports = append(reportOutput.Reports,
 		Report{
-			Name:       "AssetPublicURL",
+			Name:       "",
 			Kind:       "AssetPublicURL",
 			Supported:  false,
 			Confidence: NoConfidence,
@@ -149,7 +152,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 
 	reportOutput.Reports = append(reportOutput.Reports,
 		Report{
-			Name:       "MasterPublicURL",
+			Name:       "",
 			Kind:       "MasterPublicURL",
 			Supported:  false,
 			Confidence: NoConfidence,
@@ -158,7 +161,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 
 	reportOutput.Reports = append(reportOutput.Reports,
 		Report{
-			Name:       "MasterCA",
+			Name:       "",
 			Kind:       "MasterCA",
 			Supported:  false,
 			Confidence: NoConfidence,
@@ -167,7 +170,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 
 	reportOutput.Reports = append(reportOutput.Reports,
 		Report{
-			Name:       "MasterURL",
+			Name:       "",
 			Kind:       "MasterURL",
 			Supported:  false,
 			Confidence: NoConfidence,
@@ -176,8 +179,8 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 
 	reportOutput.Reports = append(reportOutput.Reports,
 		Report{
+			Name:       "",
 			Kind:       "GrantConfig",
-			Name:       "GrantConfig",
 			Supported:  false,
 			Confidence: NoConfidence,
 			Comment:    "Translation of GrantConfig is not supported",
@@ -185,8 +188,8 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 
 	reportOutput.Reports = append(reportOutput.Reports,
 		Report{
+			Name:       "",
 			Kind:       "SessionConfig",
-			Name:       "SessionConfig",
 			Supported:  false,
 			Confidence: NoConfidence,
 			Comment:    "Translation of SessionConfig is not supported",

@@ -1,7 +1,7 @@
 package transform
 
 import (
-	"strconv"
+	"fmt"
 
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
@@ -68,21 +68,23 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 	}
 
 	for _, n := range e.MasterConfig.NetworkConfig.ClusterNetworks {
+		cidrComment := fmt.Sprintf("Networks must be configured during installation, it's possible to use %s", n.CIDR)
 		reportOutput.Reports = append(reportOutput.Reports,
 			Report{
-				Name:       n.CIDR,
+				Name:       "CIDR",
 				Kind:       "ClusterNetwork",
 				Supported:  true,
 				Confidence: ModerateConfidence,
-				Comment:    clusterNetworkComment,
+				Comment:    cidrComment,
 			})
+
 		reportOutput.Reports = append(reportOutput.Reports,
 			Report{
-				Name:       strconv.Itoa(int(n.HostSubnetLength)),
+				Name:       "HostSubnetLength",
 				Kind:       "ClusterNetwork",
 				Supported:  false,
 				Confidence: NoConfidence,
-				Comment:    "hostSubnetLength is not supported in OCP4",
+				Comment:    clusterNetworkComment,
 			})
 	}
 
@@ -95,20 +97,18 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Networks must be configured during installation",
 		})
 
-	for _, externalCIDR := range e.MasterConfig.NetworkConfig.ExternalIPNetworkCIDRs {
-		reportOutput.Reports = append(reportOutput.Reports,
-			Report{
-				Name:       externalCIDR,
-				Kind:       "ExternalIPNetworkCIDRs",
-				Supported:  false,
-				Confidence: NoConfidence,
-				Comment:    "Configuration of ExternalIPNetworkCIDRs is not supported in OCP4",
-			})
-	}
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "",
+			Kind:       "ExternalIPNetworkCIDRs",
+			Supported:  false,
+			Confidence: NoConfidence,
+			Comment:    "Configuration of ExternalIPNetworkCIDRs is not supported in OCP4",
+		})
 
 	reportOutput.Reports = append(reportOutput.Reports,
 		Report{
-			Name:       e.MasterConfig.NetworkConfig.IngressIPNetworkCIDR,
+			Name:       "",
 			Kind:       "IngressIPNetworkCIDR",
 			Supported:  false,
 			Confidence: NoConfidence,

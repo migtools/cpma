@@ -33,19 +33,20 @@ func TestSDNExtractionTransform(t *testing.T) {
 	}
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "10.128.0.0/14",
+			Name:       "CIDR",
 			Kind:       "ClusterNetwork",
 			Supported:  true,
 			Confidence: 1,
-			Comment:    "Networks must be configured during installation,\n hostSubnetLength was replaced with hostPrefix in OCP4, default value was set to 23",
+			Comment:    "Networks must be configured during installation, it's possible to use 10.128.0.0/14",
 		})
+
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "9",
+			Name:       "HostSubnetLength",
 			Kind:       "ClusterNetwork",
 			Supported:  false,
 			Confidence: 0,
-			Comment:    "hostSubnetLength is not supported in OCP4",
+			Comment:    "Networks must be configured during installation,\n hostSubnetLength was replaced with hostPrefix in OCP4, default value was set to 23",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
@@ -57,7 +58,7 @@ func TestSDNExtractionTransform(t *testing.T) {
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "0.0.0.0/0",
+			Name:       "",
 			Kind:       "ExternalIPNetworkCIDRs",
 			Supported:  false,
 			Confidence: 0,

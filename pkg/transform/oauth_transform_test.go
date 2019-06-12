@@ -330,66 +330,75 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	}
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "my_remote_basic_auth_provider",
-			Kind:       "BasicAuthPasswordIdentityProvider",
+			Name:       "BasicAuthPasswordIdentityProvider",
+			Kind:       "IdentityProviders",
 			Supported:  true,
 			Confidence: 2,
+			Comment:    "Identity provider my_remote_basic_auth_provider is supported in OCP4",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "github123456789",
-			Kind:       "GitHubIdentityProvider",
+			Name:       "GitHubIdentityProvider",
+			Kind:       "IdentityProviders",
 			Supported:  true,
 			Confidence: 2,
+			Comment:    "Identity provider github123456789 is supported in OCP4",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "gitlab123456789",
-			Kind:       "GitLabIdentityProvider",
+			Name:       "GitLabIdentityProvider",
+			Kind:       "IdentityProviders",
 			Supported:  true,
 			Confidence: 2,
+			Comment:    "Identity provider gitlab123456789 is supported in OCP4",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "google123456789123456789",
-			Kind:       "GoogleIdentityProvider",
+			Name:       "GoogleIdentityProvider",
+			Kind:       "IdentityProviders",
 			Supported:  true,
 			Confidence: 2,
+			Comment:    "Identity provider google123456789123456789 is supported in OCP4",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "htpasswd_auth",
-			Kind:       "HTPasswdPasswordIdentityProvider",
+			Name:       "HTPasswdPasswordIdentityProvider",
+			Kind:       "IdentityProviders",
 			Supported:  true,
 			Confidence: 2,
+			Comment:    "Identity provider htpasswd_auth is supported in OCP4",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "my_keystone_provider",
-			Kind:       "KeystonePasswordIdentityProvider",
+			Name:       "KeystonePasswordIdentityProvider",
+			Kind:       "IdentityProviders",
 			Supported:  true,
 			Confidence: 2,
+			Comment:    "Identity provider my_keystone_provider is supported in OCP4",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "my_ldap_provider",
-			Kind:       "LDAPPasswordIdentityProvider",
+			Name:       "LDAPPasswordIdentityProvider",
+			Kind:       "IdentityProviders",
 			Supported:  true,
 			Confidence: 2,
+			Comment:    "Identity provider my_ldap_provider is supported in OCP4",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "my_request_header_provider",
-			Kind:       "RequestHeaderIdentityProvider",
+			Name:       "RequestHeaderIdentityProvider",
+			Kind:       "IdentityProviders",
 			Supported:  true,
 			Confidence: 2,
+			Comment:    "Identity provider my_request_header_provider is supported in OCP4",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "my_openid_connect",
-			Kind:       "OpenIDIdentityProvider",
+			Name:       "OpenIDIdentityProvider",
+			Kind:       "IdentityProviders",
 			Supported:  true,
 			Confidence: 2,
+			Comment:    "Identity provider my_openid_connect is supported in OCP4",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
@@ -408,7 +417,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "AssetPublicURL",
+			Name:       "",
 			Kind:       "AssetPublicURL",
 			Supported:  false,
 			Confidence: 0,
@@ -416,7 +425,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "MasterPublicURL",
+			Name:       "",
 			Kind:       "MasterPublicURL",
 			Supported:  false,
 			Confidence: 0,
@@ -424,7 +433,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "MasterCA",
+			Name:       "",
 			Kind:       "MasterCA",
 			Supported:  false,
 			Confidence: 0,
@@ -432,7 +441,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
-			Name:       "MasterURL",
+			Name:       "",
 			Kind:       "MasterURL",
 			Supported:  false,
 			Confidence: 0,
@@ -440,16 +449,16 @@ func TestOAuthExtractionTransform(t *testing.T) {
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
+			Name:       "",
 			Kind:       "GrantConfig",
-			Name:       "GrantConfig",
 			Supported:  false,
 			Confidence: 0,
 			Comment:    "Translation of GrantConfig is not supported",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
 		transform.Report{
+			Name:       "",
 			Kind:       "SessionConfig",
-			Name:       "SessionConfig",
 			Supported:  false,
 			Confidence: 0,
 			Comment:    "Translation of SessionConfig is not supported",
