@@ -8,6 +8,9 @@ import (
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
+
+	configv1 "github.com/openshift/api/config/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // RegistriesComponentName is the registry component string
@@ -21,31 +24,6 @@ type RegistriesExtraction struct {
 // Registries holds a list of Registries
 type Registries struct {
 	List []string `toml:"registries"`
-}
-
-// ImageCR is an Image Cluster Resource
-type ImageCR struct {
-	APIVersion string    `json:"apiVersion"`
-	Kind       string    `json:"kind"`
-	Metadata   Metadata  `json:"metadata"`
-	Spec       ImageSpec `json:"spec"`
-}
-
-// Metadata is the Metadata for an Image Cluster Resource
-type Metadata struct {
-	Name        string
-	Annotations map[string]string `json:"annotations"`
-}
-
-// ImageSpec is a Spec for an ImageCR
-type ImageSpec struct {
-	RegistrySources RegistrySources `json:"registrySources"`
-}
-
-// RegistrySources holds lists of blocked and insecure registries from an OCP3 cluster
-type RegistrySources struct {
-	BlockedRegistries  []string `json:"blockedRegistries,omitempty"`
-	InsecureRegistries []string `json:"insecureRegistries,omitempty"`
 }
 
 // RegistriesTransform is a registry specific transform
@@ -78,12 +56,15 @@ func (e RegistriesExtraction) buildManifestOutput() (Output, error) {
 		annoval    = "true"
 	)
 
-	var imageCR ImageCR
+	metadata := metav1.ObjectMeta{
+		Name:        name,
+		Annotations: map[string]string{annokey: annoval},
+	}
+
+	var imageCR configv1.Image
 	imageCR.APIVersion = apiVersion
 	imageCR.Kind = kind
-	imageCR.Metadata.Name = name
-	imageCR.Metadata.Annotations = make(map[string]string)
-	imageCR.Metadata.Annotations[annokey] = annoval
+	imageCR.ObjectMeta = metadata
 	imageCR.Spec.RegistrySources.BlockedRegistries = e.Registries["block"].List
 	imageCR.Spec.RegistrySources.InsecureRegistries = e.Registries["insecure"].List
 
