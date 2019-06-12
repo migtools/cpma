@@ -85,6 +85,7 @@ func Start() {
 	runner.Transform([]Transform{
 		APITransform{},
 		CrioTransform{},
+		DockerTransform{},
 		ETCDTransform{},
 		OAuthTransform{},
 		SDNTransform{},
