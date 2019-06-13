@@ -1,5 +1,8 @@
 apiVersion: operator.openshift.io/v1
 kind: Network
+metadata:
+  creationTimestamp: null
+  name: cluster
 spec:
   clusterNetwork:
   - cidr: 10.128.0.0/14
@@ -8,4 +11,6 @@ spec:
     openshiftSDNConfig:
       mode: Subnet
     type: OpenShiftSDN
-  serviceNetwork: 172.30.0.0/16
+  serviceNetwork:
+  - 172.30.0.0/16
+status: {}

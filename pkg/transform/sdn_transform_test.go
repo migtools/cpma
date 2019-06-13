@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/fusor/cpma/pkg/transform"
-	"github.com/fusor/cpma/pkg/transform/sdn"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	"github.com/ghodss/yaml"
+	configv1 "github.com/openshift/api/operator/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,13 +14,17 @@ import (
 func TestSDNExtractionTransform(t *testing.T) {
 	var expectedManifests []transform.Manifest
 
-	var expectedCrd sdn.NetworkCR
+	var expectedCrd configv1.Network
 	expectedCrd.APIVersion = "operator.openshift.io/v1"
 	expectedCrd.Kind = "Network"
-	expectedCrd.Spec.ClusterNetworks = []sdn.ClusterNetwork{{HostPrefix: 23, CIDR: "10.128.0.0/14"}}
-	expectedCrd.Spec.ServiceNetwork = "172.30.0.0/16"
+	expectedCrd.Name = "cluster"
+	expectedCrd.Spec.ClusterNetwork = []configv1.ClusterNetworkEntry{{HostPrefix: 23, CIDR: "10.128.0.0/14"}}
+	expectedCrd.Spec.ServiceNetwork = []string{"172.30.0.0/16"}
 	expectedCrd.Spec.DefaultNetwork.Type = "OpenShiftSDN"
-	expectedCrd.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode = "Subnet"
+	openshiftSDNConfig := &configv1.OpenShiftSDNConfig{
+		Mode: configv1.SDNMode("Subnet"),
+	}
+	expectedCrd.Spec.DefaultNetwork.OpenShiftSDNConfig = openshiftSDNConfig
 
 	networkCRYAML, err := yaml.Marshal(&expectedCrd)
 	require.NoError(t, err)

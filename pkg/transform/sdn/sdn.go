@@ -5,75 +5,51 @@ import (
 	"net"
 
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	configv1 "github.com/openshift/api/operator/v1"
 )
-
-// NetworkCR describes Network CR for OCP4
-type NetworkCR struct {
-	APIVersion string `json:"apiVersion"`
-	Kind       string `json:"kind"`
-	Spec       Spec   `json:"spec"`
-}
-
-// Spec is a SDN specific spec
-type Spec struct {
-	ClusterNetworks []ClusterNetwork `json:"clusterNetwork"`
-	ServiceNetwork  string           `json:"serviceNetwork"`
-	DefaultNetwork  `json:"defaultNetwork"`
-}
-
-// ClusterNetwork contains CIDR and address size to assign to each node
-type ClusterNetwork struct {
-	CIDR       string `json:"cidr"`
-	HostPrefix int    `json:"hostPrefix"`
-}
-
-// DefaultNetwork containts network type and SDN plugin name
-type DefaultNetwork struct {
-	Type               string             `json:"type"`
-	OpenshiftSDNConfig OpenshiftSDNConfig `json:"openshiftSDNConfig"`
-}
-
-// OpenshiftSDNConfig is the Openshift SDN Configured Mode
-type OpenshiftSDNConfig struct {
-	Mode string `json:"mode"`
-}
 
 const (
 	apiVersion         = "operator.openshift.io/v1"
 	kind               = "Network"
 	defaultNetworkType = "OpenShiftSDN"
+	name               = "cluster"
 )
 
 // Translate is called by Transform to do the majority of the work in converting data
-func Translate(masterConfig legacyconfigv1.MasterConfig) (NetworkCR, error) {
+func Translate(masterConfig legacyconfigv1.MasterConfig) (*configv1.Network, error) {
 	networkConfig := masterConfig.NetworkConfig
-	var networkCR NetworkCR
+	var networkCR configv1.Network
 
 	networkCR.APIVersion = apiVersion
 	networkCR.Kind = kind
-	networkCR.Spec.ServiceNetwork = networkConfig.ServiceNetworkCIDR
+	networkCR.Name = name
+	networkCR.Spec.ServiceNetwork = []string{networkConfig.ServiceNetworkCIDR}
 	networkCR.Spec.DefaultNetwork.Type = defaultNetworkType
 
 	// Translate CIDRs and adress size for each node
 	translatedClusterNetworks := TranslateClusterNetworks(networkConfig.ClusterNetworks)
-	networkCR.Spec.ClusterNetworks = translatedClusterNetworks
+	networkCR.Spec.ClusterNetwork = translatedClusterNetworks
 
 	// Translate network plugin name
 	selectedNetworkPlugin, err := SelectNetworkPlugin(networkConfig.NetworkPluginName)
 	if err != nil {
-		return networkCR, err
+		return nil, err
 	}
-	networkCR.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode = selectedNetworkPlugin
 
-	return networkCR, nil
+	openshiftSDNConfig := &configv1.OpenShiftSDNConfig{
+		Mode: configv1.SDNMode(selectedNetworkPlugin),
+	}
+	networkCR.Spec.DefaultNetwork.OpenShiftSDNConfig = openshiftSDNConfig
+
+	return &networkCR, nil
 }
 
 // TranslateClusterNetworks converts Cluster Networks from OCP3 to OCP4
-func TranslateClusterNetworks(clusterNeworkEntries []legacyconfigv1.ClusterNetworkEntry) []ClusterNetwork {
-	var translatedClusterNetworks []ClusterNetwork
+func TranslateClusterNetworks(clusterNeworkEntries []legacyconfigv1.ClusterNetworkEntry) []configv1.ClusterNetworkEntry {
+	var translatedClusterNetworks []configv1.ClusterNetworkEntry
 
 	for _, networkConfig := range clusterNeworkEntries {
-		var translatedClusterNetwork ClusterNetwork
+		var translatedClusterNetwork configv1.ClusterNetworkEntry
 
 		translatedClusterNetwork.CIDR = networkConfig.CIDR
 		// host prefix is missing in OCP3 config, default is 23

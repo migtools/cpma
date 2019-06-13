@@ -2,7 +2,6 @@ package sdn_test
 
 import (
 	"errors"
-
 	"io/ioutil"
 	"testing"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/fusor/cpma/pkg/transform/sdn"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	configv1 "github.com/openshift/api/operator/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -46,11 +46,11 @@ func TestTransformMasterConfig(t *testing.T) {
 			// Check if network CR was translated correctly
 			assert.Equal(t, networkCR.APIVersion, "operator.openshift.io/v1")
 			assert.Equal(t, networkCR.Kind, "Network")
-			assert.Equal(t, networkCR.Spec.ClusterNetworks[0].CIDR, "10.128.0.0/14")
-			assert.Equal(t, networkCR.Spec.ClusterNetworks[0].HostPrefix, 23)
-			assert.Equal(t, networkCR.Spec.ServiceNetwork, "172.30.0.0/16")
-			assert.Equal(t, networkCR.Spec.DefaultNetwork.Type, "OpenShiftSDN")
-			assert.Equal(t, networkCR.Spec.DefaultNetwork.OpenshiftSDNConfig.Mode, "Subnet")
+			assert.Equal(t, networkCR.Spec.ClusterNetwork[0].CIDR, "10.128.0.0/14")
+			assert.Equal(t, networkCR.Spec.ClusterNetwork[0].HostPrefix, uint32(23))
+			assert.Equal(t, networkCR.Spec.ServiceNetwork, []string([]string{"172.30.0.0/16"}))
+			assert.Equal(t, networkCR.Spec.DefaultNetwork.Type, configv1.NetworkType("OpenShiftSDN"))
+			assert.Equal(t, networkCR.Spec.DefaultNetwork.OpenShiftSDNConfig.Mode, configv1.SDNMode("Subnet"))
 
 		})
 	}
@@ -108,7 +108,7 @@ func TestTransformClusterNetworks(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  []legacyconfigv1.ClusterNetworkEntry
-		output []sdn.ClusterNetwork
+		output []configv1.ClusterNetworkEntry
 	}{
 		{
 			name: "transform cluster networks",
@@ -120,12 +120,12 @@ func TestTransformClusterNetworks(t *testing.T) {
 					HostSubnetLength: uint32(9),
 				},
 			},
-			output: []sdn.ClusterNetwork{
-				sdn.ClusterNetwork{
+			output: []configv1.ClusterNetworkEntry{
+				configv1.ClusterNetworkEntry{
 					CIDR:       "10.128.0.0/14",
 					HostPrefix: 23,
 				},
-				sdn.ClusterNetwork{
+				configv1.ClusterNetworkEntry{
 					CIDR:       "10.127.0.0/14",
 					HostPrefix: 23,
 				},
@@ -153,12 +153,12 @@ func TestGenYAML(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		networkCR sdn.NetworkCR
+		networkCR configv1.Network
 		output    []byte
 	}{
 		{
 			name:      "generate yaml for sdn",
-			networkCR: networkCR,
+			networkCR: *networkCR,
 			output:    expectedYaml,
 		},
 	}
