@@ -22,5 +22,9 @@ matrix:
 before_install:
   - env GO111MODULE=off go get -u golang.org/x/lint/golint
 
+before_script:
+  - mkdir $HOME/.kube
+  - curl https://raw.githubusercontent.com/projectcalico/cni-plugin/master/kubeconfig.sample > $HOME/.kube/config
+
 script:
   - env GO111MODULE=on make ci

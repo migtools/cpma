@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/fusor/cpma/pkg/api"
 	"github.com/fusor/cpma/pkg/env/clusterdiscovery"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
@@ -71,6 +72,11 @@ func InitConfig() error {
 
 	// If a config file is found, read it in.
 	readConfigErr := viperConfig.ReadInConfig()
+
+	err = api.ParseKubeConfig()
+	if err != nil {
+		return errors.Wrap(err, "kubeconfig parsing failed")
+	}
 
 	getNestedArgValues()
 
