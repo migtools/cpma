@@ -49,7 +49,7 @@ func (e SDNExtraction) buildManifestOutput() (Output, error) {
 		return nil, err
 	}
 
-	networkCRYAML, err := sdn.GenYAML(networkCR)
+	networkCRYAML, err := GenYAML(networkCR)
 	if err != nil {
 		return nil, err
 	}
