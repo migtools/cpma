@@ -1,20 +1,19 @@
 package transform_test
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"testing"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fusor/cpma/pkg/decode"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform"
-	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	configv1 "github.com/openshift/api/config/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func loadRegistriesExtraction() (transform.RegistriesExtraction, error) {
+func loadRegistriesExtraction() (transform.ImageExtraction, error) {
 	// TODO: Something is broken here in a way that it's causing the translaters
 	// to fail. Need some help with creating test identiy providers in a way
 	// that won't crash the translator
@@ -22,10 +21,14 @@ func loadRegistriesExtraction() (transform.RegistriesExtraction, error) {
 	// Build example identity providers, this is straight copy pasted from
 	// oauth test, IMO this loading of example identity providers should be
 	// some shared test helper
-	file := "testdata/registries.conf" // File copied into transform pkg testdata
-	content, _ := ioutil.ReadFile(file)
-	var extraction transform.RegistriesExtraction
-	_, err := toml.Decode(string(content), &extraction)
+	var extraction transform.ImageExtraction
+
+	registriesContent, _ := ioutil.ReadFile("testdata/registries.conf")
+	_, err := toml.Decode(string(registriesContent), &extraction.RegistriesConfig)
+
+	masterConfigContent, _ := ioutil.ReadFile("testdata/image-test-master-config.yaml")
+	masterConfig, err := decode.MasterConfig(masterConfigContent)
+	extraction.MasterConfig = *masterConfig
 
 	return extraction, err
 }
@@ -33,50 +36,18 @@ func loadRegistriesExtraction() (transform.RegistriesExtraction, error) {
 func TestRegistriesExtractionTransform(t *testing.T) {
 	var expectedManifests []transform.Manifest
 
-	var expectedCrd configv1.Image
-
-	metadata := metav1.ObjectMeta{
-		Name:        "cluster",
-		Annotations: map[string]string{"release.openshift.io/create-only": "true"},
-	}
-
-	expectedCrd.APIVersion = "config.openshift.io/v1"
-	expectedCrd.Kind = "Image"
-	expectedCrd.ObjectMeta = metadata
-	expectedCrd.Spec.RegistrySources.BlockedRegistries = []string{"bad.guy"}
-	expectedCrd.Spec.RegistrySources.InsecureRegistries = []string{"insecure.guy"}
-
-	imageCRYAML, err := yaml.Marshal(&expectedCrd)
+	expectedImageCRYAML, err := ioutil.ReadFile("testdata/expected-image.yaml")
 	require.NoError(t, err)
 
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-registries.yaml", CRD: imageCRYAML})
+		transform.Manifest{Name: "100_CPMA-cluster-config-image.yaml", CRD: expectedImageCRYAML})
 
-	expectedReport := transform.ReportOutput{
-		Component: "Registries",
-	}
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "bad.guy",
-			Kind:       "Blocked",
-			Supported:  true,
-			Confidence: 2,
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "insecure.guy",
-			Kind:       "Insecure",
-			Supported:  true,
-			Confidence: 2,
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "search.guy",
-			Kind:       "Search",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "Search registries can not be configured in OCP 4",
-		})
+	expectedReport := transform.ReportOutput{}
+	jsonData, err := io.ReadFile("testdata/expected-report-image.json")
+	require.NoError(t, err)
+
+	err = json.Unmarshal(jsonData, &expectedReport)
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name              string
@@ -84,7 +55,7 @@ func TestRegistriesExtractionTransform(t *testing.T) {
 		expectedReports   transform.ReportOutput
 	}{
 		{
-			name:              "transform registries extraction",
+			name:              "transform image extraction",
 			expectedManifests: expectedManifests,
 			expectedReports:   expectedReport,
 		},
@@ -95,7 +66,7 @@ func TestRegistriesExtractionTransform(t *testing.T) {
 			actualManifestsChan := make(chan []transform.Manifest)
 			actualReportsChan := make(chan transform.ReportOutput)
 
-			// Override flush method
+			// Override flush methods
 			transform.ManifestOutputFlush = func(manifests []transform.Manifest) error {
 				actualManifestsChan <- manifests
 				return nil
