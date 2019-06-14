@@ -85,6 +85,13 @@ func InitConfig() error {
 		return errors.Wrap(err, "Error in reading missing values")
 	}
 
+	if api.Client == nil {
+		err = api.CreateAPIClient(viperConfig.GetString("ClusterName"))
+		if err != nil {
+			return errors.Wrap(err, "k8s api client failed to create")
+		}
+	}
+
 	if readConfigErr != nil {
 		surveyCreateConfigFile()
 		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", readConfigErr)

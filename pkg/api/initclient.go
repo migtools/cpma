@@ -7,6 +7,7 @@ import (
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
@@ -78,6 +79,8 @@ func CreateAPIClient(contextCluster string) error {
 	if err != nil {
 		return err
 	}
+
+	logrus.Debugf("API client initialized for %s", contextCluster)
 
 	return nil
 }
