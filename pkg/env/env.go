@@ -104,8 +104,10 @@ func surveyMissingValues() error {
 	if viperConfig.GetString("Source") == "" {
 		discoverCluster := ""
 		hostname := ""
+		clusterName := ""
 		var err error
 
+		// Ask for source of master hostname, prompt or find it using KUBECONFIG
 		prompt := &survey.Select{
 			Message: "Do wish to find source cluster using KUBECONFIG or prompt it?",
 			Options: []string{"KUBECONFIG", "prompt"},
@@ -113,10 +115,11 @@ func surveyMissingValues() error {
 		survey.AskOne(prompt, &discoverCluster, nil)
 
 		if discoverCluster == "KUBECONFIG" {
-			hostname, err = clusterdiscovery.DiscoverCluster()
-			if err != nil {
+			if hostname, clusterName, err = clusterdiscovery.DiscoverCluster(); err != nil {
 				return err
 			}
+			// set cluster name in viper for dumping this value in reusable yaml config
+			viperConfig.Set("ClusterName", clusterName)
 		} else {
 			prompt := &survey.Input{
 				Message: "OCP3 Cluster hostname",

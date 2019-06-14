@@ -36,18 +36,15 @@ type PV struct {
 func Start() error {
 	clusterReport := &ClusterReport{}
 
-	err := clusterReport.reportNamespaces()
-	if err != nil {
+	if err := clusterReport.reportNamespaces(); err != nil {
 		return err
 	}
 
-	clusterReport.reportPVs()
-	if err != nil {
+	if err := clusterReport.reportPVs(); err != nil {
 		return err
 	}
 
-	clusterReport.dumpToJSON()
-	if err != nil {
+	if err := clusterReport.dumpToJSON(); err != nil {
 		return err
 	}
 
@@ -124,8 +121,7 @@ func (cluserReport *ClusterReport) dumpToJSON() error {
 		return err
 	}
 
-	err = ioutil.WriteFile(jsonFile, file, 0644)
-	if err != nil {
+	if err = ioutil.WriteFile(jsonFile, file, 0644); err != nil {
 		return err
 	}
 

@@ -68,15 +68,13 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		env.InitLogger()
 
-		err := env.InitConfig()
-		if err != nil {
+		if err := env.InitConfig(); err != nil {
 			logrus.Fatal(err)
 		}
 
 		transform.Start()
 
-		err = clusterreport.Start()
-		if err != nil {
+		if err := clusterreport.Start(); err != nil {
 			logrus.Fatal(err)
 		}
 	},
