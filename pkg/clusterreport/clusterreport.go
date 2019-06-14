@@ -19,7 +19,7 @@ type ClusterReport struct {
 // Namespace represents json report of k8s namespaces
 type Namespace struct {
 	Name string `json:"name"`
-	Pods []Pod  `json:"pods"`
+	Pods []Pod  `json:"pods,omitempty"`
 }
 
 // Pod represents json report of k8s pods
