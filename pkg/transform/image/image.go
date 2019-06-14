@@ -21,6 +21,10 @@ func Translate(imageCR *configv1.Image, imagePolicyConfig legacyconfigv1.ImagePo
 		imageCR.Spec.AdditionalTrustedCA.Name = imagePolicyConfig.AdditionalTrustedCA
 	}
 
+	if imagePolicyConfig.ExternalRegistryHostname != "" {
+		imageCR.Spec.ExternalRegistryHostnames = append(imageCR.Spec.ExternalRegistryHostnames, imagePolicyConfig.ExternalRegistryHostname)
+	}
+
 	return nil
 }
 

@@ -12,6 +12,8 @@ spec:
   - domainName: registry1.test.com
     insecure: true
   - domainName: registry2.test.com
+  externalRegistryHostnames:
+  - external-registry.example.com
   registrySources:
     blockedRegistries:
     - bad.test.com

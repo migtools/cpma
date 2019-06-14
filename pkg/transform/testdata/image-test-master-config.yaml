@@ -7,3 +7,4 @@ imagePolicyConfig:
     - domainName: registry1.test.com
       insecure: true
     - domainName: registry2.test.com
+  externalRegistryHostname: external-registry.example.com
