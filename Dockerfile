@@ -4,7 +4,7 @@ ADD . /app/
 WORKDIR /app 
 RUN make
 
-FROM registry.redhat.io/ubi8/ubi
+FROM registry.access.redhat.com/ubi8/ubi
 COPY --from=builder /app/bin/cpma /usr/local/bin/cpma
 WORKDIR /mnt 
 ENTRYPOINT ["cpma"]
