@@ -4,7 +4,6 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fusor/cpma/pkg/api"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
@@ -55,9 +54,7 @@ func surveyClusters() string {
 }
 
 func queryNodes(apiClient corev1.CoreV1Interface) ([]string, error) {
-	listOptions := metav1.ListOptions{}
-
-	nodeList, err := apiClient.Nodes().List(listOptions)
+	nodeList, err := api.ListNodes()
 	if err != nil {
 		return nil, err
 	}
