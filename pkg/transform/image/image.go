@@ -5,13 +5,7 @@ import (
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
-const (
-	apiVersion = "config.openshift.io/v1"
-	kind       = "Image"
-	name       = "cluster"
-)
-
-// Translate generates image definitions
+// Translate ImagePolicyConfig definitions
 func Translate(imageCR *configv1.Image, imagePolicyConfig legacyconfigv1.ImagePolicyConfig) error {
 	if imagePolicyConfig.AllowedRegistriesForImport != nil {
 		for _, r := range *imagePolicyConfig.AllowedRegistriesForImport {

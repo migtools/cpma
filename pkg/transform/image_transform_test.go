@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func loadRegistriesExtraction() (transform.ImageExtraction, error) {
+func loadImageExtraction() (transform.ImageExtraction, error) {
 	// TODO: Something is broken here in a way that it's causing the translaters
 	// to fail. Need some help with creating test identiy providers in a way
 	// that won't crash the translator
@@ -33,7 +33,7 @@ func loadRegistriesExtraction() (transform.ImageExtraction, error) {
 	return extraction, err
 }
 
-func TestRegistriesExtractionTransform(t *testing.T) {
+func TestImageExtractionTransform(t *testing.T) {
 	var expectedManifests []transform.Manifest
 
 	expectedImageCRYAML, err := ioutil.ReadFile("testdata/expected-image.yaml")
@@ -76,7 +76,7 @@ func TestRegistriesExtractionTransform(t *testing.T) {
 				return nil
 			}
 
-			testExtraction, err := loadRegistriesExtraction()
+			testExtraction, err := loadImageExtraction()
 			require.NoError(t, err)
 
 			go func() {
