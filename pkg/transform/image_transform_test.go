@@ -14,13 +14,6 @@ import (
 )
 
 func loadImageExtraction() (transform.ImageExtraction, error) {
-	// TODO: Something is broken here in a way that it's causing the translaters
-	// to fail. Need some help with creating test identiy providers in a way
-	// that won't crash the translator
-
-	// Build example identity providers, this is straight copy pasted from
-	// oauth test, IMO this loading of example identity providers should be
-	// some shared test helper
 	var extraction transform.ImageExtraction
 
 	registriesContent, _ := ioutil.ReadFile("testdata/registries.conf")
