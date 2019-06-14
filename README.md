@@ -18,26 +18,61 @@ $ ./bin/cpma
 
 ## Usage
 
-Commands:
-```
-tranform Generates configuration from an Openshift 3 cluster for use on an Openshift 4
-report   Generates a report explaining what Openshift 3 configuration can be recreated on Openshift 4
-```
-
 Flags:
 ```
---config string           config file (default is $HOME/.cpma.yaml)
---debug                   show debug output
--h, --help                help for cpma
--o, --output-dir string   set the directory to store extracted configuration.
+      --config string       config file (Default searches ./cpma.yaml, $HOME/cpma.yml)
+      --console-logs        output log to console
+      --debug               show debug ouput
+  -h, --help                help for cpma
+      --insecure-key        allow insecure host key
+  -k, --key string          OCP3 ssh key path
+  -l, --login string        OCP3 ssh login
+  -o, --output-dir string   set the directory to store extracted configuration. (default ".")
+  -p, --port string         OCP3 ssh port
+  -s, --source string       OCP3 cluster hostname
 ```
 
-You can find example config in `examples/`
+You can find an example config in `examples/`. If a config is not provided CPMA will prompt for configuration information and offer to save inputs to a new configuration file.
 
 Example:
 
 ```console
-$ ./bin/cpma transform --config /path/to/config/.yml --debug
+$ ./bin/cpma --config /path/to/config/.yml --console-logs --debug
+```
+
+## CPMA Image
+CPMA is also available in as an image, quay.io/ocpmigrate/cpma
+
+Example Usage:
+```
+docker run -it --rm -v ${PWD}:/mnt:z -v $HOME/.kube:/.kube:z -v $HOME/.ssh:/.ssh:z -u ${UID} \
+quay.io/ocpmigrate/cpma:latest
+```
+
+In these examples `${PWD}` is mounted in the working directory of the image (`/mnt`). This means that paths provided to --config and --output-dir will need to specified be relative to your present working directory.
+
+To make it a little more intuitive it can also be run via an alias, for example:
+```
+$ alias cpma="docker run -it --rm -v ${PWD}:/mnt:z -v $HOME/.kube:/.kube:z -v $HOME/.ssh:/.ssh:z \
+-u ${UID} quay.io/ocpmigrate/cpma:latest"
+
+$ cpma --help
+Helps migration cluster configuration of a OCP 3.x cluster to OCP 4.x
+
+Usage:
+  cpma [flags]
+
+Flags:
+      --config string       config file (Default searches ./cpma.yaml, $HOME/cpma.yml)
+      --console-logs        output log to console
+      --debug               show debug ouput
+  -h, --help                help for cpma
+      --insecure-key        allow insecure host key
+  -k, --key string          OCP3 ssh key path
+  -l, --login string        OCP3 ssh login
+  -o, --output-dir string   set the directory to store extracted configuration. (default ".")
+  -p, --port string         OCP3 ssh port
+  -s, --source string       OCP3 cluster hostname
 ```
 
 ## IO
