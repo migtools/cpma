@@ -17,6 +17,7 @@ package cmd
 import (
 	"path"
 
+	"github.com/fusor/cpma/pkg/clusterreport"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/sirupsen/logrus"
@@ -73,6 +74,11 @@ var rootCmd = &cobra.Command{
 		}
 
 		transform.Start()
+
+		err = clusterreport.Start()
+		if err != nil {
+			logrus.Fatal(err)
+		}
 	},
 	Args: cobra.MaximumNArgs(0),
 }

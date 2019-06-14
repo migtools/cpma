@@ -43,7 +43,7 @@ func DumpReports(r ReportOutput) {
 
 	existingReports = append(existingReports, r)
 
-	jsonReports, err := json.Marshal(existingReports)
+	jsonReports, err := json.MarshalIndent(existingReports, "", " ")
 	if err != nil {
 		logrus.Errorf("unable to marshal reports")
 	}
