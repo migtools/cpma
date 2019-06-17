@@ -1,12 +1,13 @@
 package transform_test
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
-	"github.com/ghodss/yaml"
-	configv1 "github.com/openshift/api/operator/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,68 +15,18 @@ import (
 func TestSDNExtractionTransform(t *testing.T) {
 	var expectedManifests []transform.Manifest
 
-	var expectedCrd configv1.Network
-	expectedCrd.APIVersion = "operator.openshift.io/v1"
-	expectedCrd.Kind = "Network"
-	expectedCrd.Name = "cluster"
-	expectedCrd.Spec.ClusterNetwork = []configv1.ClusterNetworkEntry{{HostPrefix: 23, CIDR: "10.128.0.0/14"}}
-	expectedCrd.Spec.ServiceNetwork = []string{"172.30.0.0/16"}
-	expectedCrd.Spec.DefaultNetwork.Type = "OpenShiftSDN"
-	openshiftSDNConfig := &configv1.OpenShiftSDNConfig{
-		Mode: configv1.SDNMode("Subnet"),
-	}
-	expectedCrd.Spec.DefaultNetwork.OpenShiftSDNConfig = openshiftSDNConfig
-
-	networkCRYAML, err := yaml.Marshal(&expectedCrd)
+	expectedSDNCRYAML, err := ioutil.ReadFile("testdata/expected-CR-sdn.yaml")
 	require.NoError(t, err)
 
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: networkCRYAML})
+		transform.Manifest{Name: "100_CPMA-cluster-config-sdn.yaml", CRD: expectedSDNCRYAML})
 
-	expectedReport := transform.ReportOutput{
-		Component: "SDN",
-	}
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "CIDR",
-			Kind:       "ClusterNetwork",
-			Supported:  true,
-			Confidence: 1,
-			Comment:    "Networks must be configured during installation, it's possible to use 10.128.0.0/14",
-		})
+	expectedReport := transform.ReportOutput{}
+	jsonData, err := io.ReadFile("testdata/expected-report-sdn.json")
+	require.NoError(t, err)
 
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "HostSubnetLength",
-			Kind:       "ClusterNetwork",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "Networks must be configured during installation,\n hostSubnetLength was replaced with hostPrefix in OCP4, default value was set to 23",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "172.30.0.0/16",
-			Kind:       "ServiceNetwork",
-			Supported:  true,
-			Confidence: 1,
-			Comment:    "Networks must be configured during installation",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "",
-			Kind:       "ExternalIPNetworkCIDRs",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "Configuration of ExternalIPNetworkCIDRs is not supported in OCP4",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "",
-			Kind:       "IngressIPNetworkCIDR",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "Translation of this configuration is not supported, refer to ingress operator configuration for more information",
-		})
+	err = json.Unmarshal(jsonData, &expectedReport)
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name              string
