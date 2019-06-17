@@ -2,8 +2,10 @@ package transform_test
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
@@ -325,144 +327,12 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	expectedManifests = append(expectedManifests,
 		transform.Manifest{Name: "100_CPMA-cluster-config-configmap-requestheader-configmap.yaml", CRD: requestheaderConfigMapManifest})
 
-	expectedReport := transform.ReportOutput{
-		Component: "OAuth",
-	}
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "BasicAuthPasswordIdentityProvider",
-			Kind:       "IdentityProviders",
-			Supported:  true,
-			Confidence: 2,
-			Comment:    "Identity provider my_remote_basic_auth_provider is supported in OCP4",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "GitHubIdentityProvider",
-			Kind:       "IdentityProviders",
-			Supported:  true,
-			Confidence: 2,
-			Comment:    "Identity provider github123456789 is supported in OCP4",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "GitLabIdentityProvider",
-			Kind:       "IdentityProviders",
-			Supported:  true,
-			Confidence: 2,
-			Comment:    "Identity provider gitlab123456789 is supported in OCP4",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "GoogleIdentityProvider",
-			Kind:       "IdentityProviders",
-			Supported:  true,
-			Confidence: 2,
-			Comment:    "Identity provider google123456789123456789 is supported in OCP4",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "HTPasswdPasswordIdentityProvider",
-			Kind:       "IdentityProviders",
-			Supported:  true,
-			Confidence: 2,
-			Comment:    "Identity provider htpasswd_auth is supported in OCP4",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "KeystonePasswordIdentityProvider",
-			Kind:       "IdentityProviders",
-			Supported:  true,
-			Confidence: 2,
-			Comment:    "Identity provider my_keystone_provider is supported in OCP4",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "LDAPPasswordIdentityProvider",
-			Kind:       "IdentityProviders",
-			Supported:  true,
-			Confidence: 2,
-			Comment:    "Identity provider my_ldap_provider is supported in OCP4",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "RequestHeaderIdentityProvider",
-			Kind:       "IdentityProviders",
-			Supported:  true,
-			Confidence: 2,
-			Comment:    "Identity provider my_request_header_provider is supported in OCP4",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "OpenIDIdentityProvider",
-			Kind:       "IdentityProviders",
-			Supported:  true,
-			Confidence: 2,
-			Comment:    "Identity provider my_openid_connect is supported in OCP4",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "AccessTokenMaxAgeSeconds",
-			Kind:       "TokenConfig",
-			Supported:  true,
-			Confidence: 2,
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "AuthorizeTokenMaxAgeSeconds",
-			Kind:       "TokenConfig",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "Translation of AuthorizeTokenMaxAgeSeconds is not supported, it's value is 5 minutes in OCP4",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "",
-			Kind:       "AssetPublicURL",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "Translation of AssetPublicURL is not supported",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "",
-			Kind:       "MasterPublicURL",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "Translation of MasterPublicURL is not supported",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "",
-			Kind:       "MasterCA",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "Translation of MasterCA is not supported",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "",
-			Kind:       "MasterURL",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "Translation of MasterURL is not supported",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "",
-			Kind:       "GrantConfig",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "Translation of GrantConfig is not supported",
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "",
-			Kind:       "SessionConfig",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "Translation of SessionConfig is not supported",
-		})
+	expectedReport := transform.ReportOutput{}
+	jsonData, err := io.ReadFile("testdata/expected-report-oauth.json")
+	require.NoError(t, err)
+
+	err = json.Unmarshal(jsonData, &expectedReport)
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name              string
