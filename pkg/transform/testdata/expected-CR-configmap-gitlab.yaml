@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  ca: ""
+kind: ConfigMap
+metadata:
+  name: gitlab-configmap
+  namespace: openshift-config

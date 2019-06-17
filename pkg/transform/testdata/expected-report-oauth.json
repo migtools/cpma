@@ -1,0 +1,106 @@
+{
+  "component": "OAuth",
+  "reports": [{
+    "name": "BasicAuthPasswordIdentityProvider",
+    "kind": "IdentityProviders",
+    "supported": true,
+    "confidence": 2,
+    "comment": "Identity provider my_remote_basic_auth_provider is supported in OCP4"
+  }, {
+    "name": "GitHubIdentityProvider",
+    "kind": "IdentityProviders",
+    "supported": true,
+    "confidence": 2,
+    "comment": "Identity provider github123456789 is supported in OCP4"
+  }, {
+    "name": "GitLabIdentityProvider",
+    "kind": "IdentityProviders",
+    "supported": true,
+    "confidence": 2,
+    "comment": "Identity provider gitlab123456789 is supported in OCP4"
+  }, {
+    "name": "GoogleIdentityProvider",
+    "kind": "IdentityProviders",
+    "supported": true,
+    "confidence": 2,
+    "comment": "Identity provider google123456789123456789 is supported in OCP4"
+  }, {
+    "name": "HTPasswdPasswordIdentityProvider",
+    "kind": "IdentityProviders",
+    "supported": true,
+    "confidence": 2,
+    "comment": "Identity provider htpasswd_auth is supported in OCP4"
+  }, {
+    "name": "KeystonePasswordIdentityProvider",
+    "kind": "IdentityProviders",
+    "supported": true,
+    "confidence": 2,
+    "comment": "Identity provider my_keystone_provider is supported in OCP4"
+  }, {
+    "name": "LDAPPasswordIdentityProvider",
+    "kind": "IdentityProviders",
+    "supported": true,
+    "confidence": 2,
+    "comment": "Identity provider my_ldap_provider is supported in OCP4"
+  }, {
+    "name": "RequestHeaderIdentityProvider",
+    "kind": "IdentityProviders",
+    "supported": true,
+    "confidence": 2,
+    "comment": "Identity provider my_request_header_provider is supported in OCP4"
+  }, {
+    "name": "OpenIDIdentityProvider",
+    "kind": "IdentityProviders",
+    "supported": true,
+    "confidence": 2,
+    "comment": "Identity provider my_openid_connect is supported in OCP4"
+  }, {
+    "name": "AccessTokenMaxAgeSeconds",
+    "kind": "TokenConfig",
+    "supported": true,
+    "confidence": 2,
+    "comment": ""
+  }, {
+    "name": "AuthorizeTokenMaxAgeSeconds",
+    "kind": "TokenConfig",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Translation of AuthorizeTokenMaxAgeSeconds is not supported, it's value is 5 minutes in OCP4"
+  }, {
+    "name": "",
+    "kind": "AssetPublicURL",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Translation of AssetPublicURL is not supported"
+  }, {
+    "name": "",
+    "kind": "MasterPublicURL",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Translation of MasterPublicURL is not supported"
+  }, {
+    "name": "",
+    "kind": "MasterCA",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Translation of MasterCA is not supported"
+  }, {
+    "name": "",
+    "kind": "MasterURL",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Translation of MasterURL is not supported"
+  }, {
+    "name": "",
+    "kind": "GrantConfig",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Translation of GrantConfig is not supported"
+  }, {
+    "name": "",
+    "kind": "SessionConfig",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Translation of SessionConfig is not supported"
+  }]
+}
