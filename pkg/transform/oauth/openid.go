@@ -5,43 +5,17 @@ import (
 
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/secrets"
+	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-// IdentityProviderOpenID is an Open ID specific identity provider
-type IdentityProviderOpenID struct {
-	identityProviderCommon `json:",inline"`
-	OpenID                 OpenID `json:"openID"`
-}
-
-// OpenID provider specific data
-type OpenID struct {
-	ClientID     string       `json:"clientID"`
-	ClientSecret ClientSecret `json:"clientSecret"`
-	Claims       OpenIDClaims `json:"claims"`
-	URLs         OpenIDURLs   `json:"urls"`
-}
-
-// OpenIDClaims are the claims for an OpenID provider
-type OpenIDClaims struct {
-	PreferredUsername []string `json:"preferredUsername"`
-	Name              []string `json:"name"`
-	Email             []string `json:"email"`
-}
-
-// OpenIDURLs are the URLs for an OpenID provider
-type OpenIDURLs struct {
-	Authorize string `json:"authorize"`
-	Token     string `json:"token"`
-}
-
-func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderOpenID, *secrets.Secret, error) {
+func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, error) {
 	var (
 		err    error
 		secret *secrets.Secret
-		idP    = &IdentityProviderOpenID{}
+		idP    = &configv1.IdentityProvider{}
 		openID legacyconfigv1.OpenIDIdentityProvider
 	)
 
@@ -51,15 +25,11 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 
 	idP.Type = "OpenID"
 	idP.Name = p.Name
-	idP.Challenge = p.UseAsChallenger
-	idP.Login = p.UseAsLogin
-	idP.MappingMethod = p.MappingMethod
+	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
 	idP.OpenID.ClientID = openID.ClientID
 	idP.OpenID.Claims.PreferredUsername = openID.Claims.PreferredUsername
 	idP.OpenID.Claims.Name = openID.Claims.Name
 	idP.OpenID.Claims.Email = openID.Claims.Email
-	idP.OpenID.URLs.Authorize = openID.URLs.Authorize
-	idP.OpenID.URLs.Token = openID.URLs.Token
 
 	secretName := p.Name + "-secret"
 	idP.OpenID.ClientSecret.Name = secretName

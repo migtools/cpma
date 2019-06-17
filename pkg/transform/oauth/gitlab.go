@@ -6,29 +6,16 @@ import (
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
+	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-// IdentityProviderGitLab is a Gitlab specific identity provider
-type IdentityProviderGitLab struct {
-	identityProviderCommon `json:",inline"`
-	GitLab                 GitLab `json:"gitlab"`
-}
-
-// GitLab provider specific data
-type GitLab struct {
-	URL          string       `json:"url"`
-	CA           *CA          `json:"ca,omitempty"`
-	ClientID     string       `json:"clientID"`
-	ClientSecret ClientSecret `json:"clientSecret"`
-}
-
-func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGitLab, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
 		err         error
-		idP         = &IdentityProviderGitLab{}
+		idP         = &configv1.IdentityProvider{}
 		secret      *secrets.Secret
 		caConfigmap *configmaps.ConfigMap
 		gitlab      legacyconfigv1.GitLabIdentityProvider
@@ -40,15 +27,13 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 
 	idP.Type = "GitLab"
 	idP.Name = p.Name
-	idP.Challenge = p.UseAsChallenger
-	idP.Login = p.UseAsLogin
-	idP.MappingMethod = p.MappingMethod
+	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
 	idP.GitLab.URL = gitlab.URL
 	idP.GitLab.ClientID = gitlab.ClientID
 
 	if gitlab.CA != "" {
 		caConfigmap = configmaps.GenConfigMap("gitlab-configmap", OAuthNamespace, p.CAData)
-		idP.GitLab.CA = &CA{Name: caConfigmap.Metadata.Name}
+		idP.GitLab.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
 	}
 
 	secretName := p.Name + "-secret"

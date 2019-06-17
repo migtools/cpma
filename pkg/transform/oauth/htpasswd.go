@@ -4,31 +4,16 @@ import (
 	"encoding/base64"
 
 	"github.com/fusor/cpma/pkg/transform/secrets"
+	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-// IdentityProviderHTPasswd is a htpasswd specific identity provider
-type IdentityProviderHTPasswd struct {
-	identityProviderCommon `json:",inline"`
-	HTPasswd               `json:"htpasswd"`
-}
-
-// HTPasswd contains htpasswd FileData
-type HTPasswd struct {
-	FileData FileData `json:"fileData"`
-}
-
-// FileData from htpasswd file
-type FileData struct {
-	Name string `json:"name"`
-}
-
-func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderHTPasswd, *secrets.Secret, error) {
+func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, error) {
 	var (
 		err      error
-		idP      = &IdentityProviderHTPasswd{}
+		idP      = &configv1.IdentityProvider{}
 		secret   *secrets.Secret
 		htpasswd legacyconfigv1.HTPasswdPasswordIdentityProvider
 	)
@@ -39,12 +24,10 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 
 	idP.Name = p.Name
 	idP.Type = "HTPasswd"
-	idP.Challenge = p.UseAsChallenger
-	idP.Login = p.UseAsLogin
-	idP.MappingMethod = p.MappingMethod
-	idP.HTPasswd.FileData.Name = htpasswd.File
+	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
 
 	secretName := p.Name + "-secret"
+	idP.HTPasswd = &configv1.HTPasswdIdentityProvider{}
 	idP.HTPasswd.FileData.Name = secretName
 
 	encoded := base64.StdEncoding.EncodeToString(p.HTFileData)
