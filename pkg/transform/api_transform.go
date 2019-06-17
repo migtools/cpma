@@ -88,8 +88,7 @@ func (e APITransform) Extract() (Extraction, error) {
 // Validate confirms we have recieved good API configuration data during Extract
 func (e APIExtraction) Validate() error {
 	if e.HTTPServingInfo.BindAddress == "" {
-		err := errors.New("could not determine API Port")
-		return err
+		return errors.New("could not determine API Port")
 	}
 
 	return nil

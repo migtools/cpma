@@ -2,7 +2,8 @@ package oauth
 
 import (
 	"encoding/base64"
-	"errors"
+
+	"github.com/pkg/errors"
 
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
@@ -36,9 +37,8 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 		github      legacyconfigv1.GitHubIdentityProvider
 	)
 
-	_, _, err = serializer.Decode(p.Provider.Raw, nil, &github)
-	if err != nil {
-		return nil, nil, nil, err
+	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &github); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "Something is wrong in decoding github")
 	}
 
 	idP.Type = "GitHub"
@@ -60,13 +60,12 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	idP.GitHub.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(github.ClientSecret)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, errors.Wrap(err, "Something is wrong in fetching client secret for github")
 	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
-	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
-	if err != nil {
-		return nil, nil, nil, err
+	if secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "Something is wrong in generating secret for github")
 	}
 
 	return idP, secret, caConfigmap, nil
@@ -75,9 +74,8 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 func validateGithubProvider(serializer *json.Serializer, p IdentityProvider) error {
 	var github legacyconfigv1.GitHubIdentityProvider
 
-	_, _, err := serializer.Decode(p.Provider.Raw, nil, &github)
-	if err != nil {
-		return err
+	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &github); err != nil {
+		return errors.Wrap(err, "Something is wrong in decoding github")
 	}
 
 	if p.Name == "" {

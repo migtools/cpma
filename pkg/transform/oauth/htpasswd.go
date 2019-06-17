@@ -2,10 +2,10 @@ package oauth
 
 import (
 	"encoding/base64"
-	"errors"
 
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -33,9 +33,8 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 		htpasswd legacyconfigv1.HTPasswdPasswordIdentityProvider
 	)
 
-	_, _, err = serializer.Decode(p.Provider.Raw, nil, &htpasswd)
-	if err != nil {
-		return nil, nil, err
+	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &htpasswd); err != nil {
+		return nil, nil, errors.Wrap(err, "Something is wrong in decoding htpasswd")
 	}
 
 	idP.Name = p.Name
@@ -52,7 +51,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 
 	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.HtpasswdSecretType)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Wrap(err, "Something is wrong in generating secret for htpasswd")
 	}
 
 	return idP, secret, nil
@@ -61,9 +60,8 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 func validateHTPasswdProvider(serializer *json.Serializer, p IdentityProvider) error {
 	var htpasswd legacyconfigv1.HTPasswdPasswordIdentityProvider
 
-	_, _, err := serializer.Decode(p.Provider.Raw, nil, &htpasswd)
-	if err != nil {
-		return err
+	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &htpasswd); err != nil {
+		return errors.Wrap(err, "Something is wrong in decoding htpasswd")
 	}
 
 	if p.Name == "" {

@@ -2,12 +2,12 @@ package oauth
 
 import (
 	"encoding/base64"
-	"errors"
 
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -33,9 +33,9 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 		caConfigmap *configmaps.ConfigMap
 		gitlab      legacyconfigv1.GitLabIdentityProvider
 	)
-	_, _, err = serializer.Decode(p.Provider.Raw, nil, &gitlab)
-	if err != nil {
-		return nil, nil, nil, err
+
+	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &gitlab); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "Something is wrong in decoding gitlab")
 	}
 
 	idP.Type = "GitLab"
@@ -55,13 +55,12 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	idP.GitLab.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(gitlab.ClientSecret)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, errors.Wrap(err, "Something is wrong in fetching client secret for gitlab")
 	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
-	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
-	if err != nil {
-		return nil, nil, nil, err
+	if secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "Something is wrong in generating secret for gitlab")
 	}
 
 	return idP, secret, caConfigmap, nil
@@ -70,9 +69,8 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 func validateGitLabProvider(serializer *json.Serializer, p IdentityProvider) error {
 	var gitlab legacyconfigv1.GitLabIdentityProvider
 
-	_, _, err := serializer.Decode(p.Provider.Raw, nil, &gitlab)
-	if err != nil {
-		return err
+	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &gitlab); err != nil {
+		return errors.Wrap(err, "Something is wrong in decoding gitlab")
 	}
 
 	if p.Name == "" {

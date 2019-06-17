@@ -2,11 +2,11 @@ package oauth
 
 import (
 	"encoding/base64"
-	"errors"
 
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -44,9 +44,9 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 		idP    = &IdentityProviderOpenID{}
 		openID legacyconfigv1.OpenIDIdentityProvider
 	)
-	_, _, err = serializer.Decode(p.Provider.Raw, nil, &openID)
-	if err != nil {
-		return nil, nil, err
+
+	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &openID); err != nil {
+		return nil, nil, errors.Wrap(err, "Something is wrong in decoding openID")
 	}
 
 	idP.Type = "OpenID"
@@ -65,13 +65,13 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	idP.OpenID.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(openID.ClientSecret)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Wrap(err, "Something is wrong in fetching client secret for openID")
 	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
-	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
-	if err != nil {
-		return nil, nil, err
+
+	if secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType); err != nil {
+		return nil, nil, errors.Wrap(err, "Something is wrong in generating secret for openID")
 	}
 
 	return idP, secret, nil
@@ -80,9 +80,8 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 func validateOpenIDProvider(serializer *json.Serializer, p IdentityProvider) error {
 	var openID legacyconfigv1.OpenIDIdentityProvider
 
-	_, _, err := serializer.Decode(p.Provider.Raw, nil, &openID)
-	if err != nil {
-		return err
+	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &openID); err != nil {
+		return errors.Wrap(err, "Something is wrong in decoding openID")
 	}
 
 	if p.Name == "" {

@@ -9,9 +9,9 @@ import (
 
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io/remotehost"
-	"github.com/sirupsen/logrus"
-
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // FetchFile first tries to retrieve file from local disk (outputDir/<Hostname>/).
@@ -22,7 +22,9 @@ var FetchFile = func(src string) ([]byte, error) {
 	f, err := ioutil.ReadFile(dst)
 	if err != nil {
 		host := env.Config().GetString("Source")
-		remotehost.Fetch(host, src, dst)
+		if err := remotehost.Fetch(host, src, dst); err != nil {
+			return nil, err
+		}
 		netFile, err := ioutil.ReadFile(dst)
 		if err != nil {
 			return nil, err
@@ -36,7 +38,7 @@ var FetchFile = func(src string) ([]byte, error) {
 func FetchEnv(host, envVar string) (string, error) {
 	output, err := remotehost.GetEnvVar(host, envVar)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "Can't fetch env variable")
 	}
 	logrus.Debugf("Env:loaded: %s", envVar)
 

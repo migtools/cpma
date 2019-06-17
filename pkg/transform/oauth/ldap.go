@@ -1,11 +1,10 @@
 package oauth
 
 import (
-	"errors"
-
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -40,9 +39,9 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 		caConfigmap *configmaps.ConfigMap
 		ldap        legacyconfigv1.LDAPPasswordIdentityProvider
 	)
-	_, _, err = serializer.Decode(p.Provider.Raw, nil, &ldap)
-	if err != nil {
-		return nil, nil, err
+
+	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &ldap); err != nil {
+		return nil, nil, errors.Wrap(err, "Something is wrong in decoding ldap")
 	}
 
 	idP.Type = "LDAP"
@@ -59,7 +58,7 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 	if ldap.BindPassword.Value != "" || ldap.BindPassword.File != "" || ldap.BindPassword.Env != "" {
 		bindPassword, err := io.FetchStringSource(ldap.BindPassword)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, errors.Wrap(err, "Something is wrong in fetching bind password for ldap")
 		}
 
 		idP.LDAP.BindPassword = bindPassword
@@ -79,9 +78,8 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 func validateLDAPProvider(serializer *json.Serializer, p IdentityProvider) error {
 	var ldap legacyconfigv1.LDAPPasswordIdentityProvider
 
-	_, _, err := serializer.Decode(p.Provider.Raw, nil, &ldap)
-	if err != nil {
-		return err
+	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &ldap); err != nil {
+		return errors.Wrap(err, "Something is wrong in decoding ldap")
 	}
 
 	if p.Name == "" {

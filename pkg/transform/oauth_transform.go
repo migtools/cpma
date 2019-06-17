@@ -2,13 +2,13 @@ package transform
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/oauth"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -45,7 +45,7 @@ func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 
 	oauthResources, err := oauth.Translate(e.IdentityProviders, e.TokenConfig)
 	if err != nil {
-		return nil, errors.New("Unable to generate OAuth CRD")
+		return nil, errors.Wrap(err, "Unable to generate OAuth CRD")
 	}
 
 	ocp4Cluster.Master.OAuth = *oauthResources.OAuthCRD

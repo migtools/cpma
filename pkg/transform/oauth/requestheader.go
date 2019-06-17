@@ -1,10 +1,9 @@
 package oauth
 
 import (
-	"errors"
-
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -33,9 +32,9 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*Ide
 		caConfigmap   *configmaps.ConfigMap
 		requestHeader legacyconfigv1.RequestHeaderIdentityProvider
 	)
-	_, _, err = serializer.Decode(p.Provider.Raw, nil, &requestHeader)
-	if err != nil {
-		return nil, nil, err
+
+	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &requestHeader); err != nil {
+		return nil, nil, errors.Wrap(err, "Something is wrong in decoding request header")
 	}
 
 	idP.Type = "RequestHeader"
@@ -63,9 +62,8 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*Ide
 func validateRequestHeaderProvider(serializer *json.Serializer, p IdentityProvider) error {
 	var requestHeader legacyconfigv1.RequestHeaderIdentityProvider
 
-	_, _, err := serializer.Decode(p.Provider.Raw, nil, &requestHeader)
-	if err != nil {
-		return err
+	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &requestHeader); err != nil {
+		return errors.Wrap(err, "Something is wrong in decoding request header")
 	}
 
 	if p.Name == "" {

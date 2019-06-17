@@ -1,11 +1,11 @@
 package oauth_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -98,7 +98,7 @@ func TestBasicAuthValidation(t *testing.T) {
 			err = oauth.Validate(identityProvider)
 
 			if tc.requireError {
-				assert.Equal(t, tc.expectedErr, err)
+				assert.Equal(t, tc.expectedErr.Error(), err.Error())
 			} else {
 				require.NoError(t, err)
 			}
