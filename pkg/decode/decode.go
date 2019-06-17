@@ -18,7 +18,7 @@ func MasterConfig(content []byte) (*legacyconfigv1.MasterConfig, error) {
 
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	if _, _, err := serializer.Decode(content, nil, masterConfig); err != nil {
-		return nil, errors.Wrap(err, "Something is wrong in decoding master config")
+		return nil, errors.Wrap(err, "Failed to decode master config, see error")
 	}
 
 	return masterConfig, nil
@@ -30,7 +30,7 @@ func NodeConfig(content []byte) (*legacyconfigv1.NodeConfig, error) {
 	var nodeConfig = new(legacyconfigv1.NodeConfig)
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	if _, _, err := serializer.Decode(content, nil, nodeConfig); err != nil {
-		return nil, errors.Wrap(err, "Something is wrong in decoding master config")
+		return nil, errors.Wrap(err, "Failed to decode node config, see error")
 	}
 
 	return nodeConfig, nil

@@ -32,7 +32,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &google); err != nil {
-		return nil, nil, errors.Wrap(err, "Something is wrong in decoding google")
+		return nil, nil, errors.Wrap(err, "Failed to decode google, see error")
 	}
 
 	idP.Type = "Google"
@@ -47,12 +47,12 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	idP.Google.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(google.ClientSecret)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "Something is wrong in fetching client secret for google")
+		return nil, nil, errors.Wrap(err, "Failed to fetch client secret for google, see error")
 	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
 	if secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType); err != nil {
-		return nil, nil, errors.Wrap(err, "Something is wrong in generating secret for google")
+		return nil, nil, errors.Wrap(err, "Failed to generate client secret for google, see error")
 	}
 
 	return idP, secret, nil
@@ -62,7 +62,7 @@ func validateGoogleProvider(serializer *json.Serializer, p IdentityProvider) err
 	var google legacyconfigv1.GoogleIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &google); err != nil {
-		return errors.Wrap(err, "Something is wrong in decoding google")
+		return errors.Wrap(err, "Failed to decode google, see error")
 	}
 
 	if p.Name == "" {

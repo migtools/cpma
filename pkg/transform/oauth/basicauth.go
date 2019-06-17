@@ -35,7 +35,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Identit
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &basicAuth); err != nil {
-		return nil, nil, nil, nil, errors.Wrap(err, "Something is wrong in decoding basic auth")
+		return nil, nil, nil, nil, errors.Wrap(err, "Failed to decode basic auth, see error")
 	}
 
 	idP.Type = "BasicAuth"
@@ -56,7 +56,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Identit
 
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
 		if certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType); err != nil {
-			return nil, nil, nil, nil, errors.Wrap(err, "Something is wrong in cert secret for basic auth")
+			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate cert secret for basic auth, see error")
 		}
 
 		keySecretName := p.Name + "-client-key-secret"
@@ -64,7 +64,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Identit
 
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
 		if keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType); err != nil {
-			return nil, nil, nil, nil, errors.Wrap(err, "Something is wrong in creating key secret for basic auth")
+			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate key secret for basic auth, see error")
 		}
 	}
 
@@ -75,7 +75,7 @@ func validateBasicAuthProvider(serializer *json.Serializer, p IdentityProvider) 
 	var basicAuth legacyconfigv1.BasicAuthPasswordIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &basicAuth); err != nil {
-		return errors.Wrap(err, "Something is wrong in decoding basic auth")
+		return errors.Wrap(err, "Failed to decode basic auth, see error")
 	}
 
 	if p.Name == "" {

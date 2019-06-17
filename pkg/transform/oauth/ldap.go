@@ -41,7 +41,7 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &ldap); err != nil {
-		return nil, nil, errors.Wrap(err, "Something is wrong in decoding ldap")
+		return nil, nil, errors.Wrap(err, "Failed to decode ldap, see error")
 	}
 
 	idP.Type = "LDAP"
@@ -58,7 +58,7 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 	if ldap.BindPassword.Value != "" || ldap.BindPassword.File != "" || ldap.BindPassword.Env != "" {
 		bindPassword, err := io.FetchStringSource(ldap.BindPassword)
 		if err != nil {
-			return nil, nil, errors.Wrap(err, "Something is wrong in fetching bind password for ldap")
+			return nil, nil, errors.Wrap(err, "Failed to fetch bind password for ldap")
 		}
 
 		idP.LDAP.BindPassword = bindPassword
@@ -79,7 +79,7 @@ func validateLDAPProvider(serializer *json.Serializer, p IdentityProvider) error
 	var ldap legacyconfigv1.LDAPPasswordIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &ldap); err != nil {
-		return errors.Wrap(err, "Something is wrong in decoding ldap")
+		return errors.Wrap(err, "Failed to decode ldap, see error")
 	}
 
 	if p.Name == "" {

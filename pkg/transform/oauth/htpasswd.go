@@ -34,7 +34,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &htpasswd); err != nil {
-		return nil, nil, errors.Wrap(err, "Something is wrong in decoding htpasswd")
+		return nil, nil, errors.Wrap(err, "Failed to decode htpasswd, see error")
 	}
 
 	idP.Name = p.Name
@@ -51,7 +51,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 
 	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.HtpasswdSecretType)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "Something is wrong in generating secret for htpasswd")
+		return nil, nil, errors.Wrap(err, "Failed to generate secret for htpasswd, see error")
 	}
 
 	return idP, secret, nil
@@ -61,7 +61,7 @@ func validateHTPasswdProvider(serializer *json.Serializer, p IdentityProvider) e
 	var htpasswd legacyconfigv1.HTPasswdPasswordIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &htpasswd); err != nil {
-		return errors.Wrap(err, "Something is wrong in decoding htpasswd")
+		return errors.Wrap(err, "Failed to decode htpasswd, see error")
 	}
 
 	if p.Name == "" {

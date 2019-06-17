@@ -36,7 +36,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &keystone); err != nil {
-		return nil, nil, nil, nil, errors.Wrap(err, "Something is wrong in decoding keystone")
+		return nil, nil, nil, nil, errors.Wrap(err, "Failed to decode keystone, see error")
 	}
 
 	idP.Type = "Keystone"
@@ -61,14 +61,14 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 		idP.Keystone.TLSClientCert = &TLSClientCert{Name: certSecretName}
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
 		if certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType); err != nil {
-			return nil, nil, nil, nil, errors.Wrap(err, "Something is wrong in generating cert secret for keystone")
+			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate cert secret for keystone, see error")
 		}
 
 		keySecretName := p.Name + "-client-key-secret"
 		idP.Keystone.TLSClientKey = &TLSClientKey{Name: keySecretName}
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
 		if keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType); err != nil {
-			return nil, nil, nil, nil, errors.Wrap(err, "Something is wrong in generating key secret for keystone")
+			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate key secret for keystone, see error")
 		}
 	}
 
@@ -79,7 +79,7 @@ func validateKeystoneProvider(serializer *json.Serializer, p IdentityProvider) e
 	var keystone legacyconfigv1.KeystonePasswordIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &keystone); err != nil {
-		return errors.Wrap(err, "Something is wrong in decoding keystone")
+		return errors.Wrap(err, "Failed to decode keystone, see error")
 	}
 
 	if p.Name == "" {

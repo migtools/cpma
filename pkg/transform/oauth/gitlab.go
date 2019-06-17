@@ -35,7 +35,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &gitlab); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Something is wrong in decoding gitlab")
+		return nil, nil, nil, errors.Wrap(err, "Failed to decode gitlab, see error")
 	}
 
 	idP.Type = "GitLab"
@@ -55,12 +55,12 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	idP.GitLab.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(gitlab.ClientSecret)
 	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Something is wrong in fetching client secret for gitlab")
+		return nil, nil, nil, errors.Wrap(err, "Failed to fetch client secret for gitlab, see error")
 	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
 	if secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Something is wrong in generating secret for gitlab")
+		return nil, nil, nil, errors.Wrap(err, "Failed to generate secret for gitlab, see error")
 	}
 
 	return idP, secret, caConfigmap, nil
@@ -70,7 +70,7 @@ func validateGitLabProvider(serializer *json.Serializer, p IdentityProvider) err
 	var gitlab legacyconfigv1.GitLabIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &gitlab); err != nil {
-		return errors.Wrap(err, "Something is wrong in decoding gitlab")
+		return errors.Wrap(err, "Failed to decode gitlab, see error")
 	}
 
 	if p.Name == "" {

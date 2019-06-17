@@ -34,7 +34,7 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*Ide
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &requestHeader); err != nil {
-		return nil, nil, errors.Wrap(err, "Something is wrong in decoding request header")
+		return nil, nil, errors.Wrap(err, "Failed to decode request header, see error")
 	}
 
 	idP.Type = "RequestHeader"
@@ -63,7 +63,7 @@ func validateRequestHeaderProvider(serializer *json.Serializer, p IdentityProvid
 	var requestHeader legacyconfigv1.RequestHeaderIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &requestHeader); err != nil {
-		return errors.Wrap(err, "Something is wrong in decoding request header")
+		return errors.Wrap(err, "Failed to decode request header, see error")
 	}
 
 	if p.Name == "" {

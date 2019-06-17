@@ -173,7 +173,7 @@ func (e CrioTransform) Extract() (Extraction, error) {
 
 	var extraction CrioExtraction
 	if _, err := toml.Decode(string(content), &extraction); err != nil {
-		return nil, errors.Wrap(err, "Something is wrong in decoding crio")
+		return nil, errors.Wrap(err, "Failed to decode crio, see error")
 	}
 	return extraction, nil
 }

@@ -46,7 +46,7 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &openID); err != nil {
-		return nil, nil, errors.Wrap(err, "Something is wrong in decoding openID")
+		return nil, nil, errors.Wrap(err, "Failed to decode openID, see error")
 	}
 
 	idP.Type = "OpenID"
@@ -65,13 +65,13 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 	idP.OpenID.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(openID.ClientSecret)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "Something is wrong in fetching client secret for openID")
+		return nil, nil, errors.Wrap(err, "Failed to fetch client secret for openID, see error")
 	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
 
 	if secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType); err != nil {
-		return nil, nil, errors.Wrap(err, "Something is wrong in generating secret for openID")
+		return nil, nil, errors.Wrap(err, "Failed to generate secret for openID, see error")
 	}
 
 	return idP, secret, nil
@@ -81,7 +81,7 @@ func validateOpenIDProvider(serializer *json.Serializer, p IdentityProvider) err
 	var openID legacyconfigv1.OpenIDIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &openID); err != nil {
-		return errors.Wrap(err, "Something is wrong in decoding openID")
+		return errors.Wrap(err, "Failed to decode openID, see error")
 	}
 
 	if p.Name == "" {
