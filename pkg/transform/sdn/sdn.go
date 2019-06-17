@@ -73,8 +73,7 @@ func SelectNetworkPlugin(pluginName string) (string, error) {
 	case "redhat/openshift-ovs-subnet":
 		selectedName = "Subnet"
 	default:
-		err := errors.New("Network plugin not supported")
-		return "", err
+		return "", errors.New("Network plugin not supported")
 	}
 
 	return selectedName, nil
@@ -88,8 +87,7 @@ func Validate(masterConfig legacyconfigv1.MasterConfig) error {
 		return errors.New("Service network CIDR can't be empty")
 	}
 
-	_, _, err := net.ParseCIDR(networkConfig.ServiceNetworkCIDR)
-	if err != nil {
+	if _, _, err := net.ParseCIDR(networkConfig.ServiceNetworkCIDR); err != nil {
 		return errors.New("Not valid service network CIDR")
 	}
 
@@ -102,8 +100,7 @@ func Validate(masterConfig legacyconfigv1.MasterConfig) error {
 			return errors.New("Cluster network CIDR can't be empty")
 		}
 
-		_, _, err := net.ParseCIDR(cnet.CIDR)
-		if err != nil {
+		if _, _, err := net.ParseCIDR(cnet.CIDR); err != nil {
 			return errors.New("Not valid cluster network CIDR")
 		}
 	}

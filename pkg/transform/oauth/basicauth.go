@@ -2,11 +2,11 @@ package oauth
 
 import (
 	"encoding/base64"
-	"errors"
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -34,9 +34,8 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Identit
 		basicAuth             legacyconfigv1.BasicAuthPasswordIdentityProvider
 	)
 
-	_, _, err = serializer.Decode(p.Provider.Raw, nil, &basicAuth)
-	if err != nil {
-		return nil, nil, nil, nil, err
+	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &basicAuth); err != nil {
+		return nil, nil, nil, nil, errors.Wrap(err, "Failed to decode basic auth, see error")
 	}
 
 	idP.Type = "BasicAuth"
@@ -56,18 +55,16 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Identit
 		idP.BasicAuth.TLSClientCert = &TLSClientCert{Name: certSecretName}
 
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-		certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType)
-		if err != nil {
-			return nil, nil, nil, nil, err
+		if certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType); err != nil {
+			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate cert secret for basic auth, see error")
 		}
 
 		keySecretName := p.Name + "-client-key-secret"
 		idP.BasicAuth.TLSClientKey = &TLSClientKey{Name: keySecretName}
 
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
-		keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType)
-		if err != nil {
-			return nil, nil, nil, nil, err
+		if keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType); err != nil {
+			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate key secret for basic auth, see error")
 		}
 	}
 
@@ -77,9 +74,8 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Identit
 func validateBasicAuthProvider(serializer *json.Serializer, p IdentityProvider) error {
 	var basicAuth legacyconfigv1.BasicAuthPasswordIdentityProvider
 
-	_, _, err := serializer.Decode(p.Provider.Raw, nil, &basicAuth)
-	if err != nil {
-		return err
+	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &basicAuth); err != nil {
+		return errors.Wrap(err, "Failed to decode basic auth, see error")
 	}
 
 	if p.Name == "" {

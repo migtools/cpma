@@ -134,8 +134,7 @@ func NewRunner() *Runner {
 
 // HandleError handles errors
 func HandleError(err error, transformType string) error {
-	logrus.Warnf("Skipping %s, see error below\n", transformType)
-	logrus.Warnf("%s\n", err)
+	logrus.Errorf("Skipping %s - %s\n", transformType, err)
 	return err
 }
 

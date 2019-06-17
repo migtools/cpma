@@ -1,12 +1,11 @@
 package transform
 
 import (
-	"errors"
-
 	"github.com/BurntSushi/toml"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/ghodss/yaml"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -174,7 +173,7 @@ func (e CrioTransform) Extract() (Extraction, error) {
 
 	var extraction CrioExtraction
 	if _, err := toml.Decode(string(content), &extraction); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Failed to decode crio, see error")
 	}
 	return extraction, nil
 }

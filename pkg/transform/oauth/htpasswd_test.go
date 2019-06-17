@@ -88,7 +88,7 @@ func TestHTPasswdValidation(t *testing.T) {
 			err = oauth.Validate(identityProvider)
 
 			if tc.requireError {
-				assert.Equal(t, tc.expectedErr, err)
+				assert.Equal(t, tc.expectedErr.Error(), err.Error())
 			} else {
 				require.NoError(t, err)
 			}

@@ -3,8 +3,9 @@ package transform
 import (
 	"errors"
 	"fmt"
-	"gopkg.in/go-ini/ini.v1"
 	"strings"
+
+	"gopkg.in/go-ini/ini.v1"
 
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
@@ -99,8 +100,7 @@ func (e ETCDTransform) Extract() (Extraction, error) {
 func (e ETCDExtraction) Validate() error {
 
 	if e.ClientPort == "" {
-		err := errors.New("ETCD Client Port could not be determined")
-		return err
+		return errors.New("ETCD Client Port could not be determined")
 	}
 
 	return nil

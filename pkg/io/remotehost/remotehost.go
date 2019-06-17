@@ -1,7 +1,6 @@
 package remotehost
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/fusor/cpma/pkg/env"
+	"github.com/pkg/errors"
 	"github.com/pkg/sftp"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
@@ -29,15 +29,13 @@ func CreateConnection(source string) (*ssh.Client, error) {
 
 	key, err := ioutil.ReadFile(sshCreds["privatekey"])
 	if err != nil {
-		logrus.Errorf("Unable to read private key: %s", sshCreds["privatekey"])
-		return nil, err
+		return nil, errors.Wrapf(err, "Unable to read private key: %s\n", sshCreds["privatekey"])
 	}
 
 	// Create the Signer for this private key.
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		logrus.Error("Unable to parse private key")
-		return nil, err
+		return nil, errors.Wrap(err, "Unable to parse private key")
 	}
 
 	knownHostsFile := filepath.Join(env.Config().GetString("home"), ".ssh", "known_hosts")
@@ -48,8 +46,7 @@ func CreateConnection(source string) (*ssh.Client, error) {
 	} else {
 		hostKeyCallback, err = kh.New(knownHostsFile)
 		if err != nil {
-			logrus.Errorf("Unable to get hostkey in %s", knownHostsFile)
-			return nil, err
+			return nil, errors.Wrapf(err, "Unable to get hostkey in %s\n", knownHostsFile)
 		}
 	}
 
@@ -67,7 +64,7 @@ func CreateConnection(source string) (*ssh.Client, error) {
 	if p := sshCreds["port"]; p != "" {
 		port, err = strconv.Atoi(p)
 		if err != nil || port < 1 || port > 65535 {
-			return nil, errors.New("Port number " + p + " is wrong.")
+			return nil, errors.Wrapf(err, "Port number %s is wrong\n", p)
 		}
 	}
 
@@ -76,8 +73,7 @@ func CreateConnection(source string) (*ssh.Client, error) {
 
 	connection, err := ssh.Dial("tcp", addr, sshConfig)
 	if err != nil {
-		logrus.Errorf("Cannot connect to %s", addr)
-		return nil, err
+		return nil, errors.Wrapf(err, "Cannot connect to %s\n", addr)
 	}
 
 	return connection, nil
@@ -93,8 +89,7 @@ func NewClient(source string) (*Client, error) {
 	// create new SFTP client
 	client, err := sftp.NewClient(connection)
 	if err != nil {
-		logrus.Error("Unable to create new SFTP client")
-		return nil, err
+		return nil, errors.Wrap(err, "Unable to create new SFTP client")
 	}
 
 	return &Client{client}, nil
@@ -109,19 +104,18 @@ func NewSSHSession(source string) (*ssh.Session, error) {
 
 	session, err := connection.NewSession()
 	if err != nil {
-		logrus.Errorf("Cannot start session")
-		return nil, err
+		return nil, errors.Wrap(err, "Cannot start session")
 	}
 
 	return session, nil
 }
 
 // GetFile copies source file to destination file
-func (c *Client) GetFile(srcFilePath string, dstFilePath string) (int64, error) {
+func (c *Client) GetFile(srcFilePath string, dstFilePath string) (*int64, error) {
 	srcFile, err := c.Open(srcFilePath)
 	if err != nil {
 		// int64(0) empty value to return in case of error
-		return int64(0), err
+		return nil, err
 	}
 
 	defer srcFile.Close()
@@ -129,17 +123,17 @@ func (c *Client) GetFile(srcFilePath string, dstFilePath string) (int64, error) 
 
 	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
-		return int64(0), err
+		return nil, err
 	}
 
 	defer dstFile.Close()
 
 	bytes, err := io.Copy(dstFile, srcFile)
 	if err != nil {
-		return int64(0), err
+		return nil, err
 	}
 
-	return bytes, err
+	return &bytes, err
 }
 
 // Fetch retrieves a file
@@ -153,7 +147,7 @@ func Fetch(hostname, src, dst string) error {
 
 	bytes, err := client.GetFile(src, dst)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Cannot fetch file")
 	}
 
 	logrus.Printf("SFTP: %s:%s: %d bytes copied", hostname, src, bytes)

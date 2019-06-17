@@ -2,11 +2,11 @@ package oauth
 
 import (
 	"encoding/base64"
-	"errors"
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
@@ -34,9 +34,9 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 		err                   error
 		keystone              legacyconfigv1.KeystonePasswordIdentityProvider
 	)
-	_, _, err = serializer.Decode(p.Provider.Raw, nil, &keystone)
-	if err != nil {
-		return nil, nil, nil, nil, err
+
+	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &keystone); err != nil {
+		return nil, nil, nil, nil, errors.Wrap(err, "Failed to decode keystone, see error")
 	}
 
 	idP.Type = "Keystone"
@@ -60,17 +60,15 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 		certSecretName := p.Name + "-client-cert-secret"
 		idP.Keystone.TLSClientCert = &TLSClientCert{Name: certSecretName}
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-		certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType)
-		if err != nil {
-			return nil, nil, nil, nil, err
+		if certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType); err != nil {
+			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate cert secret for keystone, see error")
 		}
 
 		keySecretName := p.Name + "-client-key-secret"
 		idP.Keystone.TLSClientKey = &TLSClientKey{Name: keySecretName}
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
-		keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType)
-		if err != nil {
-			return nil, nil, nil, nil, err
+		if keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType); err != nil {
+			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate key secret for keystone, see error")
 		}
 	}
 
@@ -80,9 +78,8 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 func validateKeystoneProvider(serializer *json.Serializer, p IdentityProvider) error {
 	var keystone legacyconfigv1.KeystonePasswordIdentityProvider
 
-	_, _, err := serializer.Decode(p.Provider.Raw, nil, &keystone)
-	if err != nil {
-		return err
+	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &keystone); err != nil {
+		return errors.Wrap(err, "Failed to decode keystone, see error")
 	}
 
 	if p.Name == "" {
