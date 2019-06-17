@@ -1,6 +1,8 @@
 package transform
 
 import (
+	"errors"
+
 	"github.com/BurntSushi/toml"
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
@@ -185,9 +187,11 @@ func (e ImageTransform) Extract() (Extraction, error) {
 
 // Validate the data extracted from the OCP3 cluster
 func (e ImageExtraction) Validate() error {
-	err := image.Validate(e.MasterConfig)
-	if err != nil {
-		return err
+	err1 := registries.Validate(e.RegistriesConfig.Registries)
+	err2 := image.Validate(e.MasterConfig.ImagePolicyConfig)
+
+	if err1 != 0 && err2 != 0 {
+		return errors.New("no configured registries and image detected, not generating CR and/or report")
 	}
 
 	return nil

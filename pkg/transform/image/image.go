@@ -29,6 +29,9 @@ func Translate(imageCR *configv1.Image, imagePolicyConfig legacyconfigv1.ImagePo
 }
 
 // Validate registry data collected from an OCP3 cluster
-func Validate(masterConfig legacyconfigv1.MasterConfig) error {
-	return nil
+func Validate(e legacyconfigv1.ImagePolicyConfig) int {
+	if e.ExternalRegistryHostname != "" && len(*e.AllowedRegistriesForImport) == 0 && e.AdditionalTrustedCA != "" {
+		return 1
+	}
+	return 0
 }
