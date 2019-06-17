@@ -12,8 +12,9 @@ import (
 
 // ClusterReport represents json report of k8s resources
 type ClusterReport struct {
-	Namespaces []Namespace `json:"namespaces,omitempty"`
-	PVs        []PV        `json:"pvs,omitempty"`
+	Namespaces     []Namespace    `json:"namespaces,omitempty"`
+	PVs            []PV           `json:"pvs,omitempty"`
+	StorageClasses []StorageClass `json:"storageClasses,omitempty"`
 }
 
 // Namespace represents json report of k8s namespaces
@@ -29,7 +30,14 @@ type Pod struct {
 
 // PV represents json report of k8s PVs
 type PV struct {
-	Name string `json:"name"`
+	Name         string `json:"name"`
+	StorageClass string `json:"storageClass,omitempty"`
+}
+
+// StorageClass represents json report of k8s storage classes
+type StorageClass struct {
+	Name        string `json:"name"`
+	Provisioner string `json:"provisioner"`
 }
 
 // Start collecting data about OCP3 resources
@@ -104,10 +112,31 @@ func (cluserReport *ClusterReport) reportPVs() error {
 	// Go through all PV and save required information to report
 	for _, pv := range pvList.Items {
 		reportedPV := &PV{
-			Name: pv.Name,
+			Name:         pv.Name,
+			StorageClass: pv.Spec.StorageClassName,
 		}
 
 		cluserReport.PVs = append(cluserReport.PVs, *reportedPV)
+	}
+
+	return nil
+}
+
+func (cluserReport *ClusterReport) reportStorageClasses() error {
+	logrus.Debug("ClusterReport::ReportStorageClasses")
+	storageClassList, err := api.ListStorageClasses()
+	if err != nil {
+		return err
+	}
+
+	// Go through all storage classes and save required information to report
+	for _, storageClass := range storageClassList.Items {
+		reportedStorageClass := &StorageClass{
+			Name:        storageClass.Name,
+			Provisioner: storageClass.Provisioner,
+		}
+
+		cluserReport.StorageClasses = append(cluserReport.StorageClasses, *reportedStorageClass)
 	}
 
 	return nil
