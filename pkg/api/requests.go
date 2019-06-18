@@ -6,6 +6,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Resources represent api resources used in report
+type Resources struct {
+	PersistentVolumeList *k8sapicore.PersistentVolumeList
+	NodeList             *k8sapicore.NodeList
+	StorageClassList     *k8sapistorage.StorageClassList
+	NamespaceMap         map[string]*NamespaceResources
+}
+
+// NamespaceResources holds all resources that belong to a namespace
+type NamespaceResources struct {
+	PodList *k8sapicore.PodList
+}
+
 var listOptions metav1.ListOptions
 
 // ListNamespaces list all namespaces, wrapper around client-go

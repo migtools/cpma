@@ -2,8 +2,12 @@ package transform
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"path/filepath"
 
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/transform/clusterreport"
 	"github.com/sirupsen/logrus"
 )
 
@@ -11,6 +15,11 @@ import (
 type ReportOutput struct {
 	Component string   `json:"component"`
 	Reports   []Report `json:"reports"`
+}
+
+// ClusterOutput represents report of k8s resources
+type ClusterOutput struct {
+	ClusterReport *clusterreport.ClusterReport `json:"cluster"`
 }
 
 // ReportOutputFlush flush reports to disk
@@ -52,4 +61,32 @@ func DumpReports(r ReportOutput) {
 	if err != nil {
 		logrus.Errorf("unable to write to report file: %s", jsonFile)
 	}
+}
+
+func (clusterOutput ClusterOutput) dumpToJSON() error {
+	clusterReport := clusterOutput.ClusterReport
+
+	jsonFile := filepath.Join(env.Config().GetString("OutputDir"), "cluster-report.json")
+
+	file, err := json.MarshalIndent(&clusterReport, "", " ")
+	if err != nil {
+		return err
+	}
+
+	if err = ioutil.WriteFile(jsonFile, file, 0644); err != nil {
+		return err
+	}
+
+	logrus.Debugf("Cluster report added to %s", jsonFile)
+	return nil
+}
+
+// Flush reports to files
+func (clusterOutput ClusterOutput) Flush() error {
+	err := clusterOutput.dumpToJSON()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

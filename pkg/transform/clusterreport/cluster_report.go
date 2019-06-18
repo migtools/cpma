@@ -1,13 +1,9 @@
 package clusterreport
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"path/filepath"
-
 	"github.com/fusor/cpma/pkg/api"
-	"github.com/fusor/cpma/pkg/env"
 	"github.com/sirupsen/logrus"
+	k8sapicore "k8s.io/api/core/v1"
 )
 
 // ClusterReport represents json report of k8s resources
@@ -40,75 +36,47 @@ type StorageClass struct {
 	Provisioner string `json:"provisioner"`
 }
 
-// Start collecting data about OCP3 resources
-func Start() error {
+// Report collecting data about OCP3 resources
+func Report(apiResources api.Resources) (*ClusterReport, error) {
 	clusterReport := &ClusterReport{}
 
-	if err := clusterReport.reportNamespaces(); err != nil {
-		return err
-	}
+	clusterReport.reportNamespaces(apiResources)
 
-	if err := clusterReport.reportPVs(); err != nil {
-		return err
-	}
+	clusterReport.reportPVs(apiResources)
 
-	if err := clusterReport.dumpToJSON(); err != nil {
-		return err
-	}
+	clusterReport.reportStorageClasses(apiResources)
 
-	return nil
+	return clusterReport, nil
 }
 
-func (cluserReport *ClusterReport) reportNamespaces() error {
+func (cluserReport *ClusterReport) reportNamespaces(apiResources api.Resources) {
 	logrus.Debug("ClusterReport::ReportNamespaces")
-	namespacesList, err := api.ListNamespaces()
-	if err != nil {
-		return err
-	}
-
-	// get namespaces names as a slice
-	namespacesNames := make([]string, 0, len(namespacesList.Items))
-	for _, namespace := range namespacesList.Items {
-		namespacesNames = append(namespacesNames, namespace.Name)
-	}
 
 	// Go through all required namespace resources and report them
-	for _, namespaceName := range namespacesNames {
+	for namespaceName, resources := range apiResources.NamespaceMap {
 		reportedNamespace := Namespace{
 			Name: namespaceName,
 		}
-		reportPods(namespaceName, &reportedNamespace)
+
+		reportPods(&reportedNamespace, resources.PodList)
 
 		cluserReport.Namespaces = append(cluserReport.Namespaces, reportedNamespace)
 	}
-
-	return nil
 }
 
-func reportPods(namespaceName string, reportedNamespace *Namespace) error {
-	podsList, err := api.ListPods(namespaceName)
-	if err != nil {
-		return err
-	}
-
-	for _, pod := range podsList.Items {
+func reportPods(reportedNamespace *Namespace, podList *k8sapicore.PodList) {
+	for _, pod := range podList.Items {
 		reportedPod := &Pod{
 			Name: pod.Name,
 		}
 
 		reportedNamespace.Pods = append(reportedNamespace.Pods, *reportedPod)
 	}
-
-	return nil
 }
 
-func (cluserReport *ClusterReport) reportPVs() error {
+func (cluserReport *ClusterReport) reportPVs(apiResources api.Resources) {
 	logrus.Debug("ClusterReport::ReportPVs")
-	pvList, err := api.ListPVs()
-	if err != nil {
-		return err
-	}
-
+	pvList := apiResources.PersistentVolumeList
 	// Go through all PV and save required information to report
 	for _, pv := range pvList.Items {
 		reportedPV := &PV{
@@ -118,18 +86,12 @@ func (cluserReport *ClusterReport) reportPVs() error {
 
 		cluserReport.PVs = append(cluserReport.PVs, *reportedPV)
 	}
-
-	return nil
 }
 
-func (cluserReport *ClusterReport) reportStorageClasses() error {
+func (cluserReport *ClusterReport) reportStorageClasses(apiResources api.Resources) {
 	logrus.Debug("ClusterReport::ReportStorageClasses")
-	storageClassList, err := api.ListStorageClasses()
-	if err != nil {
-		return err
-	}
-
 	// Go through all storage classes and save required information to report
+	storageClassList := apiResources.StorageClassList
 	for _, storageClass := range storageClassList.Items {
 		reportedStorageClass := &StorageClass{
 			Name:        storageClass.Name,
@@ -138,22 +100,4 @@ func (cluserReport *ClusterReport) reportStorageClasses() error {
 
 		cluserReport.StorageClasses = append(cluserReport.StorageClasses, *reportedStorageClass)
 	}
-
-	return nil
-}
-
-func (cluserReport *ClusterReport) dumpToJSON() error {
-	jsonFile := filepath.Join(env.Config().GetString("OutputDir"), "cluster-report.json")
-
-	file, err := json.MarshalIndent(&cluserReport, "", " ")
-	if err != nil {
-		return err
-	}
-
-	if err = ioutil.WriteFile(jsonFile, file, 0644); err != nil {
-		return err
-	}
-
-	logrus.Debugf("Cluster report added to %s", jsonFile)
-	return nil
 }

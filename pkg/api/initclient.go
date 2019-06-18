@@ -81,7 +81,7 @@ func CreateAPIClient(contextCluster string) error {
 	config, err := clientcmd.BuildConfigFromKubeconfigGetter("", kubeConfigGetter)
 
 	if Client, err = kubernetes.NewForConfig(config); err != nil {
-		return err
+		return errors.Wrap(err, "Error in creating API client")
 	}
 
 	logrus.Debugf("API client initialized for %s", contextCluster)
