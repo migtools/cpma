@@ -101,23 +101,25 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 		Component: ImageComponentName,
 	}
 
-	for range e.RegistriesConfig.Registries["block"].List {
+	for _, registry := range e.RegistriesConfig.Registries["block"].List {
 		reportOutput.Reports = append(reportOutput.Reports,
 			Report{
 				Name:       "Blocked",
 				Kind:       "Registries",
 				Supported:  true,
 				Confidence: HighConfidence,
+				Comment:    registry,
 			})
 	}
 
-	for range e.RegistriesConfig.Registries["insecure"].List {
+	for _, registry := range e.RegistriesConfig.Registries["insecure"].List {
 		reportOutput.Reports = append(reportOutput.Reports,
 			Report{
 				Name:       "Insecure",
 				Kind:       "Registries",
 				Supported:  true,
 				Confidence: HighConfidence,
+				Comment:    registry,
 			})
 	}
 

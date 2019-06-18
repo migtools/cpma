@@ -5,13 +5,13 @@
     "kind": "Registries",
     "supported": true,
     "confidence": 2,
-    "comment": ""
+    "comment": "bad.test.com"
   }, {
     "name": "Insecure",
     "kind": "Registries",
     "supported": true,
     "confidence": 2,
-    "comment": ""
+    "comment": "insecure.test.com"
   }, {
     "name": "Search",
     "kind": "Registries",
