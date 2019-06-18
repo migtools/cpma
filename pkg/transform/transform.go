@@ -89,7 +89,7 @@ func Start() {
 		ETCDTransform{},
 		OAuthTransform{},
 		SDNTransform{},
-		RegistriesTransform{},
+		ImageTransform{},
 	})
 }
 
