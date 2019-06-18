@@ -37,8 +37,8 @@ func (e ETCDExtraction) Transform() ([]Output, error) {
 }
 
 func (e ETCDExtraction) buildReportOutput() (Output, error) {
-	reportOutput := ReportOutput{
-		Component: ETCDComponentName,
+	componentReport := ComponentReport{
+		Component: CrioComponentName,
 	}
 
 	var TLSConfidence = HighConfidence
@@ -54,7 +54,7 @@ func (e ETCDExtraction) buildReportOutput() (Output, error) {
 		TLSMessage = fmt.Sprintf("The Openshift 4 ETCD Cluster is not configurable. TLS Cipher Suite configuration was detected, %v", e.TLSCipherSuites)
 	}
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "ETCD Client Port",
 			Kind:       "Configuration",
@@ -63,7 +63,7 @@ func (e ETCDExtraction) buildReportOutput() (Output, error) {
 			Comment:    fmt.Sprintf("The Openshift 4 ETCD Cluster is not configurable and uses port 2379. Your Openshift 3 Cluster is using port %v", e.ClientPort),
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "ETCD TLS Cipher Suites",
 			Kind:       "Configuration",
@@ -71,6 +71,10 @@ func (e ETCDExtraction) buildReportOutput() (Output, error) {
 			Confidence: TLSConfidence,
 			Comment:    TLSMessage,
 		})
+
+	reportOutput := ReportOutput{
+		ComponentReports: []ComponentReport{componentReport},
+	}
 
 	return reportOutput, nil
 }

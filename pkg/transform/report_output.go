@@ -2,24 +2,51 @@ package transform
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"path/filepath"
 
-	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/transform/clusterreport"
 	"github.com/sirupsen/logrus"
 )
 
 // ReportOutput holds a collection of reports to be written to fil
+
 type ReportOutput struct {
+	ClusterReport    ClusterReport     `json:"cluster"`
+	ComponentReports []ComponentReport `json:"components"`
+}
+
+type ComponentReport struct {
 	Component string   `json:"component"`
 	Reports   []Report `json:"reports"`
 }
 
-// ClusterOutput represents report of k8s resources
-type ClusterOutput struct {
-	ClusterReport *clusterreport.ClusterReport `json:"cluster"`
+// ClusterReport represents json report of k8s resources
+type ClusterReport struct {
+	Namespaces     []NamespaceReport    `json:"namespaces,omitempty"`
+	PVs            []PVReport           `json:"pvs,omitempty"`
+	StorageClasses []StorageClassReport `json:"storageClasses,omitempty"`
+}
+
+// NamespaceReport represents json report of k8s namespaces
+type NamespaceReport struct {
+	Name string      `json:"name"`
+	Pods []PodReport `json:"pods,omitempty"`
+}
+
+// PodReport represents json report of k8s pods
+type PodReport struct {
+	Name string `json:"name"`
+}
+
+// PVReport represents json report of k8s PVs
+type PVReport struct {
+	Name         string `json:"name"`
+	StorageClass string `json:"storageClass,omitempty"`
+}
+
+// StorageClassReport represents json report of k8s storage classes
+type StorageClassReport struct {
+	Name        string `json:"name"`
+	Provisioner string `json:"provisioner"`
 }
 
 // ReportOutputFlush flush reports to disk
@@ -36,7 +63,7 @@ func (r ReportOutput) Flush() error {
 
 // DumpReports creates OCDs files
 func DumpReports(r ReportOutput) {
-	var existingReports []ReportOutput
+	var existingReports ReportOutput
 
 	jsonFile := "report.json"
 
@@ -50,7 +77,21 @@ func DumpReports(r ReportOutput) {
 		logrus.Errorf("unable to unmarshal existing report json")
 	}
 
-	existingReports = append(existingReports, r)
+	for _, namespace := range r.ClusterReport.Namespaces {
+		existingReports.ClusterReport.Namespaces = append(existingReports.ClusterReport.Namespaces, namespace)
+	}
+
+	for _, pv := range r.ClusterReport.PVs {
+		existingReports.ClusterReport.PVs = append(existingReports.ClusterReport.PVs, pv)
+	}
+
+	for _, sc := range r.ClusterReport.StorageClasses {
+		existingReports.ClusterReport.StorageClasses = append(existingReports.ClusterReport.StorageClasses, sc)
+	}
+
+	for _, componentReport := range r.ComponentReports {
+		existingReports.ComponentReports = append(existingReports.ComponentReports, componentReport)
+	}
 
 	jsonReports, err := json.MarshalIndent(existingReports, "", " ")
 	if err != nil {
@@ -61,32 +102,4 @@ func DumpReports(r ReportOutput) {
 	if err != nil {
 		logrus.Errorf("unable to write to report file: %s", jsonFile)
 	}
-}
-
-func (clusterOutput ClusterOutput) dumpToJSON() error {
-	clusterReport := clusterOutput.ClusterReport
-
-	jsonFile := filepath.Join(env.Config().GetString("OutputDir"), "cluster-report.json")
-
-	file, err := json.MarshalIndent(&clusterReport, "", " ")
-	if err != nil {
-		return err
-	}
-
-	if err = ioutil.WriteFile(jsonFile, file, 0644); err != nil {
-		return err
-	}
-
-	logrus.Debugf("Cluster report added to %s", jsonFile)
-	return nil
-}
-
-// Flush reports to files
-func (clusterOutput ClusterOutput) Flush() error {
-	err := clusterOutput.dumpToJSON()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

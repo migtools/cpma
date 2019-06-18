@@ -89,7 +89,7 @@ func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e OAuthExtraction) buildReportOutput() (Output, error) {
-	reportOutput := ReportOutput{
+	componentReport := ComponentReport{
 		Component: OAuthComponentName,
 	}
 
@@ -104,7 +104,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			"LDAPPasswordIdentityProvider",
 			"KeystonePasswordIdentityProvider",
 			"BasicAuthPasswordIdentityProvider":
-			reportOutput.Reports = append(reportOutput.Reports,
+			componentReport.Reports = append(componentReport.Reports,
 				Report{
 					Name:       p.Kind,
 					Kind:       "IdentityProviders",
@@ -113,7 +113,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 					Comment:    fmt.Sprintf("Identity provider %s is supported in OCP4", p.Name),
 				})
 		default:
-			reportOutput.Reports = append(reportOutput.Reports,
+			componentReport.Reports = append(componentReport.Reports,
 				Report{
 					Name:       p.Kind,
 					Kind:       "IdentityProviders",
@@ -124,7 +124,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 		}
 	}
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "AccessTokenMaxAgeSeconds",
 			Kind:       "TokenConfig",
@@ -132,7 +132,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Confidence: HighConfidence,
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "AuthorizeTokenMaxAgeSeconds",
 			Kind:       "TokenConfig",
@@ -141,7 +141,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Translation of AuthorizeTokenMaxAgeSeconds is not supported, it's value is 5 minutes in OCP4",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "",
 			Kind:       "AssetPublicURL",
@@ -150,7 +150,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Translation of AssetPublicURL is not supported",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "",
 			Kind:       "MasterPublicURL",
@@ -159,7 +159,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Translation of MasterPublicURL is not supported",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "",
 			Kind:       "MasterCA",
@@ -168,7 +168,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Translation of MasterCA is not supported",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "",
 			Kind:       "MasterURL",
@@ -177,7 +177,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Translation of MasterURL is not supported",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "",
 			Kind:       "GrantConfig",
@@ -186,7 +186,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Translation of GrantConfig is not supported",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "",
 			Kind:       "SessionConfig",
@@ -194,6 +194,10 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Confidence: NoConfidence,
 			Comment:    "Translation of SessionConfig is not supported",
 		})
+
+	reportOutput := ReportOutput{
+		ComponentReports: []ComponentReport{componentReport},
+	}
 
 	return reportOutput, nil
 }

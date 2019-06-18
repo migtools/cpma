@@ -27,11 +27,11 @@ func (e DockerExtraction) Transform() ([]Output, error) {
 }
 
 func (e DockerExtraction) buildReportOutput() (Output, error) {
-	reportOutput := ReportOutput{
-		Component: DockerComponentName,
+	componentReport := ComponentReport{
+		Component: CrioComponentName,
 	}
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "Docker",
 			Kind:       "Container Runtime",
@@ -39,6 +39,10 @@ func (e DockerExtraction) buildReportOutput() (Output, error) {
 			Confidence: NoConfidence,
 			Comment:    "The Docker runtime has been replaced with CRI-O",
 		})
+
+	reportOutput := ReportOutput{
+		ComponentReports: []ComponentReport{componentReport},
+	}
 
 	return reportOutput, nil
 }

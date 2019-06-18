@@ -63,13 +63,13 @@ func (e SDNExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e SDNExtraction) buildReportOutput() (Output, error) {
-	reportOutput := ReportOutput{
+	componentReport := ComponentReport{
 		Component: SDNComponentName,
 	}
 
 	for _, n := range e.MasterConfig.NetworkConfig.ClusterNetworks {
 		cidrComment := fmt.Sprintf("Networks must be configured during installation, it's possible to use %s", n.CIDR)
-		reportOutput.Reports = append(reportOutput.Reports,
+		componentReport.Reports = append(componentReport.Reports,
 			Report{
 				Name:       "CIDR",
 				Kind:       "ClusterNetwork",
@@ -78,7 +78,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 				Comment:    cidrComment,
 			})
 
-		reportOutput.Reports = append(reportOutput.Reports,
+		componentReport.Reports = append(componentReport.Reports,
 			Report{
 				Name:       "HostSubnetLength",
 				Kind:       "ClusterNetwork",
@@ -88,7 +88,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 			})
 	}
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       e.MasterConfig.NetworkConfig.ServiceNetworkCIDR,
 			Kind:       "ServiceNetwork",
@@ -97,7 +97,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Networks must be configured during installation",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "",
 			Kind:       "ExternalIPNetworkCIDRs",
@@ -106,7 +106,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Configuration of ExternalIPNetworkCIDRs is not supported in OCP4",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "",
 			Kind:       "IngressIPNetworkCIDR",
@@ -114,6 +114,10 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 			Confidence: NoConfidence,
 			Comment:    "Translation of this configuration is not supported, refer to ingress operator configuration for more information",
 		})
+
+	reportOutput := ReportOutput{
+		ComponentReports: []ComponentReport{componentReport},
+	}
 
 	return reportOutput, nil
 }

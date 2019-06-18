@@ -40,9 +40,10 @@ func (e APIExtraction) Transform() ([]Output, error) {
 }
 
 func (e APIExtraction) buildReportOutput() (Output, error) {
-	reportOutput := ReportOutput{
-		Component: APIComponentName,
+	componentReport := ComponentReport{
+		Component: CrioComponentName,
 	}
+
 	portArray := strings.Split(e.HTTPServingInfo.BindAddress, ":")
 	port := portArray[len(portArray)-1]
 
@@ -51,7 +52,7 @@ func (e APIExtraction) buildReportOutput() (Output, error) {
 		confidence = HighConfidence
 	}
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "API",
 			Kind:       "Port",
@@ -59,6 +60,10 @@ func (e APIExtraction) buildReportOutput() (Output, error) {
 			Confidence: confidence,
 			Comment:    fmt.Sprintf("The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port %v", port),
 		})
+
+	reportOutput := ReportOutput{
+		ComponentReports: []ComponentReport{componentReport},
+	}
 
 	return reportOutput, nil
 }
