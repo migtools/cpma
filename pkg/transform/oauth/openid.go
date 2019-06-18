@@ -26,6 +26,7 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*configv1.I
 	idP.Type = "OpenID"
 	idP.Name = p.Name
 	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.OpenID = &configv1.OpenIDIdentityProvider{}
 	idP.OpenID.ClientID = openID.ClientID
 	idP.OpenID.Claims.PreferredUsername = openID.Claims.PreferredUsername
 	idP.OpenID.Claims.Name = openID.Claims.Name

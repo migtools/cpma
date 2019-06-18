@@ -6,6 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	configv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,26 +15,25 @@ func TestTransformMasterConfigGoogle(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/google/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd oauth.CRD
+	var expectedCrd configv1.OAuth
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
-	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
+	expectedCrd.Name = "cluster"
+	expectedCrd.Namespace = oauth.OAuthNamespace
 
-	var googleIDP = &oauth.IdentityProviderGoogle{}
+	var googleIDP = &configv1.IdentityProvider{}
 	googleIDP.Type = "Google"
-	googleIDP.Challenge = false
-	googleIDP.Login = true
 	googleIDP.MappingMethod = "claim"
 	googleIDP.Name = "google123456789123456789"
+	googleIDP.Google = &configv1.GoogleIdentityProvider{}
 	googleIDP.Google.ClientID = "82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com"
 	googleIDP.Google.ClientSecret.Name = "google123456789123456789-secret"
 	googleIDP.Google.HostedDomain = "test.example.com"
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, googleIDP)
+	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *googleIDP)
 
 	testCases := []struct {
 		name        string
-		expectedCrd *oauth.CRD
+		expectedCrd *configv1.OAuth
 	}{
 		{
 			name:        "build google provider",

@@ -29,6 +29,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*configv1
 	idP.Type = "Keystone"
 	idP.Name = p.Name
 	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.Keystone = &configv1.KeystoneIdentityProvider{}
 	idP.Keystone.DomainName = keystone.DomainName
 	idP.Keystone.URL = keystone.URL
 

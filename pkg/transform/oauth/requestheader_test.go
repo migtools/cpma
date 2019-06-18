@@ -6,6 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	configv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,32 +15,31 @@ func TestTransformMasterConfigRequestHeader(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/requestheader/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd oauth.CRD
+	var expectedCrd configv1.OAuth
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
-	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
+	expectedCrd.Name = "cluster"
+	expectedCrd.Namespace = oauth.OAuthNamespace
 
-	var requestHeaderIDP = &oauth.IdentityProviderRequestHeader{}
+	var requestHeaderIDP = &configv1.IdentityProvider{}
 
 	requestHeaderIDP.Type = "RequestHeader"
 	requestHeaderIDP.Name = "my_request_header_provider"
-	requestHeaderIDP.Challenge = true
-	requestHeaderIDP.Login = true
 	requestHeaderIDP.MappingMethod = "claim"
+	requestHeaderIDP.RequestHeader = &configv1.RequestHeaderIdentityProvider{}
 	requestHeaderIDP.RequestHeader.ChallengeURL = "https://example.com"
 	requestHeaderIDP.RequestHeader.LoginURL = "https://example.com"
-	requestHeaderIDP.RequestHeader.CA = &oauth.CA{Name: "requestheader-configmap"}
+	requestHeaderIDP.RequestHeader.ClientCA = configv1.ConfigMapNameReference{Name: "requestheader-configmap"}
 	requestHeaderIDP.RequestHeader.ClientCommonNames = []string{"my-auth-proxy"}
 	requestHeaderIDP.RequestHeader.Headers = []string{"X-Remote-User", "SSO-User"}
 	requestHeaderIDP.RequestHeader.EmailHeaders = []string{"X-Remote-User-Email"}
 	requestHeaderIDP.RequestHeader.NameHeaders = []string{"X-Remote-User-Display-Name"}
 	requestHeaderIDP.RequestHeader.PreferredUsernameHeaders = []string{"X-Remote-User-Login"}
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, requestHeaderIDP)
+	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *requestHeaderIDP)
 
 	testCases := []struct {
 		name        string
-		expectedCrd *oauth.CRD
+		expectedCrd *configv1.OAuth
 	}{
 		{
 			name:        "build request header provider",

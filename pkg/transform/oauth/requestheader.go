@@ -23,6 +23,7 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*con
 	idP.Type = "RequestHeader"
 	idP.Name = p.Name
 	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.RequestHeader = &configv1.RequestHeaderIdentityProvider{}
 	idP.RequestHeader.ChallengeURL = requestHeader.ChallengeURL
 	idP.RequestHeader.LoginURL = requestHeader.LoginURL
 

@@ -28,6 +28,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*configv1.I
 	idP.Type = "GitLab"
 	idP.Name = p.Name
 	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.GitLab = &configv1.GitLabIdentityProvider{}
 	idP.GitLab.URL = gitlab.URL
 	idP.GitLab.ClientID = gitlab.ClientID
 

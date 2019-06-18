@@ -38,18 +38,16 @@ type Provider struct {
 
 // IdentityProvider stores an identity provider
 type IdentityProvider struct {
-	Kind            string
-	APIVersion      string
-	MappingMethod   string
-	Name            string
-	Provider        runtime.RawExtension
-	HTFileName      string
-	HTFileData      []byte
-	CAData          []byte
-	CrtData         []byte
-	KeyData         []byte
-	UseAsChallenger bool
-	UseAsLogin      bool
+	Kind          string
+	APIVersion    string
+	MappingMethod string
+	Name          string
+	Provider      runtime.RawExtension
+	HTFileName    string
+	HTFileData    []byte
+	CAData        []byte
+	CrtData       []byte
+	KeyData       []byte
 }
 
 // Resources stores all oAuth config parts

@@ -28,6 +28,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*configv
 	idP.Type = "BasicAuth"
 	idP.Name = p.Name
 	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.BasicAuth = &configv1.BasicAuthIdentityProvider{}
 	idP.BasicAuth.URL = basicAuth.URL
 
 	if basicAuth.CA != "" {

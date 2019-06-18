@@ -24,6 +24,7 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*configv1.Ide
 	idP.Type = "LDAP"
 	idP.Name = p.Name
 	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.LDAP = &configv1.LDAPIdentityProvider{}
 	idP.LDAP.Attributes.ID = ldap.Attributes.ID
 	idP.LDAP.Attributes.Email = ldap.Attributes.Email
 	idP.LDAP.Attributes.Name = ldap.Attributes.Name

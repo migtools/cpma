@@ -5,9 +5,8 @@ import (
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/ghodss/yaml"
+	configv1 "github.com/openshift/api/config/v1"
 	"github.com/sirupsen/logrus"
-		configv1 "github.com/openshift/api/config/v1"
-
 )
 
 const (

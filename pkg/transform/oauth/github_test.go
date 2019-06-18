@@ -6,6 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	configv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,29 +15,28 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/github/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd oauth.CRD
+	var expectedCrd configv1.OAuth
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
-	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
+	expectedCrd.Name = "cluster"
+	expectedCrd.Namespace = oauth.OAuthNamespace
 
-	var githubIDP = &oauth.IdentityProviderGitHub{}
+	var githubIDP = &configv1.IdentityProvider{}
 	githubIDP.Type = "GitHub"
-	githubIDP.Challenge = false
-	githubIDP.Login = true
 	githubIDP.MappingMethod = "claim"
 	githubIDP.Name = "github123456789"
-	githubIDP.GitHub.HostName = "test.example.com"
-	githubIDP.GitHub.CA = &oauth.CA{Name: "github-configmap"}
+	githubIDP.GitHub = &configv1.GitHubIdentityProvider{}
+	githubIDP.GitHub.Hostname = "test.example.com"
+	githubIDP.GitHub.CA = configv1.ConfigMapNameReference{Name: "github-configmap"}
 	githubIDP.GitHub.ClientID = "2d85ea3f45d6777bffd7"
 	githubIDP.GitHub.Organizations = []string{"myorganization1", "myorganization2"}
 	githubIDP.GitHub.Teams = []string{"myorganization1/team-a", "myorganization2/team-b"}
 	githubIDP.GitHub.ClientSecret.Name = "github123456789-secret"
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, githubIDP)
+	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *githubIDP)
 
 	testCases := []struct {
 		name        string
-		expectedCrd *oauth.CRD
+		expectedCrd *configv1.OAuth
 	}{
 		{
 			name:        "build github provider",

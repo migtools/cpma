@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
+	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,14 +38,12 @@ func TestTransformMasterConfig(t *testing.T) {
 
 		identityProviders = append(identityProviders,
 			oauth.IdentityProvider{
-				Kind:            provider.Kind,
-				APIVersion:      provider.APIVersion,
-				MappingMethod:   identityProvider.MappingMethod,
-				Name:            identityProvider.Name,
-				Provider:        identityProvider.Provider,
-				HTFileName:      provider.File,
-				UseAsChallenger: identityProvider.UseAsChallenger,
-				UseAsLogin:      identityProvider.UseAsLogin,
+				Kind:          provider.Kind,
+				APIVersion:    provider.APIVersion,
+				MappingMethod: identityProvider.MappingMethod,
+				Name:          identityProvider.Name,
+				Provider:      identityProvider.Provider,
+				HTFileName:    provider.File,
 			})
 	}
 
@@ -61,15 +60,15 @@ func TestTransformMasterConfig(t *testing.T) {
 			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{AccessTokenMaxAgeSeconds: 42000, AuthorizeTokenMaxAgeSeconds: 42000})
 			require.NoError(t, err)
 			assert.Equal(t, 9, len(oauthResources.OAuthCRD.Spec.IdentityProviders))
-			assert.Equal(t, "BasicAuth", oauthResources.OAuthCRD.Spec.IdentityProviders[0].(*oauth.IdentityProviderBasicAuth).Type)
-			assert.Equal(t, "GitHub", oauthResources.OAuthCRD.Spec.IdentityProviders[1].(*oauth.IdentityProviderGitHub).Type)
-			assert.Equal(t, "GitLab", oauthResources.OAuthCRD.Spec.IdentityProviders[2].(*oauth.IdentityProviderGitLab).Type)
-			assert.Equal(t, "Google", oauthResources.OAuthCRD.Spec.IdentityProviders[3].(*oauth.IdentityProviderGoogle).Type)
-			assert.Equal(t, "HTPasswd", oauthResources.OAuthCRD.Spec.IdentityProviders[4].(*oauth.IdentityProviderHTPasswd).Type)
-			assert.Equal(t, "Keystone", oauthResources.OAuthCRD.Spec.IdentityProviders[5].(*oauth.IdentityProviderKeystone).Type)
-			assert.Equal(t, "LDAP", oauthResources.OAuthCRD.Spec.IdentityProviders[6].(*oauth.IdentityProviderLDAP).Type)
-			assert.Equal(t, "RequestHeader", oauthResources.OAuthCRD.Spec.IdentityProviders[7].(*oauth.IdentityProviderRequestHeader).Type)
-			assert.Equal(t, "OpenID", oauthResources.OAuthCRD.Spec.IdentityProviders[8].(*oauth.IdentityProviderOpenID).Type)
+			assert.Equal(t, configv1.IdentityProviderType("BasicAuth"), oauthResources.OAuthCRD.Spec.IdentityProviders[0].Type)
+			assert.Equal(t, configv1.IdentityProviderType("GitHub"), oauthResources.OAuthCRD.Spec.IdentityProviders[1].Type)
+			assert.Equal(t, configv1.IdentityProviderType("GitLab"), oauthResources.OAuthCRD.Spec.IdentityProviders[2].Type)
+			assert.Equal(t, configv1.IdentityProviderType("Google"), oauthResources.OAuthCRD.Spec.IdentityProviders[3].Type)
+			assert.Equal(t, configv1.IdentityProviderType("HTPasswd"), oauthResources.OAuthCRD.Spec.IdentityProviders[4].Type)
+			assert.Equal(t, configv1.IdentityProviderType("Keystone"), oauthResources.OAuthCRD.Spec.IdentityProviders[5].Type)
+			assert.Equal(t, configv1.IdentityProviderType("LDAP"), oauthResources.OAuthCRD.Spec.IdentityProviders[6].Type)
+			assert.Equal(t, configv1.IdentityProviderType("RequestHeader"), oauthResources.OAuthCRD.Spec.IdentityProviders[7].Type)
+			assert.Equal(t, configv1.IdentityProviderType("OpenID"), oauthResources.OAuthCRD.Spec.IdentityProviders[8].Type)
 
 			assert.Equal(t, int32(42000), oauthResources.OAuthCRD.Spec.TokenConfig.AccessTokenMaxAgeSeconds)
 		})

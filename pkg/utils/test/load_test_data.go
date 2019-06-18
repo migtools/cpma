@@ -42,14 +42,12 @@ func LoadIPTestData(file string) ([]oauth.IdentityProvider, error) {
 
 		identityProviders = append(identityProviders,
 			oauth.IdentityProvider{
-				Kind:            provider.Kind,
-				APIVersion:      provider.APIVersion,
-				MappingMethod:   identityProvider.MappingMethod,
-				Name:            identityProvider.Name,
-				Provider:        identityProvider.Provider,
-				HTFileName:      provider.File,
-				UseAsChallenger: identityProvider.UseAsChallenger,
-				UseAsLogin:      identityProvider.UseAsLogin,
+				Kind:          provider.Kind,
+				APIVersion:    provider.APIVersion,
+				MappingMethod: identityProvider.MappingMethod,
+				Name:          identityProvider.Name,
+				Provider:      identityProvider.Provider,
+				HTFileName:    provider.File,
 			})
 	}
 

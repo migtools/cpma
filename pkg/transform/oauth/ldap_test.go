@@ -6,6 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	configv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,33 +15,32 @@ func TestTransformMasterConfigLDAP(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/ldap/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd oauth.CRD
+	var expectedCrd configv1.OAuth
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
-	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
+	expectedCrd.Name = "cluster"
+	expectedCrd.Namespace = oauth.OAuthNamespace
 
-	var ldapIDP = &oauth.IdentityProviderLDAP{}
+	var ldapIDP = &configv1.IdentityProvider{}
 	ldapIDP.Name = "my_ldap_provider"
 	ldapIDP.Type = "LDAP"
-	ldapIDP.Challenge = true
-	ldapIDP.Login = true
 	ldapIDP.MappingMethod = "claim"
+	ldapIDP.LDAP = &configv1.LDAPIdentityProvider{}
 	ldapIDP.LDAP.Attributes.ID = []string{"dn"}
 	ldapIDP.LDAP.Attributes.Email = []string{"mail"}
 	ldapIDP.LDAP.Attributes.Name = []string{"cn"}
 	ldapIDP.LDAP.Attributes.PreferredUsername = []string{"uid"}
 	ldapIDP.LDAP.BindDN = "123"
-	ldapIDP.LDAP.BindPassword = "321"
-	ldapIDP.LDAP.CA = &oauth.CA{Name: "ldap-configmap"}
+	ldapIDP.LDAP.BindPassword.Name = "321"
+	ldapIDP.LDAP.CA = configv1.ConfigMapNameReference{Name: "ldap-configmap"}
 	ldapIDP.LDAP.Insecure = false
 	ldapIDP.LDAP.URL = "ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid"
 
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, ldapIDP)
+	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *ldapIDP)
 
 	testCases := []struct {
 		name        string
-		expectedCrd *oauth.CRD
+		expectedCrd *configv1.OAuth
 	}{
 		{
 			name:        "build ldap provider",

@@ -26,6 +26,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*configv1.I
 	idP.Type = "Google"
 	idP.Name = p.Name
 	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.Google = &configv1.GoogleIdentityProvider{}
 	idP.Google.ClientID = google.ClientID
 	idP.Google.HostedDomain = google.HostedDomain
 

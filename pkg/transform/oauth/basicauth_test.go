@@ -5,6 +5,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	configv1 "github.com/openshift/api/config/v1"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,28 +15,27 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/basicauth/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd oauth.CRD
+	var expectedCrd configv1.OAuth
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
-	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
+	expectedCrd.Name = "cluster"
+	expectedCrd.Namespace = oauth.OAuthNamespace
 
-	var basicAuthIDP = &oauth.IdentityProviderBasicAuth{}
+	var basicAuthIDP = &configv1.IdentityProvider{}
 	basicAuthIDP.Type = "BasicAuth"
-	basicAuthIDP.Challenge = true
-	basicAuthIDP.Login = true
 	basicAuthIDP.Name = "my_remote_basic_auth_provider"
 	basicAuthIDP.MappingMethod = "claim"
+	basicAuthIDP.BasicAuth = &configv1.BasicAuthIdentityProvider{}
 	basicAuthIDP.BasicAuth.URL = "https://www.example.com/"
-	basicAuthIDP.BasicAuth.TLSClientCert = &oauth.TLSClientCert{Name: "my_remote_basic_auth_provider-client-cert-secret"}
-	basicAuthIDP.BasicAuth.TLSClientKey = &oauth.TLSClientKey{Name: "my_remote_basic_auth_provider-client-key-secret"}
-	basicAuthIDP.BasicAuth.CA = &oauth.CA{Name: "basicauth-configmap"}
+	basicAuthIDP.BasicAuth.TLSClientCert.Name = "my_remote_basic_auth_provider-client-cert-secret"
+	basicAuthIDP.BasicAuth.TLSClientKey.Name = "my_remote_basic_auth_provider-client-key-secret"
+	basicAuthIDP.BasicAuth.CA = configv1.ConfigMapNameReference{Name: "basicauth-configmap"}
 
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, basicAuthIDP)
+	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *basicAuthIDP)
 
 	testCases := []struct {
 		name        string
-		expectedCrd *oauth.CRD
+		expectedCrd *configv1.OAuth
 	}{
 		{
 			name:        "build basic auth provider",
