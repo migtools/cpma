@@ -36,5 +36,35 @@
     "supported": true,
     "confidence": 2,
     "comment": ""
+  }, {
+    "name": "InternalRegistryHostname",
+    "kind": "MasterConfig.ImagePolicyConfig",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Set by OCP4 image registry operator"
+  }, {
+    "name": "DisableScheduledImport",
+    "kind": "MasterConfig.ImagePolicyConfig",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Not supported by OCP4"
+  }, {
+    "name": "MaxImagesBulkImportedPerRepository",
+    "kind": "MasterConfig.ImagePolicyConfig",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Not supported by OCP4"
+  }, {
+    "name": "MaxScheduledImageImportsPerMinute",
+    "kind": "MasterConfig.ImagePolicyConfig",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Not supported by OCP4"
+  }, {
+    "name": "ScheduledImageImportMinimumIntervalSeconds",
+    "kind": "MasterConfig.ImagePolicyConfig",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Not supported by OCP4"
   }]
 }

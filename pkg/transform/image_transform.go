@@ -157,6 +157,51 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			Confidence: HighConfidence,
 		})
 
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "InternalRegistryHostname",
+			Kind:       "MasterConfig.ImagePolicyConfig",
+			Supported:  false,
+			Confidence: NoConfidence,
+			Comment:    "Set by OCP4 image registry operator",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "DisableScheduledImport",
+			Kind:       "MasterConfig.ImagePolicyConfig",
+			Supported:  false,
+			Confidence: NoConfidence,
+			Comment:    "Not supported by OCP4",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "MaxImagesBulkImportedPerRepository",
+			Kind:       "MasterConfig.ImagePolicyConfig",
+			Supported:  false,
+			Confidence: NoConfidence,
+			Comment:    "Not supported by OCP4",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "MaxScheduledImageImportsPerMinute",
+			Kind:       "MasterConfig.ImagePolicyConfig",
+			Supported:  false,
+			Confidence: NoConfidence,
+			Comment:    "Not supported by OCP4",
+		})
+
+	reportOutput.Reports = append(reportOutput.Reports,
+		Report{
+			Name:       "ScheduledImageImportMinimumIntervalSeconds",
+			Kind:       "MasterConfig.ImagePolicyConfig",
+			Supported:  false,
+			Confidence: NoConfidence,
+			Comment:    "Not supported by OCP4",
+		})
+
 	return reportOutput, nil
 }
 
