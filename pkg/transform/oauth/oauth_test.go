@@ -14,7 +14,7 @@ import (
 )
 
 func TestTransformMasterConfig(t *testing.T) {
-	file := "testdata/bulk-test-master-config.yaml"
+	file := "testdata/master_config-bulk.yaml"
 
 	content, err := ioutil.ReadFile(file)
 	require.NoError(t, err)

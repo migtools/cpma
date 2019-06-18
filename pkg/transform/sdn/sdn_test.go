@@ -15,7 +15,7 @@ import (
 )
 
 func TestTransformMasterConfig(t *testing.T) {
-	testExtraction, err := cpmatest.LoadSDNExtraction("testdata/test-master-config.yaml")
+	testExtraction, err := cpmatest.LoadSDNExtraction("testdata/master_config-network.yaml")
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -142,13 +142,13 @@ func TestTransformClusterNetworks(t *testing.T) {
 }
 
 func TestGenYAML(t *testing.T) {
-	testExtraction, err := cpmatest.LoadSDNExtraction("testdata/test-master-config.yaml")
+	testExtraction, err := cpmatest.LoadSDNExtraction("testdata/master_config-network.yaml")
 	require.NoError(t, err)
 
 	networkCR, err := sdn.Translate(testExtraction.MasterConfig)
 	require.NoError(t, err)
 
-	expectedYaml, err := ioutil.ReadFile("testdata/expected-network-cr-master.yaml")
+	expectedYaml, err := ioutil.ReadFile("testdata/expected-CR-network.yaml")
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -182,42 +182,42 @@ func TestSDNValidation(t *testing.T) {
 		{
 			name:         "validate sdn provider",
 			requireError: false,
-			inputFile:    "testdata/test-master-config.yaml",
+			inputFile:    "testdata/master_config-network.yaml",
 		},
 		{
 			name:         "fail on empty service network CIDR in sdn provider",
 			requireError: true,
-			inputFile:    "testdata/test-empty-service-cidr-config.yaml",
+			inputFile:    "testdata/master_config-network-empty-service-cidr.yaml",
 			expectedErr:  errors.New("Service network CIDR can't be empty"),
 		},
 		{
 			name:         "fail on invalid service network CIDR in sdn provider",
 			requireError: true,
-			inputFile:    "testdata/test-invalid-service-cidr-config.yaml",
+			inputFile:    "testdata/master_config-network-invalid-service-cidr.yaml",
 			expectedErr:  errors.New("Not valid service network CIDR"),
 		},
 		{
 			name:         "fail on empty cluster network in sdn provider",
 			requireError: true,
-			inputFile:    "testdata/test-empty-cluster-config.yaml",
+			inputFile:    "testdata/master_config-network-empty-cluster.yaml",
 			expectedErr:  errors.New("Cluster network must have at least 1 entry"),
 		},
 		{
 			name:         "fail on empty cluster network CIDR in sdn provider",
 			requireError: true,
-			inputFile:    "testdata/test-empty-cluster-cidr-config.yaml",
+			inputFile:    "testdata/master_config-network-empty-cluster-cidr.yaml",
 			expectedErr:  errors.New("Cluster network CIDR can't be empty"),
 		},
 		{
 			name:         "fail on invalid cluster network CIDR in sdn provider",
 			requireError: true,
-			inputFile:    "testdata/test-invalid-cluster-cidr-config.yaml",
+			inputFile:    "testdata/master_config-invalid-cluster-cidr.yaml",
 			expectedErr:  errors.New("Not valid cluster network CIDR"),
 		},
 		{
 			name:         "fail on empty plugin name in sdn provider",
 			requireError: true,
-			inputFile:    "testdata/test-empty-plugin-config.yaml",
+			inputFile:    "testdata/master_config-empty-plugin.yaml",
 			expectedErr:  errors.New("Plugin name can't be empty"),
 		},
 	}

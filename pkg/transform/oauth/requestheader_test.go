@@ -11,7 +11,7 @@ import (
 )
 
 func TestTransformMasterConfigRequestHeader(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIPTestData("testdata/requestheader/test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/requestheader/master_config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD
@@ -66,7 +66,7 @@ func TestRequestHeaderValidation(t *testing.T) {
 		{
 			name:         "validate requestheader provider",
 			requireError: false,
-			inputFile:    "testdata/requestheader/test-master-config.yaml",
+			inputFile:    "testdata/requestheader/master_config.yaml",
 		},
 		{
 			name:         "fail on invalid name in requestheader provider",

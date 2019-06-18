@@ -11,7 +11,7 @@ import (
 )
 
 func TestTransformMasterConfigLDAP(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIPTestData("testdata/ldap/test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/ldap/master_config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD
@@ -67,7 +67,7 @@ func TestLDAPValidation(t *testing.T) {
 		{
 			name:         "validate ldap provider",
 			requireError: false,
-			inputFile:    "testdata/ldap/test-master-config.yaml",
+			inputFile:    "testdata/ldap/master_config.yaml",
 		},
 		{
 			name:         "fail on invalid name in ldap provider",
