@@ -11,7 +11,7 @@ import (
 )
 
 func TestInitConfig(t *testing.T) {
-	ConfigFile = "testdata/test-cpma-config.yml"
+	ConfigFile = "testdata/cpma-config.yml"
 	err := InitConfig()
 	if err != nil {
 		t.Fatal(err)

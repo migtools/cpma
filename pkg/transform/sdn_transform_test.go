@@ -55,7 +55,7 @@ func TestSDNExtractionTransform(t *testing.T) {
 				return nil
 			}
 
-			testExtraction, err := cpmatest.LoadSDNExtraction("testdata/sdn-test-master-config.yaml")
+			testExtraction, err := cpmatest.LoadSDNExtraction("testdata/master_config-sdn.yaml")
 			require.NoError(t, err)
 
 			go func() {

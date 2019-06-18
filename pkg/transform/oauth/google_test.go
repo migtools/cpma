@@ -11,7 +11,7 @@ import (
 )
 
 func TestTransformMasterConfigGoogle(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIPTestData("testdata/google/test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/google/master_config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD
@@ -60,7 +60,7 @@ func TestGoogleValidation(t *testing.T) {
 		{
 			name:         "validate google provider",
 			requireError: false,
-			inputFile:    "testdata/google/test-master-config.yaml",
+			inputFile:    "testdata/google/master_config.yaml",
 		},
 		{
 			name:         "fail on invalid name in google provider",

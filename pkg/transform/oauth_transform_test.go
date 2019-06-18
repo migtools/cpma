@@ -491,7 +491,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 				return nil
 			}
 
-			identityProviders, err := cpmatest.LoadIPTestData("testdata/bulk-test-master-config.yaml")
+			identityProviders, err := cpmatest.LoadIPTestData("testdata/master_config-bulk.yaml")
 			require.NoError(t, err)
 
 			testExtraction := transform.OAuthExtraction{

@@ -11,7 +11,7 @@ import (
 )
 
 func TestTransformMasterConfigKeystone(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIPTestData("testdata/keystone/test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/keystone/master_config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD
@@ -63,7 +63,7 @@ func TestKeystoneValidation(t *testing.T) {
 		{
 			name:         "validate keystone provider",
 			requireError: false,
-			inputFile:    "testdata/keystone/test-master-config.yaml",
+			inputFile:    "testdata/keystone/master_config.yaml",
 		},
 		{
 			name:         "fail on invalid name in keystone provider",

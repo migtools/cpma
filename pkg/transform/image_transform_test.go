@@ -19,7 +19,7 @@ func loadImageExtraction() (transform.ImageExtraction, error) {
 	registriesContent, _ := ioutil.ReadFile("testdata/registries.conf")
 	_, err := toml.Decode(string(registriesContent), &extraction.RegistriesConfig)
 
-	masterConfigContent, _ := ioutil.ReadFile("testdata/image-test-master-config.yaml")
+	masterConfigContent, _ := ioutil.ReadFile("testdata/master_config-image.yaml")
 	masterConfig, err := decode.MasterConfig(masterConfigContent)
 	extraction.MasterConfig = *masterConfig
 
@@ -29,7 +29,7 @@ func loadImageExtraction() (transform.ImageExtraction, error) {
 func TestImageExtractionTransform(t *testing.T) {
 	var expectedManifests []transform.Manifest
 
-	expectedImageCRYAML, err := ioutil.ReadFile("testdata/expected-image.yaml")
+	expectedImageCRYAML, err := ioutil.ReadFile("testdata/expected-CR-image.yaml")
 	require.NoError(t, err)
 
 	expectedManifests = append(expectedManifests,

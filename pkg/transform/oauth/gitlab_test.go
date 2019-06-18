@@ -11,7 +11,7 @@ import (
 )
 
 func TestTransformMasterConfigGitlab(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIPTestData("testdata/gitlab/test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/gitlab/master_config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD
@@ -61,7 +61,7 @@ func TestGitlabValidation(t *testing.T) {
 		{
 			name:         "validate gitlab provider",
 			requireError: false,
-			inputFile:    "testdata/gitlab/test-master-config.yaml",
+			inputFile:    "testdata/gitlab/master_config.yaml",
 		},
 		{
 			name:         "fail on invalid name in gitlab provider",

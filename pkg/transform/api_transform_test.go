@@ -18,7 +18,7 @@ func loadAPIExtraction() (transform.APIExtraction, error) {
 	// Build example identity providers, this is straight copy pasted from
 	// oauth test, IMO this loading of example identity providers should be
 	// some shared test helper
-	file := "testdata/api-test-master-config.yaml" // File copied into transform pkg testdata
+	file := "testdata/master_config-api.yaml" // File copied into transform pkg testdata
 	content, _ := ioutil.ReadFile(file)
 
 	masterConfig, err := decode.MasterConfig(content)

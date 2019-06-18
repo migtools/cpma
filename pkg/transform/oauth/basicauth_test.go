@@ -11,7 +11,7 @@ import (
 )
 
 func TestTransformMasterConfigBasicAuth(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIPTestData("testdata/basicauth/test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/basicauth/master_config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD
@@ -62,7 +62,7 @@ func TestBasicAuthValidation(t *testing.T) {
 		{
 			name:         "validate basic auth provider",
 			requireError: false,
-			inputFile:    "testdata/basicauth/test-master-config.yaml",
+			inputFile:    "testdata/basicauth/master_config.yaml",
 		},
 		{
 			name:         "fail on invalid name in basic auth provider",

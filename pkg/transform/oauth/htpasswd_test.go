@@ -11,7 +11,7 @@ import (
 )
 
 func TestTransformMasterConfigHtpasswd(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIPTestData("testdata/htpasswd/test-master-config.yaml")
+	identityProviders, err := cpmatest.LoadIPTestData("testdata/htpasswd/master_config.yaml")
 	require.NoError(t, err)
 
 	var expectedCrd oauth.CRD
@@ -58,7 +58,7 @@ func TestHTPasswdValidation(t *testing.T) {
 		{
 			name:         "validate htpasswd provider",
 			requireError: false,
-			inputFile:    "testdata/htpasswd/test-master-config.yaml",
+			inputFile:    "testdata/htpasswd/master_config.yaml",
 		},
 		{
 			name:         "fail on invalid name in htpasswd provider",

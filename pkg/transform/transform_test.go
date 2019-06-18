@@ -25,15 +25,15 @@ func TestOauthGenYAML(t *testing.T) {
 	}{
 		{
 			name:                    "generate yaml for oauth providers",
-			inputConfigfile:         "testdata/bulk-test-master-config.yaml",
-			expectedYaml:            "testdata/expected-bulk-test-masterconfig-oauth.yaml",
+			inputConfigfile:         "testdata/master_config-bulk.yaml",
+			expectedYaml:            "testdata/expected-master_config-oauth-bulk.yaml",
 			expectedSecretsLength:   9,
 			expectedConfigMapsength: 6,
 		},
 		{
 			name:                    "generate yaml for oauth providers and omit empty values",
-			inputConfigfile:         "testdata/omit-empty-master-config.yaml",
-			expectedYaml:            "testdata/expected-omit-empty-masterconfig-oauth.yaml",
+			inputConfigfile:         "testdata/master_config-omit-empty-values.yaml",
+			expectedYaml:            "testdata/expected-master_config-oauth-omit-empty-values.yaml",
 			expectedSecretsLength:   5,
 			expectedConfigMapsength: 0,
 		},
@@ -95,7 +95,7 @@ func TestAllOtherCRGenYaml(t *testing.T) {
 	expectedConfigMapYaml, err := ioutil.ReadFile("testdata/expected-configmap.yaml")
 	require.NoError(t, err)
 
-	expectedSecretYaml, err := ioutil.ReadFile("testdata/expected-secret.yaml")
+	expectedSecretYaml, err := ioutil.ReadFile("testdata/expected-CR-secret.yaml")
 	require.NoError(t, err)
 
 	testCases := []struct {
