@@ -1,1 +1,40 @@
-{"component":"Image","reports":[{"name":"Blocked","kind":"Registries","supported":true,"confidence":2,"comment":""},{"name":"Insecure","kind":"Registries","supported":true,"confidence":2,"comment":""},{"name":"Search","kind":"Registries","supported":false,"confidence":0,"comment":"Search registries can not be configured in OCP 4: search.test.com"},{"name":"AllowedRegistriesForImport","kind":"MasterConfig.ImagePolicyConfig","supported":true,"confidence":2,"comment":""},{"name":"AdditionalTrustedCA","kind":"MasterConfig.ImagePolicyConfig","supported":true,"confidence":2,"comment":""},{"name":"ExternalRegistryHostname","kind":"MasterConfig.ImagePolicyConfig","supported":true,"confidence":2,"comment":""}]}
+{
+  "component": "Image",
+  "reports": [{
+    "name": "Blocked",
+    "kind": "Registries",
+    "supported": true,
+    "confidence": 2,
+    "comment": ""
+  }, {
+    "name": "Insecure",
+    "kind": "Registries",
+    "supported": true,
+    "confidence": 2,
+    "comment": ""
+  }, {
+    "name": "Search",
+    "kind": "Registries",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Search registries can not be configured in OCP 4: search.test.com"
+  }, {
+    "name": "AllowedRegistriesForImport",
+    "kind": "MasterConfig.ImagePolicyConfig",
+    "supported": true,
+    "confidence": 2,
+    "comment": ""
+  }, {
+    "name": "AdditionalTrustedCA",
+    "kind": "MasterConfig.ImagePolicyConfig",
+    "supported": false,
+    "confidence": 0,
+    "comment": "Each registry must provide its own self-signed CA"
+  }, {
+    "name": "ExternalRegistryHostname",
+    "kind": "MasterConfig.ImagePolicyConfig",
+    "supported": true,
+    "confidence": 2,
+    "comment": ""
+  }]
+}

@@ -144,8 +144,9 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 		Report{
 			Name:       "AdditionalTrustedCA",
 			Kind:       "MasterConfig.ImagePolicyConfig",
-			Supported:  true,
-			Confidence: HighConfidence,
+			Supported:  false,
+			Confidence: NoConfidence,
+			Comment:    "Each registry must provide its own self-signed CA",
 		})
 
 	reportOutput.Reports = append(reportOutput.Reports,
