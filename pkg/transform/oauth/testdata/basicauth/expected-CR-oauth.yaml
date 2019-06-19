@@ -1,0 +1,28 @@
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  creationTimestamp: null
+  name: cluster
+  namespace: openshift-config
+spec:
+  identityProviders:
+  - basicAuth:
+      ca:
+        name: basicauth-configmap
+      tlsClientCert:
+        name: my_remote_basic_auth_provider-client-cert-secret
+      tlsClientKey:
+        name: my_remote_basic_auth_provider-client-key-secret
+      url: https://www.example.com/
+    mappingMethod: claim
+    name: my_remote_basic_auth_provider
+    type: BasicAuth
+  templates:
+    error:
+      name: ""
+    login:
+      name: ""
+    providerSelection:
+      name: ""
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 0

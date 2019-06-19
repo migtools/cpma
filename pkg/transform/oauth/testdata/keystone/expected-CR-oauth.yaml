@@ -1,0 +1,29 @@
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  creationTimestamp: null
+  name: cluster
+  namespace: openshift-config
+spec:
+  identityProviders:
+  - keystone:
+      ca:
+        name: keystone-configmap
+      domainName: default
+      tlsClientCert:
+        name: my_keystone_provider-client-cert-secret
+      tlsClientKey:
+        name: my_keystone_provider-client-key-secret
+      url: http://fake.url:5000
+    mappingMethod: claim
+    name: my_keystone_provider
+    type: Keystone
+  templates:
+    error:
+      name: ""
+    login:
+      name: ""
+    providerSelection:
+      name: ""
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 0

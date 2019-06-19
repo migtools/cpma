@@ -15,24 +15,8 @@ func TestTransformMasterConfigKeystone(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/keystone/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd configv1.OAuth
-	expectedCrd.APIVersion = "config.openshift.io/v1"
-	expectedCrd.Kind = "OAuth"
-	expectedCrd.Name = "cluster"
-	expectedCrd.Namespace = oauth.OAuthNamespace
-
-	var keystoneIDP = &configv1.IdentityProvider{}
-	keystoneIDP.Type = "Keystone"
-	keystoneIDP.Name = "my_keystone_provider"
-	keystoneIDP.MappingMethod = "claim"
-	keystoneIDP.Keystone = &configv1.KeystoneIdentityProvider{}
-	keystoneIDP.Keystone.DomainName = "default"
-	keystoneIDP.Keystone.URL = "http://fake.url:5000"
-	keystoneIDP.Keystone.CA = configv1.ConfigMapNameReference{Name: "keystone-configmap"}
-	keystoneIDP.Keystone.TLSClientCert.Name = "my_keystone_provider-client-cert-secret"
-	keystoneIDP.Keystone.TLSClientKey.Name = "my_keystone_provider-client-key-secret"
-
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *keystoneIDP)
+	expectedCrd, err := loadExpectedOAuth("testdata/keystone/expected-CR-oauth.yaml")
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name        string
@@ -40,7 +24,7 @@ func TestTransformMasterConfigKeystone(t *testing.T) {
 	}{
 		{
 			name:        "build keystone provider",
-			expectedCrd: &expectedCrd,
+			expectedCrd: expectedCrd,
 		},
 	}
 

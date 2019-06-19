@@ -2,7 +2,11 @@ package oauth_test
 
 import (
 	"errors"
+	"io/ioutil"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
@@ -15,24 +19,13 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/github/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd configv1.OAuth
-	expectedCrd.APIVersion = "config.openshift.io/v1"
-	expectedCrd.Kind = "OAuth"
-	expectedCrd.Name = "cluster"
-	expectedCrd.Namespace = oauth.OAuthNamespace
+	expectedContent, err := ioutil.ReadFile("testdata/github/expected-CR-oauth.yaml")
+	require.NoError(t, err)
 
-	var githubIDP = &configv1.IdentityProvider{}
-	githubIDP.Type = "GitHub"
-	githubIDP.MappingMethod = "claim"
-	githubIDP.Name = "github123456789"
-	githubIDP.GitHub = &configv1.GitHubIdentityProvider{}
-	githubIDP.GitHub.Hostname = "test.example.com"
-	githubIDP.GitHub.CA = configv1.ConfigMapNameReference{Name: "github-configmap"}
-	githubIDP.GitHub.ClientID = "2d85ea3f45d6777bffd7"
-	githubIDP.GitHub.Organizations = []string{"myorganization1", "myorganization2"}
-	githubIDP.GitHub.Teams = []string{"myorganization1/team-a", "myorganization2/team-b"}
-	githubIDP.GitHub.ClientSecret.Name = "github123456789-secret"
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *githubIDP)
+	var expectedCrd configv1.OAuth
+	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	_, _, err = serializer.Decode(expectedContent, nil, &expectedCrd)
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name        string

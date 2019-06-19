@@ -15,21 +15,8 @@ func TestTransformMasterConfigGoogle(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/google/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd configv1.OAuth
-	expectedCrd.APIVersion = "config.openshift.io/v1"
-	expectedCrd.Kind = "OAuth"
-	expectedCrd.Name = "cluster"
-	expectedCrd.Namespace = oauth.OAuthNamespace
-
-	var googleIDP = &configv1.IdentityProvider{}
-	googleIDP.Type = "Google"
-	googleIDP.MappingMethod = "claim"
-	googleIDP.Name = "google123456789123456789"
-	googleIDP.Google = &configv1.GoogleIdentityProvider{}
-	googleIDP.Google.ClientID = "82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com"
-	googleIDP.Google.ClientSecret.Name = "google123456789123456789-secret"
-	googleIDP.Google.HostedDomain = "test.example.com"
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *googleIDP)
+	expectedCrd, err := loadExpectedOAuth("testdata/google/expected-CR-oauth.yaml")
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name        string
@@ -37,7 +24,7 @@ func TestTransformMasterConfigGoogle(t *testing.T) {
 	}{
 		{
 			name:        "build google provider",
-			expectedCrd: &expectedCrd,
+			expectedCrd: expectedCrd,
 		},
 	}
 

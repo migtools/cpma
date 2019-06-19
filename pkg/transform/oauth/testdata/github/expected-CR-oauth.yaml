@@ -1,0 +1,33 @@
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  creationTimestamp: null
+  name: cluster
+  namespace: openshift-config
+spec:
+  identityProviders:
+  - github:
+      ca:
+        name: github-configmap
+      clientID: 2d85ea3f45d6777bffd7
+      clientSecret:
+        name: github123456789-secret
+      hostname: test.example.com
+      organizations:
+      - myorganization1
+      - myorganization2
+      teams:
+      - myorganization1/team-a
+      - myorganization2/team-b
+    mappingMethod: claim
+    name: github123456789
+    type: GitHub
+  templates:
+    error:
+      name: ""
+    login:
+      name: ""
+    providerSelection:
+      name: ""
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 0

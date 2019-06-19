@@ -1,6 +1,7 @@
 package oauth_test
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
@@ -9,29 +10,21 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 func TestTransformMasterConfigBasicAuth(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/basicauth/master_config.yaml")
 	require.NoError(t, err)
 
+	expectedContent, err := ioutil.ReadFile("testdata/basicauth/expected-CR-oauth.yaml")
+	require.NoError(t, err)
+
 	var expectedCrd configv1.OAuth
-	expectedCrd.APIVersion = "config.openshift.io/v1"
-	expectedCrd.Kind = "OAuth"
-	expectedCrd.Name = "cluster"
-	expectedCrd.Namespace = oauth.OAuthNamespace
-
-	var basicAuthIDP = &configv1.IdentityProvider{}
-	basicAuthIDP.Type = "BasicAuth"
-	basicAuthIDP.Name = "my_remote_basic_auth_provider"
-	basicAuthIDP.MappingMethod = "claim"
-	basicAuthIDP.BasicAuth = &configv1.BasicAuthIdentityProvider{}
-	basicAuthIDP.BasicAuth.URL = "https://www.example.com/"
-	basicAuthIDP.BasicAuth.TLSClientCert.Name = "my_remote_basic_auth_provider-client-cert-secret"
-	basicAuthIDP.BasicAuth.TLSClientKey.Name = "my_remote_basic_auth_provider-client-key-secret"
-	basicAuthIDP.BasicAuth.CA = configv1.ConfigMapNameReference{Name: "basicauth-configmap"}
-
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *basicAuthIDP)
+	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	_, _, err = serializer.Decode(expectedContent, nil, &expectedCrd)
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name        string
@@ -47,6 +40,7 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{})
 			require.NoError(t, err)
+
 			assert.Equal(t, tc.expectedCrd, oauthResources.OAuthCRD)
 		})
 	}

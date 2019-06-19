@@ -15,27 +15,8 @@ func TestTransformMasterConfigRequestHeader(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/requestheader/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd configv1.OAuth
-	expectedCrd.APIVersion = "config.openshift.io/v1"
-	expectedCrd.Kind = "OAuth"
-	expectedCrd.Name = "cluster"
-	expectedCrd.Namespace = oauth.OAuthNamespace
-
-	var requestHeaderIDP = &configv1.IdentityProvider{}
-
-	requestHeaderIDP.Type = "RequestHeader"
-	requestHeaderIDP.Name = "my_request_header_provider"
-	requestHeaderIDP.MappingMethod = "claim"
-	requestHeaderIDP.RequestHeader = &configv1.RequestHeaderIdentityProvider{}
-	requestHeaderIDP.RequestHeader.ChallengeURL = "https://example.com"
-	requestHeaderIDP.RequestHeader.LoginURL = "https://example.com"
-	requestHeaderIDP.RequestHeader.ClientCA = configv1.ConfigMapNameReference{Name: "requestheader-configmap"}
-	requestHeaderIDP.RequestHeader.ClientCommonNames = []string{"my-auth-proxy"}
-	requestHeaderIDP.RequestHeader.Headers = []string{"X-Remote-User", "SSO-User"}
-	requestHeaderIDP.RequestHeader.EmailHeaders = []string{"X-Remote-User-Email"}
-	requestHeaderIDP.RequestHeader.NameHeaders = []string{"X-Remote-User-Display-Name"}
-	requestHeaderIDP.RequestHeader.PreferredUsernameHeaders = []string{"X-Remote-User-Login"}
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *requestHeaderIDP)
+	expectedCrd, err := loadExpectedOAuth("testdata/requestheader/expected-CR-oauth.yaml")
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name        string
@@ -43,7 +24,7 @@ func TestTransformMasterConfigRequestHeader(t *testing.T) {
 	}{
 		{
 			name:        "build request header provider",
-			expectedCrd: &expectedCrd,
+			expectedCrd: expectedCrd,
 		},
 	}
 

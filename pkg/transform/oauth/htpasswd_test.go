@@ -6,6 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+
 	configv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,19 +16,8 @@ func TestTransformMasterConfigHtpasswd(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/htpasswd/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd configv1.OAuth
-	expectedCrd.APIVersion = "config.openshift.io/v1"
-	expectedCrd.Kind = "OAuth"
-	expectedCrd.Name = "cluster"
-	expectedCrd.Namespace = oauth.OAuthNamespace
-
-	var htpasswdIDP = &configv1.IdentityProvider{}
-	htpasswdIDP.Name = "htpasswd_auth"
-	htpasswdIDP.MappingMethod = "claim"
-	htpasswdIDP.Type = "HTPasswd"
-	htpasswdIDP.HTPasswd = &configv1.HTPasswdIdentityProvider{}
-	htpasswdIDP.HTPasswd.FileData.Name = "htpasswd_auth-secret"
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *htpasswdIDP)
+	expectedCrd, err := loadExpectedOAuth("testdata/htpasswd/expected-CR-oauth.yaml")
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name        string
@@ -35,7 +25,7 @@ func TestTransformMasterConfigHtpasswd(t *testing.T) {
 	}{
 		{
 			name:        "build htpasswd provider",
-			expectedCrd: &expectedCrd,
+			expectedCrd: expectedCrd,
 		},
 	}
 

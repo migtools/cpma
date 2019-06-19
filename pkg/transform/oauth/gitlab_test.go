@@ -15,22 +15,8 @@ func TestTransformMasterConfigGitlab(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/gitlab/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd configv1.OAuth
-	expectedCrd.APIVersion = "config.openshift.io/v1"
-	expectedCrd.Kind = "OAuth"
-	expectedCrd.Name = "cluster"
-	expectedCrd.Namespace = oauth.OAuthNamespace
-
-	var gitlabIDP = &configv1.IdentityProvider{}
-	gitlabIDP.Type = "GitLab"
-	gitlabIDP.MappingMethod = "claim"
-	gitlabIDP.Name = "gitlab123456789"
-	gitlabIDP.GitLab = &configv1.GitLabIdentityProvider{}
-	gitlabIDP.GitLab.URL = "https://gitlab.com/"
-	gitlabIDP.GitLab.CA = configv1.ConfigMapNameReference{Name: "gitlab-configmap"}
-	gitlabIDP.GitLab.ClientID = "fake-id"
-	gitlabIDP.GitLab.ClientSecret.Name = "gitlab123456789-secret"
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *gitlabIDP)
+	expectedCrd, err := loadExpectedOAuth("testdata/gitlab/expected-CR-oauth.yaml")
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name        string
@@ -38,7 +24,7 @@ func TestTransformMasterConfigGitlab(t *testing.T) {
 	}{
 		{
 			name:        "build gitlab provider",
-			expectedCrd: &expectedCrd,
+			expectedCrd: expectedCrd,
 		},
 	}
 
