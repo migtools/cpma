@@ -1,0 +1,10 @@
+apiVersion: operator.openshift.io/v1
+kind: Project
+metadata:
+  creationTimestamp: null
+  name: cluster
+spec:
+  projectRequestMessage: ""
+  projectRequestTemplate:
+    name: ""
+status: {}
