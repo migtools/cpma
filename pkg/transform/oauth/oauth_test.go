@@ -14,6 +14,22 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
+func loadExpectedOAuth(file string) (*configv1.OAuth, error) {
+	expectedContent, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	expectedOAuth := new(configv1.OAuth)
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	_, _, err = serializer.Decode(expectedContent, nil, expectedOAuth)
+	if err != nil {
+		return nil, err
+	}
+
+	return expectedOAuth, nil
+}
+
 func TestTransformMasterConfig(t *testing.T) {
 	file := "testdata/master_config-bulk.yaml"
 

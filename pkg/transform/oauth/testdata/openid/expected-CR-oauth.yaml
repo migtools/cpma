@@ -1,0 +1,38 @@
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  creationTimestamp: null
+  name: cluster
+  namespace: openshift-config
+spec:
+  identityProviders:
+  - mappingMethod: claim
+    name: my_openid_connect
+    openID:
+      ca:
+        name: ""
+      claims:
+        email:
+        - custom_email_claim
+        - email
+        name:
+        - nickname
+        - given_name
+        - name
+        preferredUsername:
+        - preferred_username
+        - email
+      clientID: testid
+      clientSecret:
+        name: my_openid_connect-secret
+      issuer: ""
+    type: OpenID
+  templates:
+    error:
+      name: ""
+    login:
+      name: ""
+    providerSelection:
+      name: ""
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 0

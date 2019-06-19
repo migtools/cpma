@@ -2,7 +2,10 @@ package oauth_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
+
+	"github.com/ghodss/yaml"
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
@@ -15,24 +18,8 @@ func TestTransformMasterConfigOpenID(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/openid/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd configv1.OAuth
-	expectedCrd.APIVersion = "config.openshift.io/v1"
-	expectedCrd.Kind = "OAuth"
-	expectedCrd.Name = "cluster"
-	expectedCrd.Namespace = oauth.OAuthNamespace
-
-	var openidIDP = &configv1.IdentityProvider{}
-	openidIDP.Type = "OpenID"
-	openidIDP.MappingMethod = "claim"
-	openidIDP.Name = "my_openid_connect"
-	openidIDP.OpenID = &configv1.OpenIDIdentityProvider{}
-	openidIDP.OpenID.ClientID = "testid"
-	openidIDP.OpenID.Claims.PreferredUsername = []string{"preferred_username", "email"}
-	openidIDP.OpenID.Claims.Name = []string{"nickname", "given_name", "name"}
-	openidIDP.OpenID.Claims.Email = []string{"custom_email_claim", "email"}
-	openidIDP.OpenID.ClientSecret.Name = "my_openid_connect-secret"
-
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *openidIDP)
+	expectedCrd, err := loadExpectedOAuth("testdata/openid/expected-CR-oauth.yaml")
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name        string
@@ -40,7 +27,7 @@ func TestTransformMasterConfigOpenID(t *testing.T) {
 	}{
 		{
 			name:        "build openid provider",
-			expectedCrd: &expectedCrd,
+			expectedCrd: expectedCrd,
 		},
 	}
 
@@ -48,6 +35,10 @@ func TestTransformMasterConfigOpenID(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{})
 			require.NoError(t, err)
+
+			res, _ := yaml.Marshal(oauthResources.OAuthCRD)
+			fmt.Printf("%s\n", res)
+
 			assert.Equal(t, tc.expectedCrd, oauthResources.OAuthCRD)
 		})
 	}

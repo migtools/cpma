@@ -1,0 +1,27 @@
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  creationTimestamp: null
+  name: cluster
+  namespace: openshift-config
+spec:
+  identityProviders:
+  - gitlab:
+      ca:
+        name: gitlab-configmap
+      clientID: fake-id
+      clientSecret:
+        name: gitlab123456789-secret
+      url: https://gitlab.com/
+    mappingMethod: claim
+    name: gitlab123456789
+    type: GitLab
+  templates:
+    error:
+      name: ""
+    login:
+      name: ""
+    providerSelection:
+      name: ""
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 0

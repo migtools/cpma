@@ -90,7 +90,7 @@ func TestOauthGenYAML(t *testing.T) {
 }
 
 func TestAllOtherCRGenYaml(t *testing.T) {
-	expectedConfigMapYaml, err := ioutil.ReadFile("testdata/expected-configmap.yaml")
+	expectedConfigMapYaml, err := ioutil.ReadFile("testdata/expected-CR-configmap.yaml")
 	require.NoError(t, err)
 
 	expectedSecretYaml, err := ioutil.ReadFile("testdata/expected-CR-secret.yaml")

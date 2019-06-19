@@ -1,0 +1,36 @@
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  creationTimestamp: null
+  name: cluster
+  namespace: openshift-config
+spec:
+  identityProviders:
+  - mappingMethod: claim
+    name: my_request_header_provider
+    requestHeader:
+      ca:
+        name: requestheader-configmap
+      challengeURL: https://example.com
+      clientCommonNames:
+      - my-auth-proxy
+      emailHeaders:
+      - X-Remote-User-Email
+      headers:
+      - X-Remote-User
+      - SSO-User
+      loginURL: https://example.com
+      nameHeaders:
+      - X-Remote-User-Display-Name
+      preferredUsernameHeaders:
+      - X-Remote-User-Login
+    type: RequestHeader
+  templates:
+    error:
+      name: ""
+    login:
+      name: ""
+    providerSelection:
+      name: ""
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 0

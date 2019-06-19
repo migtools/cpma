@@ -1,0 +1,25 @@
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  creationTimestamp: null
+  name: cluster
+  namespace: openshift-config
+spec:
+  identityProviders:
+  - google:
+      clientID: 82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com
+      clientSecret:
+        name: google123456789123456789-secret
+      hostedDomain: test.example.com
+    mappingMethod: claim
+    name: google123456789123456789
+    type: Google
+  templates:
+    error:
+      name: ""
+    login:
+      name: ""
+    providerSelection:
+      name: ""
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 0
