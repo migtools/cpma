@@ -1,6 +1,7 @@
 apiVersion: config.openshift.io/v1
 kind: OAuth
 metadata:
+  creationTimestamp: null
   name: cluster
   namespace: openshift-config
 spec:
@@ -13,13 +14,10 @@ spec:
       tlsClientKey:
         name: my_remote_basic_auth_provider-client-key-secret
       url: https://www.example.com/
-    challenge: true
-    login: true
     mappingMethod: claim
     name: my_remote_basic_auth_provider
     type: BasicAuth
-  - challenge: false
-    github:
+  - github:
       ca:
         name: github-configmap
       clientID: 2d85ea3f45d6777bffd7
@@ -32,42 +30,34 @@ spec:
       teams:
       - myorganization1/team-a
       - myorganization2/team-b
-    login: true
     mappingMethod: claim
     name: github123456789
     type: GitHub
-  - challenge: true
-    gitlab:
+  - gitlab:
       ca:
         name: gitlab-configmap
       clientID: fake-id
       clientSecret:
         name: gitlab123456789-secret
       url: https://gitlab.com/
-    login: true
     mappingMethod: claim
     name: gitlab123456789
     type: GitLab
-  - challenge: false
-    google:
+  - google:
       clientID: 82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com
       clientSecret:
         name: google123456789123456789-secret
       hostedDomain: test.example.com
-    login: true
     mappingMethod: claim
     name: google123456789123456789
     type: Google
-  - challenge: true
-    htpasswd:
+  - htpasswd:
       fileData:
         name: htpasswd_auth-secret
-    login: true
     mappingMethod: claim
     name: htpasswd_auth
     type: HTPasswd
-  - challenge: true
-    keystone:
+  - keystone:
       ca:
         name: keystone-configmap
       domainName: default
@@ -76,12 +66,10 @@ spec:
       tlsClientKey:
         name: my_keystone_provider-client-key-secret
       url: http://fake.url:5000
-    login: true
     mappingMethod: claim
     name: my_keystone_provider
     type: Keystone
-  - challenge: true
-    ldap:
+  - ldap:
       attributes:
         email:
         - mail
@@ -92,23 +80,23 @@ spec:
         preferredUsername:
         - uid
       bindDN: "123"
-      bindPassword: "321"
+      bindPassword:
+        name: "321"
       ca:
         name: ldap-configmap
       insecure: false
       url: ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid
-    login: true
     mappingMethod: claim
     name: my_ldap_provider
     type: LDAP
-  - challenge: true
-    login: true
-    mappingMethod: claim
+  - mappingMethod: claim
     name: my_request_header_provider
     requestHeader:
       ca:
         name: requestheader-configmap
       challengeURL: https://example.com
+      clientCommonNames:
+      - my-auth-proxy
       emailHeaders:
       - X-Remote-User-Email
       headers:
@@ -119,14 +107,12 @@ spec:
       - X-Remote-User-Display-Name
       preferredUsernameHeaders:
       - X-Remote-User-Login
-      сlientCommonNames:
-      - my-auth-proxy
     type: RequestHeader
-  - challenge: false
-    login: true
-    mappingMethod: claim
+  - mappingMethod: claim
     name: my_openid_connect
     openID:
+      ca:
+        name: ""
       claims:
         email:
         - custom_email_claim
@@ -141,9 +127,15 @@ spec:
       clientID: testid
       clientSecret:
         name: my_openid_connect-secret
-      urls:
-        authorize: https://myidp.example.com/oauth2/authorize
-        token: https://myidp.example.com/oauth2/token
+      issuer: ""
     type: OpenID
+  templates:
+    error:
+      name: ""
+    login:
+      name: ""
+    providerSelection:
+      name: ""
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400
+status: {}

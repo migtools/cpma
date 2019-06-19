@@ -6,6 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	configv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,27 +15,26 @@ func TestTransformMasterConfigGitlab(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/gitlab/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd oauth.CRD
+	var expectedCrd configv1.OAuth
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
-	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
+	expectedCrd.Name = "cluster"
+	expectedCrd.Namespace = oauth.OAuthNamespace
 
-	var gitlabIDP = &oauth.IdentityProviderGitLab{}
+	var gitlabIDP = &configv1.IdentityProvider{}
 	gitlabIDP.Type = "GitLab"
-	gitlabIDP.Challenge = true
-	gitlabIDP.Login = true
 	gitlabIDP.MappingMethod = "claim"
 	gitlabIDP.Name = "gitlab123456789"
+	gitlabIDP.GitLab = &configv1.GitLabIdentityProvider{}
 	gitlabIDP.GitLab.URL = "https://gitlab.com/"
-	gitlabIDP.GitLab.CA = &oauth.CA{Name: "gitlab-configmap"}
+	gitlabIDP.GitLab.CA = configv1.ConfigMapNameReference{Name: "gitlab-configmap"}
 	gitlabIDP.GitLab.ClientID = "fake-id"
 	gitlabIDP.GitLab.ClientSecret.Name = "gitlab123456789-secret"
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, gitlabIDP)
+	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *gitlabIDP)
 
 	testCases := []struct {
 		name        string
-		expectedCrd *oauth.CRD
+		expectedCrd *configv1.OAuth
 	}{
 		{
 			name:        "build gitlab provider",

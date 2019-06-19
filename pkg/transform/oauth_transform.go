@@ -256,18 +256,16 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 
 			extraction.IdentityProviders = append(extraction.IdentityProviders,
 				oauth.IdentityProvider{
-					Kind:            provider.Kind,
-					APIVersion:      provider.APIVersion,
-					MappingMethod:   identityProvider.MappingMethod,
-					Name:            identityProvider.Name,
-					Provider:        identityProvider.Provider,
-					HTFileName:      provider.File,
-					HTFileData:      htContent,
-					CAData:          caContent,
-					CrtData:         crtContent,
-					KeyData:         keyContent,
-					UseAsChallenger: identityProvider.UseAsChallenger,
-					UseAsLogin:      identityProvider.UseAsLogin,
+					Kind:          provider.Kind,
+					APIVersion:    provider.APIVersion,
+					MappingMethod: identityProvider.MappingMethod,
+					Name:          identityProvider.Name,
+					Provider:      identityProvider.Provider,
+					HTFileName:    provider.File,
+					HTFileData:    htContent,
+					CAData:        caContent,
+					CrtData:       crtContent,
+					KeyData:       keyContent,
 				})
 		}
 	}

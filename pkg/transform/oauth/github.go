@@ -8,30 +8,15 @@ import (
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
+	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-//IdentityProviderGitHub is a Github specific identity provider
-type IdentityProviderGitHub struct {
-	identityProviderCommon `json:",inline"`
-	GitHub                 GitHub `json:"github"`
-}
-
-// GitHub provider specific data
-type GitHub struct {
-	HostName      string       `json:"hostname,omitempty"`
-	CA            *CA          `json:"ca,omitempty"`
-	ClientID      string       `json:"clientID"`
-	ClientSecret  ClientSecret `json:"clientSecret"`
-	Organizations []string     `json:"organizations,omitempty"`
-	Teams         []string     `json:"teams,omitempty"`
-}
-
-func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGitHub, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
 		err         error
-		idP         = &IdentityProviderGitHub{}
+		idP         = &configv1.IdentityProvider{}
 		secret      *secrets.Secret
 		caConfigmap *configmaps.ConfigMap
 		github      legacyconfigv1.GitHubIdentityProvider
@@ -43,17 +28,16 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 
 	idP.Type = "GitHub"
 	idP.Name = p.Name
-	idP.Challenge = p.UseAsChallenger
-	idP.Login = p.UseAsLogin
-	idP.MappingMethod = p.MappingMethod
-	idP.GitHub.HostName = github.Hostname
+	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.GitHub = &configv1.GitHubIdentityProvider{}
+	idP.GitHub.Hostname = github.Hostname
 	idP.GitHub.ClientID = github.ClientID
 	idP.GitHub.Organizations = github.Organizations
 	idP.GitHub.Teams = github.Teams
 
 	if github.CA != "" {
 		caConfigmap = configmaps.GenConfigMap("github-configmap", OAuthNamespace, p.CAData)
-		idP.GitHub.CA = &CA{Name: caConfigmap.Metadata.Name}
+		idP.GitHub.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
 	}
 
 	secretName := p.Name + "-secret"

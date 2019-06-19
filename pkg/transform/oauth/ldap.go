@@ -3,39 +3,16 @@ package oauth
 import (
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
+	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-// IdentityProviderLDAP is a LDAP specific identity provider
-type IdentityProviderLDAP struct {
-	identityProviderCommon `json:",inline"`
-	LDAP                   LDAP `json:"ldap"`
-}
-
-// LDAP provider specific data
-type LDAP struct {
-	Attributes   LDAPAttributes `json:"attributes"`
-	BindDN       string         `json:"bindDN,omitempty"`
-	BindPassword string         `json:"bindPassword,omitempty"`
-	CA           *CA            `json:"ca,omitempty"`
-	Insecure     bool           `json:"insecure"`
-	URL          string         `json:"url"`
-}
-
-// LDAPAttributes for an LDAP provider
-type LDAPAttributes struct {
-	ID                []string `json:"id"`
-	Email             []string `json:"email"`
-	Name              []string `json:"name"`
-	PreferredUsername []string `json:"preferredUsername"`
-}
-
-func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderLDAP, *configmaps.ConfigMap, error) {
+func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *configmaps.ConfigMap, error) {
 	var (
 		err         error
-		idP         = &IdentityProviderLDAP{}
+		idP         = &configv1.IdentityProvider{}
 		caConfigmap *configmaps.ConfigMap
 		ldap        legacyconfigv1.LDAPPasswordIdentityProvider
 	)
@@ -46,9 +23,8 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 
 	idP.Type = "LDAP"
 	idP.Name = p.Name
-	idP.Challenge = p.UseAsChallenger
-	idP.Login = p.UseAsLogin
-	idP.MappingMethod = p.MappingMethod
+	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.LDAP = &configv1.LDAPIdentityProvider{}
 	idP.LDAP.Attributes.ID = ldap.Attributes.ID
 	idP.LDAP.Attributes.Email = ldap.Attributes.Email
 	idP.LDAP.Attributes.Name = ldap.Attributes.Name
@@ -61,12 +37,12 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProv
 			return nil, nil, errors.Wrap(err, "Failed to fetch bind password for ldap")
 		}
 
-		idP.LDAP.BindPassword = bindPassword
+		idP.LDAP.BindPassword.Name = bindPassword
 	}
 
 	if ldap.CA != "" {
 		caConfigmap = configmaps.GenConfigMap("ldap-configmap", OAuthNamespace, p.CAData)
-		idP.LDAP.CA = &CA{Name: caConfigmap.Metadata.Name}
+		idP.LDAP.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
 	}
 
 	idP.LDAP.Insecure = ldap.Insecure

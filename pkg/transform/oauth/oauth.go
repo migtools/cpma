@@ -5,6 +5,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
+	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
@@ -25,39 +26,6 @@ func init() {
 //   - [2] htpasswd: https://docs.openshift.com/container-platform/4.0/authentication/understanding-identity-provider.html
 //   - [3] github: https://docs.openshift.com/container-platform/4.0/authentication/identity_providers/configuring-github-identity-provider.html
 
-// CRD Shared CRD part, present in all types of OAuth CRDs
-type CRD struct {
-	APIVersion string   `json:"apiVersion"`
-	Kind       string   `json:"kind"`
-	Metadata   MetaData `json:"metadata"`
-	Spec       Spec     `json:"spec"`
-}
-
-// Spec is a CRD Spec
-type Spec struct {
-	IdentityProviders []interface{}         `json:"identityProviders,omitempty"`
-	TokenConfig       TranslatedTokenConfig `json:"tokenConfig,omitempty"`
-}
-
-// TranslatedTokenConfig holds lifetime of access tokens
-type TranslatedTokenConfig struct {
-	AccessTokenMaxAgeSeconds int32 `json:"accessTokenMaxAgeSeconds"`
-}
-
-type identityProviderCommon struct {
-	Name          string `json:"name"`
-	Challenge     bool   `json:"challenge"`
-	Login         bool   `json:"login"`
-	MappingMethod string `json:"mappingMethod"`
-	Type          string `json:"type"`
-}
-
-// MetaData contains CRD Metadata
-type MetaData struct {
-	Name      string `json:"name"`
-	NameSpace string `json:"namespace"`
-}
-
 // Provider contains an identity providers type specific provider data
 type Provider struct {
 	APIVersion string `json:"apiVersion"`
@@ -70,23 +38,21 @@ type Provider struct {
 
 // IdentityProvider stores an identity provider
 type IdentityProvider struct {
-	Kind            string
-	APIVersion      string
-	MappingMethod   string
-	Name            string
-	Provider        runtime.RawExtension
-	HTFileName      string
-	HTFileData      []byte
-	CAData          []byte
-	CrtData         []byte
-	KeyData         []byte
-	UseAsChallenger bool
-	UseAsLogin      bool
+	Kind          string
+	APIVersion    string
+	MappingMethod string
+	Name          string
+	Provider      runtime.RawExtension
+	HTFileName    string
+	HTFileData    []byte
+	CAData        []byte
+	CrtData       []byte
+	KeyData       []byte
 }
 
 // Resources stores all oAuth config parts
 type Resources struct {
-	OAuthCRD   *CRD
+	OAuthCRD   *configv1.OAuth
 	Secrets    []*secrets.Secret
 	ConfigMaps []*configmaps.ConfigMap
 }
@@ -107,16 +73,16 @@ const (
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
 func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig) (*Resources, error) {
 	var err error
-	var idP interface{}
+	var idP *configv1.IdentityProvider
 	var secretsSlice []*secrets.Secret
 	var сonfigMapSlice []*configmaps.ConfigMap
 
 	// Translate configuration of diffent oAuth providers to CRD, secrets and config maps
-	var oauthCrd CRD
+	var oauthCrd configv1.OAuth
 	oauthCrd.APIVersion = APIVersion
 	oauthCrd.Kind = "OAuth"
-	oauthCrd.Metadata.Name = "cluster"
-	oauthCrd.Metadata.NameSpace = OAuthNamespace
+	oauthCrd.Name = "cluster"
+	oauthCrd.Namespace = OAuthNamespace
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	for _, p := range identityProviders {
 		var secret, certSecret, keySecret *secrets.Secret
@@ -175,7 +141,7 @@ func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig) (*
 			сonfigMapSlice = append(сonfigMapSlice, caConfigMap)
 		}
 
-		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, idP)
+		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, *idP)
 	}
 
 	// Translate lifetime of access tokens

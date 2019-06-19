@@ -3,9 +3,9 @@ package transform
 import (
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
-	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/ghodss/yaml"
+	configv1 "github.com/openshift/api/config/v1"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,7 +35,7 @@ type Cluster struct {
 
 // Master is a cluster Master
 type Master struct {
-	OAuth      oauth.CRD
+	OAuth      configv1.OAuth
 	Secrets    []*secrets.Secret
 	ConfigMaps []*configmaps.ConfigMap
 }

@@ -5,30 +5,17 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
+	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-// IdentityProviderKeystone is a Keystone specific identity provider
-type IdentityProviderKeystone struct {
-	identityProviderCommon `json:",inline"`
-	Keystone               Keystone `json:"keystone"`
-}
-
-// Keystone specific Provider data
-type Keystone struct {
-	DomainName    string         `json:"domainName"`
-	URL           string         `json:"url"`
-	CA            *CA            `json:"ca,omitempty"`
-	TLSClientCert *TLSClientCert `json:"tlsClientCert,omitempty"`
-	TLSClientKey  *TLSClientKey  `json:"tlsClientKey,omitempty"`
-}
-
-func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderKeystone, *secrets.Secret, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
-		idP                   = &IdentityProviderKeystone{}
+		idP = &configv1.IdentityProvider{}
+
 		certSecret, keySecret *secrets.Secret
 		caConfigmap           *configmaps.ConfigMap
 		err                   error
@@ -41,15 +28,14 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 
 	idP.Type = "Keystone"
 	idP.Name = p.Name
-	idP.Challenge = p.UseAsChallenger
-	idP.Login = p.UseAsLogin
-	idP.MappingMethod = p.MappingMethod
+	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.Keystone = &configv1.KeystoneIdentityProvider{}
 	idP.Keystone.DomainName = keystone.DomainName
 	idP.Keystone.URL = keystone.URL
 
 	if keystone.CA != "" {
 		caConfigmap = configmaps.GenConfigMap("keystone-configmap", OAuthNamespace, p.CAData)
-		idP.Keystone.CA = &CA{Name: caConfigmap.Metadata.Name}
+		idP.Keystone.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
 	}
 
 	if keystone.UseKeystoneIdentity {
@@ -58,14 +44,14 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Identity
 
 	if keystone.CertFile != "" {
 		certSecretName := p.Name + "-client-cert-secret"
-		idP.Keystone.TLSClientCert = &TLSClientCert{Name: certSecretName}
+		idP.Keystone.TLSClientCert.Name = certSecretName
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
 		if certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType); err != nil {
 			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate cert secret for keystone, see error")
 		}
 
 		keySecretName := p.Name + "-client-key-secret"
-		idP.Keystone.TLSClientKey = &TLSClientKey{Name: keySecretName}
+		idP.Keystone.TLSClientKey.Name = keySecretName
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
 		if keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType); err != nil {
 			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate key secret for keystone, see error")

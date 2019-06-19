@@ -5,28 +5,16 @@ import (
 
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/secrets"
+	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-//IdentityProviderGoogle is a Google specific identity provider
-type IdentityProviderGoogle struct {
-	identityProviderCommon `json:",inline"`
-	Google                 Google `json:"google"`
-}
-
-// Google provider specific data
-type Google struct {
-	ClientID     string       `json:"clientID"`
-	ClientSecret ClientSecret `json:"clientSecret"`
-	HostedDomain string       `json:"hostedDomain,omitempty"`
-}
-
-func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderGoogle, *secrets.Secret, error) {
+func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, error) {
 	var (
 		err    error
-		idP    = &IdentityProviderGoogle{}
+		idP    = &configv1.IdentityProvider{}
 		secret *secrets.Secret
 		google legacyconfigv1.GoogleIdentityProvider
 	)
@@ -37,9 +25,8 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*IdentityPr
 
 	idP.Type = "Google"
 	idP.Name = p.Name
-	idP.Challenge = p.UseAsChallenger
-	idP.Login = p.UseAsLogin
-	idP.MappingMethod = p.MappingMethod
+	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.Google = &configv1.GoogleIdentityProvider{}
 	idP.Google.ClientID = google.ClientID
 	idP.Google.HostedDomain = google.HostedDomain
 

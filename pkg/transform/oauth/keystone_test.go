@@ -6,6 +6,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	configv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,29 +15,28 @@ func TestTransformMasterConfigKeystone(t *testing.T) {
 	identityProviders, err := cpmatest.LoadIPTestData("testdata/keystone/master_config.yaml")
 	require.NoError(t, err)
 
-	var expectedCrd oauth.CRD
+	var expectedCrd configv1.OAuth
 	expectedCrd.APIVersion = "config.openshift.io/v1"
 	expectedCrd.Kind = "OAuth"
-	expectedCrd.Metadata.Name = "cluster"
-	expectedCrd.Metadata.NameSpace = oauth.OAuthNamespace
+	expectedCrd.Name = "cluster"
+	expectedCrd.Namespace = oauth.OAuthNamespace
 
-	var keystoneIDP = &oauth.IdentityProviderKeystone{}
+	var keystoneIDP = &configv1.IdentityProvider{}
 	keystoneIDP.Type = "Keystone"
-	keystoneIDP.Challenge = true
-	keystoneIDP.Login = true
 	keystoneIDP.Name = "my_keystone_provider"
 	keystoneIDP.MappingMethod = "claim"
+	keystoneIDP.Keystone = &configv1.KeystoneIdentityProvider{}
 	keystoneIDP.Keystone.DomainName = "default"
 	keystoneIDP.Keystone.URL = "http://fake.url:5000"
-	keystoneIDP.Keystone.CA = &oauth.CA{Name: "keystone-configmap"}
-	keystoneIDP.Keystone.TLSClientCert = &oauth.TLSClientCert{Name: "my_keystone_provider-client-cert-secret"}
-	keystoneIDP.Keystone.TLSClientKey = &oauth.TLSClientKey{Name: "my_keystone_provider-client-key-secret"}
+	keystoneIDP.Keystone.CA = configv1.ConfigMapNameReference{Name: "keystone-configmap"}
+	keystoneIDP.Keystone.TLSClientCert.Name = "my_keystone_provider-client-cert-secret"
+	keystoneIDP.Keystone.TLSClientKey.Name = "my_keystone_provider-client-key-secret"
 
-	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, keystoneIDP)
+	expectedCrd.Spec.IdentityProviders = append(expectedCrd.Spec.IdentityProviders, *keystoneIDP)
 
 	testCases := []struct {
 		name        string
-		expectedCrd *oauth.CRD
+		expectedCrd *configv1.OAuth
 	}{
 		{
 			name:        "build keystone provider",

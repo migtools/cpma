@@ -2,33 +2,16 @@ package oauth
 
 import (
 	"github.com/fusor/cpma/pkg/transform/configmaps"
+	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-// IdentityProviderRequestHeader is a request header specific identity provider
-type IdentityProviderRequestHeader struct {
-	identityProviderCommon `json:",inline"`
-	RequestHeader          RequestHeader `json:"requestHeader"`
-}
-
-// RequestHeader provider specific data
-type RequestHeader struct {
-	ChallengeURL             string   `json:"challengeURL,omitempty"`
-	LoginURL                 string   `json:"loginURL,omitempty"`
-	CA                       *CA      `json:"ca,omitempty"`
-	ClientCommonNames        []string `json:"сlientCommonNames,omitempty"`
-	Headers                  []string `json:"headers"`
-	EmailHeaders             []string `json:"emailHeaders,omitempty"`
-	NameHeaders              []string `json:"nameHeaders,omitempty"`
-	PreferredUsernameHeaders []string `json:"preferredUsernameHeaders,omitempty"`
-}
-
-func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderRequestHeader, *configmaps.ConfigMap, error) {
+func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *configmaps.ConfigMap, error) {
 	var (
 		err           error
-		idP           = &IdentityProviderRequestHeader{}
+		idP           = &configv1.IdentityProvider{}
 		caConfigmap   *configmaps.ConfigMap
 		requestHeader legacyconfigv1.RequestHeaderIdentityProvider
 	)
@@ -39,15 +22,14 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*Ide
 
 	idP.Type = "RequestHeader"
 	idP.Name = p.Name
-	idP.Challenge = p.UseAsChallenger
-	idP.Login = p.UseAsLogin
-	idP.MappingMethod = p.MappingMethod
+	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.RequestHeader = &configv1.RequestHeaderIdentityProvider{}
 	idP.RequestHeader.ChallengeURL = requestHeader.ChallengeURL
 	idP.RequestHeader.LoginURL = requestHeader.LoginURL
 
 	if requestHeader.ClientCA != "" {
 		caConfigmap = configmaps.GenConfigMap("requestheader-configmap", OAuthNamespace, p.CAData)
-		idP.RequestHeader.CA = &CA{Name: caConfigmap.Metadata.Name}
+		idP.RequestHeader.ClientCA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
 	}
 
 	idP.RequestHeader.ClientCommonNames = requestHeader.ClientCommonNames

@@ -3,6 +3,8 @@ package oauth
 import (
 	"encoding/base64"
 
+	configv1 "github.com/openshift/api/config/v1"
+
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
@@ -10,25 +12,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-// IdentityProviderBasicAuth is a basic auth specific identity provider
-type IdentityProviderBasicAuth struct {
-	identityProviderCommon `json:",inline"`
-	BasicAuth              BasicAuth `json:"basicAuth"`
-}
-
-// BasicAuth provider specific data
-// BasicAuth provider specific data
-type BasicAuth struct {
-	URL           string         `json:"url"`
-	CA            *CA            `json:"ca,omitempty"`
-	TLSClientCert *TLSClientCert `json:"tlsClientCert,omitempty"`
-	TLSClientKey  *TLSClientKey  `json:"tlsClientKey,omitempty"`
-}
-
-func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*IdentityProviderBasicAuth, *secrets.Secret, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, *secrets.Secret, *configmaps.ConfigMap, error) {
 	var (
 		err                   error
-		idP                   = &IdentityProviderBasicAuth{}
+		idP                   = &configv1.IdentityProvider{}
 		certSecret, keySecret *secrets.Secret
 		caConfigmap           *configmaps.ConfigMap
 		basicAuth             legacyconfigv1.BasicAuthPasswordIdentityProvider
@@ -40,19 +27,18 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Identit
 
 	idP.Type = "BasicAuth"
 	idP.Name = p.Name
-	idP.Challenge = p.UseAsChallenger
-	idP.Login = p.UseAsLogin
-	idP.MappingMethod = p.MappingMethod
+	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
+	idP.BasicAuth = &configv1.BasicAuthIdentityProvider{}
 	idP.BasicAuth.URL = basicAuth.URL
 
 	if basicAuth.CA != "" {
 		caConfigmap = configmaps.GenConfigMap("basicauth-configmap", OAuthNamespace, p.CAData)
-		idP.BasicAuth.CA = &CA{Name: caConfigmap.Metadata.Name}
+		idP.BasicAuth.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
 	}
 
 	if basicAuth.CertFile != "" {
 		certSecretName := p.Name + "-client-cert-secret"
-		idP.BasicAuth.TLSClientCert = &TLSClientCert{Name: certSecretName}
+		idP.BasicAuth.TLSClientCert.Name = certSecretName
 
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
 		if certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType); err != nil {
@@ -60,7 +46,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Identit
 		}
 
 		keySecretName := p.Name + "-client-key-secret"
-		idP.BasicAuth.TLSClientKey = &TLSClientKey{Name: keySecretName}
+		idP.BasicAuth.TLSClientKey.Name = keySecretName
 
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
 		if keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType); err != nil {
