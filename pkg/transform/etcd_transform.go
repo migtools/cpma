@@ -38,7 +38,7 @@ func (e ETCDExtraction) Transform() ([]Output, error) {
 
 func (e ETCDExtraction) buildReportOutput() (Output, error) {
 	componentReport := ComponentReport{
-		Component: CrioComponentName,
+		Component: ETCDComponentName,
 	}
 
 	var TLSConfidence = HighConfidence

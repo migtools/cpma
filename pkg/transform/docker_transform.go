@@ -28,7 +28,7 @@ func (e DockerExtraction) Transform() ([]Output, error) {
 
 func (e DockerExtraction) buildReportOutput() (Output, error) {
 	componentReport := ComponentReport{
-		Component: CrioComponentName,
+		Component: DockerComponentName,
 	}
 
 	componentReport.Reports = append(componentReport.Reports,

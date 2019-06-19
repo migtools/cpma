@@ -34,7 +34,7 @@ func loadETCDExtraction() (transform.ETCDExtraction, error) {
 
 func TestETCDExtractionTransform(t *testing.T) {
 
-	expectedReport := transform.ReportOutput{
+	expectedReport := transform.ComponentReport{
 		Component: "ETCD",
 	}
 
@@ -54,13 +54,18 @@ func TestETCDExtractionTransform(t *testing.T) {
 			Confidence: 0,
 			Comment:    "The Openshift 4 ETCD Cluster is not configurable. TLS Cipher Suite configuration was detected, TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
 		})
+
+	expectedReportOutput := transform.ReportOutput{
+		ComponentReports: []transform.ComponentReport{expectedReport},
+	}
+
 	testCases := []struct {
 		name            string
 		expectedReports transform.ReportOutput
 	}{
 		{
 			name:            "transform crio extraction",
-			expectedReports: expectedReport,
+			expectedReports: expectedReportOutput,
 		},
 	}
 

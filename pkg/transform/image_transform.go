@@ -98,10 +98,10 @@ func (e ImageExtraction) buildManifestOutput() (Output, error) {
 
 func (e ImageExtraction) buildReportOutput() (Output, error) {
 	componentReport := ComponentReport{
-		Component: CrioComponentName,
+		Component: ImageComponentName,
 	}
 
-	for range e.RegistriesConfig.Registries["block"].List {
+	for _, registry := range e.RegistriesConfig.Registries["block"].List {
 		componentReport.Reports = append(componentReport.Reports,
 			Report{
 				Name:       "Blocked",
@@ -112,7 +112,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			})
 	}
 
-	for range e.RegistriesConfig.Registries["insecure"].List {
+	for _, registry := range e.RegistriesConfig.Registries["insecure"].List {
 		componentReport.Reports = append(componentReport.Reports,
 			Report{
 				Name:       "Insecure",
@@ -203,7 +203,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			Confidence: NoConfidence,
 			Comment:    "Not supported by OCP4",
 		})
-		
+
 	reportOutput := ReportOutput{
 		ComponentReports: []ComponentReport{componentReport},
 	}

@@ -15,7 +15,7 @@ func loadDockerExtraction() (transform.DockerExtraction, error) {
 
 func TestDockerExtractionTransform(t *testing.T) {
 
-	expectedReport := transform.ReportOutput{
+	expectedReport := transform.ComponentReport{
 		Component: "Docker",
 	}
 
@@ -27,13 +27,18 @@ func TestDockerExtractionTransform(t *testing.T) {
 			Confidence: 0,
 			Comment:    "The Docker runtime has been replaced with CRI-O",
 		})
+
+	expectedReportOutput := transform.ReportOutput{
+		ComponentReports: []transform.ComponentReport{expectedReport},
+	}
+
 	testCases := []struct {
 		name            string
 		expectedReports transform.ReportOutput
 	}{
 		{
 			name:            "transform crio extraction",
-			expectedReports: expectedReport,
+			expectedReports: expectedReportOutput,
 		},
 	}
 

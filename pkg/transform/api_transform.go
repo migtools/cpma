@@ -41,7 +41,7 @@ func (e APIExtraction) Transform() ([]Output, error) {
 
 func (e APIExtraction) buildReportOutput() (Output, error) {
 	componentReport := ComponentReport{
-		Component: CrioComponentName,
+		Component: APIComponentName,
 	}
 
 	portArray := strings.Split(e.HTTPServingInfo.BindAddress, ":")

@@ -7,13 +7,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ReportOutput holds a collection of reports to be written to fil
-
+// ReportOutput holds a collection of reports to be written to file
 type ReportOutput struct {
 	ClusterReport    ClusterReport     `json:"cluster"`
 	ComponentReports []ComponentReport `json:"components"`
 }
 
+// ComponentReport holds a collection of ocp3 config reports
 type ComponentReport struct {
 	Component string   `json:"component"`
 	Reports   []Report `json:"reports"`
