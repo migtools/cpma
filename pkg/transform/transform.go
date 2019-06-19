@@ -84,7 +84,7 @@ func Start() {
 
 	runner.Transform([]Transform{
 		APITransform{},
-		ClusterReportTransform{},
+		ClusterTransform{},
 		CrioTransform{},
 		DockerTransform{},
 		ETCDTransform{},

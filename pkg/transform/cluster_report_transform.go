@@ -14,13 +14,13 @@ type ClusterReportExtraction struct {
 	api.Resources
 }
 
-// ClusterReportTransform reprents transform for k8s API resources
-type ClusterReportTransform struct {
+// ClusterTransform reprents transform for k8s API resources
+type ClusterTransform struct {
 }
 
 // Transform converts data collected from an OCP3 API into a useful output
 func (e ClusterReportExtraction) Transform() ([]Output, error) {
-	logrus.Info("ClusterReportTransform::Transform")
+	logrus.Info("ClusterTransform::Transform")
 
 	clusterReport, err := genClusterReport(api.Resources{
 		PersistentVolumeList: e.PersistentVolumeList,
@@ -54,7 +54,6 @@ func genClusterReport(apiResources api.Resources) (ClusterReport, error) {
 func (clusterReport *ClusterReport) reportNamespaces(apiResources api.Resources) {
 	logrus.Debug("ClusterReport::ReportNamespaces")
 
-	// Go through all required namespace resources and report them
 	for namespaceName, resources := range apiResources.NamespaceMap {
 		reportedNamespace := NamespaceReport{
 			Name: namespaceName,
@@ -111,7 +110,7 @@ func (e ClusterReportExtraction) Validate() error {
 }
 
 // Extract collects data for cluster report
-func (e ClusterReportTransform) Extract() (Extraction, error) {
+func (e ClusterTransform) Extract() (Extraction, error) {
 	extraction := &ClusterReportExtraction{}
 
 	namespacesList, err := api.ListNamespaces()
@@ -149,6 +148,6 @@ func (e ClusterReportTransform) Extract() (Extraction, error) {
 }
 
 // Name returns a human readable name for the transform
-func (e ClusterReportTransform) Name() string {
+func (e ClusterTransform) Name() string {
 	return ClusterReportName
 }

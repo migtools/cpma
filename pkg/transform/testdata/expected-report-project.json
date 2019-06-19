@@ -1,40 +1,52 @@
 {
-  "component": "Project",
-  "reports": [{
-    "name": "ProjectRequestMessage",
-    "kind": "ProjectConfig",
-    "supported": true,
-    "confidence": 2,
-    "comment": "Networks must be configured during installation"
-  }, {
-    "name": "ProjectRequestTemplate",
-    "kind": "ProjectConfig",
-    "supported": true,
-    "confidence": 2,
-    "comment": "Networks must be configured during installation"
-  }, {
-    "name": "DefaultNodeSelector",
-    "kind": "ProjectConfig",
-    "supported": false,
-    "confidence": 0,
-    "comment": "Not supported in OCP4: node-role.kubernetes.io/compute=true"
-  }, {
-    "name": "SecurityAllocator.mcsAllocatorRange",
-    "kind": "ProjectConfig",
-    "supported": false,
-    "confidence": 0,
-    "comment": "Not supported in OCP4: s0:/2"
-  }, {
-    "name": "SecurityAllocator.mcsLabelsPerProject",
-    "kind": "ProjectConfig",
-    "supported": false,
-    "confidence": 0,
-    "comment": "Not supported in OCP4: 5"
-  }, {
-    "name": "SecurityAllocator.uidAllocatorRange",
-    "kind": "ProjectConfig",
-    "supported": false,
-    "confidence": 0,
-    "comment": "Not supported in OCP4: 1000000000-1999999999/10000"
-  }]
+  "cluster": {},
+  "components": [
+    {
+      "component": "Project",
+      "reports": [
+        {
+          "name": "ProjectRequestMessage",
+          "kind": "ProjectConfig",
+          "supported": true,
+          "confidence": 2,
+          "comment": "Networks must be configured during installation"
+        },
+        {
+          "name": "ProjectRequestTemplate",
+          "kind": "ProjectConfig",
+          "supported": true,
+          "confidence": 2,
+          "comment": "Networks must be configured during installation"
+        },
+        {
+          "name": "DefaultNodeSelector",
+          "kind": "ProjectConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported in OCP4: node-role.kubernetes.io/compute=true"
+        },
+        {
+          "name": "SecurityAllocator.mcsAllocatorRange",
+          "kind": "ProjectConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported in OCP4: s0:/2"
+        },
+        {
+          "name": "SecurityAllocator.mcsLabelsPerProject",
+          "kind": "ProjectConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported in OCP4: 5"
+        },
+        {
+          "name": "SecurityAllocator.uidAllocatorRange",
+          "kind": "ProjectConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported in OCP4: 1000000000-1999999999/10000"
+        }
+      ]
+    }
+  ]
 }
