@@ -1,7 +1,7 @@
 package transform
 
 import (
-	"strconv"
+	"fmt"
 
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
@@ -88,7 +88,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 			Kind:       "ProjectConfig",
 			Supported:  false,
 			Confidence: NoConfidence,
-			Comment:    "Not supported in OCP4: " + e.ProjectConfig.DefaultNodeSelector,
+			Comment:    fmt.Sprintf("Not supported in OCP4: %s", e.ProjectConfig.DefaultNodeSelector),
 		})
 
 	reportOutput.Reports = append(reportOutput.Reports,
@@ -97,7 +97,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 			Kind:       "ProjectConfig",
 			Supported:  false,
 			Confidence: NoConfidence,
-			Comment:    "Not supported in OCP4: " + e.ProjectConfig.SecurityAllocator.MCSAllocatorRange,
+			Comment:    fmt.Sprintf("Not supported in OCP4: %s", e.ProjectConfig.SecurityAllocator.MCSAllocatorRange),
 		})
 
 	reportOutput.Reports = append(reportOutput.Reports,
@@ -106,7 +106,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 			Kind:       "ProjectConfig",
 			Supported:  false,
 			Confidence: NoConfidence,
-			Comment:    "Not supported in OCP4: " + strconv.Itoa(e.ProjectConfig.SecurityAllocator.MCSLabelsPerProject),
+			Comment:    fmt.Sprintf("Not supported in OCP4: %d", e.ProjectConfig.SecurityAllocator.MCSLabelsPerProject),
 		})
 
 	reportOutput.Reports = append(reportOutput.Reports,
@@ -115,7 +115,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 			Kind:       "ProjectConfig",
 			Supported:  false,
 			Confidence: NoConfidence,
-			Comment:    "Not supported in OCP4: " + string(e.ProjectConfig.SecurityAllocator.UIDAllocatorRange),
+			Comment:    fmt.Sprintf("Not supported in OCP4: %s", e.ProjectConfig.SecurityAllocator.UIDAllocatorRange),
 		})
 
 	return reportOutput, nil
