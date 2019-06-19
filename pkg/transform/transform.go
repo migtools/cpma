@@ -90,6 +90,7 @@ func Start() {
 		OAuthTransform{},
 		SDNTransform{},
 		ImageTransform{},
+		ProjectTransform{},
 	})
 }
 
