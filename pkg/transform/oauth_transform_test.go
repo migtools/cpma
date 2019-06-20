@@ -66,6 +66,21 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	expectedManifests = append(expectedManifests,
 		transform.Manifest{Name: "100_CPMA-cluster-config-secret-openid-secret.yaml", CRD: expectedSecretOpenidProvider})
 
+	expectedSecretTemplateLogin, err := ioutil.ReadFile("testdata/expected-CR-secret-templates-login-secret.yaml")
+	require.NoError(t, err)
+	expectedManifests = append(expectedManifests,
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-templates-login-secret.yaml", CRD: expectedSecretTemplateLogin})
+
+	expectedSecretTemplateError, err := ioutil.ReadFile("testdata/expected-CR-secret-templates-error-secret.yaml")
+	require.NoError(t, err)
+	expectedManifests = append(expectedManifests,
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-templates-error-secret.yaml", CRD: expectedSecretTemplateError})
+
+	expectedSecretTemplateSelect, err := ioutil.ReadFile("testdata/expected-CR-secret-templates-providerselect-secret.yaml")
+	require.NoError(t, err)
+	expectedManifests = append(expectedManifests,
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-templates-providerselect-secret.yaml", CRD: expectedSecretTemplateSelect})
+
 	expectedConfigmapBasicauthProvider, err := ioutil.ReadFile("testdata/expected-CR-configmap-basicauth.yaml")
 	require.NoError(t, err)
 	expectedManifests = append(expectedManifests,
@@ -130,7 +145,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 				return nil
 			}
 
-			identityProviders, err := cpmatest.LoadIPTestData("testdata/master_config-bulk.yaml")
+			identityProviders, templates, err := cpmatest.LoadIPTestData("testdata/master_config-bulk.yaml")
 			require.NoError(t, err)
 
 			testExtraction := transform.OAuthExtraction{
@@ -139,6 +154,7 @@ func TestOAuthExtractionTransform(t *testing.T) {
 					AccessTokenMaxAgeSeconds:    int32(86400),
 					AuthorizeTokenMaxAgeSeconds: int32(500),
 				},
+				Templates: *templates,
 			}
 
 			go func() {
@@ -152,9 +168,9 @@ func TestOAuthExtractionTransform(t *testing.T) {
 			}()
 
 			actualManifests := <-actualManifestsChan
-			assert.Equal(t, actualManifests, tc.expectedManifests)
+			assert.Equal(t, tc.expectedManifests, actualManifests)
 			actualReports := <-actualReportsChan
-			assert.Equal(t, actualReports, tc.expectedReports)
+			assert.Equal(t, tc.expectedReports, actualReports)
 		})
 	}
 }

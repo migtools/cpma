@@ -149,6 +149,10 @@ oauthConfig:
         authorize: https://myidp.example.com/oauth2/authorize
         token: https://myidp.example.com/oauth2/token
         userInfo: https://myidp.example.com/oauth2/userinfo
+  templates:
+    error: testerror
+    login: testlogin
+    providerSelection: testselection
   masterCA: ca-bundle.crt
   masterPublicURL: https://openshift.gildub2.lab.pnq2.cee.redhat.com:443
   masterURL: https://openshift.internal.gildub2.lab.pnq2.cee.redhat.com:443

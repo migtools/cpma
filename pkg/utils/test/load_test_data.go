@@ -12,10 +12,10 @@ import (
 )
 
 // LoadIPTestData load identity providers from file
-func LoadIPTestData(file string) ([]oauth.IdentityProvider, error) {
+func LoadIPTestData(file string) ([]oauth.IdentityProvider, *legacyconfigv1.OAuthTemplates, error) {
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
@@ -23,21 +23,21 @@ func LoadIPTestData(file string) ([]oauth.IdentityProvider, error) {
 
 	_, _, err = serializer.Decode(content, nil, &masterV3)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var identityProviders []oauth.IdentityProvider
 	for _, identityProvider := range masterV3.OAuthConfig.IdentityProviders {
 		providerJSON, err := identityProvider.Provider.MarshalJSON()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		provider := oauth.Provider{}
 
 		err = json.Unmarshal(providerJSON, &provider)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		identityProviders = append(identityProviders,
@@ -51,7 +51,7 @@ func LoadIPTestData(file string) ([]oauth.IdentityProvider, error) {
 			})
 	}
 
-	return identityProviders, nil
+	return identityProviders, masterV3.OAuthConfig.Templates, nil
 }
 
 // LoadSDNExtraction load SDN test data from config file

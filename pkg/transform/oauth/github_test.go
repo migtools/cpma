@@ -17,7 +17,7 @@ import (
 )
 
 func TestTransformMasterConfigGithub(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIPTestData("testdata/github/master_config.yaml")
+	identityProviders, _, err := cpmatest.LoadIPTestData("testdata/github/master_config.yaml")
 	require.NoError(t, err)
 
 	expectedContent, err := ioutil.ReadFile("testdata/github/expected-CR-oauth.yaml")
@@ -93,7 +93,7 @@ func TestGithubValidation(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			identityProvider, err := cpmatest.LoadIPTestData(tc.inputFile)
+			identityProvider, _, err := cpmatest.LoadIPTestData(tc.inputFile)
 			require.NoError(t, err)
 
 			err = oauth.Validate(identityProvider)

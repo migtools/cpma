@@ -13,7 +13,7 @@ import (
 )
 
 func TestTransformMasterConfigKeystone(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIPTestData("testdata/keystone/master_config.yaml")
+	identityProviders, _, err := cpmatest.LoadIPTestData("testdata/keystone/master_config.yaml")
 	require.NoError(t, err)
 
 	expectedCrd, err := loadExpectedOAuth("testdata/keystone/expected-CR-oauth.yaml")
@@ -84,7 +84,7 @@ func TestKeystoneValidation(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			identityProvider, err := cpmatest.LoadIPTestData(tc.inputFile)
+			identityProvider, _, err := cpmatest.LoadIPTestData(tc.inputFile)
 			require.NoError(t, err)
 
 			err = oauth.Validate(identityProvider)
