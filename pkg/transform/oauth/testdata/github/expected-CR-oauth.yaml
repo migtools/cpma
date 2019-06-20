@@ -11,7 +11,7 @@ spec:
         name: github-configmap
       clientID: 2d85ea3f45d6777bffd7
       clientSecret:
-        name: github123456789-secret
+        name: github-secret
       hostname: test.example.com
       organizations:
       - myorganization1

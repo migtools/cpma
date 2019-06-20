@@ -11,7 +11,7 @@ spec:
         name: gitlab-configmap
       clientID: fake-id
       clientSecret:
-        name: gitlab123456789-secret
+        name: gitlab-secret
       url: https://gitlab.com/
     mappingMethod: claim
     name: gitlab123456789

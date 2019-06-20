@@ -40,7 +40,7 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*configv1.I
 		idP.GitHub.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
 	}
 
-	secretName := p.Name + "-secret"
+	secretName := "github-secret"
 	idP.GitHub.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(github.ClientSecret)
 	if err != nil {

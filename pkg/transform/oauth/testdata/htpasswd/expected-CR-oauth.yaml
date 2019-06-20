@@ -8,7 +8,7 @@ spec:
   identityProviders:
   - htpasswd:
       fileData:
-        name: htpasswd_auth-secret
+        name: htpasswd-secret
     mappingMethod: claim
     name: htpasswd_auth
     type: HTPasswd

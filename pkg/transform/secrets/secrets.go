@@ -2,6 +2,8 @@ package secrets
 
 import (
 	"errors"
+
+	"k8s.io/apimachinery/pkg/util/validation"
 )
 
 // HTPasswdFileSecret is an htpasswd secret
@@ -63,8 +65,17 @@ var typeArray = []string{
 // APIVersion is the apiVersion string
 var APIVersion = "v1"
 
+const secretNameError = `Secret name is no valid, make sure it consists of lower case alphanumeric characters, ‘-’ or ‘.’,` +
+	`and must start and end with an alphanumeric character (e.g. ‘example.com’, regex used for validation is ‘[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*’)`
+
 // GenSecret generates a secret
 func GenSecret(name string, secretContent string, namespace string, secretType SecretType) (*Secret, error) {
+	nameErrors := validation.IsDNS1123Label(name)
+
+	if nameErrors != nil {
+		return nil, errors.New(secretNameError)
+	}
+
 	data, err := buildData(secretType, secretContent)
 	if err != nil {
 		return nil, err

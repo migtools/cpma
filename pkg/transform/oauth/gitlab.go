@@ -37,7 +37,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*configv1.I
 		idP.GitLab.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
 	}
 
-	secretName := p.Name + "-secret"
+	secretName := "gitlab-secret"
 	idP.GitLab.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(gitlab.ClientSecret)
 	if err != nil {

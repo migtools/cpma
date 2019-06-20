@@ -11,9 +11,9 @@ spec:
         name: keystone-configmap
       domainName: default
       tlsClientCert:
-        name: my_keystone_provider-client-cert-secret
+        name: keystone-client-cert-secret
       tlsClientKey:
-        name: my_keystone_provider-client-key-secret
+        name: keystone-client-key-secret
       url: http://fake.url:5000
     mappingMethod: claim
     name: my_keystone_provider
