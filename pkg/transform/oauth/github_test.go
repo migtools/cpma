@@ -11,6 +11,7 @@ import (
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	configv1 "github.com/openshift/api/config/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -39,7 +40,7 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{})
+			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{}, legacyconfigv1.OAuthTemplates{})
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedCrd, oauthResources.OAuthCRD)
 		})

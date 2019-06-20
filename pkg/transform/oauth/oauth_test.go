@@ -73,7 +73,7 @@ func TestTransformMasterConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{AccessTokenMaxAgeSeconds: 42000, AuthorizeTokenMaxAgeSeconds: 42000})
+			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{AccessTokenMaxAgeSeconds: 42000, AuthorizeTokenMaxAgeSeconds: 42000}, legacyconfigv1.OAuthTemplates{})
 			require.NoError(t, err)
 			assert.Equal(t, 9, len(oauthResources.OAuthCRD.Spec.IdentityProviders))
 			assert.Equal(t, configv1.IdentityProviderType("BasicAuth"), oauthResources.OAuthCRD.Spec.IdentityProviders[0].Type)
