@@ -1,0 +1,18 @@
+oauthConfig:
+  assetPublicURL: https://example.com:443/console
+  grantConfig:
+    method: auto
+  templates:
+    error: "testerror"
+    login: "testlogin"
+    providerSelection: "testselection"
+  masterCA: ca-bundle.crt
+  masterPublicURL: https://example.com:443
+  masterURL: https://example.com:443
+  sessionConfig:
+    sessionMaxAgeSeconds: 3600
+    sessionName: ssn
+    sessionSecretsFile: /etc/origin/master/session-secrets.yaml
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 86400
+    authorizeTokenMaxAgeSeconds: 500

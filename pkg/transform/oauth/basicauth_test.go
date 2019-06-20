@@ -6,13 +6,14 @@ import (
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	configv1 "github.com/openshift/api/config/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestTransformMasterConfigBasicAuth(t *testing.T) {
-	identityProviders, err := cpmatest.LoadIPTestData("testdata/basicauth/master_config.yaml")
+	identityProviders, _, err := cpmatest.LoadIPTestData("testdata/basicauth/master_config.yaml")
 	require.NoError(t, err)
 
 	expectedCrd, err := loadExpectedOAuth("testdata/basicauth/expected-CR-oauth.yaml")
@@ -30,7 +31,7 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{})
+			oauthResources, err := oauth.Translate(identityProviders, oauth.TokenConfig{}, legacyconfigv1.OAuthTemplates{})
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.expectedCrd, oauthResources.OAuthCRD)
@@ -78,7 +79,7 @@ func TestBasicAuthValidation(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			identityProvider, err := cpmatest.LoadIPTestData(tc.inputFile)
+			identityProvider, _, err := cpmatest.LoadIPTestData(tc.inputFile)
 			require.NoError(t, err)
 
 			err = oauth.Validate(identityProvider)

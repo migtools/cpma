@@ -131,11 +131,11 @@ spec:
     type: OpenID
   templates:
     error:
-      name: ""
+      name: templates-error-secret
     login:
-      name: ""
+      name: templates-login-secret
     providerSelection:
-      name: ""
+      name: templates-providerselect-secret
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400
 status: {}
