@@ -71,7 +71,7 @@ const (
 )
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig) (*Resources, error) {
+func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, templates legacyconfigv1.OAuthTemplates) (*Resources, error) {
 	var err error
 	var idP *configv1.IdentityProvider
 	var secretsSlice []*secrets.Secret
@@ -146,6 +146,15 @@ func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig) (*
 
 	// Translate lifetime of access tokens
 	oauthCrd.Spec.TokenConfig.AccessTokenMaxAgeSeconds = tokenConfig.AccessTokenMaxAgeSeconds
+
+	// Translate templates that allow to customize the login page
+	translatedTemplates, templateSecrets, err := translateTemplates(templates)
+	if err != nil {
+		return nil, err
+	}
+
+	oauthCrd.Spec.Templates = *translatedTemplates
+	secretsSlice = append(secretsSlice, templateSecrets...)
 
 	return &Resources{
 		OAuthCRD:   &oauthCrd,
