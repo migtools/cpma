@@ -32,7 +32,7 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*configv1.I
 	idP.OpenID.Claims.Name = openID.Claims.Name
 	idP.OpenID.Claims.Email = openID.Claims.Email
 
-	secretName := p.Name + "-secret"
+	secretName := "openid-secret"
 	idP.OpenID.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(openID.ClientSecret)
 	if err != nil {

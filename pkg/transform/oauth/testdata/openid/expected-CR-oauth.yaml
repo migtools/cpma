@@ -24,7 +24,7 @@ spec:
         - email
       clientID: testid
       clientSecret:
-        name: my_openid_connect-secret
+        name: openid-secret
       issuer: ""
     type: OpenID
   templates:

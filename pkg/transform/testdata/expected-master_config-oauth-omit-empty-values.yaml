@@ -22,7 +22,7 @@ spec:
         name: ""
       clientID: 2d85ea3f45d6777bffd7
       clientSecret:
-        name: github123456789-secret
+        name: github-secret
       hostname: ""
     mappingMethod: claim
     name: github123456789
@@ -32,7 +32,7 @@ spec:
         name: ""
       clientID: fake-id
       clientSecret:
-        name: gitlab123456789-secret
+        name: gitlab-secret
       url: https://gitlab.com/
     mappingMethod: claim
     name: gitlab123456789
@@ -40,14 +40,14 @@ spec:
   - google:
       clientID: 82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com
       clientSecret:
-        name: google123456789123456789-secret
+        name: google-secret
       hostedDomain: ""
     mappingMethod: claim
     name: google123456789123456789
     type: Google
   - htpasswd:
       fileData:
-        name: htpasswd_auth-secret
+        name: htpasswd-secret
     mappingMethod: claim
     name: htpasswd_auth
     type: HTPasswd
@@ -115,7 +115,7 @@ spec:
         - email
       clientID: testid
       clientSecret:
-        name: my_openid_connect-secret
+        name: openid-secret
       issuer: ""
     type: OpenID
   templates:

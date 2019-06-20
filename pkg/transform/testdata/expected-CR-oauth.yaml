@@ -10,9 +10,9 @@ spec:
       ca:
         name: basicauth-configmap
       tlsClientCert:
-        name: my_remote_basic_auth_provider-client-cert-secret
+        name: basicauth-client-cert-secret
       tlsClientKey:
-        name: my_remote_basic_auth_provider-client-key-secret
+        name: basicauth-client-key-secret
       url: https://www.example.com/
     mappingMethod: claim
     name: my_remote_basic_auth_provider
@@ -22,7 +22,7 @@ spec:
         name: github-configmap
       clientID: 2d85ea3f45d6777bffd7
       clientSecret:
-        name: github123456789-secret
+        name: github-secret
       hostname: test.example.com
       organizations:
       - myorganization1
@@ -38,7 +38,7 @@ spec:
         name: gitlab-configmap
       clientID: fake-id
       clientSecret:
-        name: gitlab123456789-secret
+        name: gitlab-secret
       url: https://gitlab.com/
     mappingMethod: claim
     name: gitlab123456789
@@ -46,14 +46,14 @@ spec:
   - google:
       clientID: 82342890327-tf5lqn4eikdf4cb4edfm85jiqotvurpq.apps.googleusercontent.com
       clientSecret:
-        name: google123456789123456789-secret
+        name: google-secret
       hostedDomain: test.example.com
     mappingMethod: claim
     name: google123456789123456789
     type: Google
   - htpasswd:
       fileData:
-        name: htpasswd_auth-secret
+        name: htpasswd-secret
     mappingMethod: claim
     name: htpasswd_auth
     type: HTPasswd
@@ -62,9 +62,9 @@ spec:
         name: keystone-configmap
       domainName: default
       tlsClientCert:
-        name: my_keystone_provider-client-cert-secret
+        name: keystone-client-cert-secret
       tlsClientKey:
-        name: my_keystone_provider-client-key-secret
+        name: keystone-client-key-secret
       url: http://fake.url:5000
     mappingMethod: claim
     name: my_keystone_provider
@@ -126,7 +126,7 @@ spec:
         - email
       clientID: testid
       clientSecret:
-        name: my_openid_connect-secret
+        name: openid-secret
       issuer: ""
     type: OpenID
   templates:

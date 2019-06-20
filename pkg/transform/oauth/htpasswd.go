@@ -26,7 +26,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*configv1
 	idP.Type = "HTPasswd"
 	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
 
-	secretName := p.Name + "-secret"
+	secretName := "htpasswd-secret"
 	idP.HTPasswd = &configv1.HTPasswdIdentityProvider{}
 	idP.HTPasswd.FileData.Name = secretName
 

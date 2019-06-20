@@ -10,9 +10,9 @@ spec:
       ca:
         name: basicauth-configmap
       tlsClientCert:
-        name: my_remote_basic_auth_provider-client-cert-secret
+        name: basicauth-client-cert-secret
       tlsClientKey:
-        name: my_remote_basic_auth_provider-client-key-secret
+        name: basicauth-client-key-secret
       url: https://www.example.com/
     mappingMethod: claim
     name: my_remote_basic_auth_provider

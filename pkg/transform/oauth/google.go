@@ -30,7 +30,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*configv1.I
 	idP.Google.ClientID = google.ClientID
 	idP.Google.HostedDomain = google.HostedDomain
 
-	secretName := p.Name + "-secret"
+	secretName := "google-secret"
 	idP.Google.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(google.ClientSecret)
 	if err != nil {

@@ -37,7 +37,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*configv
 	}
 
 	if basicAuth.CertFile != "" {
-		certSecretName := p.Name + "-client-cert-secret"
+		certSecretName := "basicauth-client-cert-secret"
 		idP.BasicAuth.TLSClientCert.Name = certSecretName
 
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
@@ -45,7 +45,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*configv
 			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate cert secret for basic auth, see error")
 		}
 
-		keySecretName := p.Name + "-client-key-secret"
+		keySecretName := "basicauth-client-key-secret"
 		idP.BasicAuth.TLSClientKey.Name = keySecretName
 
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)

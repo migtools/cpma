@@ -21,50 +21,50 @@ func TestOAuthExtractionTransform(t *testing.T) {
 	expectedManifests = append(expectedManifests,
 		transform.Manifest{Name: "100_CPMA-cluster-config-oauth.yaml", CRD: expectedOAuthCRYAML})
 
-	expectedSecretBasicAuthProviderClientCertCRYAML, err := ioutil.ReadFile("testdata/expected-CR-secret-my_remote_basic_auth_provider-client-cert-secret.yaml")
+	expectedSecretBasicAuthProviderClientCertCRYAML, err := ioutil.ReadFile("testdata/expected-CR-secret-basicauth-client-cert-secret.yaml")
 	require.NoError(t, err)
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-secret-my_remote_basic_auth_provider-client-cert-secret.yaml", CRD: expectedSecretBasicAuthProviderClientCertCRYAML})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-basicauth-client-cert-secret.yaml", CRD: expectedSecretBasicAuthProviderClientCertCRYAML})
 
-	expectedSecretBasicAuthProviderClientKeyCRYAML, err := ioutil.ReadFile("testdata/expected-CR-secret-my_remote_basic_auth_provider-client-key-secret.yaml")
+	expectedSecretBasicAuthProviderClientKeyCRYAML, err := ioutil.ReadFile("testdata/expected-CR-secret-basicauth-client-key-secret.yaml")
 	require.NoError(t, err)
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-secret-my_remote_basic_auth_provider-client-key-secret.yaml", CRD: expectedSecretBasicAuthProviderClientKeyCRYAML})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-basicauth-client-key-secret.yaml", CRD: expectedSecretBasicAuthProviderClientKeyCRYAML})
 
-	expectedSecretGithubProvider, err := ioutil.ReadFile("testdata/expected-CR-secret-github123456789-secret.yaml")
+	expectedSecretGithubProvider, err := ioutil.ReadFile("testdata/expected-CR-secret-github-secret.yaml")
 	require.NoError(t, err)
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-secret-github123456789-secret.yaml", CRD: expectedSecretGithubProvider})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-github-secret.yaml", CRD: expectedSecretGithubProvider})
 
-	expectedSecretGitlabProvider, err := ioutil.ReadFile("testdata/expected-CR-secret-gitlab123456789-secret.yaml")
+	expectedSecretGitlabProvider, err := ioutil.ReadFile("testdata/expected-CR-secret-gitlab-secret.yaml")
 	require.NoError(t, err)
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-secret-gitlab123456789-secret.yaml", CRD: expectedSecretGitlabProvider})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-gitlab-secret.yaml", CRD: expectedSecretGitlabProvider})
 
-	expectedSecretGoogleProvider, err := ioutil.ReadFile("testdata/expected-CR-secret-google123456789123456789.yaml")
+	expectedSecretGoogleProvider, err := ioutil.ReadFile("testdata/expected-CR-secret-google.yaml")
 	require.NoError(t, err)
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-secret-google123456789123456789-secret.yaml", CRD: expectedSecretGoogleProvider})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-google-secret.yaml", CRD: expectedSecretGoogleProvider})
 
-	expectedSecretHtpasswdProvider, err := ioutil.ReadFile("testdata/expected-CR-secret-htpasswd_auth.yaml")
+	expectedSecretHtpasswdProvider, err := ioutil.ReadFile("testdata/expected-CR-secret-htpasswd.yaml")
 	require.NoError(t, err)
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-secret-htpasswd_auth-secret.yaml", CRD: expectedSecretHtpasswdProvider})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-htpasswd-secret.yaml", CRD: expectedSecretHtpasswdProvider})
 
-	expectedSecretKeystoneProviderCert, err := ioutil.ReadFile("testdata/expected-CR-secret-keystone_provider-client-cert.yaml")
+	expectedSecretKeystoneProviderCert, err := ioutil.ReadFile("testdata/expected-CR-secret-keystone-client-cert.yaml")
 	require.NoError(t, err)
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-secret-my_keystone_provider-client-cert-secret.yaml", CRD: expectedSecretKeystoneProviderCert})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-keystone-client-cert-secret.yaml", CRD: expectedSecretKeystoneProviderCert})
 
-	expectedSecretKeystoneProviderKey, err := ioutil.ReadFile("testdata/expected-CR-secret-my_keystone_provider-client-key.yaml")
+	expectedSecretKeystoneProviderKey, err := ioutil.ReadFile("testdata/expected-CR-secret-keystone-client-key.yaml")
 	require.NoError(t, err)
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-secret-my_keystone_provider-client-key-secret.yaml", CRD: expectedSecretKeystoneProviderKey})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-keystone-client-key-secret.yaml", CRD: expectedSecretKeystoneProviderKey})
 
-	expectedSecretOpenidProvider, err := ioutil.ReadFile("testdata/expected-CR-secret-my_openid_connect.yaml")
+	expectedSecretOpenidProvider, err := ioutil.ReadFile("testdata/expected-CR-secret-openid.yaml")
 	require.NoError(t, err)
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-secret-my_openid_connect-secret.yaml", CRD: expectedSecretOpenidProvider})
+		transform.Manifest{Name: "100_CPMA-cluster-config-secret-openid-secret.yaml", CRD: expectedSecretOpenidProvider})
 
 	expectedConfigmapBasicauthProvider, err := ioutil.ReadFile("testdata/expected-CR-configmap-basicauth.yaml")
 	require.NoError(t, err)
