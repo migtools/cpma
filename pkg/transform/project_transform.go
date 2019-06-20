@@ -60,11 +60,11 @@ func (e ProjectExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e ProjectExtraction) buildReportOutput() (Output, error) {
-	reportOutput := ReportOutput{
+	componentReport := ComponentReport{
 		Component: ProjectComponentName,
 	}
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "ProjectRequestMessage",
 			Kind:       "ProjectConfig",
@@ -73,7 +73,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Networks must be configured during installation",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "ProjectRequestTemplate",
 			Kind:       "ProjectConfig",
@@ -82,7 +82,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Networks must be configured during installation",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "DefaultNodeSelector",
 			Kind:       "ProjectConfig",
@@ -91,7 +91,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 			Comment:    fmt.Sprintf("Not supported in OCP4: %s", e.ProjectConfig.DefaultNodeSelector),
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "SecurityAllocator.mcsAllocatorRange",
 			Kind:       "ProjectConfig",
@@ -100,7 +100,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 			Comment:    fmt.Sprintf("Not supported in OCP4: %s", e.ProjectConfig.SecurityAllocator.MCSAllocatorRange),
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "SecurityAllocator.mcsLabelsPerProject",
 			Kind:       "ProjectConfig",
@@ -109,7 +109,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 			Comment:    fmt.Sprintf("Not supported in OCP4: %d", e.ProjectConfig.SecurityAllocator.MCSLabelsPerProject),
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "SecurityAllocator.uidAllocatorRange",
 			Kind:       "ProjectConfig",
@@ -117,6 +117,10 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 			Confidence: NoConfidence,
 			Comment:    fmt.Sprintf("Not supported in OCP4: %s", e.ProjectConfig.SecurityAllocator.UIDAllocatorRange),
 		})
+
+	reportOutput := ReportOutput{
+		ComponentReports: []ComponentReport{componentReport},
+	}
 
 	return reportOutput, nil
 }

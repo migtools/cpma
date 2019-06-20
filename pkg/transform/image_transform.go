@@ -97,12 +97,12 @@ func (e ImageExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e ImageExtraction) buildReportOutput() (Output, error) {
-	reportOutput := ReportOutput{
+	componentReport := ComponentReport{
 		Component: ImageComponentName,
 	}
 
 	for _, registry := range e.RegistriesConfig.Registries["block"].List {
-		reportOutput.Reports = append(reportOutput.Reports,
+		componentReport.Reports = append(componentReport.Reports,
 			Report{
 				Name:       "Blocked",
 				Kind:       "Registries",
@@ -113,7 +113,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 	}
 
 	for _, registry := range e.RegistriesConfig.Registries["insecure"].List {
-		reportOutput.Reports = append(reportOutput.Reports,
+		componentReport.Reports = append(componentReport.Reports,
 			Report{
 				Name:       "Insecure",
 				Kind:       "Registries",
@@ -124,7 +124,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 	}
 
 	for _, registry := range e.RegistriesConfig.Registries["search"].List {
-		reportOutput.Reports = append(reportOutput.Reports,
+		componentReport.Reports = append(componentReport.Reports,
 			Report{
 				Name:       "Search",
 				Kind:       "Registries",
@@ -134,7 +134,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			})
 	}
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "AllowedRegistriesForImport",
 			Kind:       "MasterConfig.ImagePolicyConfig",
@@ -142,7 +142,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			Confidence: HighConfidence,
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "AdditionalTrustedCA",
 			Kind:       "MasterConfig.ImagePolicyConfig",
@@ -151,7 +151,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Each registry must provide its own self-signed CA",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "ExternalRegistryHostname",
 			Kind:       "MasterConfig.ImagePolicyConfig",
@@ -159,7 +159,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			Confidence: HighConfidence,
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "InternalRegistryHostname",
 			Kind:       "MasterConfig.ImagePolicyConfig",
@@ -168,7 +168,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Set by OCP4 image registry operator",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "DisableScheduledImport",
 			Kind:       "MasterConfig.ImagePolicyConfig",
@@ -177,7 +177,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Not supported by OCP4",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "MaxImagesBulkImportedPerRepository",
 			Kind:       "MasterConfig.ImagePolicyConfig",
@@ -186,7 +186,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Not supported by OCP4",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "MaxScheduledImageImportsPerMinute",
 			Kind:       "MasterConfig.ImagePolicyConfig",
@@ -195,7 +195,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Not supported by OCP4",
 		})
 
-	reportOutput.Reports = append(reportOutput.Reports,
+	componentReport.Reports = append(componentReport.Reports,
 		Report{
 			Name:       "ScheduledImageImportMinimumIntervalSeconds",
 			Kind:       "MasterConfig.ImagePolicyConfig",
@@ -203,6 +203,10 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			Confidence: NoConfidence,
 			Comment:    "Not supported by OCP4",
 		})
+
+	reportOutput := ReportOutput{
+		ComponentReports: []ComponentReport{componentReport},
+	}
 
 	return reportOutput, nil
 }

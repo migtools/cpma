@@ -5,6 +5,7 @@ SSHCreds:
   PrivateKey: "/home/example/.ssh/key"
   Port: 22
 InsecureHostKey: true
+ClusterName: "example-cluster.examle.com"
 OutputDir: "./data"
 # MasterConfigFile and NodeConfigFile are optional fields
 # Use only if cluster was configured with different config locations

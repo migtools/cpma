@@ -12,6 +12,7 @@
 *.swo
 *.swp
 cpma
+cpma.yaml
 
 # Standard and 3rd party lib ignored - use go tool to regenerate
 /src/*.*/

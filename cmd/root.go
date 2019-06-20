@@ -45,6 +45,10 @@ func init() {
 	rootCmd.PersistentFlags().StringP("source", "s", "", "OCP3 cluster hostname")
 	env.Config().BindPFlag("Source", rootCmd.PersistentFlags().Lookup("source"))
 
+	// Get OCP3 source cluster name that is used in kubeconfig and save it to viper config
+	rootCmd.PersistentFlags().StringP("cluster-name", "c", "", "OCP3 cluster kubeconfig name")
+	env.Config().BindPFlag("ClusterName", rootCmd.PersistentFlags().Lookup("source"))
+
 	// Get ssh config values from CLI argument
 	rootCmd.PersistentFlags().StringVarP(&env.Login, "login", "l", "", "OCP3 ssh login")
 	rootCmd.PersistentFlags().StringVarP(&env.PrivateKey, "key", "k", "", "OCP3 ssh key path")
@@ -63,8 +67,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		env.InitLogger()
 
-		err := env.InitConfig()
-		if err != nil {
+		if err := env.InitConfig(); err != nil {
 			logrus.Fatal(err)
 		}
 

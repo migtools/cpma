@@ -46,7 +46,7 @@ func TestCrioExtractionTransform(t *testing.T) {
 	expectedManifests = append(expectedManifests,
 		transform.Manifest{Name: "100_CPMA-crio-config.yaml", CRD: crioCRYAML})
 
-	expectedReport := transform.ReportOutput{
+	expectedReport := transform.ComponentReport{
 		Component: "Crio",
 	}
 
@@ -79,6 +79,10 @@ func TestCrioExtractionTransform(t *testing.T) {
 			Confidence: 2,
 		})
 
+	expectedReportOutput := transform.ReportOutput{
+		ComponentReports: []transform.ComponentReport{expectedReport},
+	}
+
 	testCases := []struct {
 		name              string
 		expectedManifests []transform.Manifest
@@ -87,7 +91,7 @@ func TestCrioExtractionTransform(t *testing.T) {
 		{
 			name:              "transform crio extraction",
 			expectedManifests: expectedManifests,
-			expectedReports:   expectedReport,
+			expectedReports:   expectedReportOutput,
 		},
 	}
 

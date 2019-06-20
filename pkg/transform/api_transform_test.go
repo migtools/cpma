@@ -31,7 +31,7 @@ func loadAPIExtraction() (transform.APIExtraction, error) {
 
 func TestAPIExtractionTransform(t *testing.T) {
 
-	expectedReport := transform.ReportOutput{
+	expectedReport := transform.ComponentReport{
 		Component: "API",
 	}
 
@@ -43,13 +43,18 @@ func TestAPIExtractionTransform(t *testing.T) {
 			Confidence: 0,
 			Comment:    "The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port 8443",
 		})
+
+	expectedReportOutput := transform.ReportOutput{
+		ComponentReports: []transform.ComponentReport{expectedReport},
+	}
+
 	testCases := []struct {
 		name            string
 		expectedReports transform.ReportOutput
 	}{
 		{
-			name:            "transform crio extraction",
-			expectedReports: expectedReport,
+			name:            "transform API extraction",
+			expectedReports: expectedReportOutput,
 		},
 	}
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
@@ -66,6 +67,11 @@ func getKubeConfigPath() (string, error) {
 
 // CreateAPIClient create api client using cluster from kubeconfig context
 func CreateAPIClient(contextCluster string) error {
+	// Check if context is present in kubeconfig
+	if err := validateConfig(contextCluster); err != nil {
+		return err
+	}
+
 	// set current context to selected cluster for connecting to cluster using client-go
 	KubeConfig.CurrentContext = ClusterNames[contextCluster]
 
@@ -74,10 +80,21 @@ func CreateAPIClient(contextCluster string) error {
 	}
 	config, err := clientcmd.BuildConfigFromKubeconfigGetter("", kubeConfigGetter)
 
-	Client, err = kubernetes.NewForConfig(config)
-	if err != nil {
-		return err
+	if Client, err = kubernetes.NewForConfig(config); err != nil {
+		return errors.Wrap(err, "Error in creating API client")
 	}
 
+	logrus.Debugf("API client initialized for %s", contextCluster)
+
 	return nil
+}
+
+func validateConfig(contextCluster string) error {
+	for context := range ClusterNames {
+		if context == contextCluster {
+			return nil
+		}
+	}
+
+	return errors.New("Not valid context")
 }

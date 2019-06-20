@@ -5,13 +5,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/fusor/cpma/pkg/api"
 	"github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/client-go/kubernetes"
 )
 
 func TestInitConfig(t *testing.T) {
 	ConfigFile = "testdata/cpma-config.yml"
+	api.Client = &kubernetes.Clientset{}
 	err := InitConfig()
 	if err != nil {
 		t.Fatal(err)

@@ -4,29 +4,27 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fusor/cpma/pkg/api"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
 // DiscoverCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
 // parse kubeconfig and select cluster from available contexts
 // query k8s api for nodes, get node urls from api response and survey master node
-func DiscoverCluster() (string, error) {
+func DiscoverCluster() (string, string, error) {
 	selectedCluster := surveyClusters()
 
-	err := api.CreateAPIClient(selectedCluster)
-	if err != nil {
-		return "", errors.Wrap(err, "k8s api client failed to create")
+	if err := api.CreateAPIClient(selectedCluster); err != nil {
+		return "", "", errors.Wrap(err, "k8s api client failed to create")
 	}
 
 	clusterNodes, err := queryNodes(api.Client.CoreV1())
 	if err != nil {
-		return "", errors.Wrap(err, "cluster node query failed")
+		return "", "", errors.Wrap(err, "cluster node query failed")
 	}
 
 	selectedNode := surveyNodes(clusterNodes)
 
-	return selectedNode, nil
+	return selectedNode, selectedCluster, nil
 }
 
 func surveyClusters() string {
@@ -55,9 +53,7 @@ func surveyClusters() string {
 }
 
 func queryNodes(apiClient corev1.CoreV1Interface) ([]string, error) {
-	listOptions := metav1.ListOptions{}
-
-	nodeList, err := apiClient.Nodes().List(listOptions)
+	nodeList, err := api.ListNodes()
 	if err != nil {
 		return nil, err
 	}

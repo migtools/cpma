@@ -84,6 +84,7 @@ func Start() {
 
 	runner.Transform([]Transform{
 		APITransform{},
+		ClusterTransform{},
 		CrioTransform{},
 		DockerTransform{},
 		ETCDTransform{},
@@ -151,7 +152,7 @@ func GenYAML(CR interface{}) ([]byte, error) {
 
 func openReports() {
 	jsonfile := "report.json"
-	emptyReport := []byte("[]")
+	emptyReport := []byte("{}")
 
 	err := io.WriteFile(emptyReport, jsonfile)
 	if err != nil {

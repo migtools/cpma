@@ -1,70 +1,87 @@
 {
-  "component": "Image",
-  "reports": [{
-    "name": "Blocked",
-    "kind": "Registries",
-    "supported": true,
-    "confidence": 2,
-    "comment": "bad.test.com"
-  }, {
-    "name": "Insecure",
-    "kind": "Registries",
-    "supported": true,
-    "confidence": 2,
-    "comment": "insecure.test.com"
-  }, {
-    "name": "Search",
-    "kind": "Registries",
-    "supported": false,
-    "confidence": 0,
-    "comment": "Search registries can not be configured in OCP 4: search.test.com"
-  }, {
-    "name": "AllowedRegistriesForImport",
-    "kind": "MasterConfig.ImagePolicyConfig",
-    "supported": true,
-    "confidence": 2,
-    "comment": ""
-  }, {
-    "name": "AdditionalTrustedCA",
-    "kind": "MasterConfig.ImagePolicyConfig",
-    "supported": false,
-    "confidence": 0,
-    "comment": "Each registry must provide its own self-signed CA"
-  }, {
-    "name": "ExternalRegistryHostname",
-    "kind": "MasterConfig.ImagePolicyConfig",
-    "supported": true,
-    "confidence": 2,
-    "comment": ""
-  }, {
-    "name": "InternalRegistryHostname",
-    "kind": "MasterConfig.ImagePolicyConfig",
-    "supported": false,
-    "confidence": 0,
-    "comment": "Set by OCP4 image registry operator"
-  }, {
-    "name": "DisableScheduledImport",
-    "kind": "MasterConfig.ImagePolicyConfig",
-    "supported": false,
-    "confidence": 0,
-    "comment": "Not supported by OCP4"
-  }, {
-    "name": "MaxImagesBulkImportedPerRepository",
-    "kind": "MasterConfig.ImagePolicyConfig",
-    "supported": false,
-    "confidence": 0,
-    "comment": "Not supported by OCP4"
-  }, {
-    "name": "MaxScheduledImageImportsPerMinute",
-    "kind": "MasterConfig.ImagePolicyConfig",
-    "supported": false,
-    "confidence": 0,
-    "comment": "Not supported by OCP4"
-  }, {
-    "name": "ScheduledImageImportMinimumIntervalSeconds",
-    "kind": "MasterConfig.ImagePolicyConfig",
-    "supported": false,
-    "confidence": 0,
-    "comment": "Not supported by OCP4"
-  }]
+  "cluster": {},
+  "components": [
+    {
+      "component": "Image",
+      "reports": [
+        {
+          "name": "Blocked",
+          "kind": "Registries",
+          "supported": true,
+          "confidence": 2,
+          "comment": "bad.test.com"
+        },
+        {
+          "name": "Insecure",
+          "kind": "Registries",
+          "supported": true,
+          "confidence": 2,
+          "comment": "insecure.test.com"
+        },
+        {
+          "name": "Search",
+          "kind": "Registries",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Search registries can not be configured in OCP 4: search.test.com"
+        },
+        {
+          "name": "AllowedRegistriesForImport",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": true,
+          "confidence": 2,
+          "comment": ""
+        },
+        {
+          "name": "AdditionalTrustedCA",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Each registry must provide its own self-signed CA"
+        },
+        {
+          "name": "ExternalRegistryHostname",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": true,
+          "confidence": 2,
+          "comment": ""
+        },
+        {
+          "name": "InternalRegistryHostname",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Set by OCP4 image registry operator"
+        },
+        {
+          "name": "DisableScheduledImport",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported by OCP4"
+        },
+        {
+          "name": "MaxImagesBulkImportedPerRepository",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported by OCP4"
+        },
+        {
+          "name": "MaxScheduledImageImportsPerMinute",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported by OCP4"
+        },
+        {
+          "name": "ScheduledImageImportMinimumIntervalSeconds",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported by OCP4"
+        }
+      ]
+    }
+  ]
 }

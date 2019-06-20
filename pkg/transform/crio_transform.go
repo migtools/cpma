@@ -116,7 +116,7 @@ func (e CrioExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e CrioExtraction) buildReportOutput() (Output, error) {
-	reportOutput := ReportOutput{
+	componentReport := ComponentReport{
 		Component: CrioComponentName,
 	}
 
@@ -124,7 +124,7 @@ func (e CrioExtraction) buildReportOutput() (Output, error) {
 	var supported = true
 
 	if e.Crio.PidsLimit != 0 {
-		reportOutput.Reports = append(reportOutput.Reports,
+		componentReport.Reports = append(componentReport.Reports,
 			Report{
 				Name:       "pidsLimit",
 				Kind:       "Configuration",
@@ -133,7 +133,7 @@ func (e CrioExtraction) buildReportOutput() (Output, error) {
 			})
 	}
 	if e.Crio.LogLevel != "" {
-		reportOutput.Reports = append(reportOutput.Reports,
+		componentReport.Reports = append(componentReport.Reports,
 			Report{
 				Name:       "logLevel",
 				Kind:       "Configuration",
@@ -142,7 +142,7 @@ func (e CrioExtraction) buildReportOutput() (Output, error) {
 			})
 	}
 	if e.Crio.LogSizeMax != 0 {
-		reportOutput.Reports = append(reportOutput.Reports,
+		componentReport.Reports = append(componentReport.Reports,
 			Report{
 				Name:       "logSizeMax",
 				Kind:       "Configuration",
@@ -151,13 +151,17 @@ func (e CrioExtraction) buildReportOutput() (Output, error) {
 			})
 	}
 	if e.Crio.InfraImage != "" {
-		reportOutput.Reports = append(reportOutput.Reports,
+		componentReport.Reports = append(componentReport.Reports,
 			Report{
 				Name:       "infrImage",
 				Kind:       "Configuration",
 				Supported:  supported,
 				Confidence: confidence,
 			})
+	}
+
+	reportOutput := ReportOutput{
+		ComponentReports: []ComponentReport{componentReport},
 	}
 
 	return reportOutput, nil
