@@ -51,7 +51,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&env.Port, "port", "p", "", "OCP3 ssh port")
 
 	// Get config file from CLI argument an save to viper config
-	rootCmd.PersistentFlags().StringP("output-dir", "o", path.Dir(""), "set the directory to store extracted configuration.")
+	rootCmd.PersistentFlags().StringP("output-dir", "o", path.Dir("."), "set the directory to store extracted configuration.")
 	env.Config().BindPFlag("OutputDir", rootCmd.PersistentFlags().Lookup("output-dir"))
 }
 

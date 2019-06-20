@@ -150,8 +150,8 @@ func surveyMissingValues() error {
 		sshCreds["privatekey"] = privatekey
 	}
 
-	if viperConfig.GetString("OutputDir") == "." {
-		outPutDir := ""
+	if viperConfig.GetString("OutputDir") == "" {
+		outPutDir := "."
 		prompt := &survey.Input{
 			Message: "Path to output, skip to use current directory",
 			Default: ".",
