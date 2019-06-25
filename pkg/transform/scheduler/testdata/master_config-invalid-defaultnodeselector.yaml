@@ -1,0 +1,8 @@
+projectConfig:
+  defaultNodeSelector:  ''
+  projectRequestMessage: ''
+  projectRequestTemplate: ''
+  securityAllocator:
+    mcsAllocatorRange: s0:/2
+    mcsLabelsPerProject: 5
+    uidAllocatorRange: 1000000000-1999999999/10000

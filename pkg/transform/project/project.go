@@ -3,6 +3,7 @@ package project
 import (
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -18,6 +19,10 @@ func Translate(projectConfig legacyconfigv1.ProjectConfig) (*configv1.Project, e
 	projectCR.APIVersion = apiVersion
 	projectCR.Kind = kind
 	projectCR.Name = name
+
+	if projectConfig.DefaultNodeSelector != "" {
+		logrus.Info("ProjectConfig.DefaultNodeSelector is handled by scheduler")
+	}
 
 	if projectConfig.ProjectRequestMessage != "" {
 		projectCR.Spec.ProjectRequestMessage = projectConfig.ProjectRequestMessage

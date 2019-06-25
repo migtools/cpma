@@ -11,6 +11,23 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
+// LoadMasterConfig loads MasterConfig
+func LoadMasterConfig(file string) (*legacyconfigv1.MasterConfig, error) {
+	expectedContent, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	masterConfig := new(legacyconfigv1.MasterConfig)
+	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	_, _, err = serializer.Decode(expectedContent, nil, masterConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return masterConfig, nil
+}
+
 // LoadIPTestData load identity providers from file
 func LoadIPTestData(file string) ([]oauth.IdentityProvider, *legacyconfigv1.OAuthTemplates, error) {
 	content, err := ioutil.ReadFile(file)

@@ -1,0 +1,17 @@
+{
+  "cluster": {},
+  "components": [
+    {
+      "component": "Scheduler",
+      "reports": [
+        {
+        "name": "DefaultNodeSelector",
+        "kind": "ProjectConfig",
+        "supported": true,
+        "confidence": 2,
+        "comment": ""
+        }
+      ]
+    }
+  ]
+}

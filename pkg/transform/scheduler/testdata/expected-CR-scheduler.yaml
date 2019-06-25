@@ -1,0 +1,10 @@
+apiVersion: operator.openshift.io/v1
+kind: Scheduler
+metadata:
+  creationTimestamp: null
+  name: cluster
+spec:
+  defaultNodeSelector: node-role.kubernetes.io/compute=true
+  policy:
+    name: ""
+status: {}
