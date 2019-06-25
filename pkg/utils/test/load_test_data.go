@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
@@ -18,9 +19,7 @@ func LoadMasterConfig(file string) (*legacyconfigv1.MasterConfig, error) {
 		return nil, err
 	}
 
-	masterConfig := new(legacyconfigv1.MasterConfig)
-	serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-	_, _, err = serializer.Decode(expectedContent, nil, masterConfig)
+	masterConfig, err := decode.MasterConfig(expectedContent)
 	if err != nil {
 		return nil, err
 	}

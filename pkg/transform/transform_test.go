@@ -5,14 +5,13 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
-	"k8s.io/client-go/kubernetes/scheme"
 )
 
 func TestOauthGenYAML(t *testing.T) {
@@ -47,10 +46,7 @@ func TestOauthGenYAML(t *testing.T) {
 			content, err := ioutil.ReadFile(tc.inputConfigfile)
 			require.NoError(t, err)
 
-			serializer := k8sjson.NewYAMLSerializer(k8sjson.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
-			var masterV3 legacyconfigv1.MasterConfig
-
-			_, _, err = serializer.Decode(content, nil, &masterV3)
+			masterV3, err := decode.MasterConfig(content)
 			require.NoError(t, err)
 
 			var identityProviders []oauth.IdentityProvider
