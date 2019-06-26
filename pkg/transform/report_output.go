@@ -7,6 +7,7 @@ import (
 	O7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/sirupsen/logrus"
 	k8sapicore "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // ReportOutput holds a collection of reports to be written to file
@@ -17,10 +18,11 @@ type ReportOutput struct {
 
 // NodeResources represents a json report of Node resources
 type NodeResources struct {
-	CPU            string `json:"cpu"`
-	MemoryConsumed string `json:"memoryConsumed"`
-	MemoryCapacity string `json:"memoryCapacity"`
-	RunningPods    string `json:"runningPods"`
+	CPU            *resource.Quantity `json:"cpu"`
+	MemoryConsumed *resource.Quantity `json:"memoryConsumed"`
+	MemoryCapacity *resource.Quantity `json:"memoryCapacity"`
+	RunningPods    *resource.Quantity `json:"runningPods"`
+	PodCapacity    *resource.Quantity `json:"podCapacity"`
 }
 
 // ComponentReport holds a collection of ocp3 config reports

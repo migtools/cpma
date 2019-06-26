@@ -1,8 +1,6 @@
 package transform
 
 import (
-	"strconv"
-
 	"github.com/fusor/cpma/pkg/api"
 	O7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/sirupsen/logrus"
@@ -64,11 +62,7 @@ func (clusterReport *ClusterReport) reportNodes(apiResources api.Resources) {
 		}
 
 		isMaster, ok := node.ObjectMeta.Labels["node-role.kubernetes.io/master"]
-		if ok && isMaster == "true" {
-			nodeReport.MasterNode = true
-		} else {
-			nodeReport.MasterNode = false
-		}
+		nodeReport.MasterNode = ok && isMaster == "true"
 
 		reportResources(nodeReport, node.Status, apiResources)
 		clusterReport.Nodes = append(clusterReport.Nodes, *nodeReport)
@@ -77,26 +71,31 @@ func (clusterReport *ClusterReport) reportNodes(apiResources api.Resources) {
 
 // reportResources parse and insert info about consumed resources
 func reportResources(repotedNode *NodeReport, nodeStatus k8sapicore.NodeStatus, apiResources api.Resources) {
-	repotedNode.Resources.CPU = nodeStatus.Capacity.Cpu().String()
+	repotedNode.Resources.CPU = nodeStatus.Capacity.Cpu()
 
-	repotedNode.Resources.MemoryCapacity = nodeStatus.Capacity.Memory().String()
+	repotedNode.Resources.MemoryCapacity = nodeStatus.Capacity.Memory()
 
 	memConsumed := new(resource.Quantity)
 	memCapacity, _ := nodeStatus.Capacity.Memory().AsInt64()
 	memAllocatable, _ := nodeStatus.Allocatable.Memory().AsInt64()
 	memConsumed.Set(memCapacity - memAllocatable)
 	memConsumed.Format = resource.BinarySI
-	repotedNode.Resources.MemoryConsumed = memConsumed.String()
+	repotedNode.Resources.MemoryConsumed = memConsumed
 
-	runningPods := 0
+	var runningPodsCount int64
 	for _, resources := range apiResources.NamespaceMap {
 		for _, pod := range resources.PodList.Items {
 			if pod.Spec.NodeName == repotedNode.Name {
-				runningPods++
+				runningPodsCount++
 			}
 		}
 	}
-	repotedNode.Resources.RunningPods = strconv.Itoa(runningPods) + "/" + nodeStatus.Capacity.Pods().String()
+	podsRunning := new(resource.Quantity)
+	podsRunning.Set(runningPodsCount)
+	podsRunning.Format = resource.DecimalSI
+	repotedNode.Resources.RunningPods = podsRunning
+
+	repotedNode.Resources.PodCapacity = nodeStatus.Capacity.Pods()
 }
 
 // reportNamespaces fills in information about Namespaces
