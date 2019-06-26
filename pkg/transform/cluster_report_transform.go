@@ -1,7 +1,7 @@
 package transform
 
 import (
-	"github.com/fusor/cpma/pkg/api"
+	"github.com/fusor/cpma/pkg/apiclients/k8s"
 	"github.com/sirupsen/logrus"
 	k8sapicore "k8s.io/api/core/v1"
 )
@@ -11,7 +11,7 @@ const ClusterReportName = "ClusterReport"
 
 // ClusterReportExtraction holds data extracted from k8s API resources
 type ClusterReportExtraction struct {
-	api.Resources
+	k8s.Resources
 }
 
 // ClusterTransform reprents transform for k8s API resources
@@ -22,7 +22,7 @@ type ClusterTransform struct {
 func (e ClusterReportExtraction) Transform() ([]Output, error) {
 	logrus.Info("ClusterTransform::Transform")
 
-	clusterReport, err := genClusterReport(api.Resources{
+	clusterReport, err := genClusterReport(k8s.Resources{
 		PersistentVolumeList: e.PersistentVolumeList,
 		StorageClassList:     e.StorageClassList,
 		NamespaceMap:         e.NamespaceMap,
@@ -39,7 +39,7 @@ func (e ClusterReportExtraction) Transform() ([]Output, error) {
 	return outputs, nil
 }
 
-func genClusterReport(apiResources api.Resources) (ClusterReport, error) {
+func genClusterReport(apiResources k8s.Resources) (ClusterReport, error) {
 	clusterReport := ClusterReport{}
 
 	clusterReport.reportNamespaces(apiResources)
@@ -51,7 +51,7 @@ func genClusterReport(apiResources api.Resources) (ClusterReport, error) {
 	return clusterReport, nil
 }
 
-func (clusterReport *ClusterReport) reportNamespaces(apiResources api.Resources) {
+func (clusterReport *ClusterReport) reportNamespaces(apiResources k8s.Resources) {
 	logrus.Debug("ClusterReport::ReportNamespaces")
 
 	for namespaceName, resources := range apiResources.NamespaceMap {
@@ -75,7 +75,7 @@ func reportPods(reportedNamespace *NamespaceReport, podList *k8sapicore.PodList)
 	}
 }
 
-func (clusterReport *ClusterReport) reportPVs(apiResources api.Resources) {
+func (clusterReport *ClusterReport) reportPVs(apiResources k8s.Resources) {
 	logrus.Debug("ClusterReport::ReportPVs")
 	pvList := apiResources.PersistentVolumeList
 
@@ -90,7 +90,7 @@ func (clusterReport *ClusterReport) reportPVs(apiResources api.Resources) {
 	}
 }
 
-func (clusterReport *ClusterReport) reportStorageClasses(apiResources api.Resources) {
+func (clusterReport *ClusterReport) reportStorageClasses(apiResources k8s.Resources) {
 	logrus.Debug("ClusterReport::ReportStorageClasses")
 	// Go through all storage classes and save required information to report
 	storageClassList := apiResources.StorageClassList
@@ -113,17 +113,17 @@ func (e ClusterReportExtraction) Validate() error {
 func (e ClusterTransform) Extract() (Extraction, error) {
 	extraction := &ClusterReportExtraction{}
 
-	namespacesList, err := api.ListNamespaces()
+	namespacesList, err := k8s.ListNamespaces()
 	if err != nil {
 		return nil, err
 	}
 
 	// Map all namespaces to their resources
-	extraction.NamespaceMap = make(map[string]*api.NamespaceResources)
+	extraction.NamespaceMap = make(map[string]*k8s.NamespaceResources)
 	for _, namespace := range namespacesList.Items {
-		namespaceResources := &api.NamespaceResources{}
+		namespaceResources := &k8s.NamespaceResources{}
 
-		podsList, err := api.ListPods(namespace.Name)
+		podsList, err := k8s.ListPods(namespace.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -132,13 +132,13 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		extraction.NamespaceMap[namespace.Name] = namespaceResources
 	}
 
-	pvList, err := api.ListPVs()
+	pvList, err := k8s.ListPVs()
 	if err != nil {
 		return nil, err
 	}
 	extraction.PersistentVolumeList = pvList
 
-	storageClassList, err := api.ListStorageClasses()
+	storageClassList, err := k8s.ListStorageClasses()
 	if err != nil {
 		return nil, err
 	}

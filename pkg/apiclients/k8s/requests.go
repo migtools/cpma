@@ -1,4 +1,4 @@
-package api
+package k8s
 
 import (
 	k8sapicore "k8s.io/api/core/v1"

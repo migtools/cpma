@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/fusor/cpma/pkg/api"
+	"github.com/fusor/cpma/pkg/apiclients/k8s"
 	"github.com/fusor/cpma/pkg/env/clusterdiscovery"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
@@ -71,7 +71,7 @@ func InitConfig() error {
 	// If a config file is found, read it in.
 	readConfigErr := viperConfig.ReadInConfig()
 
-	err = api.ParseKubeConfig()
+	err = k8s.ParseKubeConfig()
 	if err != nil {
 		return errors.Wrap(err, "kubeconfig parsing failed")
 	}
@@ -83,10 +83,10 @@ func InitConfig() error {
 		return errors.Wrap(err, "Error in reading missing values")
 	}
 
-	if api.Client == nil {
-		err = api.CreateAPIClient(viperConfig.GetString("ClusterName"))
+	if k8s.Client == nil {
+		err = k8s.CreateAPIClient(viperConfig.GetString("ClusterName"))
 		if err != nil {
-			return errors.Wrap(err, "k8s api client failed to create")
+			return errors.Wrap(err, "k8s API client failed to create")
 		}
 	}
 

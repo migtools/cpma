@@ -2,7 +2,7 @@ package clusterdiscovery
 
 import (
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/fusor/cpma/pkg/api"
+	"github.com/fusor/cpma/pkg/apiclients/k8s"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
@@ -13,11 +13,11 @@ import (
 func DiscoverCluster() (string, string, error) {
 	selectedCluster := surveyClusters()
 
-	if err := api.CreateAPIClient(selectedCluster); err != nil {
+	if err := k8s.CreateAPIClient(selectedCluster); err != nil {
 		return "", "", errors.Wrap(err, "k8s api client failed to create")
 	}
 
-	clusterNodes, err := queryNodes(api.Client.CoreV1())
+	clusterNodes, err := queryNodes(k8s.Client.CoreV1())
 	if err != nil {
 		return "", "", errors.Wrap(err, "cluster node query failed")
 	}
@@ -29,14 +29,14 @@ func DiscoverCluster() (string, string, error) {
 
 func surveyClusters() string {
 	// Survey options should be an array
-	clusters := make([]string, 0, len(api.ClusterNames))
+	clusters := make([]string, 0, len(k8s.ClusterNames))
 	// It's better to have current context's cluster first, because
 	// it will be easier to select it using survey
-	currentContext := api.KubeConfig.CurrentContext
-	currentContextCluster := api.KubeConfig.Contexts[currentContext].Cluster
+	currentContext := k8s.KubeConfig.CurrentContext
+	currentContextCluster := k8s.KubeConfig.Contexts[currentContext].Cluster
 	clusters = append(clusters, currentContextCluster)
 
-	for cluster := range api.ClusterNames {
+	for cluster := range k8s.ClusterNames {
 		if cluster != currentContextCluster {
 			clusters = append(clusters, cluster)
 		}
@@ -53,7 +53,7 @@ func surveyClusters() string {
 }
 
 func queryNodes(apiClient corev1.CoreV1Interface) ([]string, error) {
-	nodeList, err := api.ListNodes()
+	nodeList, err := k8s.ListNodes()
 	if err != nil {
 		return nil, err
 	}
