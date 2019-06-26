@@ -16,6 +16,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/openshift/api v3.9.1-0.20190404192821-4706c46ddae5+incompatible
+	github.com/openshift/client-go v0.0.0-20190617165122-8892c0adc000
 	github.com/pkg/errors v0.8.1
 	github.com/pkg/sftp v1.10.0
 	github.com/sirupsen/logrus v1.4.1
