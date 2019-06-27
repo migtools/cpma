@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	k8sapicore "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	k8smachinery "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ReportOutput holds a collection of reports to be written to file
@@ -48,9 +49,11 @@ type NodeReport struct {
 
 // NamespaceReport represents json report of k8s namespaces
 type NamespaceReport struct {
-	Name   string        `json:"name"`
-	Pods   []PodReport   `json:"pods,omitempty"`
-	Routes []RouteReport `json:"routes,omitempty"`
+	Name         string                   `json:"name"`
+	LatestChange k8smachinery.Time        `json:"latestChange,omitempty"`
+	Resources    ContainerResourcesReport `json:"resources,omitempty"`
+	Pods         []PodReport              `json:"pods,omitempty"`
+	Routes       []RouteReport            `json:"routes,omitempty"`
 }
 
 // PodReport represents json report of k8s pods
@@ -67,6 +70,13 @@ type RouteReport struct {
 	TLS               *O7tapiroute.TLSConfig             `json:"tls,omitempty"`
 	To                O7tapiroute.RouteTargetReference   `json:"to,omitempty"`
 	WildcardPolicy    O7tapiroute.WildcardPolicyType     `json:"wildcardPolicy"`
+}
+
+// ContainerResourcesReport represents json report for aggregated container resources
+type ContainerResourcesReport struct {
+	ContainerCount int                `json:"containerCount"`
+	CPUTotal       *resource.Quantity `json:"cpuTotal"`
+	MemoryTotal    *resource.Quantity `json:"memoryTotal"`
 }
 
 // PVReport represents json report of k8s PVs
