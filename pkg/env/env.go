@@ -84,9 +84,16 @@ func InitConfig() error {
 	}
 
 	if api.K8sClient == nil {
-		err = api.CreateAPIClient(viperConfig.GetString("ClusterName"))
+		err = api.CreateK8sClient(viperConfig.GetString("ClusterName"))
 		if err != nil {
 			return errors.Wrap(err, "k8s api client failed to create")
+		}
+	}
+
+	if api.O7tClient == nil {
+		err = api.CreateO7tClient(viperConfig.GetString("ClusterName"))
+		if err != nil {
+			return errors.Wrap(err, "OpenShift api client failed to create")
 		}
 	}
 
