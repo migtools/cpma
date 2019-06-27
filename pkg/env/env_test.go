@@ -14,7 +14,7 @@ import (
 
 func TestInitConfig(t *testing.T) {
 	ConfigFile = "testdata/cpma-config.yml"
-	api.Client = &kubernetes.Clientset{}
+	api.K8sClient = &kubernetes.Clientset{}
 	err := InitConfig()
 	if err != nil {
 		t.Fatal(err)

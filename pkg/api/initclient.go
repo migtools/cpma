@@ -18,8 +18,8 @@ var (
 	KubeConfig *clientcmdapi.Config
 	// ClusterNames contains names of contexts and cluster
 	ClusterNames = make(map[string]string)
-	// Client api client used for connecting to k8s api
-	Client *kubernetes.Clientset
+	// K8sClient api client used for connecting to k8s api
+	K8sClient *kubernetes.Clientset
 )
 
 // ParseKubeConfig parse kubeconfig
@@ -80,7 +80,7 @@ func CreateAPIClient(contextCluster string) error {
 	}
 	config, err := clientcmd.BuildConfigFromKubeconfigGetter("", kubeConfigGetter)
 
-	if Client, err = kubernetes.NewForConfig(config); err != nil {
+	if K8sClient, err = kubernetes.NewForConfig(config); err != nil {
 		return errors.Wrap(err, "Error in creating API client")
 	}
 
