@@ -80,7 +80,12 @@ func InitConfig() error {
 
 	err = surveyMissingValues()
 	if err != nil {
-		return errors.Wrap(err, "Error in reading missing values")
+		switch {
+		case err.Error() == "interrupt":
+			return errors.Wrap(err, "ctrl-C pressed. Exiting.")
+		default:
+			return errors.Wrap(err, "Error in reading missing values")
+		}
 	}
 
 	if api.Client == nil {
@@ -91,7 +96,16 @@ func InitConfig() error {
 	}
 
 	if readConfigErr != nil {
-		surveyCreateConfigFile()
+		err = surveyCreateConfigFile()
+		if err != nil {
+			switch {
+			case err.Error() == "interrupt":
+				return errors.Wrap(err, "ctrl-C pressed. Exiting.")
+			default:
+				return errors.Wrap(err, "Error in creating config file")
+			}
+		}
+
 		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", readConfigErr)
 	}
 
@@ -110,7 +124,10 @@ func surveyMissingValues() error {
 			Message: "Do wish to find source cluster using KUBECONFIG or prompt it?",
 			Options: []string{"KUBECONFIG", "prompt"},
 		}
-		survey.AskOne(prompt, &discoverCluster, nil)
+		err = survey.AskOne(prompt, &discoverCluster, nil)
+		if err != nil {
+			return err
+		}
 
 		if discoverCluster == "KUBECONFIG" {
 			if hostname, clusterName, err = clusterdiscovery.DiscoverCluster(); err != nil {
@@ -122,7 +139,10 @@ func surveyMissingValues() error {
 			prompt := &survey.Input{
 				Message: "OCP3 Cluster hostname",
 			}
-			survey.AskOne(prompt, &hostname, survey.ComposeValidators(survey.Required))
+			err = survey.AskOne(prompt, &hostname, survey.ComposeValidators(survey.Required))
+			if err != nil {
+				return err
+			}
 		}
 
 		viperConfig.Set("Source", hostname)
@@ -135,7 +155,11 @@ func surveyMissingValues() error {
 			Message: "SSH login",
 			Default: "root",
 		}
-		survey.AskOne(prompt, &login, nil)
+		err := survey.AskOne(prompt, &login, nil)
+		if err != nil {
+			return err
+		}
+
 		sshCreds["login"] = login
 	}
 
@@ -145,7 +169,11 @@ func surveyMissingValues() error {
 			Message: "SSH Port",
 			Default: "22",
 		}
-		survey.AskOne(prompt, &port, nil)
+		err := survey.AskOne(prompt, &port, nil)
+		if err != nil {
+			return err
+		}
+
 		sshCreds["port"] = port
 	}
 
@@ -154,7 +182,11 @@ func surveyMissingValues() error {
 		prompt := &survey.Input{
 			Message: "Path to private SSH key",
 		}
-		survey.AskOne(prompt, &privatekey, survey.ComposeValidators(survey.Required))
+		err := survey.AskOne(prompt, &privatekey, survey.ComposeValidators(survey.Required))
+		if err != nil {
+			return err
+		}
+
 		sshCreds["privatekey"] = privatekey
 	}
 
@@ -164,7 +196,11 @@ func surveyMissingValues() error {
 			Message: "Path to output, skip to use current directory",
 			Default: ".",
 		}
-		survey.AskOne(prompt, &outPutDir, nil)
+		err := survey.AskOne(prompt, &outPutDir, nil)
+		if err != nil {
+			return err
+		}
+
 		viperConfig.Set("OutputDir", outPutDir)
 	}
 
@@ -189,18 +225,23 @@ func getNestedArgValues() {
 	viperConfig.Set("SSHCreds", sshCreds)
 }
 
-func surveyCreateConfigFile() {
+func surveyCreateConfigFile() error {
 	createConfig := ""
 	prompt := &survey.Select{
 		Message: "No config file found, do you wish to create one for future use?",
 		Options: []string{"yes", "no"},
 	}
-	survey.AskOne(prompt, &createConfig, nil)
+	err := survey.AskOne(prompt, &createConfig, nil)
+	if err != nil {
+		return err
+	}
 
 	if createConfig == "yes" {
 		viperConfig.SetConfigFile("cpma.yaml")
 		viperConfig.WriteConfig()
 	}
+
+	return nil
 }
 
 // InitLogger initializes stderr and logger to file
