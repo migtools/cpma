@@ -2,7 +2,9 @@ package transform
 
 import (
 	"github.com/fusor/cpma/pkg/api"
+	O7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/sirupsen/logrus"
+
 	k8sapicore "k8s.io/api/core/v1"
 )
 
@@ -41,13 +43,9 @@ func (e ClusterReportExtraction) Transform() ([]Output, error) {
 
 func genClusterReport(apiResources api.Resources) (ClusterReport, error) {
 	clusterReport := ClusterReport{}
-
 	clusterReport.reportNamespaces(apiResources)
-
 	clusterReport.reportPVs(apiResources)
-
 	clusterReport.reportStorageClasses(apiResources)
-
 	return clusterReport, nil
 }
 
@@ -60,6 +58,7 @@ func (clusterReport *ClusterReport) reportNamespaces(apiResources api.Resources)
 		}
 
 		reportPods(&reportedNamespace, resources.PodList)
+		reportRoutes(&reportedNamespace, resources.RouteList)
 
 		clusterReport.Namespaces = append(clusterReport.Namespaces, reportedNamespace)
 	}
@@ -72,6 +71,22 @@ func reportPods(reportedNamespace *NamespaceReport, podList *k8sapicore.PodList)
 		}
 
 		reportedNamespace.Pods = append(reportedNamespace.Pods, *reportedPod)
+	}
+}
+
+func reportRoutes(reportedNamespace *NamespaceReport, routeList *O7tapiroute.RouteList) {
+	for _, route := range routeList.Items {
+		reportedRoute := &RouteReport{
+			Name:              route.Name,
+			AlternateBackends: route.Spec.AlternateBackends,
+			Host:              route.Spec.Host,
+			Path:              route.Spec.Path,
+			To:                route.Spec.To,
+			TLS:               route.Spec.TLS,
+			WildcardPolicy:    route.Spec.WildcardPolicy,
+		}
+
+		reportedNamespace.Routes = append(reportedNamespace.Routes, *reportedRoute)
 	}
 }
 
@@ -128,6 +143,12 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 			return nil, err
 		}
 		namespaceResources.PodList = podsList
+
+		routesList, err := api.ListRoutes(namespace.Name)
+		if err != nil {
+			return nil, err
+		}
+		namespaceResources.RouteList = routesList
 
 		extraction.NamespaceMap[namespace.Name] = namespaceResources
 	}
