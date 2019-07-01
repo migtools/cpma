@@ -1,7 +1,8 @@
 ---
-Source: "master-0.test.example.com"
+Hostname: "master-0.test.example.com"
 SSHCreds:
   Login: "root"
   PrivateKey: "/home/test/.ssh/testkey"
   Port: 22
 OutputDir: "./data"
+ClusterName: "somename"

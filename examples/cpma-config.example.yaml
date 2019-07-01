@@ -1,5 +1,5 @@
 ---
-Source: "master-0.example.com" # can also point to directory
+Hostname: "master-0.example.com" # can also point to directory
 SSHCreds:
   Login: "root"
   PrivateKey: "/home/example/.ssh/key"

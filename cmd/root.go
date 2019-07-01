@@ -30,29 +30,29 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&env.ConfigFile, "config", "", "config file (Default searches ./cpma.yaml, $HOME/cpma.yml)")
 
 	// Set log level from CLI argument
-	rootCmd.PersistentFlags().Bool("debug", false, "show debug ouput")
+	rootCmd.PersistentFlags().BoolP("debug", "d", false, "show debug ouput")
 	env.Config().BindPFlag("Debug", rootCmd.PersistentFlags().Lookup("debug"))
 
 	// Output logs to console if true
-	rootCmd.PersistentFlags().Bool("console-logs", false, "output log to console")
-	env.Config().BindPFlag("ConsoleLogs", rootCmd.PersistentFlags().Lookup("console-logs"))
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose output")
+	env.Config().BindPFlag("Verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 
 	// Allow insecure host key if true
-	rootCmd.PersistentFlags().Bool("insecure-key", false, "allow insecure host key")
-	env.Config().BindPFlag("InsecureHostKey", rootCmd.PersistentFlags().Lookup("insecure-key"))
+	rootCmd.PersistentFlags().BoolP("allow-insecure-host", "i", false, "allow insecure ssh host key ")
+	env.Config().BindPFlag("InsecureHostKey", rootCmd.PersistentFlags().Lookup("allow-insecure-host"))
 
 	// Get OCP3 source cluster and save it to viper config
-	rootCmd.PersistentFlags().StringP("source", "s", "", "OCP3 cluster hostname")
-	env.Config().BindPFlag("Source", rootCmd.PersistentFlags().Lookup("source"))
+	rootCmd.PersistentFlags().StringP("hostname", "n", "", "OCP3 cluster hostname")
+	env.Config().BindPFlag("Hostname", rootCmd.PersistentFlags().Lookup("hostname"))
 
 	// Get OCP3 source cluster name that is used in kubeconfig and save it to viper config
 	rootCmd.PersistentFlags().StringP("cluster-name", "c", "", "OCP3 cluster kubeconfig name")
-	env.Config().BindPFlag("ClusterName", rootCmd.PersistentFlags().Lookup("source"))
+	env.Config().BindPFlag("ClusterName", rootCmd.PersistentFlags().Lookup("cluster-name"))
 
 	// Get ssh config values from CLI argument
-	rootCmd.PersistentFlags().StringVarP(&env.Login, "login", "l", "", "OCP3 ssh login")
-	rootCmd.PersistentFlags().StringVarP(&env.PrivateKey, "key", "k", "", "OCP3 ssh key path")
-	rootCmd.PersistentFlags().StringVarP(&env.Port, "port", "p", "", "OCP3 ssh port")
+	rootCmd.PersistentFlags().StringVarP(&env.Login, "ssh-login", "l", "", "OCP3 ssh login")
+	rootCmd.PersistentFlags().StringVarP(&env.PrivateKey, "ssh-keyfile", "k", "", "OCP3 ssh keyfile path")
+	rootCmd.PersistentFlags().StringVarP(&env.Port, "ssh-port", "p", "", "OCP3 ssh port")
 
 	// Get config file from CLI argument an save to viper config
 	rootCmd.PersistentFlags().StringP("output-dir", "o", path.Dir("."), "set the directory to store extracted configuration.")

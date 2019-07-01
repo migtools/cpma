@@ -124,7 +124,7 @@ func TestInitLogger(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			viperConfig.Set("debug", tc.debugLevel)
-			viperConfig.Set("consolelogs", true)
+			viperConfig.Set("verbose", true)
 			InitLogger()
 			logger := logrus.StandardLogger()
 			if tc.debugLevel {
