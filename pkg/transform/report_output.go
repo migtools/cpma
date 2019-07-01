@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/fusor/cpma/pkg/io"
+	O7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,13 +29,25 @@ type ClusterReport struct {
 
 // NamespaceReport represents json report of k8s namespaces
 type NamespaceReport struct {
-	Name string      `json:"name"`
-	Pods []PodReport `json:"pods,omitempty"`
+	Name   string        `json:"name"`
+	Pods   []PodReport   `json:"pods,omitempty"`
+	Routes []RouteReport `json:"routes,omitempty"`
 }
 
 // PodReport represents json report of k8s pods
 type PodReport struct {
 	Name string `json:"name"`
+}
+
+// RouteReport represents json report of k8s pods
+type RouteReport struct {
+	Name              string                             `json:"name"`
+	Host              string                             `json:"host"`
+	Path              string                             `json:"path,omitempty"`
+	AlternateBackends []O7tapiroute.RouteTargetReference `json:"alternateBackends,omitempty"`
+	TLS               *O7tapiroute.TLSConfig             `json:"tls,omitempty"`
+	To                O7tapiroute.RouteTargetReference   `json:"to,omitempty"`
+	WildcardPolicy    O7tapiroute.WildcardPolicyType     `json:"wildcardPolicy"`
 }
 
 // PVReport represents json report of k8s PVs

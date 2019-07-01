@@ -13,11 +13,11 @@ import (
 func DiscoverCluster() (string, string, error) {
 	selectedCluster := surveyClusters()
 
-	if err := api.CreateAPIClient(selectedCluster); err != nil {
+	if err := api.CreateK8sClient(selectedCluster); err != nil {
 		return "", "", errors.Wrap(err, "k8s api client failed to create")
 	}
 
-	clusterNodes, err := queryNodes(api.Client.CoreV1())
+	clusterNodes, err := queryNodes(api.K8sClient.CoreV1())
 	if err != nil {
 		return "", "", errors.Wrap(err, "cluster node query failed")
 	}
