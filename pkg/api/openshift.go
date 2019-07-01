@@ -6,7 +6,6 @@ import (
 	authv1 "github.com/openshift/client-go/authorization/clientset/versioned/typed/authorization/v1"
 	routev1 "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/rest"
 )
 
@@ -26,12 +25,8 @@ var once struct {
 
 // Openshift - Create a new openshift client if needed, returns reference
 func Openshift(config *rest.Config) (*OpenshiftClient, error) {
-	errMsg := "Something went wrong while initializing openshift client!\n"
 	once.Openshift.Do(func() {
-		client, err := newOpenshift(config)
-		if err != nil {
-			log.Fatal(errMsg)
-		}
+		client, _ := newOpenshift(config)
 		instances.Openshift = client
 	})
 	if instances.Openshift == nil {

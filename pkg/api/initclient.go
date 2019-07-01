@@ -20,7 +20,7 @@ var (
 	ClusterNames = make(map[string]string)
 	// K8sClient api client used for connecting to k8s api
 	K8sClient *kubernetes.Clientset
-	// O7tClient api client used for connecting to k8s api
+	// O7tClient api client used for connecting to Openshift api
 	O7tClient *OpenshiftClient
 )
 
