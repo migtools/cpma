@@ -11,16 +11,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, error) {
+func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
-		err    error
-		secret *secrets.Secret
-		idP    = &configv1.IdentityProvider{}
-		openID legacyconfigv1.OpenIDIdentityProvider
+		err             error
+		providerSecrets []*secrets.Secret
+		idP             = &configv1.IdentityProvider{}
+		openID          legacyconfigv1.OpenIDIdentityProvider
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &openID); err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to decode openID, see error")
+		return nil, errors.Wrap(err, "Failed to decode openID, see error")
 	}
 
 	idP.Type = "OpenID"
@@ -36,16 +36,21 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*configv1.I
 	idP.OpenID.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(openID.ClientSecret)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to fetch client secret for openID, see error")
+		return nil, errors.Wrap(err, "Failed to fetch client secret for openID, see error")
 	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
 
-	if secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType); err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to generate secret for openID, see error")
+	secret, err := secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to generate secret for openID, see error")
 	}
+	providerSecrets = append(providerSecrets, secret)
 
-	return idP, secret, nil
+	return &ProviderResources{
+		IDP:     idP,
+		Secrets: providerSecrets,
+	}, nil
 }
 
 func validateOpenIDProvider(serializer *json.Serializer, p IdentityProvider) error {

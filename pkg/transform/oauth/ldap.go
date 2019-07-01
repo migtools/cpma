@@ -9,16 +9,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *configmaps.ConfigMap, error) {
+func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
-		err         error
-		idP         = &configv1.IdentityProvider{}
-		caConfigmap *configmaps.ConfigMap
-		ldap        legacyconfigv1.LDAPPasswordIdentityProvider
+		err                error
+		idP                = &configv1.IdentityProvider{}
+		providerConfigMaps []*configmaps.ConfigMap
+		ldap               legacyconfigv1.LDAPPasswordIdentityProvider
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &ldap); err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to decode ldap, see error")
+		return nil, errors.Wrap(err, "Failed to decode ldap, see error")
 	}
 
 	idP.Type = "LDAP"
@@ -34,21 +34,25 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*configv1.Ide
 	if ldap.BindPassword.Value != "" || ldap.BindPassword.File != "" || ldap.BindPassword.Env != "" {
 		bindPassword, err := io.FetchStringSource(ldap.BindPassword)
 		if err != nil {
-			return nil, nil, errors.Wrap(err, "Failed to fetch bind password for ldap")
+			return nil, errors.Wrap(err, "Failed to fetch bind password for ldap")
 		}
 
 		idP.LDAP.BindPassword.Name = bindPassword
 	}
 
 	if ldap.CA != "" {
-		caConfigmap = configmaps.GenConfigMap("ldap-configmap", OAuthNamespace, p.CAData)
+		caConfigmap := configmaps.GenConfigMap("ldap-configmap", OAuthNamespace, p.CAData)
 		idP.LDAP.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 
 	idP.LDAP.Insecure = ldap.Insecure
 	idP.LDAP.URL = ldap.URL
 
-	return idP, caConfigmap, nil
+	return &ProviderResources{
+		IDP:        idP,
+		ConfigMaps: providerConfigMaps,
+	}, nil
 }
 
 func validateLDAPProvider(serializer *json.Serializer, p IdentityProvider) error {

@@ -50,9 +50,16 @@ type IdentityProvider struct {
 	KeyData       []byte
 }
 
-// Resources stores all oAuth config parts
-type Resources struct {
+// ResultResources stores all oAuth config parts
+type ResultResources struct {
 	OAuthCRD   *configv1.OAuth
+	Secrets    []*secrets.Secret
+	ConfigMaps []*configmaps.ConfigMap
+}
+
+// ProviderResources stores all resources related to one provider
+type ProviderResources struct {
+	IDP        *configv1.IdentityProvider
 	Secrets    []*secrets.Secret
 	ConfigMaps []*configmaps.ConfigMap
 }
@@ -71,11 +78,11 @@ const (
 )
 
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
-func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, templates legacyconfigv1.OAuthTemplates) (*Resources, error) {
+func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, templates legacyconfigv1.OAuthTemplates) (*ResultResources, error) {
 	var err error
-	var idP *configv1.IdentityProvider
 	var secretsSlice []*secrets.Secret
 	var сonfigMapSlice []*configmaps.ConfigMap
+	var providerResources *ProviderResources
 
 	// Translate configuration of diffent oAuth providers to CRD, secrets and config maps
 	var oauthCrd configv1.OAuth
@@ -85,9 +92,6 @@ func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, te
 	oauthCrd.Namespace = OAuthNamespace
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	for _, p := range identityProviders {
-		var secret, certSecret, keySecret *secrets.Secret
-		var caConfigMap *configmaps.ConfigMap
-
 		p.Provider.Object, _, err = serializer.Decode(p.Provider.Raw, nil, nil)
 		if err != nil {
 			return nil, err
@@ -97,23 +101,23 @@ func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, te
 
 		switch kind {
 		case "GitHubIdentityProvider":
-			idP, secret, caConfigMap, err = buildGitHubIP(serializer, p)
+			providerResources, err = buildGitHubIP(serializer, p)
 		case "GitLabIdentityProvider":
-			idP, secret, caConfigMap, err = buildGitLabIP(serializer, p)
+			providerResources, err = buildGitLabIP(serializer, p)
 		case "GoogleIdentityProvider":
-			idP, secret, err = buildGoogleIP(serializer, p)
+			providerResources, err = buildGoogleIP(serializer, p)
 		case "HTPasswdPasswordIdentityProvider":
-			idP, secret, err = buildHTPasswdIP(serializer, p)
+			providerResources, err = buildHTPasswdIP(serializer, p)
 		case "OpenIDIdentityProvider":
-			idP, secret, err = buildOpenIDIP(serializer, p)
+			providerResources, err = buildOpenIDIP(serializer, p)
 		case "RequestHeaderIdentityProvider":
-			idP, caConfigMap, err = buildRequestHeaderIP(serializer, p)
+			providerResources, err = buildRequestHeaderIP(serializer, p)
 		case "LDAPPasswordIdentityProvider":
-			idP, caConfigMap, err = buildLdapIP(serializer, p)
+			providerResources, err = buildLdapIP(serializer, p)
 		case "KeystonePasswordIdentityProvider":
-			idP, certSecret, keySecret, caConfigMap, err = buildKeystoneIP(serializer, p)
+			providerResources, err = buildKeystoneIP(serializer, p)
 		case "BasicAuthPasswordIdentityProvider":
-			idP, certSecret, keySecret, caConfigMap, err = buildBasicAuthIP(serializer, p)
+			providerResources, err = buildBasicAuthIP(serializer, p)
 		default:
 			logrus.Infof("Can't handle %s OAuth kind", kind)
 			continue
@@ -125,23 +129,17 @@ func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, te
 			continue
 		}
 
-		// Check if secret is not empty
-		if secret != nil {
-			secretsSlice = append(secretsSlice, secret)
+		// Check if provider has secrets
+		if len(providerResources.Secrets) != 0 {
+			secretsSlice = append(secretsSlice, providerResources.Secrets...)
 		}
 
-		// Check if certSecret is not empty
-		if certSecret != nil {
-			secretsSlice = append(secretsSlice, certSecret)
-			secretsSlice = append(secretsSlice, keySecret)
+		// Check if provider has configmaps
+		if len(providerResources.ConfigMaps) != 0 {
+			сonfigMapSlice = append(сonfigMapSlice, providerResources.ConfigMaps...)
 		}
 
-		// Check if config map is not empty
-		if caConfigMap != nil {
-			сonfigMapSlice = append(сonfigMapSlice, caConfigMap)
-		}
-
-		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, *idP)
+		oauthCrd.Spec.IdentityProviders = append(oauthCrd.Spec.IdentityProviders, *providerResources.IDP)
 	}
 
 	// Translate lifetime of access tokens
@@ -156,7 +154,7 @@ func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, te
 	oauthCrd.Spec.Templates = *translatedTemplates
 	secretsSlice = append(secretsSlice, templateSecrets...)
 
-	return &Resources{
+	return &ResultResources{
 		OAuthCRD:   &oauthCrd,
 		Secrets:    secretsSlice,
 		ConfigMaps: сonfigMapSlice,

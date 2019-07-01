@@ -12,17 +12,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
-		err                   error
-		idP                   = &configv1.IdentityProvider{}
-		certSecret, keySecret *secrets.Secret
-		caConfigmap           *configmaps.ConfigMap
-		basicAuth             legacyconfigv1.BasicAuthPasswordIdentityProvider
+		err                error
+		idP                = &configv1.IdentityProvider{}
+		basicAuth          legacyconfigv1.BasicAuthPasswordIdentityProvider
+		providerSecrets    []*secrets.Secret
+		providerConfigMaps []*configmaps.ConfigMap
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &basicAuth); err != nil {
-		return nil, nil, nil, nil, errors.Wrap(err, "Failed to decode basic auth, see error")
+		return nil, errors.Wrap(err, "Failed to decode basic auth, see error")
 	}
 
 	idP.Type = "BasicAuth"
@@ -32,8 +32,9 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*configv
 	idP.BasicAuth.URL = basicAuth.URL
 
 	if basicAuth.CA != "" {
-		caConfigmap = configmaps.GenConfigMap("basicauth-configmap", OAuthNamespace, p.CAData)
+		caConfigmap := configmaps.GenConfigMap("basicauth-configmap", OAuthNamespace, p.CAData)
 		idP.BasicAuth.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 
 	if basicAuth.CertFile != "" {
@@ -41,20 +42,28 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*configv
 		idP.BasicAuth.TLSClientCert.Name = certSecretName
 
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-		if certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType); err != nil {
-			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate cert secret for basic auth, see error")
+		certSecret, err := secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType)
+		if err != nil {
+			return nil, errors.Wrap(err, "Failed to generate cert secret for basic auth, see error")
 		}
+		providerSecrets = append(providerSecrets, certSecret)
 
 		keySecretName := "basicauth-client-key-secret"
 		idP.BasicAuth.TLSClientKey.Name = keySecretName
 
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
-		if keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType); err != nil {
-			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate key secret for basic auth, see error")
+		keySecret, err := secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType)
+		if err != nil {
+			return nil, errors.Wrap(err, "Failed to generate key secret for basic auth, see error")
 		}
+		providerSecrets = append(providerSecrets, keySecret)
 	}
 
-	return idP, certSecret, keySecret, caConfigmap, nil
+	return &ProviderResources{
+		IDP:        idP,
+		Secrets:    providerSecrets,
+		ConfigMaps: providerConfigMaps,
+	}, nil
 }
 
 func validateBasicAuthProvider(serializer *json.Serializer, p IdentityProvider) error {

@@ -11,16 +11,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, error) {
+func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
-		err    error
-		idP    = &configv1.IdentityProvider{}
-		secret *secrets.Secret
-		google legacyconfigv1.GoogleIdentityProvider
+		err             error
+		idP             = &configv1.IdentityProvider{}
+		providerSecrets []*secrets.Secret
+		google          legacyconfigv1.GoogleIdentityProvider
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &google); err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to decode google, see error")
+		return nil, errors.Wrap(err, "Failed to decode google, see error")
 	}
 
 	idP.Type = "Google"
@@ -34,15 +34,20 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*configv1.I
 	idP.Google.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(google.ClientSecret)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to fetch client secret for google, see error")
+		return nil, errors.Wrap(err, "Failed to fetch client secret for google, see error")
 	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
-	if secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType); err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to generate client secret for google, see error")
+	secret, err := secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to generate client secret for google, see error")
 	}
+	providerSecrets = append(providerSecrets, secret)
 
-	return idP, secret, nil
+	return &ProviderResources{
+		IDP:     idP,
+		Secrets: providerSecrets,
+	}, nil
 }
 
 func validateGoogleProvider(serializer *json.Serializer, p IdentityProvider) error {

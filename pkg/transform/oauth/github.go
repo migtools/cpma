@@ -13,17 +13,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
-		err         error
-		idP         = &configv1.IdentityProvider{}
-		secret      *secrets.Secret
-		caConfigmap *configmaps.ConfigMap
-		github      legacyconfigv1.GitHubIdentityProvider
+		err                error
+		idP                = &configv1.IdentityProvider{}
+		providerSecrets    []*secrets.Secret
+		providerConfigMaps []*configmaps.ConfigMap
+		github             legacyconfigv1.GitHubIdentityProvider
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &github); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Failed to decode github, see error")
+		return nil, errors.Wrap(err, "Failed to decode github, see error")
 	}
 
 	idP.Type = "GitHub"
@@ -36,23 +36,30 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*configv1.I
 	idP.GitHub.Teams = github.Teams
 
 	if github.CA != "" {
-		caConfigmap = configmaps.GenConfigMap("github-configmap", OAuthNamespace, p.CAData)
+		caConfigmap := configmaps.GenConfigMap("github-configmap", OAuthNamespace, p.CAData)
 		idP.GitHub.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 
 	secretName := "github-secret"
 	idP.GitHub.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(github.ClientSecret)
 	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Failed to fetch client secret for for github, see error")
+		return nil, errors.Wrap(err, "Failed to fetch client secret for for github, see error")
 	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
-	if secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Failed to generate client secret for for github, see error")
+	secret, err := secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to generate client secret for for github, see error")
 	}
+	providerSecrets = append(providerSecrets, secret)
 
-	return idP, secret, caConfigmap, nil
+	return &ProviderResources{
+		IDP:        idP,
+		Secrets:    providerSecrets,
+		ConfigMaps: providerConfigMaps,
+	}, nil
 }
 
 func validateGithubProvider(serializer *json.Serializer, p IdentityProvider) error {
