@@ -6,12 +6,23 @@ import (
 	"github.com/fusor/cpma/pkg/io"
 	O7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/sirupsen/logrus"
+	k8sapicore "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // ReportOutput holds a collection of reports to be written to file
 type ReportOutput struct {
 	ClusterReport    ClusterReport     `json:"cluster"`
 	ComponentReports []ComponentReport `json:"components"`
+}
+
+// NodeResources represents a json report of Node resources
+type NodeResources struct {
+	CPU            *resource.Quantity `json:"cpu"`
+	MemoryConsumed *resource.Quantity `json:"memoryConsumed"`
+	MemoryCapacity *resource.Quantity `json:"memoryCapacity"`
+	RunningPods    *resource.Quantity `json:"runningPods"`
+	PodCapacity    *resource.Quantity `json:"podCapacity"`
 }
 
 // ComponentReport holds a collection of ocp3 config reports
@@ -22,9 +33,17 @@ type ComponentReport struct {
 
 // ClusterReport represents json report of k8s resources
 type ClusterReport struct {
+	Nodes          []NodeReport         `json:"nodes"`
 	Namespaces     []NamespaceReport    `json:"namespaces,omitempty"`
 	PVs            []PVReport           `json:"pvs,omitempty"`
 	StorageClasses []StorageClassReport `json:"storageClasses,omitempty"`
+}
+
+// NodeReport represents json report of k8s nodes
+type NodeReport struct {
+	Name       string        `json:"name"`
+	MasterNode bool          `json:"masterNode"`
+	Resources  NodeResources `json:"resources"`
 }
 
 // NamespaceReport represents json report of k8s namespaces
@@ -52,8 +71,11 @@ type RouteReport struct {
 
 // PVReport represents json report of k8s PVs
 type PVReport struct {
-	Name         string `json:"name"`
-	StorageClass string `json:"storageClass,omitempty"`
+	Name         string                            `json:"name"`
+	Driver       k8sapicore.PersistentVolumeSource `json:"driver"`
+	StorageClass string                            `json:"storageClass,omitempty"`
+	Capacity     k8sapicore.ResourceList           `json:"capacity,omitempty"`
+	Phase        k8sapicore.PersistentVolumePhase  `json:"phase,omitempty"`
 }
 
 // StorageClassReport represents json report of k8s storage classes
@@ -88,6 +110,10 @@ func DumpReports(r ReportOutput) {
 	err = json.Unmarshal(jsonData, &existingReports)
 	if err != nil {
 		logrus.Errorf("unable to unmarshal existing report json")
+	}
+
+	for _, node := range r.ClusterReport.Nodes {
+		existingReports.ClusterReport.Nodes = append(existingReports.ClusterReport.Nodes, node)
 	}
 
 	for _, namespace := range r.ClusterReport.Namespaces {

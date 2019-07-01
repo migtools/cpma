@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	k8sapicore "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // ClusterReportName is the cluster report name
@@ -28,6 +29,7 @@ func (e ClusterReportExtraction) Transform() ([]Output, error) {
 		PersistentVolumeList: e.PersistentVolumeList,
 		StorageClassList:     e.StorageClassList,
 		NamespaceMap:         e.NamespaceMap,
+		NodeList:             e.NodeList,
 	})
 	if err != nil {
 		return nil, err
@@ -41,14 +43,62 @@ func (e ClusterReportExtraction) Transform() ([]Output, error) {
 	return outputs, nil
 }
 
-func genClusterReport(apiResources api.Resources) (ClusterReport, error) {
-	clusterReport := ClusterReport{}
+// genClusterReport inserts report values into structures for json output
+func genClusterReport(apiResources api.Resources) (clusterReport ClusterReport, err error) {
+	clusterReport.reportNodes(apiResources)
 	clusterReport.reportNamespaces(apiResources)
 	clusterReport.reportPVs(apiResources)
 	clusterReport.reportStorageClasses(apiResources)
-	return clusterReport, nil
+	return
 }
 
+// reportNodes fills in information about nodes
+func (clusterReport *ClusterReport) reportNodes(apiResources api.Resources) {
+	logrus.Debug("ClusterReport::ReportNodes")
+
+	for _, node := range apiResources.NodeList.Items {
+		nodeReport := &NodeReport{
+			Name: node.ObjectMeta.Name,
+		}
+
+		isMaster, ok := node.ObjectMeta.Labels["node-role.kubernetes.io/master"]
+		nodeReport.MasterNode = ok && isMaster == "true"
+
+		reportResources(nodeReport, node.Status, apiResources)
+		clusterReport.Nodes = append(clusterReport.Nodes, *nodeReport)
+	}
+}
+
+// reportResources parse and insert info about consumed resources
+func reportResources(repotedNode *NodeReport, nodeStatus k8sapicore.NodeStatus, apiResources api.Resources) {
+	repotedNode.Resources.CPU = nodeStatus.Capacity.Cpu()
+
+	repotedNode.Resources.MemoryCapacity = nodeStatus.Capacity.Memory()
+
+	memConsumed := new(resource.Quantity)
+	memCapacity, _ := nodeStatus.Capacity.Memory().AsInt64()
+	memAllocatable, _ := nodeStatus.Allocatable.Memory().AsInt64()
+	memConsumed.Set(memCapacity - memAllocatable)
+	memConsumed.Format = resource.BinarySI
+	repotedNode.Resources.MemoryConsumed = memConsumed
+
+	var runningPodsCount int64
+	for _, resources := range apiResources.NamespaceMap {
+		for _, pod := range resources.PodList.Items {
+			if pod.Spec.NodeName == repotedNode.Name {
+				runningPodsCount++
+			}
+		}
+	}
+	podsRunning := new(resource.Quantity)
+	podsRunning.Set(runningPodsCount)
+	podsRunning.Format = resource.DecimalSI
+	repotedNode.Resources.RunningPods = podsRunning
+
+	repotedNode.Resources.PodCapacity = nodeStatus.Capacity.Pods()
+}
+
+// reportNamespaces fills in information about Namespaces
 func (clusterReport *ClusterReport) reportNamespaces(apiResources api.Resources) {
 	logrus.Debug("ClusterReport::ReportNamespaces")
 
@@ -64,6 +114,7 @@ func (clusterReport *ClusterReport) reportNamespaces(apiResources api.Resources)
 	}
 }
 
+// reportPods creates info about cluster pods
 func reportPods(reportedNamespace *NamespaceReport, podList *k8sapicore.PodList) {
 	for _, pod := range podList.Items {
 		reportedPod := &PodReport{
@@ -98,7 +149,10 @@ func (clusterReport *ClusterReport) reportPVs(apiResources api.Resources) {
 	for _, pv := range pvList.Items {
 		reportedPV := &PVReport{
 			Name:         pv.Name,
+			Driver:       pv.Spec.PersistentVolumeSource,
 			StorageClass: pv.Spec.StorageClassName,
+			Capacity:     pv.Spec.Capacity,
+			Phase:        pv.Status.Phase,
 		}
 
 		clusterReport.PVs = append(clusterReport.PVs, *reportedPV)
@@ -127,6 +181,12 @@ func (e ClusterReportExtraction) Validate() error {
 // Extract collects data for cluster report
 func (e ClusterTransform) Extract() (Extraction, error) {
 	extraction := &ClusterReportExtraction{}
+
+	nodeList, err := api.ListNodes()
+	if err != nil {
+		return nil, err
+	}
+	extraction.NodeList = nodeList
 
 	namespacesList, err := api.ListNamespaces()
 	if err != nil {
