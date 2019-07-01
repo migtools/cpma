@@ -120,7 +120,7 @@ func InitConfig() error {
 }
 
 func surveyMissingValues() error {
-	if viperConfig.GetString("Source") == "" {
+	if viperConfig.GetString("Hostname") == "" {
 		discoverCluster := ""
 		hostname := ""
 		clusterName := ""
@@ -152,7 +152,20 @@ func surveyMissingValues() error {
 			}
 		}
 
-		viperConfig.Set("Source", hostname)
+		viperConfig.Set("Hostname", hostname)
+	}
+
+	if viperConfig.GetString("ClusterName") == "" {
+		clusterName := ""
+		prompt := &survey.Input{
+			Message: "Cluster name",
+		}
+		err := survey.AskOne(prompt, &clusterName, nil)
+		if err != nil {
+			return err
+		}
+
+		viperConfig.Set("ClusterName", clusterName)
 	}
 
 	sshCreds := viperConfig.GetStringMapString("SSHCreds")
@@ -280,7 +293,7 @@ func InitLogger() {
 		ForceColors:     true,
 	}
 
-	if viperConfig.GetBool("consolelogs") {
+	if viperConfig.GetBool("verbose") {
 		stdoutHook := &ConsoleWriterHook{
 			Writer: os.Stdout,
 			LogLevels: []logrus.Level{

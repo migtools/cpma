@@ -20,16 +20,17 @@ $ ./bin/cpma
 
 Flags:
 ```
-      --config string       config file (Default searches ./cpma.yaml, $HOME/cpma.yml)
-      --console-logs        output log to console
-      --debug               show debug ouput
-  -h, --help                help for cpma
-      --insecure-key        allow insecure host key
-  -k, --key string          OCP3 ssh key path
-  -l, --login string        OCP3 ssh login
-  -o, --output-dir string   set the directory to store extracted configuration. (default ".")
-  -p, --port string         OCP3 ssh port
-  -s, --source string       OCP3 cluster hostname
+  -i, --allow-insecure-host   allow insecure ssh host key
+  -c, --cluster-name string   OCP3 cluster kubeconfig name
+      --config string         config file (Default searches ./cpma.yaml, $HOME/cpma.yml)
+  -d, --debug                 show debug ouput
+  -h, --help                  help for cpma
+  -n, --hostname string       OCP3 cluster hostname
+  -o, --output-dir string     set the directory to store extracted configuration. (default ".")
+  -k, --ssh-keyfile string    OCP3 ssh keyfile path
+  -l, --ssh-login string      OCP3 ssh login
+  -p, --ssh-port string       OCP3 ssh port
+  -v, --verbose               verbose output
 ```
 
 You can find an example config in `examples/`. If a config is not provided CPMA will prompt for configuration information and offer to save inputs to a new configuration file.
@@ -37,7 +38,7 @@ You can find an example config in `examples/`. If a config is not provided CPMA 
 Example:
 
 ```console
-$ ./bin/cpma --config /path/to/config/.yml --console-logs --debug
+$ ./bin/cpma --config /path/to/config/.yml --verbose --debug
 ```
 
 ## CPMA Image

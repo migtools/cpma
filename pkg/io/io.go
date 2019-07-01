@@ -18,10 +18,10 @@ import (
 // If it fails then connects to Hostname to retrieve file and stores it locally
 // To force a network connection remove outputDir/... prior to exec.
 var FetchFile = func(src string) ([]byte, error) {
-	dst := filepath.Join(env.Config().GetString("OutputDir"), env.Config().GetString("Source"), src)
+	dst := filepath.Join(env.Config().GetString("OutputDir"), env.Config().GetString("Hostname"), src)
 	f, err := ioutil.ReadFile(dst)
 	if err != nil {
-		host := env.Config().GetString("Source")
+		host := env.Config().GetString("Hostname")
 		if err := remotehost.Fetch(host, src, dst); err != nil {
 			return nil, err
 		}
@@ -62,7 +62,7 @@ func FetchStringSource(stringSource legacyconfigv1.StringSource) (string, error)
 	}
 
 	if stringSource.Env != "" {
-		env, err := FetchEnv(env.Config().GetString("Source"), stringSource.Env)
+		env, err := FetchEnv(env.Config().GetString("Hostname"), stringSource.Env)
 		if err != nil {
 			return "", nil
 		}
