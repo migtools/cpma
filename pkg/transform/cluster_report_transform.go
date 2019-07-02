@@ -25,15 +25,12 @@ type ClusterTransform struct {
 func (e ClusterReportExtraction) Transform() ([]Output, error) {
 	logrus.Info("ClusterTransform::Transform")
 
-	clusterReport, err := genClusterReport(api.Resources{
+	clusterReport := genClusterReport(api.Resources{
 		PersistentVolumeList: e.PersistentVolumeList,
 		StorageClassList:     e.StorageClassList,
 		NamespaceMap:         e.NamespaceMap,
 		NodeList:             e.NodeList,
 	})
-	if err != nil {
-		return nil, err
-	}
 
 	output := ReportOutput{
 		ClusterReport: clusterReport,
@@ -44,7 +41,7 @@ func (e ClusterReportExtraction) Transform() ([]Output, error) {
 }
 
 // genClusterReport inserts report values into structures for json output
-func genClusterReport(apiResources api.Resources) (clusterReport ClusterReport, err error) {
+func genClusterReport(apiResources api.Resources) (clusterReport ClusterReport) {
 	clusterReport.reportNodes(apiResources)
 	clusterReport.reportNamespaces(apiResources)
 	clusterReport.reportPVs(apiResources)
@@ -64,13 +61,13 @@ func (clusterReport *ClusterReport) reportNodes(apiResources api.Resources) {
 		isMaster, ok := node.ObjectMeta.Labels["node-role.kubernetes.io/master"]
 		nodeReport.MasterNode = ok && isMaster == "true"
 
-		reportResources(nodeReport, node.Status, apiResources)
+		reportNodeResources(nodeReport, node.Status, apiResources)
 		clusterReport.Nodes = append(clusterReport.Nodes, *nodeReport)
 	}
 }
 
 // reportResources parse and insert info about consumed resources
-func reportResources(repotedNode *NodeReport, nodeStatus k8sapicore.NodeStatus, apiResources api.Resources) {
+func reportNodeResources(repotedNode *NodeReport, nodeStatus k8sapicore.NodeStatus, apiResources api.Resources) {
 	repotedNode.Resources.CPU = nodeStatus.Capacity.Cpu()
 
 	repotedNode.Resources.MemoryCapacity = nodeStatus.Capacity.Memory()
@@ -103,13 +100,11 @@ func (clusterReport *ClusterReport) reportNamespaces(apiResources api.Resources)
 	logrus.Debug("ClusterReport::ReportNamespaces")
 
 	for namespaceName, resources := range apiResources.NamespaceMap {
-		reportedNamespace := NamespaceReport{
-			Name: namespaceName,
-		}
+		reportedNamespace := NamespaceReport{Name: namespaceName}
 
 		reportPods(&reportedNamespace, resources.PodList)
+		reportResources(&reportedNamespace, resources.PodList)
 		reportRoutes(&reportedNamespace, resources.RouteList)
-
 		clusterReport.Namespaces = append(clusterReport.Namespaces, reportedNamespace)
 	}
 }
@@ -117,11 +112,25 @@ func (clusterReport *ClusterReport) reportNamespaces(apiResources api.Resources)
 // reportPods creates info about cluster pods
 func reportPods(reportedNamespace *NamespaceReport, podList *k8sapicore.PodList) {
 	for _, pod := range podList.Items {
-		reportedPod := &PodReport{
-			Name: pod.Name,
-		}
-
+		reportedPod := &PodReport{Name: pod.Name}
 		reportedNamespace.Pods = append(reportedNamespace.Pods, *reportedPod)
+
+		// Update namespace touch timestamp
+		if pod.ObjectMeta.CreationTimestamp.Time.Unix() > reportedNamespace.LatestChange.Time.Unix() {
+			reportedNamespace.LatestChange = pod.ObjectMeta.CreationTimestamp
+		}
+	}
+}
+
+func reportResources(reportedNamespace *NamespaceReport, podList *k8sapicore.PodList) {
+	resources := ContainerResourcesReport{
+		CPUTotal:    &resource.Quantity{Format: resource.DecimalSI},
+		MemoryTotal: &resource.Quantity{Format: resource.BinarySI},
+	}
+	reportedNamespace.Resources = resources
+
+	for _, pod := range podList.Items {
+		reportContainerResources(reportedNamespace, &pod)
 	}
 }
 
@@ -139,6 +148,18 @@ func reportRoutes(reportedNamespace *NamespaceReport, routeList *O7tapiroute.Rou
 
 		reportedNamespace.Routes = append(reportedNamespace.Routes, *reportedRoute)
 	}
+}
+func reportContainerResources(reportedNamespace *NamespaceReport, pod *k8sapicore.Pod) {
+	cpuTotal := reportedNamespace.Resources.CPUTotal.Value()
+	memoryTotal := reportedNamespace.Resources.MemoryTotal.Value()
+
+	for _, container := range pod.Spec.Containers {
+		cpuTotal += container.Resources.Requests.Cpu().Value()
+		memoryTotal += container.Resources.Requests.Memory().Value()
+	}
+	reportedNamespace.Resources.CPUTotal.Set(cpuTotal)
+	reportedNamespace.Resources.MemoryTotal.Set(memoryTotal)
+	reportedNamespace.Resources.ContainerCount += len(pod.Spec.Containers)
 }
 
 func (clusterReport *ClusterReport) reportPVs(apiResources api.Resources) {
@@ -174,9 +195,7 @@ func (clusterReport *ClusterReport) reportStorageClasses(apiResources api.Resour
 }
 
 // Validate no need to validate it, data is exctracted from API
-func (e ClusterReportExtraction) Validate() error {
-	return nil
-}
+func (e ClusterReportExtraction) Validate() (err error) { return }
 
 // Extract collects data for cluster report
 func (e ClusterTransform) Extract() (Extraction, error) {
