@@ -118,14 +118,19 @@ func surveyMissingValues() error {
 		}
 	}
 
-	if configSource == "Remote host" {
+	switch configSource {
+	case "Remote host":
 		err := surveySSHConfigValues()
 		if err != nil {
 			return err
 		}
 		viperConfig.Set("FetchFromRemote", true)
-	} else {
-
+	case "Local":
+		err := surveyConfigPaths()
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("FetchFromRemote", false)
 	}
 
 	err := createAPIClients()
@@ -268,7 +273,53 @@ func surveyCreateConfigFile() error {
 	return nil
 }
 
-func getOCPConfigSource() error {
+func surveyConfigPaths() error {
+	config := ""
+	prompt := &survey.Input{
+		Message: "Path to crio config file, example: /path/crio/crio.conf",
+	}
+	err := survey.AskOne(prompt, &config, nil)
+	if err != nil {
+		return err
+	}
+	viperConfig.Set("CrioConfigFile", config)
+
+	prompt = &survey.Input{
+		Message: "Path to etcd config file, example: /path/etcd/etcd.conf",
+	}
+	err = survey.AskOne(prompt, &config, nil)
+	if err != nil {
+		return err
+	}
+	viperConfig.Set("ETCDConfigFile", config)
+
+	prompt = &survey.Input{
+		Message: "Path to master config file, example: /path/etcd/master-config.yaml",
+	}
+	err = survey.AskOne(prompt, &config, nil)
+	if err != nil {
+		return err
+	}
+	viperConfig.Set("MasterConfigFile", config)
+
+	prompt = &survey.Input{
+		Message: "Path to node config file, example: /path/node/node-config.yaml",
+	}
+	err = survey.AskOne(prompt, &config, nil)
+	if err != nil {
+		return err
+	}
+	viperConfig.Set("NodeConfigFile", config)
+
+	prompt = &survey.Input{
+		Message: "Path to registries config file, example: /path/containers/registries.conf",
+	}
+	err = survey.AskOne(prompt, &config, nil)
+	if err != nil {
+		return err
+	}
+	viperConfig.Set("RegistriesConfigFile", config)
+
 	return nil
 }
 
