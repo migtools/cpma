@@ -51,12 +51,6 @@ func InitConfig() error {
 	}
 	viperConfig.Set("home", home)
 
-	viperConfig.SetDefault("CrioConfigFile", "/etc/crio/crio.conf")
-	viperConfig.SetDefault("ETCDConfigFile", "/etc/etcd/etcd.conf")
-	viperConfig.SetDefault("MasterConfigFile", "/etc/origin/master/master-config.yaml")
-	viperConfig.SetDefault("NodeConfigFile", "/etc/origin/node/node-config.yaml")
-	viperConfig.SetDefault("RegistriesConfigFile", "/etc/containers/registries.conf")
-
 	// Try to find config file if it wasn't provided as a flag
 	if ConfigFile != "" {
 		viperConfig.SetConfigFile(ConfigFile)
@@ -71,43 +65,97 @@ func InitConfig() error {
 	// If a config file is found, read it in.
 	readConfigErr := viperConfig.ReadInConfig()
 
+	// read all nested values like ssh login, port and key
+	getNestedArgValues()
+
+	// Parse kubeconfig for creating api client later
 	err = api.ParseKubeConfig()
 	if err != nil {
 		return errors.Wrap(err, "kubeconfig parsing failed")
 	}
 
-	getNestedArgValues()
-
+	// Ask for all values that are missing in flags or config yaml
 	err = surveyMissingValues()
 	if err != nil {
-		switch {
-		case err.Error() == "interrupt":
-			return errors.Wrap(err, "ctrl-C pressed. Exiting.")
-		default:
-			return errors.Wrap(err, "Error in reading missing values")
-		}
+		return handleInterrupt(err)
 	}
 
+	// If no config was provided, ask to create one for future use
 	if readConfigErr != nil {
 		err = surveyCreateConfigFile()
 		if err != nil {
-			switch {
-			case err.Error() == "interrupt":
-				return errors.Wrap(err, "ctrl-C pressed. Exiting.")
-			default:
-				return errors.Wrap(err, "Error in creating config file")
-			}
+			return handleInterrupt(err)
 		}
-
 		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", readConfigErr)
 	}
 
 	return nil
 }
 
+func getNestedArgValues() {
+	sshCreds := viperConfig.GetStringMapString("SSHCreds")
+	if Login != "" {
+		sshCreds["login"] = Login
+	}
+
+	if PrivateKey != "" {
+		sshCreds["privatekey"] = PrivateKey
+	}
+
+	if Port != "" {
+		sshCreds["port"] = Port
+	}
+	viperConfig.Set("SSHCreds", sshCreds)
+}
+
 func surveyMissingValues() error {
+	err := surveyConfigSource()
+	if err != nil {
+		return err
+	}
+
+	switch viperConfig.GetString("ConfigSource") {
+	case "remote":
+		err := surveySSHConfigValues()
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("FetchFromRemote", true)
+	case "local":
+		err := surveyConfigPaths()
+		if err != nil {
+			return err
+		}
+	default:
+		return errors.New("Accepted values for config-source are: remote or local")
+	}
+
+	err = createAPIClients()
+	if err != nil {
+		return err
+	}
+
+	if viperConfig.GetString("OutputDir") == "" {
+		outputDir := "."
+		prompt := &survey.Input{
+			Message: "Path to output, skip to use current directory",
+			Default: ".",
+		}
+		err := survey.AskOne(prompt, &outputDir, nil)
+		if err != nil {
+			return err
+		}
+
+		viperConfig.Set("OutputDir", outputDir)
+	}
+
+	return nil
+}
+
+func surveyConfigSource() error {
+	// Ask if source of config file should be a remote host or local
 	configSource := ""
-	if !viperConfig.IsSet("FetchFromRemote") {
+	if viperConfig.GetString("ConfigSource") == "" {
 		prompt := &survey.Select{
 			Message: "What will be the source for OCP3 config files?",
 			Options: []string{"Remote host", "Local"},
@@ -116,42 +164,14 @@ func surveyMissingValues() error {
 		if err != nil {
 			return err
 		}
-	}
-
-	switch configSource {
-	case "Remote host":
-		err := surveySSHConfigValues()
-		if err != nil {
-			return err
-		}
-		viperConfig.Set("FetchFromRemote", true)
-	case "Local":
-		err := surveyConfigPaths()
-		if err != nil {
-			return err
-		}
-		viperConfig.Set("FetchFromRemote", false)
-	}
-
-	err := createAPIClients()
-	if err != nil {
-		return err
-	}
-
-	if viperConfig.GetString("OutputDir") == "" {
-		outPutDir := "."
-		prompt := &survey.Input{
-			Message: "Path to output, skip to use current directory",
-			Default: ".",
-		}
-		err := survey.AskOne(prompt, &outPutDir, nil)
-		if err != nil {
-			return err
+		switch configSource {
+		case "Remote host":
+			viperConfig.Set("ConfigSource", "remote")
+		case "Local":
+			viperConfig.Set("ConfigSource", "local")
 		}
 
-		viperConfig.Set("OutputDir", outPutDir)
 	}
-
 	return nil
 }
 
@@ -235,90 +255,71 @@ func surveySSHConfigValues() error {
 
 	viperConfig.Set("SSHCreds", sshCreds)
 
-	return nil
-}
-
-func getNestedArgValues() {
-	sshCreds := viperConfig.GetStringMapString("SSHCreds")
-	if Login != "" {
-		sshCreds["login"] = Login
-	}
-
-	if PrivateKey != "" {
-		sshCreds["privatekey"] = PrivateKey
-	}
-
-	if Port != "" {
-		sshCreds["port"] = Port
-	}
-	viperConfig.Set("SSHCreds", sshCreds)
-}
-
-func surveyCreateConfigFile() error {
-	createConfig := ""
-	prompt := &survey.Select{
-		Message: "No config file found, do you wish to create one for future use?",
-		Options: []string{"yes", "no"},
-	}
-	err := survey.AskOne(prompt, &createConfig, nil)
-	if err != nil {
-		return err
-	}
-
-	if createConfig == "yes" {
-		viperConfig.SetConfigFile("cpma.yaml")
-		viperConfig.WriteConfig()
-	}
-
+	// set defaults for remote config files paths
+	viperConfig.SetDefault("CrioConfigFile", "/etc/crio/crio.conf")
+	viperConfig.SetDefault("ETCDConfigFile", "/etc/etcd/etcd.conf")
+	viperConfig.SetDefault("MasterConfigFile", "/etc/origin/master/master-config.yaml")
+	viperConfig.SetDefault("NodeConfigFile", "/etc/origin/node/node-config.yaml")
+	viperConfig.SetDefault("RegistriesConfigFile", "/etc/containers/registries.conf")
 	return nil
 }
 
 func surveyConfigPaths() error {
 	config := ""
-	prompt := &survey.Input{
-		Message: "Path to crio config file, example: /path/crio/crio.conf",
+	if viperConfig.GetString("CrioConfigFile") == "" && !viperConfig.InConfig("crioconfigfile") {
+		prompt := &survey.Input{
+			Message: "Path to crio config file, example: /path/crio/crio.conf",
+		}
+		err := survey.AskOne(prompt, &config, nil)
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("CrioConfigFile", config)
 	}
-	err := survey.AskOne(prompt, &config, nil)
-	if err != nil {
-		return err
-	}
-	viperConfig.Set("CrioConfigFile", config)
 
-	prompt = &survey.Input{
-		Message: "Path to etcd config file, example: /path/etcd/etcd.conf",
+	if viperConfig.GetString("ETCDConfigFile") == "" && !viperConfig.InConfig("etcdconfigfile") {
+		prompt := &survey.Input{
+			Message: "Path to etcd config file, example: /path/etcd/etcd.conf",
+		}
+		err := survey.AskOne(prompt, &config, nil)
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("ETCDConfigFile", config)
 	}
-	err = survey.AskOne(prompt, &config, nil)
-	if err != nil {
-		return err
-	}
-	viperConfig.Set("ETCDConfigFile", config)
 
-	prompt = &survey.Input{
-		Message: "Path to master config file, example: /path/etcd/master-config.yaml",
+	if viperConfig.GetString("MasterConfigFile") == "" && !viperConfig.InConfig("masterconfigfile") {
+		prompt := &survey.Input{
+			Message: "Path to master config file, example: /path/etcd/master-config.yaml",
+		}
+		err := survey.AskOne(prompt, &config, nil)
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("MasterConfigFile", config)
 	}
-	err = survey.AskOne(prompt, &config, nil)
-	if err != nil {
-		return err
-	}
-	viperConfig.Set("MasterConfigFile", config)
 
-	prompt = &survey.Input{
-		Message: "Path to node config file, example: /path/node/node-config.yaml",
+	if viperConfig.GetString("NodeConfigFile") == "" && !viperConfig.InConfig("nodeconfigfile") {
+		prompt := &survey.Input{
+			Message: "Path to node config file, example: /path/node/node-config.yaml",
+		}
+		err := survey.AskOne(prompt, &config, nil)
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("NodeConfigFile", config)
 	}
-	err = survey.AskOne(prompt, &config, nil)
-	if err != nil {
-		return err
-	}
-	viperConfig.Set("NodeConfigFile", config)
 
-	prompt = &survey.Input{
-		Message: "Path to registries config file, example: /path/containers/registries.conf",
+	if viperConfig.GetString("RegistriesConfigFile") == "" && !viperConfig.InConfig("registriesconfigfile") {
+		prompt := &survey.Input{
+			Message: "Path to registries config file, example: /path/containers/registries.conf",
+		}
+		err := survey.AskOne(prompt, &config, nil)
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("RegistriesConfigFile", config)
 	}
-	err = survey.AskOne(prompt, &config, nil)
-	if err != nil {
-		return err
-	}
-	viperConfig.Set("RegistriesConfigFile", config)
 
 	return nil
 }
@@ -328,6 +329,7 @@ func createAPIClients() error {
 		return nil
 	}
 
+	// Ask for cluster name if not provided, can be either prompter or read from current context
 	if viperConfig.GetString("ClusterName") == "" {
 		contextSource := ""
 		prompt := &survey.Select{
@@ -348,8 +350,10 @@ func createAPIClients() error {
 			if err != nil {
 				return err
 			}
+			// set current context to cluster name for connecting to cluster using client-go
 			api.KubeConfig.CurrentContext = api.ClusterNames[clusterName]
 		} else {
+			// get cluster name from current context for future use
 			for key, value := range api.ClusterNames {
 				if value == api.KubeConfig.CurrentContext {
 					clusterName = key
@@ -371,6 +375,34 @@ func createAPIClients() error {
 	}
 
 	return nil
+}
+
+func surveyCreateConfigFile() error {
+	createConfig := ""
+	prompt := &survey.Select{
+		Message: "No config file found, do you wish to create one for future use?",
+		Options: []string{"yes", "no"},
+	}
+	err := survey.AskOne(prompt, &createConfig, nil)
+	if err != nil {
+		return err
+	}
+
+	if createConfig == "yes" {
+		viperConfig.SetConfigFile("cpma.yaml")
+		viperConfig.WriteConfig()
+	}
+
+	return nil
+}
+
+func handleInterrupt(err error) error {
+	switch {
+	case err.Error() == "interrupt":
+		return errors.Wrap(err, "Exiting.")
+	default:
+		return errors.Wrap(err, "Error in creating config file")
+	}
 }
 
 // InitLogger initializes stderr and logger to file
