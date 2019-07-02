@@ -15,8 +15,6 @@
 package cmd
 
 import (
-	"path"
-
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/sirupsen/logrus"
@@ -55,7 +53,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&env.Port, "ssh-port", "p", "", "OCP3 ssh port")
 
 	// Get config file from CLI argument an save to viper config
-	rootCmd.PersistentFlags().StringP("output-dir", "o", path.Dir("."), "set the directory to store extracted configuration.")
+	rootCmd.PersistentFlags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
 	env.Config().BindPFlag("OutputDir", rootCmd.PersistentFlags().Lookup("output-dir"))
 }
 

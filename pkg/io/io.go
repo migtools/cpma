@@ -19,6 +19,19 @@ import (
 // If it fails then connects to Hostname to retrieve file and stores it locally
 // To force a network connection remove outputDir/... prior to exec.
 var FetchFile = func(src string) ([]byte, error) {
+	var f []byte
+	var err error
+
+	if env.Config().GetBool("FetchFromRemote") {
+		f, err = fetchFromRemote(src)
+	} else {
+		f, err = fetchFromLocal(src)
+	}
+
+	return f, err
+}
+
+func fetchFromRemote(src string) ([]byte, error) {
 	dst := filepath.Join(env.Config().GetString("Hostname"), src)
 	f, err := ReadFile(dst)
 	if err != nil {
@@ -47,6 +60,14 @@ var FetchFile = func(src string) ([]byte, error) {
 		}
 		return netFile, nil
 
+	}
+	return f, nil
+}
+
+func fetchFromLocal(src string) ([]byte, error) {
+	f, err := ioutil.ReadFile(src)
+	if err != nil {
+		return nil, err
 	}
 	return f, nil
 }

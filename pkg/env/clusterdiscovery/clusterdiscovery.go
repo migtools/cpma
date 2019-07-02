@@ -13,8 +13,15 @@ import (
 func DiscoverCluster() (string, string, error) {
 	selectedCluster := surveyClusters()
 
+	// set current context to selected cluster for connecting to cluster using client-go
+	api.KubeConfig.CurrentContext = api.ClusterNames[selectedCluster]
+
 	if err := api.CreateK8sClient(selectedCluster); err != nil {
 		return "", "", errors.Wrap(err, "k8s api client failed to create")
+	}
+
+	if err := api.CreateO7tClient(selectedCluster); err != nil {
+		return "", "", errors.Wrap(err, "openshift api client failed to create")
 	}
 
 	clusterNodes, err := queryNodes(api.K8sClient.CoreV1())

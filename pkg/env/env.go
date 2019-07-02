@@ -88,20 +88,6 @@ func InitConfig() error {
 		}
 	}
 
-	if api.K8sClient == nil {
-		err = api.CreateK8sClient(viperConfig.GetString("ClusterName"))
-		if err != nil {
-			return errors.Wrap(err, "k8s api client failed to create")
-		}
-	}
-
-	if api.O7tClient == nil {
-		err = api.CreateO7tClient(viperConfig.GetString("ClusterName"))
-		if err != nil {
-			return errors.Wrap(err, "OpenShift api client failed to create")
-		}
-	}
-
 	if readConfigErr != nil {
 		err = surveyCreateConfigFile()
 		if err != nil {
@@ -120,6 +106,51 @@ func InitConfig() error {
 }
 
 func surveyMissingValues() error {
+	configSource := ""
+	if !viperConfig.IsSet("FetchFromRemote") {
+		prompt := &survey.Select{
+			Message: "What will be the source for OCP3 config files?",
+			Options: []string{"Remote host", "Local"},
+		}
+		err := survey.AskOne(prompt, &configSource, nil)
+		if err != nil {
+			return err
+		}
+	}
+
+	if configSource == "Remote host" {
+		err := surveySSHConfigValues()
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("FetchFromRemote", true)
+	} else {
+
+	}
+
+	err := createAPIClients()
+	if err != nil {
+		return err
+	}
+
+	if viperConfig.GetString("OutputDir") == "" {
+		outPutDir := "."
+		prompt := &survey.Input{
+			Message: "Path to output, skip to use current directory",
+			Default: ".",
+		}
+		err := survey.AskOne(prompt, &outPutDir, nil)
+		if err != nil {
+			return err
+		}
+
+		viperConfig.Set("OutputDir", outPutDir)
+	}
+
+	return nil
+}
+
+func surveySSHConfigValues() error {
 	if viperConfig.GetString("Hostname") == "" {
 		discoverCluster := ""
 		hostname := ""
@@ -153,19 +184,6 @@ func surveyMissingValues() error {
 		}
 
 		viperConfig.Set("Hostname", hostname)
-	}
-
-	if viperConfig.GetString("ClusterName") == "" {
-		clusterName := ""
-		prompt := &survey.Input{
-			Message: "Cluster name",
-		}
-		err := survey.AskOne(prompt, &clusterName, nil)
-		if err != nil {
-			return err
-		}
-
-		viperConfig.Set("ClusterName", clusterName)
 	}
 
 	sshCreds := viperConfig.GetStringMapString("SSHCreds")
@@ -210,20 +228,6 @@ func surveyMissingValues() error {
 		sshCreds["privatekey"] = privatekey
 	}
 
-	if viperConfig.GetString("OutputDir") == "" {
-		outPutDir := "."
-		prompt := &survey.Input{
-			Message: "Path to output, skip to use current directory",
-			Default: ".",
-		}
-		err := survey.AskOne(prompt, &outPutDir, nil)
-		if err != nil {
-			return err
-		}
-
-		viperConfig.Set("OutputDir", outPutDir)
-	}
-
 	viperConfig.Set("SSHCreds", sshCreds)
 
 	return nil
@@ -259,6 +263,60 @@ func surveyCreateConfigFile() error {
 	if createConfig == "yes" {
 		viperConfig.SetConfigFile("cpma.yaml")
 		viperConfig.WriteConfig()
+	}
+
+	return nil
+}
+
+func getOCPConfigSource() error {
+	return nil
+}
+
+func createAPIClients() error {
+	if api.O7tClient != nil && api.K8sClient != nil {
+		return nil
+	}
+
+	if viperConfig.GetString("ClusterName") == "" {
+		contextSource := ""
+		prompt := &survey.Select{
+			Message: "What will be the source for cluster name used to connect to API?",
+			Options: []string{"Current kubeconfig context", "Prompt"},
+		}
+		err := survey.AskOne(prompt, &contextSource, nil)
+		if err != nil {
+			return err
+		}
+
+		clusterName := ""
+		if contextSource == "Prompt" {
+			prompt := &survey.Input{
+				Message: "Cluster name",
+			}
+			err := survey.AskOne(prompt, &clusterName, nil)
+			if err != nil {
+				return err
+			}
+			api.KubeConfig.CurrentContext = api.ClusterNames[clusterName]
+		} else {
+			for key, value := range api.ClusterNames {
+				if value == api.KubeConfig.CurrentContext {
+					clusterName = key
+				}
+			}
+		}
+
+		viperConfig.Set("ClusterName", clusterName)
+	}
+
+	err := api.CreateK8sClient(viperConfig.GetString("ClusterName"))
+	if err != nil {
+		return errors.Wrap(err, "k8s api client failed to create")
+	}
+
+	err = api.CreateO7tClient(viperConfig.GetString("ClusterName"))
+	if err != nil {
+		return errors.Wrap(err, "OpenShift api client failed to create")
 	}
 
 	return nil

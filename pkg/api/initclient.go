@@ -74,9 +74,6 @@ func CreateK8sClient(contextCluster string) error {
 		return err
 	}
 
-	// set current context to selected cluster for connecting to cluster using client-go
-	KubeConfig.CurrentContext = ClusterNames[contextCluster]
-
 	var kubeConfigGetter = func() (*clientcmdapi.Config, error) {
 		return KubeConfig, nil
 	}
@@ -93,9 +90,6 @@ func CreateK8sClient(contextCluster string) error {
 
 // CreateO7tClient create api client using cluster from kubeconfig context
 func CreateO7tClient(contextCluster string) error {
-	// set current context to selected cluster for connecting to cluster using client-go
-	KubeConfig.CurrentContext = ClusterNames[contextCluster]
-
 	var kubeConfigGetter = func() (*clientcmdapi.Config, error) {
 		return KubeConfig, nil
 	}
