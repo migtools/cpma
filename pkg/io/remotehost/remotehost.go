@@ -136,6 +136,24 @@ func (c *Client) GetFile(srcFilePath string, dstFilePath string) (*int64, error)
 	return &bytes, err
 }
 
+// Fetch2 retrieves a file
+func Fetch2(hostname, src, dst string) error {
+	client, err := NewClient(hostname)
+	if err != nil {
+		return err
+	}
+
+	defer client.Close()
+
+	bytes, err := client.GetFile(src, dst)
+	if err != nil {
+		return errors.Wrap(err, "Cannot fetch file")
+	}
+
+	logrus.Printf("SFTP: %s:%s: %d bytes copied", hostname, src, bytes)
+	return nil
+}
+
 // Fetch retrieves a file
 func Fetch(hostname, src, dst string) error {
 	client, err := NewClient(hostname)
@@ -154,6 +172,20 @@ func Fetch(hostname, src, dst string) error {
 	return nil
 }
 
+// RunCMD executre cmd on remote host
+func RunCMD(hostname, cmd string) (string, error) {
+	session, err := NewSSHSession(hostname)
+	if err != nil {
+		return "", err
+	}
+
+	output, err := session.Output(cmd)
+	if err != nil {
+		return "", err
+	}
+
+	return string(output), nil
+}
 // GetEnvVar get env var from remote host
 func GetEnvVar(hostname, envVar string) (string, error) {
 	session, err := NewSSHSession(hostname)
