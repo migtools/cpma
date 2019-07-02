@@ -1,6 +1,7 @@
 package io
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -18,25 +19,42 @@ import (
 // If it fails then connects to Hostname to retrieve file and stores it locally
 // To force a network connection remove outputDir/... prior to exec.
 var FetchFile = func(src string) ([]byte, error) {
-	dst := filepath.Join(env.Config().GetString("OutputDir"), env.Config().GetString("Hostname"), src)
-	f, err := ioutil.ReadFile(dst)
+	dst := filepath.Join(env.Config().GetString("Hostname"), src)
+	f, err := ReadFile(dst)
 	if err != nil {
 		host := env.Config().GetString("Hostname")
-		if err := remotehost.Fetch(host, src, dst); err != nil {
+
+		cmd := fmt.Sprintf("sudo cat %s", src)
+		output, err := remotehost.RunCMD(host, cmd)
+		if err != nil {
 			return nil, err
 		}
-		netFile, err := ioutil.ReadFile(dst)
+
+		if output == "" {
+			msg := fmt.Sprintf("Empty or missing file: %s", dst)
+			return nil, errors.New(msg)
+		}
+
+		err = WriteFile([]byte(output), dst)
+		if err != nil {
+			logrus.Errorf("Unable to save: %s", dst)
+			return nil, err
+		}
+
+		netFile, err := ReadFile(dst)
 		if err != nil {
 			return nil, err
 		}
 		return netFile, nil
+
 	}
 	return f, nil
 }
 
 // FetchEnv Fetch env vars from the OCP3 cluster
 func FetchEnv(host, envVar string) (string, error) {
-	output, err := remotehost.GetEnvVar(host, envVar)
+	cmd := fmt.Sprintf("print $%s", envVar)
+	output, err := remotehost.RunCMD(host, cmd)
 	if err != nil {
 		return "", errors.Wrap(err, "Can't fetch env variable")
 	}
