@@ -53,7 +53,8 @@ var FetchFile = func(src string) ([]byte, error) {
 
 // FetchEnv Fetch env vars from the OCP3 cluster
 func FetchEnv(host, envVar string) (string, error) {
-	output, err := remotehost.GetEnvVar(host, envVar)
+	cmd := fmt.Sprintf("print $%s", envVar)
+	output, err := remotehost.RunCMD(host, cmd)
 	if err != nil {
 		return "", errors.Wrap(err, "Can't fetch env variable")
 	}
