@@ -10,16 +10,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, error) {
+func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
-		err      error
-		idP      = &configv1.IdentityProvider{}
-		secret   *secrets.Secret
-		htpasswd legacyconfigv1.HTPasswdPasswordIdentityProvider
+		err             error
+		idP             = &configv1.IdentityProvider{}
+		providerSecrets []*secrets.Secret
+		htpasswd        legacyconfigv1.HTPasswdPasswordIdentityProvider
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &htpasswd); err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to decode htpasswd, see error")
+		return nil, errors.Wrap(err, "Failed to decode htpasswd, see error")
 	}
 
 	idP.Name = p.Name
@@ -32,12 +32,16 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*configv1
 
 	encoded := base64.StdEncoding.EncodeToString(p.HTFileData)
 
-	secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.HtpasswdSecretType)
+	secret, err := secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.HtpasswdSecretType)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to generate secret for htpasswd, see error")
+		return nil, errors.Wrap(err, "Failed to generate secret for htpasswd, see error")
 	}
+	providerSecrets = append(providerSecrets, secret)
 
-	return idP, secret, nil
+	return &ProviderResources{
+		IDP:     idP,
+		Secrets: providerSecrets,
+	}, nil
 }
 
 func validateHTPasswdProvider(serializer *json.Serializer, p IdentityProvider) error {

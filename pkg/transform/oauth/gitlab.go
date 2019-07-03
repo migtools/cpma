@@ -12,17 +12,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
-		err         error
-		idP         = &configv1.IdentityProvider{}
-		secret      *secrets.Secret
-		caConfigmap *configmaps.ConfigMap
-		gitlab      legacyconfigv1.GitLabIdentityProvider
+		err                error
+		idP                = &configv1.IdentityProvider{}
+		providerSecrets    []*secrets.Secret
+		providerConfigMaps []*configmaps.ConfigMap
+		gitlab             legacyconfigv1.GitLabIdentityProvider
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &gitlab); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Failed to decode gitlab, see error")
+		return nil, errors.Wrap(err, "Failed to decode gitlab, see error")
 	}
 
 	idP.Type = "GitLab"
@@ -33,23 +33,30 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*configv1.I
 	idP.GitLab.ClientID = gitlab.ClientID
 
 	if gitlab.CA != "" {
-		caConfigmap = configmaps.GenConfigMap("gitlab-configmap", OAuthNamespace, p.CAData)
+		caConfigmap := configmaps.GenConfigMap("gitlab-configmap", OAuthNamespace, p.CAData)
 		idP.GitLab.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 
 	secretName := "gitlab-secret"
 	idP.GitLab.ClientSecret.Name = secretName
 	secretContent, err := io.FetchStringSource(gitlab.ClientSecret)
 	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Failed to fetch client secret for gitlab, see error")
+		return nil, errors.Wrap(err, "Failed to fetch client secret for gitlab, see error")
 	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
-	if secret, err = secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Failed to generate secret for gitlab, see error")
+	secret, err := secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to generate secret for gitlab, see error")
 	}
+	providerSecrets = append(providerSecrets, secret)
 
-	return idP, secret, caConfigmap, nil
+	return &ProviderResources{
+		IDP:        idP,
+		Secrets:    providerSecrets,
+		ConfigMaps: providerConfigMaps,
+	}, nil
 }
 
 func validateGitLabProvider(serializer *json.Serializer, p IdentityProvider) error {

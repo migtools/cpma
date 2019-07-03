@@ -12,18 +12,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *secrets.Secret, *secrets.Secret, *configmaps.ConfigMap, error) {
+func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
-		idP = &configv1.IdentityProvider{}
-
-		certSecret, keySecret *secrets.Secret
-		caConfigmap           *configmaps.ConfigMap
-		err                   error
-		keystone              legacyconfigv1.KeystonePasswordIdentityProvider
+		idP                = &configv1.IdentityProvider{}
+		providerSecrets    []*secrets.Secret
+		providerConfigMaps []*configmaps.ConfigMap
+		err                error
+		keystone           legacyconfigv1.KeystonePasswordIdentityProvider
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &keystone); err != nil {
-		return nil, nil, nil, nil, errors.Wrap(err, "Failed to decode keystone, see error")
+		return nil, errors.Wrap(err, "Failed to decode keystone, see error")
 	}
 
 	idP.Type = "Keystone"
@@ -34,8 +33,9 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*configv1
 	idP.Keystone.URL = keystone.URL
 
 	if keystone.CA != "" {
-		caConfigmap = configmaps.GenConfigMap("keystone-configmap", OAuthNamespace, p.CAData)
+		caConfigmap := configmaps.GenConfigMap("keystone-configmap", OAuthNamespace, p.CAData)
 		idP.Keystone.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 
 	if keystone.UseKeystoneIdentity {
@@ -46,19 +46,27 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*configv1
 		certSecretName := "keystone-client-cert-secret"
 		idP.Keystone.TLSClientCert.Name = certSecretName
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-		if certSecret, err = secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType); err != nil {
-			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate cert secret for keystone, see error")
+		certSecret, err := secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType)
+		if err != nil {
+			return nil, errors.Wrap(err, "Failed to generate cert secret for keystone, see error")
 		}
+		providerSecrets = append(providerSecrets, certSecret)
 
 		keySecretName := "keystone-client-key-secret"
 		idP.Keystone.TLSClientKey.Name = keySecretName
 		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
-		if keySecret, err = secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType); err != nil {
-			return nil, nil, nil, nil, errors.Wrap(err, "Failed to generate key secret for keystone, see error")
+		keySecret, err := secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType)
+		if err != nil {
+			return nil, errors.Wrap(err, "Failed to generate key secret for keystone, see error")
 		}
+		providerSecrets = append(providerSecrets, keySecret)
 	}
 
-	return idP, certSecret, keySecret, caConfigmap, nil
+	return &ProviderResources{
+		IDP:        idP,
+		Secrets:    providerSecrets,
+		ConfigMaps: providerConfigMaps,
+	}, nil
 }
 
 func validateKeystoneProvider(serializer *json.Serializer, p IdentityProvider) error {

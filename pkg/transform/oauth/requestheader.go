@@ -8,16 +8,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*configv1.IdentityProvider, *configmaps.ConfigMap, error) {
+func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
-		err           error
-		idP           = &configv1.IdentityProvider{}
-		caConfigmap   *configmaps.ConfigMap
-		requestHeader legacyconfigv1.RequestHeaderIdentityProvider
+		err                error
+		idP                = &configv1.IdentityProvider{}
+		providerConfigMaps []*configmaps.ConfigMap
+		requestHeader      legacyconfigv1.RequestHeaderIdentityProvider
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &requestHeader); err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to decode request header, see error")
+		return nil, errors.Wrap(err, "Failed to decode request header, see error")
 	}
 
 	idP.Type = "RequestHeader"
@@ -28,8 +28,9 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*con
 	idP.RequestHeader.LoginURL = requestHeader.LoginURL
 
 	if requestHeader.ClientCA != "" {
-		caConfigmap = configmaps.GenConfigMap("requestheader-configmap", OAuthNamespace, p.CAData)
+		caConfigmap := configmaps.GenConfigMap("requestheader-configmap", OAuthNamespace, p.CAData)
 		idP.RequestHeader.ClientCA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 
 	idP.RequestHeader.ClientCommonNames = requestHeader.ClientCommonNames
@@ -38,7 +39,10 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*con
 	idP.RequestHeader.NameHeaders = requestHeader.NameHeaders
 	idP.RequestHeader.PreferredUsernameHeaders = requestHeader.PreferredUsernameHeaders
 
-	return idP, caConfigmap, nil
+	return &ProviderResources{
+		IDP:        idP,
+		ConfigMaps: providerConfigMaps,
+	}, nil
 }
 
 func validateRequestHeaderProvider(serializer *json.Serializer, p IdentityProvider) error {
