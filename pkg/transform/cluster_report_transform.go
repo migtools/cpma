@@ -28,7 +28,7 @@ func (e ClusterReportExtraction) Transform() ([]Output, error) {
 	clusterReport := genClusterReport(api.Resources{
 		PersistentVolumeList: e.PersistentVolumeList,
 		StorageClassList:     e.StorageClassList,
-		NamespaceMap:         e.NamespaceMap,
+		NamespaceList:        e.NamespaceList,
 		NodeList:             e.NodeList,
 	})
 
@@ -80,7 +80,7 @@ func reportNodeResources(repotedNode *NodeReport, nodeStatus k8sapicore.NodeStat
 	repotedNode.Resources.MemoryConsumed = memConsumed
 
 	var runningPodsCount int64
-	for _, resources := range apiResources.NamespaceMap {
+	for _, resources := range apiResources.NamespaceList {
 		for _, pod := range resources.PodList.Items {
 			if pod.Spec.NodeName == repotedNode.Name {
 				runningPodsCount++
@@ -99,8 +99,8 @@ func reportNodeResources(repotedNode *NodeReport, nodeStatus k8sapicore.NodeStat
 func (clusterReport *ClusterReport) reportNamespaces(apiResources api.Resources) {
 	logrus.Debug("ClusterReport::ReportNamespaces")
 
-	for namespaceName, resources := range apiResources.NamespaceMap {
-		reportedNamespace := NamespaceReport{Name: namespaceName}
+	for _, resources := range apiResources.NamespaceList {
+		reportedNamespace := NamespaceReport{Name: resources.NamespaceName}
 
 		reportPods(&reportedNamespace, resources.PodList)
 		reportResources(&reportedNamespace, resources.PodList)
@@ -213,9 +213,10 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	}
 
 	// Map all namespaces to their resources
-	extraction.NamespaceMap = make(map[string]*api.NamespaceResources)
-	for _, namespace := range namespacesList.Items {
-		namespaceResources := &api.NamespaceResources{}
+	namespaceListSize := len(namespacesList.Items)
+	extraction.NamespaceList = make([]api.NamespaceResources, namespaceListSize, namespaceListSize)
+	for i, namespace := range namespacesList.Items {
+		namespaceResources := api.NamespaceResources{NamespaceName: namespace.Name}
 
 		podsList, err := api.ListPods(namespace.Name)
 		if err != nil {
@@ -229,7 +230,7 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		}
 		namespaceResources.RouteList = routesList
 
-		extraction.NamespaceMap[namespace.Name] = namespaceResources
+		extraction.NamespaceList[i] = namespaceResources
 	}
 
 	pvList, err := api.ListPVs()

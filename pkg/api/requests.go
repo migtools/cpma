@@ -13,13 +13,14 @@ type Resources struct {
 	PersistentVolumeList *k8sapicore.PersistentVolumeList
 	NodeList             *k8sapicore.NodeList
 	StorageClassList     *k8sapistorage.StorageClassList
-	NamespaceMap         map[string]*NamespaceResources
+	NamespaceList        []NamespaceResources
 }
 
 // NamespaceResources holds all resources that belong to a namespace
 type NamespaceResources struct {
-	PodList   *k8sapicore.PodList
-	RouteList *O7tapiroute.RouteList
+	NamespaceName string
+	PodList       *k8sapicore.PodList
+	RouteList     *O7tapiroute.RouteList
 }
 
 var listOptions metav1.ListOptions
