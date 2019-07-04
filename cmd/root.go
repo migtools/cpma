@@ -48,9 +48,14 @@ func init() {
 	env.Config().BindPFlag("ClusterName", rootCmd.PersistentFlags().Lookup("cluster-name"))
 
 	// Get ssh config values from CLI argument
-	rootCmd.PersistentFlags().StringVarP(&env.Login, "ssh-login", "l", "", "OCP3 ssh login")
-	rootCmd.PersistentFlags().StringVarP(&env.PrivateKey, "ssh-keyfile", "k", "", "OCP3 ssh keyfile path")
-	rootCmd.PersistentFlags().StringVarP(&env.Port, "ssh-port", "p", "", "OCP3 ssh port")
+	rootCmd.PersistentFlags().StringP("ssh-login", "l", "", "OCP3 ssh login")
+	env.Config().BindPFlag("SSHLogin", rootCmd.PersistentFlags().Lookup("ssh-login"))
+
+	rootCmd.PersistentFlags().StringP("ssh-keyfile", "k", "", "OCP3 ssh keyfile path")
+	env.Config().BindPFlag("SSHPrivateKey", rootCmd.PersistentFlags().Lookup("ssh-keyfile"))
+
+	rootCmd.PersistentFlags().StringP("ssh-port", "p", "", "OCP3 ssh port")
+	env.Config().BindPFlag("SSHPort", rootCmd.PersistentFlags().Lookup("ssh-port"))
 
 	// Get config file from CLI argument an save to viper config
 	rootCmd.PersistentFlags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")

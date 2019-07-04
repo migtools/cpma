@@ -1,13 +1,18 @@
 ---
-Hostname: "master-0.example.com" # can also point to directory
-SSHCreds:
-  Login: "root"
-  PrivateKey: "/home/example/.ssh/key"
-  Port: 22
-InsecureHostKey: true
-ClusterName: "example-cluster.examle.com"
-OutputDir: "./data"
+clustername: "example-cluster.examle.com"
+configsource: remote
+crioconfigfile: /etc/crio/crio.conf
+etcdconfigfile: /etc/etcd/etcd.conf
+fetchfromremote: true
+home: /home/dgrigore
+hostname: "master-0.example.com"
+insecurehostkey: false
 # MasterConfigFile and NodeConfigFile are optional fields
 # Use only if cluster was configured with different config locations
-MasterConfigFile: "/etc/origin/master/master-config.yaml"
-NodeConfigFile: "/etc/origin/node/node-config.yaml"
+masterconfigfile: /etc/origin/master/master-config.yaml
+nodeconfigfile: /etc/origin/node/node-config.yaml
+outputdir: "./data"
+registriesconfigfile: /etc/containers/registries.conf
+sshlogin: root
+sshport: "22"
+sshprivatekey: "/home/example/.ssh/key"
