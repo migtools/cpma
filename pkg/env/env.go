@@ -44,6 +44,10 @@ func Config() *viper.Viper {
 
 // InitConfig initializes application's configuration
 func InitConfig() error {
+	// Fill in environment variables that match
+	viperConfig.SetEnvPrefix("CPMA")
+	viperConfig.AutomaticEnv()
+
 	// Find home directory.
 	home, err := homedir.Dir()
 	if err != nil {
@@ -65,8 +69,6 @@ func InitConfig() error {
 		viperConfig.AddConfigPath(home)
 		viperConfig.SetConfigName("cpma")
 	}
-	// Fill in environment variables that match
-	viper.AutomaticEnv()
 
 	// If a config file is found, read it in.
 	readConfigErr := viperConfig.ReadInConfig()
