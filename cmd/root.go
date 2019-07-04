@@ -15,8 +15,6 @@
 package cmd
 
 import (
-	"path"
-
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/sirupsen/logrus"
@@ -55,8 +53,32 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&env.Port, "ssh-port", "p", "", "OCP3 ssh port")
 
 	// Get config file from CLI argument an save to viper config
-	rootCmd.PersistentFlags().StringP("output-dir", "o", path.Dir("."), "set the directory to store extracted configuration.")
+	rootCmd.PersistentFlags().StringP("output-dir", "o", "", "set the directory to store extracted configuration.")
 	env.Config().BindPFlag("OutputDir", rootCmd.PersistentFlags().Lookup("output-dir"))
+
+	// Set log level from CLI argument
+	rootCmd.PersistentFlags().String("config-source", "", "source for OCP3 config files, accepted values: remote or local")
+	env.Config().BindPFlag("ConfigSource", rootCmd.PersistentFlags().Lookup("config-source"))
+
+	// Get crio config file location
+	rootCmd.PersistentFlags().String("crio-config", "", "path to crio config file")
+	env.Config().BindPFlag("CrioConfigFile", rootCmd.PersistentFlags().Lookup("crio-config"))
+
+	// Get etcd config file location
+	rootCmd.PersistentFlags().String("etcd-config", "", "path to etcd config file")
+	env.Config().BindPFlag("ETCDConfigFile", rootCmd.PersistentFlags().Lookup("etcd-config"))
+
+	// Get master config file location
+	rootCmd.PersistentFlags().String("master-config", "", "path to master config file")
+	env.Config().BindPFlag("MasterConfigFile", rootCmd.PersistentFlags().Lookup("master-config"))
+
+	// Get node config file location
+	rootCmd.PersistentFlags().String("node-config", "", "path to node config file")
+	env.Config().BindPFlag("NodeConfigFile", rootCmd.PersistentFlags().Lookup("node-config"))
+
+	// Get node config file location
+	rootCmd.PersistentFlags().String("registries-config", "", "path to registries config file")
+	env.Config().BindPFlag("RegistriesConfigFile", rootCmd.PersistentFlags().Lookup("registries-config"))
 }
 
 // rootCmd represents the base command when called without any subcommands

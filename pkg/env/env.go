@@ -55,12 +55,6 @@ func InitConfig() error {
 	}
 	viperConfig.Set("home", home)
 
-	viperConfig.SetDefault("CrioConfigFile", "/etc/crio/crio.conf")
-	viperConfig.SetDefault("ETCDConfigFile", "/etc/etcd/etcd.conf")
-	viperConfig.SetDefault("MasterConfigFile", "/etc/origin/master/master-config.yaml")
-	viperConfig.SetDefault("NodeConfigFile", "/etc/origin/node/node-config.yaml")
-	viperConfig.SetDefault("RegistriesConfigFile", "/etc/containers/registries.conf")
-
 	// Try to find config file if it wasn't provided as a flag
 	if ConfigFile != "" {
 		viperConfig.SetConfigFile(ConfigFile)
@@ -73,55 +67,117 @@ func InitConfig() error {
 	// If a config file is found, read it in.
 	readConfigErr := viperConfig.ReadInConfig()
 
+	// read all nested values like ssh login, port and key
+	getNestedArgValues()
+
+	// Parse kubeconfig for creating api client later
 	err = api.ParseKubeConfig()
 	if err != nil {
 		return errors.Wrap(err, "kubeconfig parsing failed")
 	}
 
-	getNestedArgValues()
-
+	// Ask for all values that are missing in flags or config yaml
 	err = surveyMissingValues()
 	if err != nil {
-		switch {
-		case err.Error() == "interrupt":
-			return errors.Wrap(err, "ctrl-C pressed. Exiting.")
-		default:
-			return errors.Wrap(err, "Error in reading missing values")
-		}
+		return handleInterrupt(err)
 	}
 
-	if api.K8sClient == nil {
-		err = api.CreateK8sClient(viperConfig.GetString("ClusterName"))
-		if err != nil {
-			return errors.Wrap(err, "k8s api client failed to create")
-		}
-	}
-
-	if api.O7tClient == nil {
-		err = api.CreateO7tClient(viperConfig.GetString("ClusterName"))
-		if err != nil {
-			return errors.Wrap(err, "OpenShift api client failed to create")
-		}
-	}
-
+	// If no config was provided, ask to create one for future use
 	if readConfigErr != nil {
 		err = surveyCreateConfigFile()
 		if err != nil {
-			switch {
-			case err.Error() == "interrupt":
-				return errors.Wrap(err, "ctrl-C pressed. Exiting.")
-			default:
-				return errors.Wrap(err, "Error in creating config file")
-			}
+			return handleInterrupt(err)
 		}
-
 		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", readConfigErr)
 	}
 
 	return nil
 }
 
+func getNestedArgValues() {
+	sshCreds := viperConfig.GetStringMapString("SSHCreds")
+	if Login != "" {
+		sshCreds["login"] = Login
+	}
+
+	if PrivateKey != "" {
+		sshCreds["privatekey"] = PrivateKey
+	}
+
+	if Port != "" {
+		sshCreds["port"] = Port
+	}
+	viperConfig.Set("SSHCreds", sshCreds)
+}
+
 func surveyMissingValues() error {
+	err := surveyConfigSource()
+	if err != nil {
+		return err
+	}
+
+	switch viperConfig.GetString("ConfigSource") {
+	case "remote":
+		err := surveySSHConfigValues()
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("FetchFromRemote", true)
+	case "local":
+		err := surveyConfigPaths()
+		if err != nil {
+			return err
+		}
+	default:
+		return errors.New("Accepted values for config-source are: remote or local")
+	}
+
+	err = createAPIClients()
+	if err != nil {
+		return err
+	}
+
+	if viperConfig.GetString("OutputDir") == "" {
+		outputDir := "."
+		prompt := &survey.Input{
+			Message: "Path to output, skip to use current directory",
+			Default: ".",
+		}
+		err := survey.AskOne(prompt, &outputDir, nil)
+		if err != nil {
+			return err
+		}
+
+		viperConfig.Set("OutputDir", outputDir)
+	}
+
+	return nil
+}
+
+func surveyConfigSource() error {
+	// Ask if source of config file should be a remote host or local
+	configSource := ""
+	if viperConfig.GetString("ConfigSource") == "" {
+		prompt := &survey.Select{
+			Message: "What will be the source for OCP3 config files?",
+			Options: []string{"Remote host", "Local"},
+		}
+		err := survey.AskOne(prompt, &configSource, nil)
+		if err != nil {
+			return err
+		}
+		switch configSource {
+		case "Remote host":
+			viperConfig.Set("ConfigSource", "remote")
+		case "Local":
+			viperConfig.Set("ConfigSource", "local")
+		}
+
+	}
+	return nil
+}
+
+func surveySSHConfigValues() error {
 	if viperConfig.GetString("Hostname") == "" {
 		discoverCluster := ""
 		hostname := ""
@@ -155,19 +211,6 @@ func surveyMissingValues() error {
 		}
 
 		viperConfig.Set("Hostname", hostname)
-	}
-
-	if viperConfig.GetString("ClusterName") == "" {
-		clusterName := ""
-		prompt := &survey.Input{
-			Message: "Cluster name",
-		}
-		err := survey.AskOne(prompt, &clusterName, nil)
-		if err != nil {
-			return err
-		}
-
-		viperConfig.Set("ClusterName", clusterName)
 	}
 
 	sshCreds := viperConfig.GetStringMapString("SSHCreds")
@@ -212,39 +255,128 @@ func surveyMissingValues() error {
 		sshCreds["privatekey"] = privatekey
 	}
 
-	if viperConfig.GetString("OutputDir") == "" {
-		outPutDir := "."
+	viperConfig.Set("SSHCreds", sshCreds)
+
+	// set defaults for remote config files paths
+	viperConfig.SetDefault("CrioConfigFile", "/etc/crio/crio.conf")
+	viperConfig.SetDefault("ETCDConfigFile", "/etc/etcd/etcd.conf")
+	viperConfig.SetDefault("MasterConfigFile", "/etc/origin/master/master-config.yaml")
+	viperConfig.SetDefault("NodeConfigFile", "/etc/origin/node/node-config.yaml")
+	viperConfig.SetDefault("RegistriesConfigFile", "/etc/containers/registries.conf")
+	return nil
+}
+
+func surveyConfigPaths() error {
+	config := ""
+	if viperConfig.GetString("CrioConfigFile") == "" && !viperConfig.InConfig("crioconfigfile") {
 		prompt := &survey.Input{
-			Message: "Path to output, skip to use current directory",
-			Default: ".",
+			Message: "Path to crio config file, example: /path/crio/crio.conf",
 		}
-		err := survey.AskOne(prompt, &outPutDir, nil)
+		err := survey.AskOne(prompt, &config, nil)
 		if err != nil {
 			return err
 		}
-
-		viperConfig.Set("OutputDir", outPutDir)
+		viperConfig.Set("CrioConfigFile", config)
 	}
 
-	viperConfig.Set("SSHCreds", sshCreds)
+	if viperConfig.GetString("ETCDConfigFile") == "" && !viperConfig.InConfig("etcdconfigfile") {
+		prompt := &survey.Input{
+			Message: "Path to etcd config file, example: /path/etcd/etcd.conf",
+		}
+		err := survey.AskOne(prompt, &config, nil)
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("ETCDConfigFile", config)
+	}
+
+	if viperConfig.GetString("MasterConfigFile") == "" && !viperConfig.InConfig("masterconfigfile") {
+		prompt := &survey.Input{
+			Message: "Path to master config file, example: /path/etcd/master-config.yaml",
+		}
+		err := survey.AskOne(prompt, &config, nil)
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("MasterConfigFile", config)
+	}
+
+	if viperConfig.GetString("NodeConfigFile") == "" && !viperConfig.InConfig("nodeconfigfile") {
+		prompt := &survey.Input{
+			Message: "Path to node config file, example: /path/node/node-config.yaml",
+		}
+		err := survey.AskOne(prompt, &config, nil)
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("NodeConfigFile", config)
+	}
+
+	if viperConfig.GetString("RegistriesConfigFile") == "" && !viperConfig.InConfig("registriesconfigfile") {
+		prompt := &survey.Input{
+			Message: "Path to registries config file, example: /path/containers/registries.conf",
+		}
+		err := survey.AskOne(prompt, &config, nil)
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("RegistriesConfigFile", config)
+	}
 
 	return nil
 }
 
-func getNestedArgValues() {
-	sshCreds := viperConfig.GetStringMapString("SSHCreds")
-	if Login != "" {
-		sshCreds["login"] = Login
+func createAPIClients() error {
+	if api.O7tClient != nil && api.K8sClient != nil {
+		return nil
 	}
 
-	if PrivateKey != "" {
-		sshCreds["privatekey"] = PrivateKey
+	// Ask for cluster name if not provided, can be either prompter or read from current context
+	if viperConfig.GetString("ClusterName") == "" {
+		contextSource := ""
+		prompt := &survey.Select{
+			Message: "What will be the source for cluster name used to connect to API?",
+			Options: []string{"Current kubeconfig context", "Prompt"},
+		}
+		err := survey.AskOne(prompt, &contextSource, nil)
+		if err != nil {
+			return err
+		}
+
+		clusterName := ""
+		if contextSource == "Prompt" {
+			prompt := &survey.Input{
+				Message: "Cluster name",
+			}
+			err := survey.AskOne(prompt, &clusterName, nil)
+			if err != nil {
+				return err
+			}
+			// set current context to cluster name for connecting to cluster using client-go
+			api.KubeConfig.CurrentContext = api.ClusterNames[clusterName]
+		} else {
+			// get cluster name from current context for future use
+			for key, value := range api.ClusterNames {
+				if value == api.KubeConfig.CurrentContext {
+					clusterName = key
+				}
+			}
+		}
+
+		viperConfig.Set("ClusterName", clusterName)
 	}
 
-	if Port != "" {
-		sshCreds["port"] = Port
+	err := api.CreateK8sClient(viperConfig.GetString("ClusterName"))
+	if err != nil {
+		return errors.Wrap(err, "k8s api client failed to create")
 	}
-	viperConfig.Set("SSHCreds", sshCreds)
+
+	err = api.CreateO7tClient(viperConfig.GetString("ClusterName"))
+	if err != nil {
+		return errors.Wrap(err, "OpenShift api client failed to create")
+	}
+
+	return nil
 }
 
 func surveyCreateConfigFile() error {
@@ -264,6 +396,15 @@ func surveyCreateConfigFile() error {
 	}
 
 	return nil
+}
+
+func handleInterrupt(err error) error {
+	switch {
+	case err.Error() == "interrupt":
+		return errors.Wrap(err, "Exiting.")
+	default:
+		return errors.Wrap(err, "Error in creating config file")
+	}
 }
 
 // InitLogger initializes stderr and logger to file

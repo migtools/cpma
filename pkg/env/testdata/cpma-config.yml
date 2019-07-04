@@ -6,3 +6,4 @@ SSHCreds:
   Port: 22
 OutputDir: "./data"
 ClusterName: "somename"
+ConfigSource: remote
