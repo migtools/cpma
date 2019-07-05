@@ -13,6 +13,7 @@ import (
 )
 
 func TestTransformMasterConfigLDAP(t *testing.T) {
+	t.Parallel()
 	identityProviders, _, err := cpmatest.LoadIPTestData("testdata/ldap/master_config.yaml")
 	require.NoError(t, err)
 
@@ -39,6 +40,7 @@ func TestTransformMasterConfigLDAP(t *testing.T) {
 }
 
 func TestLDAPValidation(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name         string
 		requireError bool

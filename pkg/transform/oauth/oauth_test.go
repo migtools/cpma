@@ -31,6 +31,7 @@ func loadExpectedOAuth(file string) (*configv1.OAuth, error) {
 }
 
 func TestTransformMasterConfig(t *testing.T) {
+	t.Parallel()
 	file := "testdata/master_config-bulk.yaml"
 
 	content, err := ioutil.ReadFile(file)

@@ -17,6 +17,7 @@ import (
 )
 
 func TestTransformMasterConfigGithub(t *testing.T) {
+	t.Parallel()
 	identityProviders, _, err := cpmatest.LoadIPTestData("testdata/github/master_config.yaml")
 	require.NoError(t, err)
 
@@ -48,6 +49,7 @@ func TestTransformMasterConfigGithub(t *testing.T) {
 }
 
 func TestGithubValidation(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name         string
 		requireError bool

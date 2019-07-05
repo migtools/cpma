@@ -16,6 +16,7 @@ import (
 )
 
 func TestTransformMasterConfigOpenID(t *testing.T) {
+	t.Parallel()
 	identityProviders, _, err := cpmatest.LoadIPTestData("testdata/openid/master_config.yaml")
 	require.NoError(t, err)
 
@@ -46,6 +47,7 @@ func TestTransformMasterConfigOpenID(t *testing.T) {
 }
 
 func TestOpenIDValidation(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name         string
 		requireError bool

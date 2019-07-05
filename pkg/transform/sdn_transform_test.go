@@ -13,6 +13,7 @@ import (
 )
 
 func TestSDNExtractionTransform(t *testing.T) {
+	//t.Parallel()
 	var expectedManifests []transform.Manifest
 
 	expectedSDNCRYAML, err := ioutil.ReadFile("testdata/expected-CR-sdn.yaml")

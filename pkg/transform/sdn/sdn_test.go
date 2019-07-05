@@ -15,6 +15,7 @@ import (
 )
 
 func TestTransformMasterConfig(t *testing.T) {
+	t.Parallel()
 	testExtraction, err := cpmatest.LoadSDNExtraction("testdata/master_config-network.yaml")
 	require.NoError(t, err)
 
@@ -57,6 +58,7 @@ func TestTransformMasterConfig(t *testing.T) {
 }
 
 func TestSelectNetworkPlugin(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name        string
 		input       string

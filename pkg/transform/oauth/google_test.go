@@ -13,6 +13,7 @@ import (
 )
 
 func TestTransformMasterConfigGoogle(t *testing.T) {
+	t.Parallel()
 	identityProviders, _, err := cpmatest.LoadIPTestData("testdata/google/master_config.yaml")
 	require.NoError(t, err)
 
@@ -39,6 +40,7 @@ func TestTransformMasterConfigGoogle(t *testing.T) {
 }
 
 func TestGoogleValidation(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name         string
 		requireError bool

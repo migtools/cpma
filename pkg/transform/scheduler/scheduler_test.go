@@ -32,6 +32,7 @@ func loadExpectedScheduler(file string) (*configv1.Scheduler, error) {
 }
 
 func TestTransformScheduler(t *testing.T) {
+	t.Parallel()
 	masterConfig, err := cpmatest.LoadMasterConfig("testdata/master_config.yaml")
 	require.NoError(t, err)
 
@@ -58,6 +59,7 @@ func TestTransformScheduler(t *testing.T) {
 }
 
 func TestBasicAuthValidation(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name         string
 		requireError bool

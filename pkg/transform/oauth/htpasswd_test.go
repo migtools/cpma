@@ -14,6 +14,7 @@ import (
 )
 
 func TestTransformMasterConfigHtpasswd(t *testing.T) {
+	t.Parallel()
 	identityProviders, _, err := cpmatest.LoadIPTestData("testdata/htpasswd/master_config.yaml")
 	require.NoError(t, err)
 
@@ -40,6 +41,7 @@ func TestTransformMasterConfigHtpasswd(t *testing.T) {
 }
 
 func TestHTPasswdValidation(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name         string
 		requireError bool

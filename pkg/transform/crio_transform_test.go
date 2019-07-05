@@ -28,6 +28,7 @@ func loadCrioExtraction() (transform.CrioExtraction, error) {
 }
 
 func TestCrioExtractionTransform(t *testing.T) {
+	t.Parallel()
 	var expectedManifests []transform.Manifest
 
 	var expectedCrd transform.CrioCR
