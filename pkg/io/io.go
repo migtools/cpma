@@ -15,9 +15,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// FetchFile first tries to retrieve file from local disk (outputDir/<Hostname>/).
+// FetchFile first tries to retrieve file from local disk (workDir/<Hostname>/).
 // If it fails then connects to Hostname to retrieve file and stores it locally
-// To force a network connection remove outputDir/... prior to exec.
+// To force a network connection remove workDir/... prior to exec.
 var FetchFile = func(src string) ([]byte, error) {
 	var f []byte
 	var err error
@@ -60,7 +60,8 @@ func fetchFromRemote(src string) ([]byte, error) {
 }
 
 func fetchFromLocal(src string) ([]byte, error) {
-	f, err := ioutil.ReadFile(src)
+	localSrc := filepath.Join(env.Config().GetString("WorkDir"), env.Config().GetString("Source"), src)
+	f, err := ioutil.ReadFile(localSrc)
 	if err != nil {
 		return nil, err
 	}
@@ -107,15 +108,15 @@ func FetchStringSource(stringSource legacyconfigv1.StringSource) (string, error)
 	return "", nil
 }
 
-// ReadFile reads a file in OutputDir and returns its contents
+// ReadFile reads a file in WorkDir and returns its contents
 func ReadFile(file string) ([]byte, error) {
-	src := filepath.Join(env.Config().GetString("OutputDir"), file)
+	src := filepath.Join(env.Config().GetString("WorkDir"), file)
 	return ioutil.ReadFile(src)
 }
 
-// WriteFile writes data to a file in OutputDir
+// WriteFile writes data to a file in WorkDir
 func WriteFile(content []byte, file string) error {
-	dst := filepath.Join(env.Config().GetString("OutputDir"), file)
+	dst := filepath.Join(env.Config().GetString("WorkDir"), file)
 	os.MkdirAll(path.Dir(dst), 0750)
 	return ioutil.WriteFile(dst, content, 0640)
 }

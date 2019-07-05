@@ -119,18 +119,18 @@ func surveyMissingValues() error {
 		return err
 	}
 
-	if viperConfig.GetString("OutputDir") == "" {
-		outputDir := "."
+	if viperConfig.GetString("WorkDir") == "" {
+		workDir := "."
 		prompt := &survey.Input{
-			Message: "Path to output, skip to use current directory",
+			Message: "Path to work, skip to use current directory",
 			Default: ".",
 		}
-		err := survey.AskOne(prompt, &outputDir, nil)
+		err := survey.AskOne(prompt, &workDir, nil)
 		if err != nil {
 			return err
 		}
 
-		viperConfig.Set("OutputDir", outputDir)
+		viperConfig.Set("WorkDir", workDir)
 	}
 
 	return nil
