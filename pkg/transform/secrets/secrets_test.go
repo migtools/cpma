@@ -9,6 +9,7 @@ import (
 )
 
 func TestGenSecret(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name            string
 		inputSecretName string

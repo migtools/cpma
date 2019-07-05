@@ -14,6 +14,7 @@ import (
 )
 
 func TestTransformMasterConfigTemplates(t *testing.T) {
+	t.Parallel()
 	_, templates, err := cpmatest.LoadIPTestData("testdata/templates/master_config.yaml")
 	require.NoError(t, err)
 

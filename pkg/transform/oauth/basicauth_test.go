@@ -13,6 +13,7 @@ import (
 )
 
 func TestTransformMasterConfigBasicAuth(t *testing.T) {
+	t.Parallel()
 	identityProviders, _, err := cpmatest.LoadIPTestData("testdata/basicauth/master_config.yaml")
 	require.NoError(t, err)
 
@@ -40,6 +41,7 @@ func TestTransformMasterConfigBasicAuth(t *testing.T) {
 }
 
 func TestBasicAuthValidation(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name         string
 		requireError bool

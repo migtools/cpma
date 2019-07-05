@@ -13,6 +13,7 @@ import (
 )
 
 func TestInitConfig(t *testing.T) {
+	t.Parallel()
 	ConfigFile = "testdata/cpma-config.yml"
 	api.K8sClient = &kubernetes.Clientset{}
 	api.O7tClient = &api.OpenshiftClient{}

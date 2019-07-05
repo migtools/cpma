@@ -13,6 +13,7 @@ import (
 )
 
 func TestTransformMasterConfigKeystone(t *testing.T) {
+	t.Parallel()
 	identityProviders, _, err := cpmatest.LoadIPTestData("testdata/keystone/master_config.yaml")
 	require.NoError(t, err)
 
@@ -39,6 +40,7 @@ func TestTransformMasterConfigKeystone(t *testing.T) {
 }
 
 func TestKeystoneValidation(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name         string
 		requireError bool

@@ -30,6 +30,7 @@ func loadAPIExtraction() (transform.APIExtraction, error) {
 }
 
 func TestAPIExtractionTransform(t *testing.T) {
+	t.Parallel()
 
 	expectedReport := transform.ComponentReport{
 		Component: "API",
