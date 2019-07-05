@@ -13,6 +13,7 @@
 *.swp
 cpma
 cpma.yaml
+**/testdata/out/*
 
 # Standard and 3rd party lib ignored - use go tool to regenerate
 /src/*.*/

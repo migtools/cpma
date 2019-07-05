@@ -3,6 +3,7 @@ package env
 import (
 	"io/ioutil"
 	"os"
+	"path"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -37,25 +38,13 @@ func Config() *viper.Viper {
 }
 
 // InitConfig initializes application's configuration
-func InitConfig() error {
+func InitConfig() (err error) {
 	// Fill in environment variables that match
 	viperConfig.SetEnvPrefix("CPMA")
 	viperConfig.AutomaticEnv()
 
-	// Find home directory.
-	home, err := homedir.Dir()
-	if err != nil {
-		return errors.Wrap(err, "Can't detect home user directory")
-	}
-	viperConfig.Set("home", home)
-
-	// Try to find config file if it wasn't provided as a flag
-	if ConfigFile != "" {
-		viperConfig.SetConfigFile(ConfigFile)
-	} else {
-		viperConfig.AddConfigPath(".")
-		viperConfig.AddConfigPath(home)
-		viperConfig.SetConfigName("cpma")
+	if err = setConfigLocation(); err != nil {
+		return err
 	}
 
 	// If a config file is found, read it in.
@@ -83,6 +72,24 @@ func InitConfig() error {
 	}
 
 	return nil
+}
+
+// setConfigLocation sets location for CPMA configuration
+func setConfigLocation() (err error) {
+	var home string
+	// Find home directory.
+	home, err = homedir.Dir()
+	if err != nil {
+		return errors.Wrap(err, "Can't detect home user directory")
+	}
+	viperConfig.Set("home", home)
+
+	// Try to find config file if it wasn't provided as a flag
+	if ConfigFile == "" {
+		ConfigFile = path.Join(home, "cpma.yaml")
+	}
+	viperConfig.SetConfigFile(ConfigFile)
+	return
 }
 
 func surveyMissingValues() error {
@@ -369,14 +376,14 @@ func createAPIClients() error {
 	return nil
 }
 
-func surveyCreateConfigFile() error {
+func surveyCreateConfigFile() (err error) {
 	createConfig := viperConfig.GetString("CreateConfig")
 	if createConfig == "" {
 		prompt := &survey.Select{
 			Message: "No config file found, do you wish to create one for future use?",
 			Options: []string{"yes", "no"},
 		}
-		err := survey.AskOne(prompt, &createConfig, nil)
+		err = survey.AskOne(prompt, &createConfig, nil)
 		if err != nil {
 			return err
 		}
@@ -385,10 +392,8 @@ func surveyCreateConfigFile() error {
 	}
 
 	if createConfig == "yes" {
-		viperConfig.SetConfigFile("cpma.yaml")
 		viperConfig.WriteConfig()
 	}
-
 	return nil
 }
 

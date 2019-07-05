@@ -1,4 +1,3 @@
----
 hostname: "master-0.test.example.com"
 sshlogin: "root"
 sshprivatekey: "/home/test/.ssh/testkey"
