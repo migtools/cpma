@@ -60,7 +60,7 @@ func fetchFromRemote(src string) ([]byte, error) {
 }
 
 func fetchFromLocal(src string) ([]byte, error) {
-	localSrc := filepath.Join(env.Config().GetString("WorkDir"), env.Config().GetString("Source"), src)
+	localSrc := filepath.Join(env.Config().GetString("WorkDir"), env.Config().GetString("Hostname"), src)
 	f, err := ioutil.ReadFile(localSrc)
 	if err != nil {
 		return nil, err

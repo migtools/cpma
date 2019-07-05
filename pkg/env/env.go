@@ -122,7 +122,7 @@ func surveyMissingValues() error {
 	if viperConfig.GetString("WorkDir") == "" {
 		workDir := "."
 		prompt := &survey.Input{
-			Message: "Path to work, skip to use current directory",
+			Message: "Path to application data, skip to use current directory",
 			Default: ".",
 		}
 		err := survey.AskOne(prompt, &workDir, nil)

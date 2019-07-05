@@ -58,7 +58,7 @@ func init() {
 	env.Config().BindPFlag("SSHPort", rootCmd.PersistentFlags().Lookup("ssh-port"))
 
 	// Get config file from CLI argument an save to viper config
-	rootCmd.PersistentFlags().StringP("work-dir", "w", "", "set the working directory")
+	rootCmd.PersistentFlags().StringP("work-dir", "w", "", "set application data working directory (Default \".\")")
 	env.Config().BindPFlag("WorkDir", rootCmd.PersistentFlags().Lookup("work-dir"))
 
 	// Set log level from CLI argument

@@ -73,7 +73,7 @@ Flags:
   -l, --login string        OCP3 ssh login
   -p, --port string         OCP3 ssh port
   -s, --source string       OCP3 cluster hostname
-  -w, --work-dir string     set the working directory (default ".")
+  -w, --work-dir string     set application data working directory (Default ".")
 ```
 
 ## IO
