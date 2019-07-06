@@ -92,7 +92,7 @@ func NewSSHSession(source string) (*ssh.Session, error) {
 }
 
 // RunCMD execute cmd on remote host
-func RunCMD(hostname, cmd string) (string, error) {
+var RunCMD = func(hostname, cmd string) (string, error) {
 	session, err := NewSSHSession(hostname)
 	if err != nil {
 		return "", err
