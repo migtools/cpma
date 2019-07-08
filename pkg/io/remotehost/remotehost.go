@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/fusor/cpma/pkg/env"
@@ -14,6 +15,15 @@ import (
 	"golang.org/x/crypto/ssh"
 	kh "golang.org/x/crypto/ssh/knownhosts"
 )
+
+var instances struct {
+	client   *ssh.Client
+	sshError error
+}
+
+var once struct {
+	client sync.Once
+}
 
 // Client Wrapper around sftp.Client
 type Client struct {
@@ -78,12 +88,18 @@ func CreateConnection(source string) (*ssh.Client, error) {
 
 // NewSSHSession Start new ssh session
 func NewSSHSession(source string) (*ssh.Session, error) {
-	connection, err := CreateConnection(source)
-	if err != nil {
-		return nil, err
+	// Init client only on first call
+	once.client.Do(func() {
+		connection, err := CreateConnection(source)
+		instances.client = connection
+		instances.sshError = err
+	})
+
+	if instances.sshError != nil {
+		return nil, instances.sshError
 	}
 
-	session, err := connection.NewSession()
+	session, err := instances.client.NewSession()
 	if err != nil {
 		return nil, errors.Wrap(err, "Cannot start session")
 	}
