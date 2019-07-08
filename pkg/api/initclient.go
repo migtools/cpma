@@ -40,7 +40,6 @@ func ParseKubeConfig() error {
 	if err != nil {
 		return err
 	}
-
 	// Map context clusters and name for easier access in future
 	for name, context := range KubeConfig.Contexts {
 		ClusterNames[context.Cluster] = name

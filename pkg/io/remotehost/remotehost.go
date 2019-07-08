@@ -32,11 +32,9 @@ type Client struct {
 
 // CreateConnection create ssh connection
 func CreateConnection(source string) (*ssh.Client, error) {
-	sshCreds := env.Config().GetStringMapString("SSHCreds")
-
-	key, err := ioutil.ReadFile(sshCreds["privatekey"])
+	key, err := ioutil.ReadFile(env.Config().GetString("SSHPrivateKey"))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Unable to read private key: %s\n", sshCreds["privatekey"])
+		return nil, errors.Wrapf(err, "Unable to read private key: %s\n", key)
 	}
 
 	// Create the Signer for this private key.
@@ -58,7 +56,7 @@ func CreateConnection(source string) (*ssh.Client, error) {
 	}
 
 	sshConfig := &ssh.ClientConfig{
-		User: sshCreds["login"],
+		User: env.Config().GetString("SSHLogin"),
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
@@ -68,7 +66,7 @@ func CreateConnection(source string) (*ssh.Client, error) {
 	}
 
 	port := 22
-	if p := sshCreds["port"]; p != "" {
+	if p := env.Config().GetString("SSHPort"); p != "" {
 		port, err = strconv.Atoi(p)
 		if err != nil || port < 1 || port > 65535 {
 			return nil, errors.Wrapf(err, "Port number %s is wrong\n", p)

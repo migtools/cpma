@@ -49,6 +49,113 @@ func TestInitConfig(t *testing.T) {
 	}
 }
 
+func TestInitFromEnv(t *testing.T) {
+	type configAsset struct {
+		envKey           string
+		envValue         string
+		configEquivalent string
+	}
+	var err error
+
+	outputDir := "testdata/out"
+	testCases := []struct {
+		name         string
+		sourceConfig []configAsset
+	}{
+		{
+			name: "Read from remote",
+			sourceConfig: []configAsset{
+				configAsset{
+					envKey:           "CPMA_HOSTNAME",
+					envValue:         "master-0.test.example.com",
+					configEquivalent: "hostname",
+				},
+				configAsset{
+					envKey:           "CPMA_SSHLOGIN",
+					envValue:         "root",
+					configEquivalent: "sshlogin",
+				},
+				configAsset{
+					envKey:           "CPMA_SSHPRIVATEKEY",
+					envValue:         "/home/test/.ssh/testkey",
+					configEquivalent: "sshprivatekey",
+				},
+				configAsset{
+					envKey:           "CPMA_SSHPORT",
+					envValue:         "22",
+					configEquivalent: "sshport",
+				},
+				configAsset{
+					envKey:           "CPMA_CONFIGSOURCE",
+					envValue:         "remote",
+					configEquivalent: "configsource",
+				},
+			},
+		},
+		{
+			name: "Read from local",
+			sourceConfig: []configAsset{
+				configAsset{
+					envKey:           "CPMA_CONFIGSOURCE",
+					envValue:         "local",
+					configEquivalent: "configsource",
+				},
+				configAsset{
+					envKey:           "CPMA_CRIOCONFIGFILE",
+					envValue:         "test-crio",
+					configEquivalent: "crioconfigfile",
+				},
+				configAsset{
+					envKey:           "CPMA_ETCDCONFIGFILE",
+					envValue:         "test-etcd",
+					configEquivalent: "etcdconfigfile",
+				},
+				configAsset{
+					envKey:           "CPMA_MASTERCONFIGFILE",
+					envValue:         "test-master",
+					configEquivalent: "masterconfigfile",
+				},
+				configAsset{
+					envKey:           "CPMA_NODECONFIGFILE",
+					envValue:         "test-node",
+					configEquivalent: "nodeconfigfile",
+				},
+				configAsset{
+					envKey:           "CPMA_REGISTRIESCONFIGFILE",
+					envValue:         "test-registries",
+					configEquivalent: "registriesconfigfile",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			os.Setenv("CPMA_CREATECONFIG", "yes")
+			os.Setenv("CPMA_CLUSTERNAME", "somename")
+			os.Setenv("CPMA_OUTPUTDIR", outputDir)
+			api.K8sClient = &kubernetes.Clientset{}
+			api.O7tClient = &api.OpenshiftClient{}
+			for _, asset := range tc.sourceConfig {
+				err = os.Setenv(asset.envKey, asset.envValue)
+				assert.NoError(t, err, "Unable to export %s=%s", asset.envKey, asset.envValue)
+			}
+
+			err = InitConfig()
+			assert.NoError(t, err, "Unable to initialize config")
+			for _, asset := range tc.sourceConfig {
+				assert.Equal(t, asset.envValue, viperConfig.GetString(asset.configEquivalent))
+			}
+
+			for _, asset := range tc.sourceConfig {
+				err = os.Unsetenv(asset.envKey)
+				assert.NoError(t, err, "Unable to unset %s", asset.envKey)
+			}
+			os.Remove(ConfigFile)
+		})
+	}
+}
+
 func TestInitLogger(t *testing.T) {
 	expectedFileHook, err := NewLogFileHook(
 		LogFileConfig{

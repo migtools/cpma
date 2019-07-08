@@ -3,6 +3,7 @@ package env
 import (
 	"io/ioutil"
 	"os"
+	"path"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -23,12 +24,6 @@ const (
 var (
 	// ConfigFile - keeps full path to the configuration file
 	ConfigFile string
-	// Login ssh login
-	Login string
-	// PrivateKey private key path
-	PrivateKey string
-	// Port ssh port
-	Port string
 
 	viperConfig *viper.Viper
 )
@@ -43,32 +38,17 @@ func Config() *viper.Viper {
 }
 
 // InitConfig initializes application's configuration
-func InitConfig() error {
+func InitConfig() (err error) {
 	// Fill in environment variables that match
 	viperConfig.SetEnvPrefix("CPMA")
 	viperConfig.AutomaticEnv()
 
-	// Find home directory.
-	home, err := homedir.Dir()
-	if err != nil {
-		return errors.Wrap(err, "Can't detect home user directory")
-	}
-	viperConfig.Set("home", home)
-
-	// Try to find config file if it wasn't provided as a flag
-	if ConfigFile != "" {
-		viperConfig.SetConfigFile(ConfigFile)
-	} else {
-		viperConfig.AddConfigPath(".")
-		viperConfig.AddConfigPath(home)
-		viperConfig.SetConfigName("cpma")
+	if err = setConfigLocation(); err != nil {
+		return err
 	}
 
 	// If a config file is found, read it in.
 	readConfigErr := viperConfig.ReadInConfig()
-
-	// read all nested values like ssh login, port and key
-	getNestedArgValues()
 
 	// Parse kubeconfig for creating api client later
 	err = api.ParseKubeConfig()
@@ -94,20 +74,22 @@ func InitConfig() error {
 	return nil
 }
 
-func getNestedArgValues() {
-	sshCreds := viperConfig.GetStringMapString("SSHCreds")
-	if Login != "" {
-		sshCreds["login"] = Login
+// setConfigLocation sets location for CPMA configuration
+func setConfigLocation() (err error) {
+	var home string
+	// Find home directory.
+	home, err = homedir.Dir()
+	if err != nil {
+		return errors.Wrap(err, "Can't detect home user directory")
 	}
+	viperConfig.Set("home", home)
 
-	if PrivateKey != "" {
-		sshCreds["privatekey"] = PrivateKey
+	// Try to find config file if it wasn't provided as a flag
+	if ConfigFile == "" {
+		ConfigFile = path.Join(home, "cpma.yaml")
 	}
-
-	if Port != "" {
-		sshCreds["port"] = Port
-	}
-	viperConfig.Set("SSHCreds", sshCreds)
+	viperConfig.SetConfigFile(ConfigFile)
+	return
 }
 
 func surveyMissingValues() error {
@@ -178,9 +160,9 @@ func surveyConfigSource() error {
 }
 
 func surveySSHConfigValues() error {
-	if viperConfig.GetString("Hostname") == "" {
+	hostname := viperConfig.GetString("Hostname")
+	if !viperConfig.InConfig("hostname") && hostname == "" {
 		discoverCluster := ""
-		hostname := ""
 		clusterName := ""
 		var err error
 
@@ -213,9 +195,21 @@ func surveySSHConfigValues() error {
 		viperConfig.Set("Hostname", hostname)
 	}
 
-	sshCreds := viperConfig.GetStringMapString("SSHCreds")
-	if sshCreds["login"] == "" {
-		login := ""
+	clusterName := viperConfig.GetString("ClusterName")
+	if !viperConfig.InConfig("clustername") && clusterName == "" {
+		prompt := &survey.Input{
+			Message: "Cluster name",
+		}
+		err := survey.AskOne(prompt, &clusterName, nil)
+		if err != nil {
+			return err
+		}
+
+		viperConfig.Set("ClusterName", clusterName)
+	}
+
+	login := viperConfig.GetString("SSHLogin")
+	if !viperConfig.InConfig("sshlogin") && login == "" {
 		prompt := &survey.Input{
 			Message: "SSH login",
 			Default: "root",
@@ -225,11 +219,11 @@ func surveySSHConfigValues() error {
 			return err
 		}
 
-		sshCreds["login"] = login
+		viperConfig.Set("SSHLogin", login)
 	}
 
-	if sshCreds["port"] == "" {
-		port := ""
+	port := viperConfig.GetString("SSHPort")
+	if !viperConfig.InConfig("sshport") && port == "" {
 		prompt := &survey.Input{
 			Message: "SSH Port",
 			Default: "22",
@@ -239,11 +233,11 @@ func surveySSHConfigValues() error {
 			return err
 		}
 
-		sshCreds["port"] = port
+		viperConfig.Set("SSHPort", port)
 	}
 
-	if sshCreds["privatekey"] == "" {
-		privatekey := ""
+	privatekey := viperConfig.GetString("SSHPrivateKey")
+	if !viperConfig.InConfig("sshprivatekey") && privatekey == "" {
 		prompt := &survey.Input{
 			Message: "Path to private SSH key",
 		}
@@ -252,10 +246,8 @@ func surveySSHConfigValues() error {
 			return err
 		}
 
-		sshCreds["privatekey"] = privatekey
+		viperConfig.Set("SSHPrivateKey", privatekey)
 	}
-
-	viperConfig.Set("SSHCreds", sshCreds)
 
 	// set defaults for remote config files paths
 	viperConfig.SetDefault("CrioConfigFile", "/etc/crio/crio.conf")
@@ -267,8 +259,9 @@ func surveySSHConfigValues() error {
 }
 
 func surveyConfigPaths() error {
-	config := ""
-	if viperConfig.GetString("CrioConfigFile") == "" && !viperConfig.InConfig("crioconfigfile") {
+	var config string
+	config = viperConfig.GetString("CrioConfigFile")
+	if !viperConfig.InConfig("crioconfigfile") && config == "" {
 		prompt := &survey.Input{
 			Message: "Path to crio config file, example: /path/crio/crio.conf",
 		}
@@ -279,7 +272,8 @@ func surveyConfigPaths() error {
 		viperConfig.Set("CrioConfigFile", config)
 	}
 
-	if viperConfig.GetString("ETCDConfigFile") == "" && !viperConfig.InConfig("etcdconfigfile") {
+	config = viperConfig.GetString("ETCDConfigFile")
+	if !viperConfig.InConfig("etcdconfigfile") && config == "" {
 		prompt := &survey.Input{
 			Message: "Path to etcd config file, example: /path/etcd/etcd.conf",
 		}
@@ -290,7 +284,8 @@ func surveyConfigPaths() error {
 		viperConfig.Set("ETCDConfigFile", config)
 	}
 
-	if viperConfig.GetString("MasterConfigFile") == "" && !viperConfig.InConfig("masterconfigfile") {
+	config = viperConfig.GetString("MasterConfigFile")
+	if !viperConfig.InConfig("masterconfigfile") && config == "" {
 		prompt := &survey.Input{
 			Message: "Path to master config file, example: /path/etcd/master-config.yaml",
 		}
@@ -301,7 +296,8 @@ func surveyConfigPaths() error {
 		viperConfig.Set("MasterConfigFile", config)
 	}
 
-	if viperConfig.GetString("NodeConfigFile") == "" && !viperConfig.InConfig("nodeconfigfile") {
+	config = viperConfig.GetString("NodeConfigFile")
+	if !viperConfig.InConfig("nodeconfigfile") && config == "" {
 		prompt := &survey.Input{
 			Message: "Path to node config file, example: /path/node/node-config.yaml",
 		}
@@ -312,7 +308,8 @@ func surveyConfigPaths() error {
 		viperConfig.Set("NodeConfigFile", config)
 	}
 
-	if viperConfig.GetString("RegistriesConfigFile") == "" && !viperConfig.InConfig("registriesconfigfile") {
+	config = viperConfig.GetString("RegistriesConfigFile")
+	if !viperConfig.InConfig("registriesconfigfile") && config == "" {
 		prompt := &survey.Input{
 			Message: "Path to registries config file, example: /path/containers/registries.conf",
 		}
@@ -379,22 +376,24 @@ func createAPIClients() error {
 	return nil
 }
 
-func surveyCreateConfigFile() error {
-	createConfig := ""
-	prompt := &survey.Select{
-		Message: "No config file found, do you wish to create one for future use?",
-		Options: []string{"yes", "no"},
-	}
-	err := survey.AskOne(prompt, &createConfig, nil)
-	if err != nil {
-		return err
+func surveyCreateConfigFile() (err error) {
+	createConfig := viperConfig.GetString("CreateConfig")
+	if createConfig == "" {
+		prompt := &survey.Select{
+			Message: "No config file found, do you wish to create one for future use?",
+			Options: []string{"yes", "no"},
+		}
+		err = survey.AskOne(prompt, &createConfig, nil)
+		if err != nil {
+			return err
+		}
+		viperConfig.Set("CreateConfig", createConfig)
+
 	}
 
 	if createConfig == "yes" {
-		viperConfig.SetConfigFile("cpma.yaml")
 		viperConfig.WriteConfig()
 	}
-
 	return nil
 }
 
