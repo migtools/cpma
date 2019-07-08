@@ -32,36 +32,31 @@ var FetchFile = func(src string) ([]byte, error) {
 }
 
 func fetchFromRemote(src string) ([]byte, error) {
-	dst := filepath.Join(env.Config().GetString("Hostname"), src)
-	f, err := ReadFile(dst)
+	host := env.Config().GetString("Hostname")
+	dst := filepath.Join(host, src)
+
+	cmd := fmt.Sprintf("sudo cat %s", src)
+	output, err := remotehost.RunCMD(host, cmd)
 	if err != nil {
-		host := env.Config().GetString("Hostname")
-
-		cmd := fmt.Sprintf("sudo cat %s", src)
-		output, err := remotehost.RunCMD(host, cmd)
-		if err != nil {
-			return nil, err
-		}
-
-		if output == "" {
-			msg := fmt.Sprintf("Empty or missing file: %s", dst)
-			return nil, errors.New(msg)
-		}
-
-		err = WriteFile([]byte(output), dst)
-		if err != nil {
-			logrus.Errorf("Unable to save: %s", dst)
-			return nil, err
-		}
-
-		netFile, err := ReadFile(dst)
-		if err != nil {
-			return nil, err
-		}
-		return netFile, nil
-
+		return nil, err
 	}
-	return f, nil
+
+	if output == "" {
+		msg := fmt.Sprintf("Empty or missing file: %s", dst)
+		return nil, errors.New(msg)
+	}
+
+	err = WriteFile([]byte(output), dst)
+	if err != nil {
+		logrus.Errorf("Unable to save: %s", dst)
+		return nil, err
+	}
+
+	netFile, err := ReadFile(dst)
+	if err != nil {
+		return nil, err
+	}
+	return netFile, nil
 }
 
 func fetchFromLocal(src string) ([]byte, error) {
