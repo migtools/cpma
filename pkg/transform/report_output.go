@@ -4,94 +4,20 @@ import (
 	"encoding/json"
 
 	"github.com/fusor/cpma/pkg/io"
-	O7tapiroute "github.com/openshift/api/route/v1"
+	"github.com/fusor/cpma/pkg/transform/cluster"
 	"github.com/sirupsen/logrus"
-	k8sapicore "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	k8smachinery "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ReportOutput holds a collection of reports to be written to file
 type ReportOutput struct {
-	ClusterReport    ClusterReport     `json:"cluster,omitempty"`
+	ClusterReport    cluster.Report    `json:"cluster,omitempty"`
 	ComponentReports []ComponentReport `json:"components,omitempty"`
-}
-
-// NodeResources represents a json report of Node resources
-type NodeResources struct {
-	CPU            *resource.Quantity `json:"cpu"`
-	MemoryConsumed *resource.Quantity `json:"memoryConsumed"`
-	MemoryCapacity *resource.Quantity `json:"memoryCapacity"`
-	RunningPods    *resource.Quantity `json:"runningPods"`
-	PodCapacity    *resource.Quantity `json:"podCapacity"`
 }
 
 // ComponentReport holds a collection of ocp3 config reports
 type ComponentReport struct {
 	Component string   `json:"component"`
 	Reports   []Report `json:"reports"`
-}
-
-// ClusterReport represents json report of k8s resources
-type ClusterReport struct {
-	Nodes          []NodeReport         `json:"nodes"`
-	Namespaces     []NamespaceReport    `json:"namespaces,omitempty"`
-	PVs            []PVReport           `json:"pvs,omitempty"`
-	StorageClasses []StorageClassReport `json:"storageClasses,omitempty"`
-}
-
-// NodeReport represents json report of k8s nodes
-type NodeReport struct {
-	Name       string        `json:"name"`
-	MasterNode bool          `json:"masterNode"`
-	Resources  NodeResources `json:"resources"`
-}
-
-// NamespaceReport represents json report of k8s namespaces
-type NamespaceReport struct {
-	Name         string                   `json:"name"`
-	LatestChange k8smachinery.Time        `json:"latestChange,omitempty"`
-	Resources    ContainerResourcesReport `json:"resources,omitempty"`
-	Pods         []PodReport              `json:"pods,omitempty"`
-	Routes       []RouteReport            `json:"routes,omitempty"`
-}
-
-// PodReport represents json report of k8s pods
-type PodReport struct {
-	Name string `json:"name"`
-}
-
-// RouteReport represents json report of k8s pods
-type RouteReport struct {
-	Name              string                             `json:"name"`
-	Host              string                             `json:"host"`
-	Path              string                             `json:"path,omitempty"`
-	AlternateBackends []O7tapiroute.RouteTargetReference `json:"alternateBackends,omitempty"`
-	TLS               *O7tapiroute.TLSConfig             `json:"tls,omitempty"`
-	To                O7tapiroute.RouteTargetReference   `json:"to,omitempty"`
-	WildcardPolicy    O7tapiroute.WildcardPolicyType     `json:"wildcardPolicy"`
-}
-
-// ContainerResourcesReport represents json report for aggregated container resources
-type ContainerResourcesReport struct {
-	ContainerCount int                `json:"containerCount"`
-	CPUTotal       *resource.Quantity `json:"cpuTotal"`
-	MemoryTotal    *resource.Quantity `json:"memoryTotal"`
-}
-
-// PVReport represents json report of k8s PVs
-type PVReport struct {
-	Name         string                            `json:"name"`
-	Driver       k8sapicore.PersistentVolumeSource `json:"driver"`
-	StorageClass string                            `json:"storageClass,omitempty"`
-	Capacity     k8sapicore.ResourceList           `json:"capacity,omitempty"`
-	Phase        k8sapicore.PersistentVolumePhase  `json:"phase,omitempty"`
-}
-
-// StorageClassReport represents json report of k8s storage classes
-type StorageClassReport struct {
-	Name        string `json:"name"`
-	Provisioner string `json:"provisioner"`
 }
 
 // ReportOutputFlush flush reports to disk
