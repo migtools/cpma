@@ -1,37 +1,29 @@
 package transform_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"testing"
 
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func loadAPIExtraction() (transform.APIExtraction, error) {
-	// TODO: Something is broken here in a way that it's causing the translaters
-	// to fail. Need some help with creating test identiy providers in a way
-	// that won't crash the translator
-
-	// Build example identity providers, this is straight copy pasted from
-	// oauth test, IMO this loading of example identity providers should be
-	// some shared test helper
-	file := "testdata/master_config-api.yaml" // File copied into transform pkg testdata
+var loadAPIExtraction = func() transform.APIExtraction {
+	file := "testdata/master_config-api.yaml"
 	content, _ := ioutil.ReadFile(file)
-
 	masterConfig, err := decode.MasterConfig(content)
-
+	if err != nil {
+		fmt.Printf("Error decoding file: %s\n", file)
+	}
 	var extraction transform.APIExtraction
 	extraction.HTTPServingInfo.BindAddress = masterConfig.ServingInfo.BindAddress
 
-	return extraction, err
-}
+	return extraction
+}()
 
 func TestAPIExtractionTransform(t *testing.T) {
-	t.Parallel()
-
 	expectedReport := transform.ComponentReport{
 		Component: "API",
 	}
@@ -69,8 +61,7 @@ func TestAPIExtractionTransform(t *testing.T) {
 				return nil
 			}
 
-			testExtraction, err := loadAPIExtraction()
-			require.NoError(t, err)
+			testExtraction := loadAPIExtraction
 
 			go func() {
 				transformOutput, err := testExtraction.Transform()

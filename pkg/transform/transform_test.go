@@ -15,7 +15,6 @@ import (
 )
 
 func TestOauthGenYAML(t *testing.T) {
-	t.Parallel()
 	testCases := []struct {
 		name                    string
 		inputConfigfile         string

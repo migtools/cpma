@@ -32,8 +32,6 @@ var testExtraction = func() transform.ETCDExtraction {
 }()
 
 func TestETCDExtractionTransform(t *testing.T) {
-	t.Parallel()
-
 	expectedReport := transform.ComponentReport{
 		Component: "ETCD",
 	}

@@ -1,6 +1,7 @@
 package transform_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -11,24 +12,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func loadCrioExtraction() (transform.CrioExtraction, error) {
-	// TODO: Something is broken here in a way that it's causing the translaters
-	// to fail. Need some help with creating test identiy providers in a way
-	// that won't crash the translator
-
-	// Build example identity providers, this is straight copy pasted from
-	// oauth test, IMO this loading of example identity providers should be
-	// some shared test helper
-	file := "testdata/crio.conf" // File copied into transform pkg testdata
+var loadCrioExtraction = func() transform.CrioExtraction {
+	file := "testdata/crio.conf"
 	content, _ := ioutil.ReadFile(file)
 	var extraction transform.CrioExtraction
 	_, err := toml.Decode(string(content), &extraction)
+	if err != nil {
+		fmt.Printf("Error decoding file: %s\n", file)
+	}
 
-	return extraction, err
-}
+	return extraction
+}()
 
 func TestCrioExtractionTransform(t *testing.T) {
-	t.Parallel()
 	var expectedManifests []transform.Manifest
 
 	var expectedCrd transform.CrioCR
@@ -111,8 +107,7 @@ func TestCrioExtractionTransform(t *testing.T) {
 				return nil
 			}
 
-			testExtraction, err := loadCrioExtraction()
-			require.NoError(t, err)
+			testExtraction := loadCrioExtraction
 
 			go func() {
 				transformOutput, err := testExtraction.Transform()
