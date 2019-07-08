@@ -25,7 +25,7 @@ clean: ## Clean the directory tree
 ci: lint fmtcheck vet build test
 
 test: ## Test the project
-	GO111MODULE=on go test ./...
+	GO111MODULE=on go test ./pkg/... ./cmd/...
 
 lint: ## Run golint
 	@golint -set_exit_status $(addsuffix /... , $(SOURCE_DIRS))
@@ -38,3 +38,6 @@ fmtcheck: ## Check go formatting
 
 vet: ## Run go vet
 	@GO111MODULE=on go vet $(addsuffix /..., $(addprefix ./, $(SOURCE_DIRS)))
+
+e2e: ## Execute e2e test
+	GO111MODULE=on go test ./test/e2e/...
