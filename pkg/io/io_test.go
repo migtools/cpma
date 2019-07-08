@@ -22,20 +22,20 @@ func TestFetchFile(t *testing.T) {
 	testCases := []struct {
 		name     string
 		remote   bool
-		expected []byte
+		expected string
 		filename string
 	}{
 		{
 			name:     "Fetch from remote",
 			remote:   true,
 			filename: "remote-file",
-			expected: []byte{0x72, 0x65, 0x6d, 0x6f, 0x74, 0x65, 0x20, 0x76, 0x61, 0x6c, 0x75, 0x65},
+			expected: "remote value",
 		},
 		{
 			name:     "Fetch from local",
 			remote:   false,
 			filename: "testdata/local-file",
-			expected: []byte{0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x20, 0x76, 0x61, 0x6c, 0x75, 0x65, 0xa},
+			expected: "local value\n",
 		},
 	}
 
@@ -48,11 +48,11 @@ func TestFetchFile(t *testing.T) {
 
 				f, err := FetchFile(tc.filename)
 				require.NoError(t, err)
-				assert.Equal(t, f, tc.expected)
+				assert.Equal(t, f, []byte(tc.expected))
 			} else {
 				f, err := FetchFile(tc.filename)
 				require.NoError(t, err)
-				assert.Equal(t, f, tc.expected)
+				assert.Equal(t, f, []byte(tc.expected))
 			}
 		})
 	}
@@ -92,7 +92,7 @@ func TestStringSource(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "Fetch String Source ENV variable",
+			name:     "Fetch String Source from value",
 			filename: "testdata/local-file",
 			expected: "local value",
 		},

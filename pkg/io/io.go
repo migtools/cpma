@@ -32,8 +32,8 @@ var FetchFile = func(src string) ([]byte, error) {
 }
 
 func fetchFromRemote(src string) ([]byte, error) {
-	dst := filepath.Join(env.Config().GetString("Hostname"), src)
 	host := env.Config().GetString("Hostname")
+	dst := filepath.Join(host, src)
 
 	cmd := fmt.Sprintf("sudo cat %s", src)
 	output, err := remotehost.RunCMD(host, cmd)
