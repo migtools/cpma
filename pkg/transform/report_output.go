@@ -13,8 +13,8 @@ import (
 
 // ReportOutput holds a collection of reports to be written to file
 type ReportOutput struct {
-	ClusterReport    ClusterReport     `json:"cluster"`
-	ComponentReports []ComponentReport `json:"components"`
+	ClusterReport    ClusterReport     `json:"cluster,omitempty"`
+	ComponentReports []ComponentReport `json:"components,omitempty"`
 }
 
 // NodeResources represents a json report of Node resources

@@ -1,6 +1,8 @@
 package transform
 
 import (
+	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/io/remotehost"
 	"github.com/sirupsen/logrus"
 )
 
@@ -50,6 +52,13 @@ func (e DockerExtraction) buildReportOutput() (Output, error) {
 // Extract collects Docker configuration from an OCP3 cluster
 func (e DockerTransform) Extract() (Extraction, error) {
 	logrus.Info("DockerTransform::Extract")
+	// Testing remote connection
+	if env.Config().GetBool("FetchFromRemote") {
+		_, err := remotehost.NewSSHSession(env.Config().GetString("Hostname"))
+		if err != nil {
+			return nil, err
+		}
+	}
 	var extraction DockerExtraction
 	return extraction, nil
 }
