@@ -12,7 +12,7 @@ func init() {
 }
 
 // MasterConfig unmarshals OCP3 Master
-// There is no known differences between OCP3 minor versions of the master config
+// There are no known differences between OCP3 minor versions of the master config
 func MasterConfig(content []byte) (*legacyconfigv1.MasterConfig, error) {
 	var masterConfig = new(legacyconfigv1.MasterConfig)
 
