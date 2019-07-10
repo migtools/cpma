@@ -167,17 +167,18 @@ func CreateTestNameSpaceList() []api.NamespaceResources {
 func CreateTestPodList() *k8sapicore.PodList {
 	podList := &k8sapicore.PodList{}
 	podList.Items = make([]k8sapicore.Pod, 0)
+	timeStamp, _ := time.Parse(time.RFC1123Z, "Tue, 17 Nov 2009 21:34:58 +0100")
 	podList.Items = append(podList.Items, k8sapicore.Pod{
 		ObjectMeta: k8smachinery.ObjectMeta{
 			Name:              "test-pod1",
-			CreationTimestamp: k8smachinery.Date(2009, 11, 17, 21, 34, 58, 0, time.Local),
+			CreationTimestamp: k8smachinery.NewTime(timeStamp),
 		},
 	})
 
 	podList.Items = append(podList.Items, k8sapicore.Pod{
 		ObjectMeta: k8smachinery.ObjectMeta{
 			Name:              "test-pod2",
-			CreationTimestamp: k8smachinery.Date(2009, 11, 17, 21, 34, 58, 0, time.Local),
+			CreationTimestamp: k8smachinery.NewTime(timeStamp),
 		},
 	})
 

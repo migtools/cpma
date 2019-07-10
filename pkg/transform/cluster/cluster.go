@@ -37,7 +37,7 @@ type NodeResources struct {
 // NamespaceReport represents json report of k8s namespaces
 type NamespaceReport struct {
 	Name         string                   `json:"name"`
-	LatestChange time.Time                `json:"latestChange,omitempty"`
+	LatestChange string                   `json:"latestChange,omitempty"`
 	Resources    ContainerResourcesReport `json:"resources,omitempty"`
 	Pods         []PodReport              `json:"pods,omitempty"`
 	Routes       []RouteReport            `json:"routes,omitempty"`
@@ -157,8 +157,9 @@ func ReportPods(reportedNamespace *NamespaceReport, podList *k8sapicore.PodList)
 		reportedNamespace.Pods = append(reportedNamespace.Pods, *reportedPod)
 
 		// Update namespace touch timestamp
-		if pod.ObjectMeta.CreationTimestamp.Time.Unix() > reportedNamespace.LatestChange.Unix() {
-			reportedNamespace.LatestChange = pod.ObjectMeta.CreationTimestamp.Time
+		latestChange, _ := time.Parse(time.RFC1123Z, reportedNamespace.LatestChange)
+		if pod.ObjectMeta.CreationTimestamp.Time.Unix() > latestChange.Unix() {
+			reportedNamespace.LatestChange = pod.ObjectMeta.CreationTimestamp.Time.Format(time.RFC1123Z)
 		}
 	}
 }
