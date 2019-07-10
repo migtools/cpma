@@ -1,13 +1,12 @@
 package cluster
 
 import (
-	"time"
-
 	"github.com/fusor/cpma/pkg/api"
 	O7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/sirupsen/logrus"
 	k8sapicore "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Report represents json report of k8s resources
@@ -37,7 +36,7 @@ type NodeResources struct {
 // NamespaceReport represents json report of k8s namespaces
 type NamespaceReport struct {
 	Name         string                   `json:"name"`
-	LatestChange string                   `json:"latestChange,omitempty"`
+	LatestChange k8sMeta.Time             `json:"latestChange,omitempty"`
 	Resources    ContainerResourcesReport `json:"resources,omitempty"`
 	Pods         []PodReport              `json:"pods,omitempty"`
 	Routes       []RouteReport            `json:"routes,omitempty"`
@@ -157,9 +156,8 @@ func ReportPods(reportedNamespace *NamespaceReport, podList *k8sapicore.PodList)
 		reportedNamespace.Pods = append(reportedNamespace.Pods, *reportedPod)
 
 		// Update namespace touch timestamp
-		latestChange, _ := time.Parse(time.RFC1123Z, reportedNamespace.LatestChange)
-		if pod.ObjectMeta.CreationTimestamp.Time.Unix() > latestChange.Unix() {
-			reportedNamespace.LatestChange = pod.ObjectMeta.CreationTimestamp.Time.Format(time.RFC1123Z)
+		if pod.ObjectMeta.CreationTimestamp.Time.Unix() > reportedNamespace.LatestChange.Time.Unix() {
+			reportedNamespace.LatestChange = pod.ObjectMeta.CreationTimestamp
 		}
 	}
 }
