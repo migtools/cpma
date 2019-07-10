@@ -11,7 +11,7 @@ insecurehostkey: false
 # Use only if cluster was configured with different config locations
 masterconfigfile: /etc/origin/master/master-config.yaml
 nodeconfigfile: /etc/origin/node/node-config.yaml
-outputdir: "./data"
+workdir: "./data"
 registriesconfigfile: /etc/containers/registries.conf
 sshlogin: root
 sshport: "22"

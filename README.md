@@ -26,7 +26,7 @@ Flags:
   -d, --debug                 show debug ouput
   -h, --help                  help for cpma
   -n, --hostname string       OCP3 cluster hostname
-  -o, --output-dir string     set the directory to store extracted configuration. (default ".")
+  -w, --work-dir string       set the working directory (default ".")
   -k, --ssh-keyfile string    OCP3 ssh keyfile path
   -l, --ssh-login string      OCP3 ssh login
   -p, --ssh-port string       OCP3 ssh port
@@ -50,7 +50,7 @@ docker run -it --rm -v ${PWD}:/mnt:z -v $HOME/.kube:/.kube:z -v $HOME/.ssh:/.ssh
 quay.io/ocpmigrate/cpma:latest
 ```
 
-In these examples `${PWD}` is mounted in the working directory of the image (`/mnt`). This means that paths provided to --config and --output-dir will need to specified be relative to your present working directory.
+In these examples `${PWD}` is mounted in the working directory of the image (`/mnt`). This means that paths provided to --config and --work-dir will need to specified be relative to your present working directory.
 
 To make it a little more intuitive it can also be run via an alias, for example:
 ```
@@ -71,9 +71,9 @@ Flags:
       --insecure-key        allow insecure host key
   -k, --key string          OCP3 ssh key path
   -l, --login string        OCP3 ssh login
-  -o, --output-dir string   set the directory to store extracted configuration. (default ".")
   -p, --port string         OCP3 ssh port
   -s, --source string       OCP3 cluster hostname
+  -w, --work-dir string     set application data working directory (Default ".")
 ```
 
 ## IO
@@ -98,7 +98,7 @@ data
                 └── node-config.yaml
 ```
 
-The configuration files are retrieved from local disk (`outputDir/<Hostname>/`),
+The configuration files are retrieved from local disk (`workDir/<Hostname>/`),
 If a file is not available it's retrieved from `<Hostname>` and stored on local disk.
 
 To trigger a total or partial network file fetch, remove any prior data from

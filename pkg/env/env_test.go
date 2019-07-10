@@ -57,7 +57,7 @@ func TestInitFromEnv(t *testing.T) {
 	}
 	var err error
 
-	outputDir := "testdata/out"
+	workDir := "testdata/out"
 	testCases := []struct {
 		name         string
 		sourceConfig []configAsset
@@ -133,7 +133,7 @@ func TestInitFromEnv(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			os.Setenv("CPMA_CREATECONFIG", "yes")
 			os.Setenv("CPMA_CLUSTERNAME", "somename")
-			os.Setenv("CPMA_OUTPUTDIR", outputDir)
+			os.Setenv("CPMA_WORKDIR", workDir)
 			api.K8sClient = &kubernetes.Clientset{}
 			api.O7tClient = &api.OpenshiftClient{}
 			for _, asset := range tc.sourceConfig {

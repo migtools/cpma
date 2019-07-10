@@ -2,6 +2,6 @@ hostname: "master-0.test.example.com"
 sshlogin: "root"
 sshprivatekey: "/home/test/.ssh/testkey"
 sshport: 22
-outputdir: "./data"
+workdir: "./data"
 clustername: "somename"
 configsource: remote
