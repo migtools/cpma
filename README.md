@@ -104,9 +104,35 @@ If a file is not available it's retrieved from `<Hostname>` and stored on local 
 To trigger a total or partial network file fetch, remove any prior data from
 `<Hostname>` sub directory.
 
-## Unit tests
+## Unit tests and integration tests
 
 In order to add new unit test bundle create `*_test.go` file in package you
 want to test(ex: `foo.go`, `foo_test.go`).  To execute tests run `make test`.
 
 https://golang.org/pkg/testing/
+
+## Functional tests
+
+Tests are located under `tests` directory, based on project layout [standards](https://github.com/golang-standards/project-layout).
+
+### E2E tests
+
+Prerequisites for base cluster report e2e tests:
+
+| ENV variable            |   Expected value                                                                                                  |
+|-------------------------|-------------------------------------------------------------------------------------------------------------------|
+|    `CPMA_PASSWD`        |    Password for the cluster                                                                           |
+|    `CPMA_LOGIN`         |    Login for the cluster                                                                                          |
+|    `CPMA_HOSTNAME`      |    Hostname of the stable cluster                                                                                 |
+|    `CPMA_CLUSTERNAME`   |    Hostname from the current context of the stable cluster (could be extracted with `oc whoami --show-context`)   |
+|    `CPMA_SSHLOGIN`      |    SSH login for the cluster                                                                                      |
+|    `CPMA_SSHPORT`       |    SSH port                                                                                                       |
+|    `CPMA_SSHPRIVATEKEY` |    Path for the private key                                                                                       |
+
+The workflow involves:
+1) Ensuring the cluster session is open.
+2) Generating cluster report from cluster.
+3) Parsing generated and local reports.
+4) Comparison of reports.
+
+Those are needed as a substitution of configuration or CLI input, so the test could run autonomously.
