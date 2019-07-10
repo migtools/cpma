@@ -1,6 +1,7 @@
 package io
 
 import (
+	"os"
 	"testing"
 
 	"github.com/fusor/cpma/pkg/env"
@@ -28,7 +29,7 @@ func TestFetchFile(t *testing.T) {
 		{
 			name:     "Fetch from remote",
 			remote:   true,
-			filename: "remote-file",
+			filename: "testdata/remote-file",
 			expected: "remote value",
 		},
 		{
@@ -44,16 +45,16 @@ func TestFetchFile(t *testing.T) {
 			env.Config().Set("FetchFromRemote", tc.remote)
 			if tc.remote {
 				defer func() { remotehost.RunCMD = _RunCMD }()
+				defer func() {
+					if err := os.Remove(tc.filename); err != nil {
+						t.Logf("Cannot remove file: %s", tc.filename)
+					}
+				}()
 				remotehost.RunCMD = mockRunCMD
-
-				f, err := FetchFile(tc.filename)
-				require.NoError(t, err)
-				assert.Equal(t, f, []byte(tc.expected))
-			} else {
-				f, err := FetchFile(tc.filename)
-				require.NoError(t, err)
-				assert.Equal(t, f, []byte(tc.expected))
 			}
+			f, err := FetchFile(tc.filename)
+			require.NoError(t, err)
+			assert.Equal(t, f, []byte(tc.expected))
 		})
 	}
 }
