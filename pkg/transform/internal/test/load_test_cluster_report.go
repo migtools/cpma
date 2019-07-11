@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/fusor/cpma/pkg/api"
-	O7tapiroute "github.com/openshift/api/route/v1"
+	o7tapiroute "github.com/openshift/api/route/v1"
 	k8sapiapps "k8s.io/api/apps/v1"
 	k8sapicore "k8s.io/api/core/v1"
 	k8sapistorage "k8s.io/api/storage/v1"
@@ -189,36 +189,36 @@ func CreateTestPodList() *k8sapicore.PodList {
 }
 
 // CreateTestRouteList create test route list
-func CreateTestRouteList() *O7tapiroute.RouteList {
-	routeList := &O7tapiroute.RouteList{}
-	routeList.Items = make([]O7tapiroute.Route, 1)
+func CreateTestRouteList() *o7tapiroute.RouteList {
+	routeList := &o7tapiroute.RouteList{}
+	routeList.Items = make([]o7tapiroute.Route, 1)
 
-	alternateBackends := make([]O7tapiroute.RouteTargetReference, 1)
-	alternateBackends[0] = O7tapiroute.RouteTargetReference{
+	alternateBackends := make([]o7tapiroute.RouteTargetReference, 1)
+	alternateBackends[0] = o7tapiroute.RouteTargetReference{
 		Kind: "testkind",
 		Name: "testname",
 	}
 
-	to := O7tapiroute.RouteTargetReference{
+	to := o7tapiroute.RouteTargetReference{
 		Kind: "testkindTo",
 		Name: "testTo",
 	}
 
-	tls := &O7tapiroute.TLSConfig{
-		Termination: O7tapiroute.TLSTerminationEdge,
+	tls := &o7tapiroute.TLSConfig{
+		Termination: o7tapiroute.TLSTerminationEdge,
 	}
 
-	routeList.Items[0] = O7tapiroute.Route{
+	routeList.Items[0] = o7tapiroute.Route{
 		ObjectMeta: k8smachinery.ObjectMeta{
 			Name: "route1",
 		},
-		Spec: O7tapiroute.RouteSpec{
+		Spec: o7tapiroute.RouteSpec{
 			AlternateBackends: alternateBackends,
 			Host:              "testhost",
 			Path:              "testpath",
 			To:                to,
 			TLS:               tls,
-			WildcardPolicy:    O7tapiroute.WildcardPolicyNone,
+			WildcardPolicy:    o7tapiroute.WildcardPolicyNone,
 		},
 	}
 
