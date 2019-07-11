@@ -5,7 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	O7tapiroute "github.com/openshift/api/route/v1"
+	o7tapiroute "github.com/openshift/api/route/v1"
 	k8sapiapps "k8s.io/api/apps/v1"
 	k8sapicore "k8s.io/api/core/v1"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -56,10 +56,10 @@ type RouteReport struct {
 	Name              string                             `json:"name"`
 	Host              string                             `json:"host"`
 	Path              string                             `json:"path,omitempty"`
-	AlternateBackends []O7tapiroute.RouteTargetReference `json:"alternateBackends,omitempty"`
-	TLS               *O7tapiroute.TLSConfig             `json:"tls,omitempty"`
-	To                O7tapiroute.RouteTargetReference   `json:"to"`
-	WildcardPolicy    O7tapiroute.WildcardPolicyType     `json:"wildcardPolicy"`
+	AlternateBackends []o7tapiroute.RouteTargetReference `json:"alternateBackends,omitempty"`
+	TLS               *o7tapiroute.TLSConfig             `json:"tls,omitempty"`
+	To                o7tapiroute.RouteTargetReference   `json:"to"`
+	WildcardPolicy    o7tapiroute.WildcardPolicyType     `json:"wildcardPolicy"`
 }
 
 // DaemonSetReport represents json report of k8s DaemonSet relevant information
@@ -208,7 +208,7 @@ func ReportContainerResources(reportedNamespace *NamespaceReport, pod *k8sapicor
 }
 
 // ReportRoutes create report about routes
-func ReportRoutes(reportedNamespace *NamespaceReport, routeList *O7tapiroute.RouteList) {
+func ReportRoutes(reportedNamespace *NamespaceReport, routeList *o7tapiroute.RouteList) {
 	for _, route := range routeList.Items {
 		reportedRoute := RouteReport{
 			Name:              route.Name,

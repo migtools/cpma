@@ -6,7 +6,7 @@ import (
 	"github.com/fusor/cpma/pkg/api"
 	"github.com/fusor/cpma/pkg/transform/cluster"
 	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
-	O7tapiroute "github.com/openshift/api/route/v1"
+	o7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/stretchr/testify/assert"
 	k8sapicore "k8s.io/api/core/v1"
 	k8sapistorage "k8s.io/api/storage/v1"
@@ -186,19 +186,19 @@ func TestReportNamespaceResources(t *testing.T) {
 }
 
 func TestReportRoutes(t *testing.T) {
-	alternateBackends := make([]O7tapiroute.RouteTargetReference, 0)
-	alternateBackends = append(alternateBackends, O7tapiroute.RouteTargetReference{
+	alternateBackends := make([]o7tapiroute.RouteTargetReference, 0)
+	alternateBackends = append(alternateBackends, o7tapiroute.RouteTargetReference{
 		Kind: "testkind",
 		Name: "testname",
 	})
 
-	to := O7tapiroute.RouteTargetReference{
+	to := o7tapiroute.RouteTargetReference{
 		Kind: "testkindTo",
 		Name: "testTo",
 	}
 
-	tls := &O7tapiroute.TLSConfig{
-		Termination: O7tapiroute.TLSTerminationEdge,
+	tls := &o7tapiroute.TLSConfig{
+		Termination: o7tapiroute.TLSTerminationEdge,
 	}
 
 	expectedRouteReport := make([]cluster.RouteReport, 0)
@@ -214,7 +214,7 @@ func TestReportRoutes(t *testing.T) {
 
 	testCases := []struct {
 		name                string
-		inputRouteList      *O7tapiroute.RouteList
+		inputRouteList      *o7tapiroute.RouteList
 		expectedRouteReport []cluster.RouteReport
 	}{
 		{
