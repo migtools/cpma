@@ -5,6 +5,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/api"
 	O7tapiroute "github.com/openshift/api/route/v1"
+	k8sapiapps "k8s.io/api/apps/v1"
 	k8sapicore "k8s.io/api/core/v1"
 	k8sapistorage "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -14,7 +15,7 @@ import (
 // CreateTestPVList create test pv list
 func CreateTestPVList() *k8sapicore.PersistentVolumeList {
 	pvList := &k8sapicore.PersistentVolumeList{}
-	pvList.Items = make([]k8sapicore.PersistentVolume, 0)
+	pvList.Items = make([]k8sapicore.PersistentVolume, 1)
 
 	resources := make(k8sapicore.ResourceList)
 	cpu := resource.Quantity{
@@ -35,7 +36,7 @@ func CreateTestPVList() *k8sapicore.PersistentVolumeList {
 		},
 	}
 
-	pvList.Items = append(pvList.Items, k8sapicore.PersistentVolume{
+	pvList.Items[0] = k8sapicore.PersistentVolume{
 		ObjectMeta: k8smachinery.ObjectMeta{
 			Name: "testpv",
 		},
@@ -47,7 +48,7 @@ func CreateTestPVList() *k8sapicore.PersistentVolumeList {
 		Status: k8sapicore.PersistentVolumeStatus{
 			Phase: k8sapicore.VolumePending,
 		},
-	})
+	}
 
 	return pvList
 }
@@ -91,36 +92,36 @@ func CreateTestNodeList() *k8sapicore.NodeList {
 
 	// Add pod count
 	podList := &k8sapicore.PodList{}
-	podList.Items = make([]k8sapicore.Pod, 0)
-	podList.Items = append(podList.Items, k8sapicore.Pod{
+	podList.Items = make([]k8sapicore.Pod, 4)
+	podList.Items[0] = k8sapicore.Pod{
 		Spec: k8sapicore.PodSpec{
 			NodeName: "test-master",
 		},
-	})
-	podList.Items = append(podList.Items, k8sapicore.Pod{
+	}
+	podList.Items[1] = k8sapicore.Pod{
 		Spec: k8sapicore.PodSpec{
 			NodeName: "test-master",
 		},
-	})
-	podList.Items = append(podList.Items, k8sapicore.Pod{
+	}
+	podList.Items[2] = k8sapicore.Pod{
 		Spec: k8sapicore.PodSpec{
 			NodeName: "test-master",
 		},
-	})
-	podList.Items = append(podList.Items, k8sapicore.Pod{
+	}
+	podList.Items[3] = k8sapicore.Pod{
 		Spec: k8sapicore.PodSpec{
 			NodeName: "not-this-node",
 		},
-	})
+	}
 
-	namespaceList := make([]api.NamespaceResources, 0)
-	namespaceList = append(namespaceList, api.NamespaceResources{
+	namespaceList := make([]api.NamespaceResources, 1)
+	namespaceList[0] = api.NamespaceResources{
 		PodList: podList,
-	})
+	}
 
 	// Init fake nodes
-	nodes := make([]k8sapicore.Node, 0)
-	nodes = append(nodes, k8sapicore.Node{
+	nodes := make([]k8sapicore.Node, 1)
+	nodes[0] = k8sapicore.Node{
 		ObjectMeta: k8smachinery.ObjectMeta{
 			Name:   "test-master",
 			Labels: masterNodeLabels,
@@ -129,7 +130,7 @@ func CreateTestNodeList() *k8sapicore.NodeList {
 			Capacity:    masterNodeCapacity,
 			Allocatable: allocatableResources,
 		},
-	})
+	}
 
 	return &k8sapicore.NodeList{
 		Items: nodes,
@@ -139,26 +140,28 @@ func CreateTestNodeList() *k8sapicore.NodeList {
 // CreateStorageClassList create storage class list
 func CreateStorageClassList() *k8sapistorage.StorageClassList {
 	storageClassList := &k8sapistorage.StorageClassList{}
-	storageClassList.Items = make([]k8sapistorage.StorageClass, 0)
-	storageClassList.Items = append(storageClassList.Items, k8sapistorage.StorageClass{
+	storageClassList.Items = make([]k8sapistorage.StorageClass, 1)
+	storageClassList.Items[0] = k8sapistorage.StorageClass{
 		ObjectMeta: k8smachinery.ObjectMeta{
 			Name: "testclass",
 		},
 		Provisioner: "testprovisioner",
-	})
+	}
 
 	return storageClassList
 }
 
 // CreateTestNameSpaceList create test namespace list
 func CreateTestNameSpaceList() []api.NamespaceResources {
-	namespaces := make([]api.NamespaceResources, 0)
+	namespaces := make([]api.NamespaceResources, 1)
 
-	namespaces = append(namespaces, api.NamespaceResources{
-		NamespaceName: "testNamespace",
-		PodList:       CreateTestPodList(),
-		RouteList:     CreateTestRouteList(),
-	})
+	namespaces[0] = api.NamespaceResources{
+		NamespaceName:  "testNamespace",
+		PodList:        CreateTestPodList(),
+		RouteList:      CreateTestRouteList(),
+		DeploymentList: CreateDeploymentList(),
+		DaemonSetList:  CreateDaemonSetList(),
+	}
 
 	return namespaces
 }
@@ -166,21 +169,21 @@ func CreateTestNameSpaceList() []api.NamespaceResources {
 // CreateTestPodList test pod list
 func CreateTestPodList() *k8sapicore.PodList {
 	podList := &k8sapicore.PodList{}
-	podList.Items = make([]k8sapicore.Pod, 0)
+	podList.Items = make([]k8sapicore.Pod, 2)
 	timeStamp, _ := time.Parse(time.RFC1123Z, "Tue, 17 Nov 2009 21:34:58 +0100")
-	podList.Items = append(podList.Items, k8sapicore.Pod{
+	podList.Items[0] = k8sapicore.Pod{
 		ObjectMeta: k8smachinery.ObjectMeta{
 			Name:              "test-pod1",
 			CreationTimestamp: k8smachinery.NewTime(timeStamp),
 		},
-	})
+	}
 
-	podList.Items = append(podList.Items, k8sapicore.Pod{
+	podList.Items[1] = k8sapicore.Pod{
 		ObjectMeta: k8smachinery.ObjectMeta{
 			Name:              "test-pod2",
 			CreationTimestamp: k8smachinery.NewTime(timeStamp),
 		},
-	})
+	}
 
 	return podList
 }
@@ -188,13 +191,13 @@ func CreateTestPodList() *k8sapicore.PodList {
 // CreateTestRouteList create test route list
 func CreateTestRouteList() *O7tapiroute.RouteList {
 	routeList := &O7tapiroute.RouteList{}
-	routeList.Items = make([]O7tapiroute.Route, 0)
+	routeList.Items = make([]O7tapiroute.Route, 1)
 
-	alternateBackends := make([]O7tapiroute.RouteTargetReference, 0)
-	alternateBackends = append(alternateBackends, O7tapiroute.RouteTargetReference{
+	alternateBackends := make([]O7tapiroute.RouteTargetReference, 1)
+	alternateBackends[0] = O7tapiroute.RouteTargetReference{
 		Kind: "testkind",
 		Name: "testname",
-	})
+	}
 
 	to := O7tapiroute.RouteTargetReference{
 		Kind: "testkindTo",
@@ -205,7 +208,7 @@ func CreateTestRouteList() *O7tapiroute.RouteList {
 		Termination: O7tapiroute.TLSTerminationEdge,
 	}
 
-	routeList.Items = append(routeList.Items, O7tapiroute.Route{
+	routeList.Items[0] = O7tapiroute.Route{
 		ObjectMeta: k8smachinery.ObjectMeta{
 			Name: "route1",
 		},
@@ -217,9 +220,43 @@ func CreateTestRouteList() *O7tapiroute.RouteList {
 			TLS:               tls,
 			WildcardPolicy:    O7tapiroute.WildcardPolicyNone,
 		},
-	})
+	}
 
 	return routeList
+}
+
+// CreateDeploymentList create test resources for DeploymentList
+func CreateDeploymentList() *k8sapiapps.DeploymentList {
+	deploymentList := &k8sapiapps.DeploymentList{}
+	deploymentList.Items = make([]k8sapiapps.Deployment, 1)
+
+	deployment := k8sapiapps.Deployment{}
+
+	timestamp, _ := time.Parse(time.RFC1123Z, "Sun, 07 Jul 2019 09:45:35 +0100")
+	deployment.ObjectMeta = k8smachinery.ObjectMeta{
+		Name:              "testDeployment",
+		CreationTimestamp: k8smachinery.NewTime(timestamp),
+	}
+	deploymentList.Items[0] = deployment
+
+	return deploymentList
+}
+
+// CreateDaemonSetList create test resources for DeploymentList
+func CreateDaemonSetList() *k8sapiapps.DaemonSetList {
+	daemonSetList := &k8sapiapps.DaemonSetList{}
+	daemonSetList.Items = make([]k8sapiapps.DaemonSet, 1)
+
+	daemonSet := k8sapiapps.DaemonSet{}
+
+	timestamp, _ := time.Parse(time.RFC1123Z, "Sun, 07 Jul 2019 09:45:35 +0100")
+	daemonSet.ObjectMeta = k8smachinery.ObjectMeta{
+		Name:              "testDaemonSet",
+		CreationTimestamp: k8smachinery.NewTime(timestamp),
+	}
+	daemonSetList.Items[0] = daemonSet
+
+	return daemonSetList
 }
 
 // CreateTestPodResourceList create test resources
@@ -237,25 +274,25 @@ func CreateTestPodResourceList() *k8sapicore.PodList {
 	memory.Set(int64(1))
 	resources["memory"] = memory
 
-	containers := make([]k8sapicore.Container, 0)
-	containers = append(containers, k8sapicore.Container{
+	containers := make([]k8sapicore.Container, 2)
+	containers[0] = k8sapicore.Container{
 		Resources: k8sapicore.ResourceRequirements{
 			Requests: resources,
 		},
-	})
-	containers = append(containers, k8sapicore.Container{
+	}
+	containers[1] = k8sapicore.Container{
 		Resources: k8sapicore.ResourceRequirements{
 			Requests: resources,
 		},
-	})
+	}
 
 	podList := &k8sapicore.PodList{}
-	podList.Items = make([]k8sapicore.Pod, 0)
-	podList.Items = append(podList.Items, k8sapicore.Pod{
+	podList.Items = make([]k8sapicore.Pod, 1)
+	podList.Items[0] = k8sapicore.Pod{
 		Spec: k8sapicore.PodSpec{
 			Containers: containers,
 		},
-	})
+	}
 
 	return podList
 }

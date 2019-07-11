@@ -52,6 +52,18 @@
       },
       "wildcardPolicy": "None"
      }
+    ],
+    "daemonSets": [
+     {
+      "name": "testDaemonSet",
+      "latestChange": "2019-07-07T08:45:35Z"
+     }
+    ],
+    "deployments": [
+     {
+      "name": "testDeployment",
+      "latestChange": "2019-07-07T08:45:35Z"
+     }
     ]
    }
   ],
