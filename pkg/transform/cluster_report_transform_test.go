@@ -7,7 +7,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/api"
 	"github.com/fusor/cpma/pkg/transform"
-	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
