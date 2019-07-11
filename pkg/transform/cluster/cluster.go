@@ -2,12 +2,13 @@ package cluster
 
 import (
 	"github.com/fusor/cpma/pkg/api"
-	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/api/resource"
-
+	O7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
+	"github.com/sirupsen/logrus"
 	k8sapiapps "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	k8sapicore "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -17,6 +18,7 @@ type Report struct {
 	Namespaces     []NamespaceReport    `json:"namespaces,omitempty"`
 	PVs            []PVReport           `json:"pvs,omitempty"`
 	StorageClasses []StorageClassReport `json:"storageClasses,omitempty"`
+	RBACReport     RBACReport           `json:"rbacreport,omitempty"`
 }
 
 // NodeReport represents json report of k8s nodes
@@ -96,12 +98,71 @@ type StorageClassReport struct {
 	Provisioner string `json:"provisioner"`
 }
 
+// RBACReport contains RBAC report
+type RBACReport struct {
+	Users                      []OpenshiftUser                       `json:"users"`
+	Groups                     []OpenshiftGroup                      `json:"group"`
+	Roles                      []OpenshiftNamespaceRole              `json:"roles"`
+	ClusterRoles               []OpenshiftClusterRole                `json:"clusterRoles"`
+	ClusterRoleBinding         []OpenshiftClusterRoleBinding         `json:"clusterRoleBindings"`
+	SecurityContextConstraints []OpenshiftSecurityContextConstraints `json:"securityContextConstraints"`
+}
+
+// OpenshiftUser wrapper around openshift user
+type OpenshiftUser struct {
+	Name       string   `json:"name"`
+	FullName   string   `json:"fullName,omitempty" protobuf:"bytes,2,opt,name=fullName"`
+	Identities []string `json:"identities" protobuf:"bytes,3,rep,name=identities"`
+	Groups     []string `json:"groups" protobuf:"bytes,4,rep,name=groups"`
+}
+
+// OpenshiftGroup wrapper around openshift group
+type OpenshiftGroup struct {
+	Name  string   `json:"name"`
+	Users []string `json:"users" protobuf:"bytes,2,rep,name=users"`
+}
+
+// OpenshiftNamespaceRole represent roles mapped to namespaces
+type OpenshiftNamespaceRole struct {
+	Namespace string          `json:"namespace"`
+	Roles     []OpenshiftRole `json:"roles"`
+}
+
+// OpenshiftRole wrapper around openshift role
+type OpenshiftRole struct {
+	Name  string                  `json:"name"`
+	Rules []O7tapiauth.PolicyRule `json:"rules,omitempty" protobuf:"bytes,2,rep,name=rules"`
+}
+
+// OpenshiftClusterRole wrapper around cluster role
+type OpenshiftClusterRole struct {
+	Name  string                  `json:"name"`
+	Rules []O7tapiauth.PolicyRule `json:"rules,omitempty" protobuf:"bytes,2,rep,name=rules"`
+}
+
+// OpenshiftClusterRoleBinding wrapper around openshift cluster role bindings
+type OpenshiftClusterRoleBinding struct {
+	Name       string                   `json:"name"`
+	UserNames  O7tapiauth.OptionalNames `json:"userNames" protobuf:"bytes,2,rep,name=userNames"`
+	GroupNames O7tapiauth.OptionalNames `json:"groupNames" protobuf:"bytes,3,rep,name=groupNames"`
+	Subjects   []corev1.ObjectReference `json:"subjects" protobuf:"bytes,4,rep,name=subjects"`
+	RoleRef    corev1.ObjectReference   `json:"roleRef" protobuf:"bytes,5,opt,name=roleRef"`
+}
+
+// OpenshiftSecurityContextConstraints wrapper aroung opeshift scc
+type OpenshiftSecurityContextConstraints struct {
+	Name   string   `json:"name"`
+	Users  []string `json:"users" protobuf:"bytes,18,rep,name=users"`
+	Groups []string `json:"groups" protobuf:"bytes,19,rep,name=groups"`
+}
+
 // GenClusterReport inserts report values into structures for json output
 func GenClusterReport(apiResources api.Resources) (clusterReport Report) {
 	clusterReport.ReportNodes(apiResources)
 	clusterReport.ReportNamespaces(apiResources)
 	clusterReport.ReportPVs(apiResources)
 	clusterReport.ReportStorageClasses(apiResources)
+	clusterReport.ReportRBAC(apiResources)
 	return
 }
 
@@ -279,5 +340,78 @@ func (clusterReport *Report) ReportStorageClasses(apiResources api.Resources) {
 		}
 
 		clusterReport.StorageClasses = append(clusterReport.StorageClasses, reportedStorageClass)
+	}
+}
+
+// ReportRBAC create report about RBAC policy
+func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
+	logrus.Debug("ClusterReport::ReportRBAC")
+
+	clusterReport.RBACReport.Users = make([]OpenshiftUser, 0)
+	for _, user := range apiResources.RBACResources.UsersList.Items {
+		reportedUser := OpenshiftUser{
+			Name:       user.Name,
+			FullName:   user.FullName,
+			Identities: user.Identities,
+			Groups:     user.Groups,
+		}
+		clusterReport.RBACReport.Users = append(clusterReport.RBACReport.Users, reportedUser)
+	}
+
+	clusterReport.RBACReport.Groups = make([]OpenshiftGroup, 0)
+	for _, group := range apiResources.RBACResources.GroupsList.Items {
+		reportedGroup := OpenshiftGroup{
+			Name:  group.Name,
+			Users: group.Users,
+		}
+
+		clusterReport.RBACReport.Groups = append(clusterReport.RBACReport.Groups, reportedGroup)
+	}
+
+	clusterReport.RBACReport.Roles = make([]OpenshiftNamespaceRole, 0)
+	for _, namespace := range apiResources.NamespaceList {
+		reportedNamespaceRoles := OpenshiftNamespaceRole{Namespace: namespace.NamespaceName}
+
+		reportedNamespaceRoles.Roles = make([]OpenshiftRole, 0)
+		for _, role := range namespace.RolesList.Items {
+			reportedRole := OpenshiftRole{
+				Name: role.Name,
+			}
+			reportedNamespaceRoles.Roles = append(reportedNamespaceRoles.Roles, reportedRole)
+		}
+	}
+
+	clusterReport.RBACReport.ClusterRoles = make([]OpenshiftClusterRole, 0)
+	for _, clusterRole := range apiResources.RBACResources.ClusterRolesList.Items {
+		reportedClusterRole := OpenshiftClusterRole{
+			Name: clusterRole.Name,
+		}
+
+		clusterReport.RBACReport.ClusterRoles = append(clusterReport.RBACReport.ClusterRoles, reportedClusterRole)
+	}
+
+	clusterReport.RBACReport.ClusterRoleBinding = make([]OpenshiftClusterRoleBinding, 0)
+	for _, clusterRoleBinding := range apiResources.RBACResources.ClusterRolesBindingsList.Items {
+		reportedClusterRoleBinding := OpenshiftClusterRoleBinding{
+			Name:       clusterRoleBinding.Name,
+			UserNames:  clusterRoleBinding.UserNames,
+			GroupNames: clusterRoleBinding.GroupNames,
+			Subjects:   clusterRoleBinding.Subjects,
+			RoleRef:    clusterRoleBinding.RoleRef,
+		}
+
+		clusterReport.RBACReport.ClusterRoleBinding = append(clusterReport.RBACReport.ClusterRoleBinding, reportedClusterRoleBinding)
+	}
+
+	clusterReport.RBACReport.SecurityContextConstraints = make([]OpenshiftSecurityContextConstraints, 0)
+
+	for _, scc := range apiResources.RBACResources.SecurityContextConstraintsList.Items {
+		reportedSCC := OpenshiftSecurityContextConstraints{
+			Name:   scc.Name,
+			Users:  scc.Users,
+			Groups: scc.Groups,
+		}
+
+		clusterReport.RBACReport.SecurityContextConstraints = append(clusterReport.RBACReport.SecurityContextConstraints, reportedSCC)
 	}
 }

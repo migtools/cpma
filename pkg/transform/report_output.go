@@ -64,6 +64,30 @@ func DumpReports(r ReportOutput) {
 		existingReports.ClusterReport.StorageClasses = append(existingReports.ClusterReport.StorageClasses, sc)
 	}
 
+	for _, users := range r.ClusterReport.RBACReport.Users {
+		existingReports.ClusterReport.RBACReport.Users = append(existingReports.ClusterReport.RBACReport.Users, users)
+	}
+
+	for _, groups := range r.ClusterReport.RBACReport.Groups {
+		existingReports.ClusterReport.RBACReport.Groups = append(existingReports.ClusterReport.RBACReport.Groups, groups)
+	}
+
+	for _, roles := range r.ClusterReport.RBACReport.Roles {
+		existingReports.ClusterReport.RBACReport.Roles = append(existingReports.ClusterReport.RBACReport.Roles, roles)
+	}
+
+	for _, clusterRoles := range r.ClusterReport.RBACReport.ClusterRoles {
+		existingReports.ClusterReport.RBACReport.ClusterRoles = append(existingReports.ClusterReport.RBACReport.ClusterRoles, clusterRoles)
+	}
+
+	for _, clusterRoles := range r.ClusterReport.RBACReport.ClusterRoleBinding {
+		existingReports.ClusterReport.RBACReport.ClusterRoleBinding = append(existingReports.ClusterReport.RBACReport.ClusterRoleBinding, clusterRoles)
+	}
+
+	for _, scc := range r.ClusterReport.RBACReport.SecurityContextConstraints {
+		existingReports.ClusterReport.RBACReport.SecurityContextConstraints = append(existingReports.ClusterReport.RBACReport.SecurityContextConstraints, scc)
+	}
+
 	for _, componentReport := range r.ComponentReports {
 		existingReports.ComponentReports = append(existingReports.ComponentReports, componentReport)
 	}

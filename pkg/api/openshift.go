@@ -5,14 +5,18 @@ import (
 
 	authv1 "github.com/openshift/client-go/authorization/clientset/versioned/typed/authorization/v1"
 	routev1 "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
+	security1 "github.com/openshift/client-go/security/clientset/versioned/typed/security/v1"
+	user1 "github.com/openshift/client-go/user/clientset/versioned/typed/user/v1"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/rest"
 )
 
 // OpenshiftClient - Client to interact with openshift api
 type OpenshiftClient struct {
-	authClient  authv1.AuthorizationV1Interface
-	routeClient routev1.RouteV1Interface
+	authClient     authv1.AuthorizationV1Interface
+	routeClient    routev1.RouteV1Interface
+	userClient     user1.UserV1Interface
+	securityClient security1.SecurityV1Interface
 }
 
 var instances struct {
@@ -46,5 +50,20 @@ func newOpenshift(config *rest.Config) (*OpenshiftClient, error) {
 		return nil, err
 	}
 
-	return &OpenshiftClient{authClient: authClient, routeClient: routeClient}, nil
+	userClient, err := user1.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	securityClient, err := security1.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &OpenshiftClient{
+		authClient:     authClient,
+		routeClient:    routeClient,
+		userClient:     userClient,
+		securityClient: securityClient,
+	}, nil
 }

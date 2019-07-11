@@ -27,6 +27,7 @@ func (e ClusterReportExtraction) Transform() ([]Output, error) {
 		StorageClassList:     e.StorageClassList,
 		NamespaceList:        e.NamespaceList,
 		NodeList:             e.NodeList,
+		RBACResources:        e.RBACResources,
 	})
 
 	output := ReportOutput{
@@ -85,6 +86,12 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		}
 		namespaceResources.DaemonSetList = daemonSetList
 
+		rolesList, err := api.ListRoles(namespace.Name)
+		if err != nil {
+			return nil, err
+		}
+		namespaceResources.RolesList = rolesList
+
 		extraction.NamespaceList[i] = namespaceResources
 	}
 
@@ -99,6 +106,36 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		return nil, err
 	}
 	extraction.StorageClassList = storageClassList
+
+	userList, err := api.ListUsers()
+	if err != nil {
+		return nil, err
+	}
+	extraction.RBACResources.UsersList = userList
+
+	groupList, err := api.ListGroups()
+	if err != nil {
+		return nil, err
+	}
+	extraction.RBACResources.GroupsList = groupList
+
+	clusterRolesList, err := api.ListClusterRoles()
+	if err != nil {
+		return nil, err
+	}
+	extraction.RBACResources.ClusterRolesList = clusterRolesList
+
+	clusterRolesListBindings, err := api.ListClusterRolesBindings()
+	if err != nil {
+		return nil, err
+	}
+	extraction.RBACResources.ClusterRolesBindingsList = clusterRolesListBindings
+
+	securityContextConstraints, err := api.ListSCC()
+	if err != nil {
+		return nil, err
+	}
+	extraction.RBACResources.SecurityContextConstraintsList = securityContextConstraints
 
 	return *extraction, nil
 }
