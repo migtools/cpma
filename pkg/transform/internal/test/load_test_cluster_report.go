@@ -4,7 +4,10 @@ import (
 	"time"
 
 	"github.com/fusor/cpma/pkg/api"
+	o7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
+	o7tapisecurity "github.com/openshift/api/security/v1"
+	o7tapiuser "github.com/openshift/api/user/v1"
 	k8sapiapps "k8s.io/api/apps/v1"
 	k8sapicore "k8s.io/api/core/v1"
 	k8sapistorage "k8s.io/api/storage/v1"
@@ -153,14 +156,23 @@ func CreateStorageClassList() *k8sapistorage.StorageClassList {
 
 // CreateTestNameSpaceList create test namespace list
 func CreateTestNameSpaceList() []api.NamespaceResources {
-	namespaces := make([]api.NamespaceResources, 1)
+	roleList := &o7tapiauth.RoleList{}
+	roleList.Items = make([]o7tapiauth.Role, 0)
 
+	roleList.Items = append(roleList.Items, o7tapiauth.Role{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "testrole1",
+		},
+	})
+
+	namespaces := make([]api.NamespaceResources, 1)
 	namespaces[0] = api.NamespaceResources{
 		NamespaceName:  "testNamespace",
 		PodList:        CreateTestPodList(),
 		RouteList:      CreateTestRouteList(),
 		DeploymentList: CreateDeploymentList(),
 		DaemonSetList:  CreateDaemonSetList(),
+		RolesList:      roleList,
 	}
 
 	return namespaces
@@ -295,4 +307,97 @@ func CreateTestPodResourceList() *k8sapicore.PodList {
 	}
 
 	return podList
+}
+
+// CreateUserList create test users
+func CreateUserList() *o7tapiuser.UserList {
+	userList := &o7tapiuser.UserList{}
+	userList.Items = make([]o7tapiuser.User, 0)
+
+	userList.Items = append(userList.Items, o7tapiuser.User{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "testuser1",
+		},
+		FullName:   "full name1",
+		Identities: []string{"test-identity1", "test-identity2"},
+		Groups:     []string{"group1", "group2"},
+	})
+
+	userList.Items = append(userList.Items, o7tapiuser.User{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "testuser2",
+		},
+		FullName:   "full name2",
+		Identities: []string{"test-identity1", "test-identity2"},
+		Groups:     []string{"group1", "group2"},
+	})
+
+	return userList
+}
+
+// CreateGroupList create test group list
+func CreateGroupList() *o7tapiuser.GroupList {
+	groupList := &o7tapiuser.GroupList{}
+	groupList.Items = make([]o7tapiuser.Group, 0)
+
+	groupList.Items = append(groupList.Items, o7tapiuser.Group{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "testgroup1",
+		},
+		Users: []string{"testuser1"},
+	})
+
+	groupList.Items = append(groupList.Items, o7tapiuser.Group{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "testgroup2",
+		},
+		Users: []string{"testuser2"},
+	})
+
+	return groupList
+}
+
+// CreateClusterRoleList create test cluster roles
+func CreateClusterRoleList() *o7tapiauth.ClusterRoleList {
+	clusterRoleList := &o7tapiauth.ClusterRoleList{}
+	clusterRoleList.Items = make([]o7tapiauth.ClusterRole, 0)
+
+	clusterRoleList.Items = append(clusterRoleList.Items, o7tapiauth.ClusterRole{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "testrole1",
+		},
+	})
+
+	return clusterRoleList
+}
+
+// CreateClusterRoleBindingsList create test cluster roles
+func CreateClusterRoleBindingsList() *o7tapiauth.ClusterRoleBindingList {
+	clusterRoleBindingsList := &o7tapiauth.ClusterRoleBindingList{}
+	clusterRoleBindingsList.Items = make([]o7tapiauth.ClusterRoleBinding, 0)
+
+	clusterRoleBindingsList.Items = append(clusterRoleBindingsList.Items, o7tapiauth.ClusterRoleBinding{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "testbinding1",
+		},
+		UserNames:  []string{"testuser1"},
+		GroupNames: []string{"testgroup1"},
+	})
+	return clusterRoleBindingsList
+}
+
+// CreateSCCList create test scc
+func CreateSCCList() *o7tapisecurity.SecurityContextConstraintsList {
+	sccList := &o7tapisecurity.SecurityContextConstraintsList{}
+	sccList.Items = make([]o7tapisecurity.SecurityContextConstraints, 0)
+
+	sccList.Items = append(sccList.Items, o7tapisecurity.SecurityContextConstraints{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "testscc1",
+		},
+		Users:  []string{"testuser1"},
+		Groups: []string{"testgroup1"},
+	})
+
+	return sccList
 }

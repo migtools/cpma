@@ -117,7 +117,7 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	if err != nil {
 		return nil, err
 	}
-	extraction.RBACResources.GroupsList = groupList
+	extraction.RBACResources.GroupList = groupList
 
 	clusterRolesList, err := api.ListClusterRoles()
 	if err != nil {

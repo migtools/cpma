@@ -89,6 +89,87 @@
     "name": "testclass",
     "provisioner": "testprovisioner"
    }
-  ]
+  ],
+  "rbacreport": {
+   "users": [
+    {
+     "name": "testuser1",
+     "fullName": "full name1",
+     "identities": [
+      "test-identity1",
+      "test-identity2"
+     ],
+     "groups": [
+      "group1",
+      "group2"
+     ]
+    },
+    {
+     "name": "testuser2",
+     "fullName": "full name2",
+     "identities": [
+      "test-identity1",
+      "test-identity2"
+     ],
+     "groups": [
+      "group1",
+      "group2"
+     ]
+    }
+   ],
+   "group": [
+    {
+     "name": "testgroup1",
+     "users": [
+      "testuser1"
+     ]
+    },
+    {
+     "name": "testgroup2",
+     "users": [
+      "testuser2"
+     ]
+    }
+   ],
+   "roles": [
+    {
+     "namespace": "testNamespace",
+     "roles": [
+      {
+       "name": "testrole1"
+      }
+     ]
+    }
+   ],
+   "clusterRoles": [
+    {
+     "name": "testrole1"
+    }
+   ],
+   "clusterRoleBindings": [
+    {
+     "name": "testbinding1",
+     "userNames": [
+      "testuser1"
+     ],
+     "groupNames": [
+      "testgroup1"
+     ],
+     "subjects": null,
+     "roleRef": {}
+    }
+   ],
+   "securityContextConstraints": [
+    {
+     "name": "testscc1",
+     "users": [
+      "testuser1"
+     ],
+     "groups": [
+      "testgroup1"
+     ]
+    }
+   ]
+  }
  }
 }

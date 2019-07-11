@@ -6,6 +6,7 @@ import (
 	"github.com/fusor/cpma/pkg/api"
 	"github.com/fusor/cpma/pkg/transform/cluster"
 	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
+	o7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/stretchr/testify/assert"
 	k8sapicore "k8s.io/api/core/v1"
@@ -315,4 +316,121 @@ func TestStorageClassReport(t *testing.T) {
 			assert.Equal(t, tc.expectedStorageClassReport, clusterReport.StorageClasses)
 		})
 	}
+}
+
+func TestRBACReport(t *testing.T) {
+	userList := cpmatest.CreateUserList()
+	groupList := cpmatest.CreateGroupList()
+	clusterRoleList := cpmatest.CreateClusterRoleList()
+	clusterRoleBindingsList := cpmatest.CreateClusterRoleBindingsList()
+	sccList := cpmatest.CreateSCCList()
+
+	roleList := &o7tapiauth.RoleList{}
+	roleList.Items = make([]o7tapiauth.Role, 0)
+
+	roleList.Items = append(roleList.Items, o7tapiauth.Role{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "testrole1",
+		},
+	})
+
+	namespaceList := make([]api.NamespaceResources, 0)
+	namespaceList = append(namespaceList, api.NamespaceResources{
+		NamespaceName: "testnamespace1",
+		RolesList:     roleList,
+	})
+
+	expectedUsers := make([]cluster.OpenshiftUser, 0)
+	expectedUsers = append(expectedUsers, cluster.OpenshiftUser{
+		Name:       "testuser1",
+		FullName:   "full name1",
+		Identities: []string{"test-identity1", "test-identity2"},
+		Groups:     []string{"group1", "group2"},
+	})
+	expectedUsers = append(expectedUsers, cluster.OpenshiftUser{
+		Name:       "testuser2",
+		FullName:   "full name2",
+		Identities: []string{"test-identity1", "test-identity2"},
+		Groups:     []string{"group1", "group2"},
+	})
+
+	expectedGroups := make([]cluster.OpenshiftGroup, 0)
+	expectedGroups = append(expectedGroups, cluster.OpenshiftGroup{
+		Name:  "testgroup1",
+		Users: []string{"testuser1"},
+	})
+	expectedGroups = append(expectedGroups, cluster.OpenshiftGroup{
+		Name:  "testgroup2",
+		Users: []string{"testuser2"},
+	})
+
+	expectedRoles := make([]cluster.OpenshiftRole, 0)
+	expectedRoles = append(expectedRoles, cluster.OpenshiftRole{
+		Name: "testrole1",
+	})
+
+	expectedNamespaceRoles := make([]cluster.OpenshiftNamespaceRole, 0)
+	expectedNamespaceRoles = append(expectedNamespaceRoles, cluster.OpenshiftNamespaceRole{
+		Namespace: "testnamespace1",
+		Roles:     expectedRoles,
+	})
+
+	expectedClusterRoles := make([]cluster.OpenshiftClusterRole, 0)
+	expectedClusterRoles = append(expectedClusterRoles, cluster.OpenshiftClusterRole{
+		Name: "testrole1",
+	})
+
+	expectedClusterRoleBindings := make([]cluster.OpenshiftClusterRoleBinding, 0)
+	expectedClusterRoleBindings = append(expectedClusterRoleBindings, cluster.OpenshiftClusterRoleBinding{
+		Name:       "testbinding1",
+		UserNames:  []string{"testuser1"},
+		GroupNames: []string{"testgroup1"},
+	})
+
+	expectedSCC := make([]cluster.OpenshiftSecurityContextConstraints, 0)
+	expectedSCC = append(expectedSCC, cluster.OpenshiftSecurityContextConstraints{
+		Name:   "testscc1",
+		Users:  []string{"testuser1"},
+		Groups: []string{"testgroup1"},
+	})
+
+	expectedRBACReport := &cluster.RBACReport{
+		Users:                      expectedUsers,
+		Groups:                     expectedGroups,
+		Roles:                      expectedNamespaceRoles,
+		ClusterRoles:               expectedClusterRoles,
+		ClusterRoleBinding:         expectedClusterRoleBindings,
+		SecurityContextConstraints: expectedSCC,
+	}
+
+	testCases := []struct {
+		name               string
+		inputRBAC          api.Resources
+		expectedRBACReport cluster.RBACReport
+	}{
+		{
+			name: "generate RBAC report",
+			inputRBAC: api.Resources{
+				NamespaceList: namespaceList,
+				RBACResources: api.RBACResources{
+					UsersList:                      userList,
+					GroupList:                      groupList,
+					ClusterRolesList:               clusterRoleList,
+					ClusterRolesBindingsList:       clusterRoleBindingsList,
+					SecurityContextConstraintsList: sccList,
+				},
+			},
+			expectedRBACReport: *expectedRBACReport,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			clusterReport := &cluster.Report{}
+			clusterReport.ReportRBAC(tc.inputRBAC)
+
+			assert.Equal(t, tc.expectedRBACReport, clusterReport.RBACReport)
+		})
+	}
+
 }

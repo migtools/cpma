@@ -18,6 +18,13 @@ func TestClusterReportExtractionTransform(t *testing.T) {
 		NodeList:             cpmatest.CreateTestNodeList(),
 		StorageClassList:     cpmatest.CreateStorageClassList(),
 		NamespaceList:        cpmatest.CreateTestNameSpaceList(),
+		RBACResources: api.RBACResources{
+			UsersList:                      cpmatest.CreateUserList(),
+			GroupList:                      cpmatest.CreateGroupList(),
+			ClusterRolesList:               cpmatest.CreateClusterRoleList(),
+			ClusterRolesBindingsList:       cpmatest.CreateClusterRoleBindingsList(),
+			SecurityContextConstraintsList: cpmatest.CreateSCCList(),
+		},
 	}
 
 	clusterReportExtraction := transform.ClusterReportExtraction{apiResources}
@@ -30,7 +37,6 @@ func TestClusterReportExtractionTransform(t *testing.T) {
 	}
 
 	actualClusterReportJSON, err := json.MarshalIndent(report, "", " ")
-	ioutil.WriteFile("testdata/out.json", actualClusterReportJSON, 0777)
 	require.NoError(t, err)
 
 	expectedClusterReportJSON, err := ioutil.ReadFile("testdata/expected-report-cluster.json")

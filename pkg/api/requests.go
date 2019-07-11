@@ -1,10 +1,10 @@
 package api
 
 import (
-	O7tapiauth "github.com/openshift/api/authorization/v1"
+	o7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
-	O7tapisecurity "github.com/openshift/api/security/v1"
-	O7tapiuser "github.com/openshift/api/user/v1"
+	o7tapisecurity "github.com/openshift/api/security/v1"
+	o7tapiuser "github.com/openshift/api/user/v1"
 	k8sapiapps "k8s.io/api/apps/v1"
 	k8sapicore "k8s.io/api/core/v1"
 	k8sapistorage "k8s.io/api/storage/v1"
@@ -22,11 +22,11 @@ type Resources struct {
 
 // RBACResources contains all resources related to RBAC report
 type RBACResources struct {
-	UsersList                      *O7tapiuser.UserList
-	GroupsList                     *O7tapiuser.GroupList
-	ClusterRolesList               *O7tapiauth.ClusterRoleList
-	ClusterRolesBindingsList       *O7tapiauth.ClusterRoleBindingList
-	SecurityContextConstraintsList *O7tapisecurity.SecurityContextConstraintsList
+	UsersList                      *o7tapiuser.UserList
+	GroupList                      *o7tapiuser.GroupList
+	ClusterRolesList               *o7tapiauth.ClusterRoleList
+	ClusterRolesBindingsList       *o7tapiauth.ClusterRoleBindingList
+	SecurityContextConstraintsList *o7tapisecurity.SecurityContextConstraintsList
 }
 
 // NamespaceResources holds all resources that belong to a namespace
@@ -36,7 +36,7 @@ type NamespaceResources struct {
 	RouteList      *o7tapiroute.RouteList
 	DaemonSetList  *k8sapiapps.DaemonSetList
 	DeploymentList *k8sapiapps.DeploymentList
-	RolesList      *O7tapiauth.RoleList
+	RolesList      *o7tapiauth.RoleList
 }
 
 var listOptions metav1.ListOptions
@@ -82,31 +82,31 @@ func ListDaemonSets(namespace string) (*k8sapiapps.DaemonSetList, error) {
 }
 
 // ListUsers list all users, wrapper around client-go
-func ListUsers() (*O7tapiuser.UserList, error) {
+func ListUsers() (*o7tapiuser.UserList, error) {
 	return O7tClient.userClient.Users().List(listOptions)
 }
 
 // ListGroups list all users, wrapper around client-go
-func ListGroups() (*O7tapiuser.GroupList, error) {
+func ListGroups() (*o7tapiuser.GroupList, error) {
 	return O7tClient.userClient.Groups().List(listOptions)
 }
 
 // ListRoles list all storage classes, wrapper around client-go
-func ListRoles(namespace string) (*O7tapiauth.RoleList, error) {
+func ListRoles(namespace string) (*o7tapiauth.RoleList, error) {
 	return O7tClient.authClient.Roles(namespace).List(listOptions)
 }
 
 // ListClusterRoles list all storage classes, wrapper around client-go
-func ListClusterRoles() (*O7tapiauth.ClusterRoleList, error) {
+func ListClusterRoles() (*o7tapiauth.ClusterRoleList, error) {
 	return O7tClient.authClient.ClusterRoles().List(listOptions)
 }
 
 // ListClusterRolesBindings list all storage classes, wrapper around client-go
-func ListClusterRolesBindings() (*O7tapiauth.ClusterRoleBindingList, error) {
+func ListClusterRolesBindings() (*o7tapiauth.ClusterRoleBindingList, error) {
 	return O7tClient.authClient.ClusterRoleBindings().List(listOptions)
 }
 
 // ListSCC list all security context constraints, wrapper around client-go
-func ListSCC() (*O7tapisecurity.SecurityContextConstraintsList, error) {
+func ListSCC() (*o7tapisecurity.SecurityContextConstraintsList, error) {
 	return O7tClient.securityClient.SecurityContextConstraints().List(listOptions)
 }

@@ -2,7 +2,7 @@ package cluster
 
 import (
 	"github.com/fusor/cpma/pkg/api"
-	O7tapiauth "github.com/openshift/api/authorization/v1"
+	o7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/sirupsen/logrus"
 	k8sapiapps "k8s.io/api/apps/v1"
@@ -131,20 +131,20 @@ type OpenshiftNamespaceRole struct {
 // OpenshiftRole wrapper around openshift role
 type OpenshiftRole struct {
 	Name  string                  `json:"name"`
-	Rules []O7tapiauth.PolicyRule `json:"rules,omitempty" protobuf:"bytes,2,rep,name=rules"`
+	Rules []o7tapiauth.PolicyRule `json:"rules,omitempty" protobuf:"bytes,2,rep,name=rules"`
 }
 
 // OpenshiftClusterRole wrapper around cluster role
 type OpenshiftClusterRole struct {
 	Name  string                  `json:"name"`
-	Rules []O7tapiauth.PolicyRule `json:"rules,omitempty" protobuf:"bytes,2,rep,name=rules"`
+	Rules []o7tapiauth.PolicyRule `json:"rules,omitempty" protobuf:"bytes,2,rep,name=rules"`
 }
 
 // OpenshiftClusterRoleBinding wrapper around openshift cluster role bindings
 type OpenshiftClusterRoleBinding struct {
 	Name       string                   `json:"name"`
-	UserNames  O7tapiauth.OptionalNames `json:"userNames" protobuf:"bytes,2,rep,name=userNames"`
-	GroupNames O7tapiauth.OptionalNames `json:"groupNames" protobuf:"bytes,3,rep,name=groupNames"`
+	UserNames  o7tapiauth.OptionalNames `json:"userNames" protobuf:"bytes,2,rep,name=userNames"`
+	GroupNames o7tapiauth.OptionalNames `json:"groupNames" protobuf:"bytes,3,rep,name=groupNames"`
 	Subjects   []corev1.ObjectReference `json:"subjects" protobuf:"bytes,4,rep,name=subjects"`
 	RoleRef    corev1.ObjectReference   `json:"roleRef" protobuf:"bytes,5,opt,name=roleRef"`
 }
@@ -359,7 +359,7 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 	}
 
 	clusterReport.RBACReport.Groups = make([]OpenshiftGroup, 0)
-	for _, group := range apiResources.RBACResources.GroupsList.Items {
+	for _, group := range apiResources.RBACResources.GroupList.Items {
 		reportedGroup := OpenshiftGroup{
 			Name:  group.Name,
 			Users: group.Users,
@@ -379,6 +379,8 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 			}
 			reportedNamespaceRoles.Roles = append(reportedNamespaceRoles.Roles, reportedRole)
 		}
+
+		clusterReport.RBACReport.Roles = append(clusterReport.RBACReport.Roles, reportedNamespaceRoles)
 	}
 
 	clusterReport.RBACReport.ClusterRoles = make([]OpenshiftClusterRole, 0)
