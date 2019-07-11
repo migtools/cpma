@@ -82,6 +82,11 @@ imageConfig:
   latest: false
 imagePolicyConfig:
   internalRegistryHostname: docker-registry.default.svc:5000
+  allowedRegistriesForImport:
+    - domainName: registry1.test.com
+      insecure: true
+    - domainName: registry2.test.com
+  externalRegistryHostname: external-registry.example.com
 kind: MasterConfig
 kubeletClientInfo:
   ca: ca-bundle.crt
