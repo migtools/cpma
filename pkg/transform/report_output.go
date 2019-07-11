@@ -48,6 +48,10 @@ func DumpReports(r ReportOutput) {
 		logrus.Errorf("unable to unmarshal existing report json")
 	}
 
+	for _, quota := range r.ClusterReport.Quotas {
+		existingReports.ClusterReport.Quotas = append(existingReports.ClusterReport.Quotas, quota)
+	}
+
 	for _, node := range r.ClusterReport.Nodes {
 		existingReports.ClusterReport.Nodes = append(existingReports.ClusterReport.Nodes, node)
 	}

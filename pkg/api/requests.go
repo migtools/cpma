@@ -2,6 +2,7 @@ package api
 
 import (
 	o7tapiauth "github.com/openshift/api/authorization/v1"
+	o7tapiquota "github.com/openshift/api/quota/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
 	o7tapisecurity "github.com/openshift/api/security/v1"
 	o7tapiuser "github.com/openshift/api/user/v1"
@@ -14,8 +15,9 @@ import (
 
 // Resources represent api resources used in report
 type Resources struct {
-	PersistentVolumeList *k8sapicore.PersistentVolumeList
+	QuotaList            *o7tapiquota.ClusterResourceQuotaList
 	NodeList             *k8sapicore.NodeList
+	PersistentVolumeList *k8sapicore.PersistentVolumeList
 	StorageClassList     *k8sapistorage.StorageClassList
 	NamespaceList        []NamespaceResources
 	RBACResources        RBACResources
@@ -32,12 +34,13 @@ type RBACResources struct {
 
 // NamespaceResources holds all resources that belong to a namespace
 type NamespaceResources struct {
-	NamespaceName  string
-	PodList        *k8sapicore.PodList
-	RouteList      *o7tapiroute.RouteList
-	DaemonSetList  *k8sapiapps.DaemonSetList
-	DeploymentList *k8sapiapps.DeploymentList
-	RolesList      *o7tapiauth.RoleList
+	NamespaceName     string
+	DaemonSetList     *k8sapiapps.DaemonSetList
+	DeploymentList    *k8sapiapps.DeploymentList
+	PodList           *k8sapicore.PodList
+	ResourceQuotaList *k8sapicore.ResourceQuotaList
+	RolesList         *o7tapiauth.RoleList
+	RouteList         *o7tapiroute.RouteList
 }
 
 var listOptions metav1.ListOptions
@@ -62,14 +65,24 @@ func ListNodes() (*k8sapicore.NodeList, error) {
 	return K8sClient.CoreV1().Nodes().List(listOptions)
 }
 
+// ListQuotas list all cluster quotas classes, wrapper around client-go
+func ListQuotas() (*o7tapiquota.ClusterResourceQuotaList, error) {
+	return O7tClient.quotaClient.ClusterResourceQuotas().List(listOptions)
+}
+
+// ListResourceQuotas list all quotas classes, wrapper around client-go
+func ListResourceQuotas(namespace string) (*k8sapicore.ResourceQuotaList, error) {
+	return K8sClient.CoreV1().ResourceQuotas(namespace).List(listOptions)
+}
+
+// ListRoutes list all routes classes, wrapper around client-go
+func ListRoutes(namespace string) (*o7tapiroute.RouteList, error) {
+	return O7tClient.routeClient.Routes(namespace).List(listOptions)
+}
+
 // ListStorageClasses list all storage classes, wrapper around client-go
 func ListStorageClasses() (*k8sapistorage.StorageClassList, error) {
 	return K8sClient.StorageV1().StorageClasses().List(listOptions)
-}
-
-// ListRoutes list all storage classes, wrapper around client-go
-func ListRoutes(namespace string) (*o7tapiroute.RouteList, error) {
-	return O7tClient.routeClient.Routes(namespace).List(listOptions)
 }
 
 // ListDeployments will list all deployments seeding in the selected namespace

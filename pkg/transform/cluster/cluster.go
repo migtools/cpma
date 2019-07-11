@@ -2,21 +2,22 @@ package cluster
 
 import (
 	"github.com/fusor/cpma/pkg/api"
-	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/api/resource"
-
 	o7tapiauth "github.com/openshift/api/authorization/v1"
+	o7tapiquota "github.com/openshift/api/quota/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
+	"github.com/sirupsen/logrus"
 
 	k8sapiapps "k8s.io/api/apps/v1"
 	k8sapicore "k8s.io/api/core/v1"
 	k8scorev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Report represents json report of k8s resources
 type Report struct {
 	Nodes          []NodeReport         `json:"nodes"`
+	Quotas         []QuotaReport        `json:"quotas"`
 	Namespaces     []NamespaceReport    `json:"namespaces,omitempty"`
 	PVs            []PVReport           `json:"pvs,omitempty"`
 	StorageClasses []StorageClassReport `json:"storageClasses,omitempty"`
@@ -48,11 +49,27 @@ type NamespaceReport struct {
 	Routes       []RouteReport            `json:"routes,omitempty"`
 	DaemonSets   []DaemonSetReport        `json:"daemonSets,omitempty"`
 	Deployments  []DeploymentReport       `json:"deployments,omitempty"`
+	Quotas       []ResourceQuotaReport    `json:"quotas,omitempty"`
 }
 
 // PodReport represents json report of k8s pods
 type PodReport struct {
 	Name string `json:"name"`
+}
+
+// QuotaReport represents json report of o7t cluster quotas
+type QuotaReport struct {
+	Name     string                                   `json:"name"`
+	Quota    k8sapicore.ResourceQuotaSpec             `json:"quota,omitempty"`
+	Selector o7tapiquota.ClusterResourceQuotaSelector `json:"selector,omitempty"`
+}
+
+// ResourceQuotaReport represents json report of Quota resources
+type ResourceQuotaReport struct {
+	Name          string                          `json:"name"`
+	Hard          k8scorev1.ResourceList          `json:"hard,omitempty"`
+	ScopeSelector *k8sapicore.ScopeSelector       `json:"selector,omitempty"`
+	Scopes        []k8sapicore.ResourceQuotaScope `json:"scopes,omitempty"`
 }
 
 // RouteReport represents json report of k8s pods
@@ -160,12 +177,68 @@ type OpenshiftSecurityContextConstraints struct {
 
 // GenClusterReport inserts report values into structures for json output
 func GenClusterReport(apiResources api.Resources) (clusterReport Report) {
-	clusterReport.ReportNodes(apiResources)
+	clusterReport.ReportQuotas(apiResources)
 	clusterReport.ReportNamespaces(apiResources)
+	clusterReport.ReportNodes(apiResources)
 	clusterReport.ReportPVs(apiResources)
-	clusterReport.ReportStorageClasses(apiResources)
 	clusterReport.ReportRBAC(apiResources)
+	clusterReport.ReportStorageClasses(apiResources)
 	return
+}
+
+// ReportContainerResources create report about container resources
+func ReportContainerResources(reportedNamespace *NamespaceReport, pod *k8sapicore.Pod) {
+	cpuTotal := reportedNamespace.Resources.CPUTotal.Value()
+	memoryTotal := reportedNamespace.Resources.MemoryTotal.Value()
+
+	for _, container := range pod.Spec.Containers {
+		cpuTotal += container.Resources.Requests.Cpu().Value()
+		memoryTotal += container.Resources.Requests.Memory().Value()
+	}
+	reportedNamespace.Resources.CPUTotal.Set(cpuTotal)
+	reportedNamespace.Resources.MemoryTotal.Set(memoryTotal)
+	reportedNamespace.Resources.ContainerCount += len(pod.Spec.Containers)
+}
+
+// ReportDaemonSets generate DaemonSet report
+func ReportDaemonSets(reporeportedNamespace *NamespaceReport, dsList *k8sapiapps.DaemonSetList) {
+	for _, ds := range dsList.Items {
+		reportedDS := DaemonSetReport{
+			Name:         ds.Name,
+			LatestChange: ds.ObjectMeta.CreationTimestamp,
+		}
+
+		reporeportedNamespace.DaemonSets = append(reporeportedNamespace.DaemonSets, reportedDS)
+	}
+}
+
+// ReportDeployments generate Deployments report
+func ReportDeployments(reportedNamespace *NamespaceReport, deploymentList *k8sapiapps.DeploymentList) {
+	for _, deployment := range deploymentList.Items {
+		reportedDeployment := DeploymentReport{
+			Name:         deployment.Name,
+			LatestChange: deployment.ObjectMeta.CreationTimestamp,
+		}
+
+		reportedNamespace.Deployments = append(reportedNamespace.Deployments, reportedDeployment)
+	}
+}
+
+// ReportNamespaces fills in information about Namespaces
+func (clusterReport *Report) ReportNamespaces(apiResources api.Resources) {
+	logrus.Debug("ClusterReport::ReportNamespaces")
+
+	for _, resources := range apiResources.NamespaceList {
+		reportedNamespace := NamespaceReport{Name: resources.NamespaceName}
+
+		ReportResourceQuotas(&reportedNamespace, resources.ResourceQuotaList)
+		ReportPods(&reportedNamespace, resources.PodList)
+		ReportResources(&reportedNamespace, resources.PodList)
+		ReportRoutes(&reportedNamespace, resources.RouteList)
+		ReportDeployments(&reportedNamespace, resources.DeploymentList)
+		ReportDaemonSets(&reportedNamespace, resources.DaemonSetList)
+		clusterReport.Namespaces = append(clusterReport.Namespaces, reportedNamespace)
+	}
 }
 
 // ReportNodes fills in information about nodes
@@ -214,19 +287,18 @@ func ReportNodeResources(repotedNode *NodeReport, nodeStatus k8sapicore.NodeStat
 	repotedNode.Resources.PodCapacity = nodeStatus.Capacity.Pods()
 }
 
-// ReportNamespaces fills in information about Namespaces
-func (clusterReport *Report) ReportNamespaces(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportNamespaces")
+// ReportQuotas creates report about cluster quotas
+func (clusterReport *Report) ReportQuotas(apiResources api.Resources) {
+	logrus.Debug("ClusterReport::ReportQuotas")
 
-	for _, resources := range apiResources.NamespaceList {
-		reportedNamespace := NamespaceReport{Name: resources.NamespaceName}
+	for _, quota := range apiResources.QuotaList.Items {
+		quotaReport := QuotaReport{
+			Name:     quota.ObjectMeta.Name,
+			Quota:    quota.Spec.Quota,
+			Selector: quota.Spec.Selector,
+		}
 
-		ReportPods(&reportedNamespace, resources.PodList)
-		ReportResources(&reportedNamespace, resources.PodList)
-		ReportRoutes(&reportedNamespace, resources.RouteList)
-		ReportDeployments(&reportedNamespace, resources.DeploymentList)
-		ReportDaemonSets(&reportedNamespace, resources.DaemonSetList)
-		clusterReport.Namespaces = append(clusterReport.Namespaces, reportedNamespace)
+		clusterReport.Quotas = append(clusterReport.Quotas, quotaReport)
 	}
 }
 
@@ -243,6 +315,19 @@ func ReportPods(reportedNamespace *NamespaceReport, podList *k8sapicore.PodList)
 	}
 }
 
+// ReportResourceQuotas creates report about quotas
+func ReportResourceQuotas(reportedNamespace *NamespaceReport, quotaList *k8sapicore.ResourceQuotaList) {
+	for _, quota := range quotaList.Items {
+		reportedQuota := ResourceQuotaReport{
+			Name:          quota.ObjectMeta.Name,
+			Hard:          quota.Spec.Hard,
+			ScopeSelector: quota.Spec.ScopeSelector,
+			Scopes:        quota.Spec.Scopes,
+		}
+		reportedNamespace.Quotas = append(reportedNamespace.Quotas, reportedQuota)
+	}
+}
+
 // ReportResources create report about namespace resources
 func ReportResources(reportedNamespace *NamespaceReport, podList *k8sapicore.PodList) {
 	resources := ContainerResourcesReport{
@@ -254,20 +339,6 @@ func ReportResources(reportedNamespace *NamespaceReport, podList *k8sapicore.Pod
 	for _, pod := range podList.Items {
 		ReportContainerResources(reportedNamespace, &pod)
 	}
-}
-
-// ReportContainerResources create report about container resources
-func ReportContainerResources(reportedNamespace *NamespaceReport, pod *k8sapicore.Pod) {
-	cpuTotal := reportedNamespace.Resources.CPUTotal.Value()
-	memoryTotal := reportedNamespace.Resources.MemoryTotal.Value()
-
-	for _, container := range pod.Spec.Containers {
-		cpuTotal += container.Resources.Requests.Cpu().Value()
-		memoryTotal += container.Resources.Requests.Memory().Value()
-	}
-	reportedNamespace.Resources.CPUTotal.Set(cpuTotal)
-	reportedNamespace.Resources.MemoryTotal.Set(memoryTotal)
-	reportedNamespace.Resources.ContainerCount += len(pod.Spec.Containers)
 }
 
 // ReportRoutes create report about routes
@@ -287,30 +358,6 @@ func ReportRoutes(reportedNamespace *NamespaceReport, routeList *o7tapiroute.Rou
 	}
 }
 
-// ReportDeployments generate Deployments report
-func ReportDeployments(reportedNamespace *NamespaceReport, deploymentList *k8sapiapps.DeploymentList) {
-	for _, deployment := range deploymentList.Items {
-		reportedDeployment := DeploymentReport{
-			Name:         deployment.Name,
-			LatestChange: deployment.ObjectMeta.CreationTimestamp,
-		}
-
-		reportedNamespace.Deployments = append(reportedNamespace.Deployments, reportedDeployment)
-	}
-}
-
-// ReportDaemonSets generate DaemonSet report
-func ReportDaemonSets(reporeportedNamespace *NamespaceReport, dsList *k8sapiapps.DaemonSetList) {
-	for _, ds := range dsList.Items {
-		reportedDS := DaemonSetReport{
-			Name:         ds.Name,
-			LatestChange: ds.ObjectMeta.CreationTimestamp,
-		}
-
-		reporeportedNamespace.DaemonSets = append(reporeportedNamespace.DaemonSets, reportedDS)
-	}
-}
-
 // ReportPVs create report oabout pvs
 func (clusterReport *Report) ReportPVs(apiResources api.Resources) {
 	logrus.Debug("ClusterReport::ReportPVs")
@@ -327,21 +374,6 @@ func (clusterReport *Report) ReportPVs(apiResources api.Resources) {
 		}
 
 		clusterReport.PVs = append(clusterReport.PVs, reportedPV)
-	}
-}
-
-// ReportStorageClasses create report about storage classes
-func (clusterReport *Report) ReportStorageClasses(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportStorageClasses")
-	// Go through all storage classes and save required information to report
-	storageClassList := apiResources.StorageClassList
-	for _, storageClass := range storageClassList.Items {
-		reportedStorageClass := StorageClassReport{
-			Name:        storageClass.Name,
-			Provisioner: storageClass.Provisioner,
-		}
-
-		clusterReport.StorageClasses = append(clusterReport.StorageClasses, reportedStorageClass)
 	}
 }
 
@@ -417,5 +449,20 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 		}
 
 		clusterReport.RBACReport.SecurityContextConstraints = append(clusterReport.RBACReport.SecurityContextConstraints, reportedSCC)
+	}
+}
+
+// ReportStorageClasses create report about storage classes
+func (clusterReport *Report) ReportStorageClasses(apiResources api.Resources) {
+	logrus.Debug("ClusterReport::ReportStorageClasses")
+	// Go through all storage classes and save required information to report
+	storageClassList := apiResources.StorageClassList
+	for _, storageClass := range storageClassList.Items {
+		reportedStorageClass := StorageClassReport{
+			Name:        storageClass.Name,
+			Provisioner: storageClass.Provisioner,
+		}
+
+		clusterReport.StorageClasses = append(clusterReport.StorageClasses, reportedStorageClass)
 	}
 }

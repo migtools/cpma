@@ -14,6 +14,7 @@ import (
 
 func TestClusterReportExtractionTransform(t *testing.T) {
 	apiResources := api.Resources{
+		QuotaList:            cpmatest.CreateTestQuotaList(),
 		PersistentVolumeList: cpmatest.CreateTestPVList(),
 		NodeList:             cpmatest.CreateTestNodeList(),
 		StorageClassList:     cpmatest.CreateStorageClassList(),
