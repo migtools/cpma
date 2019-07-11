@@ -1,7 +1,7 @@
 package api
 
 import (
-	O7tapiroute "github.com/openshift/api/route/v1"
+	o7tapiroute "github.com/openshift/api/route/v1"
 
 	k8sapiapps "k8s.io/api/apps/v1"
 	k8sapicore "k8s.io/api/core/v1"
@@ -21,7 +21,7 @@ type Resources struct {
 type NamespaceResources struct {
 	NamespaceName  string
 	PodList        *k8sapicore.PodList
-	RouteList      *O7tapiroute.RouteList
+	RouteList      *o7tapiroute.RouteList
 	DaemonSetList  *k8sapiapps.DaemonSetList
 	DeploymentList *k8sapiapps.DeploymentList
 }
@@ -54,7 +54,7 @@ func ListStorageClasses() (*k8sapistorage.StorageClassList, error) {
 }
 
 // ListRoutes list all storage classes, wrapper around client-go
-func ListRoutes(namespace string) (*O7tapiroute.RouteList, error) {
+func ListRoutes(namespace string) (*o7tapiroute.RouteList, error) {
 	return O7tClient.routeClient.Routes(namespace).List(listOptions)
 }
 
