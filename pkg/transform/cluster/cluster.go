@@ -2,10 +2,12 @@ package cluster
 
 import (
 	"github.com/fusor/cpma/pkg/api"
-	O7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/sirupsen/logrus"
-	k8sapicore "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	O7tapiroute "github.com/openshift/api/route/v1"
+	k8sapiapps "k8s.io/api/apps/v1"
+	k8sapicore "k8s.io/api/core/v1"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -40,6 +42,8 @@ type NamespaceReport struct {
 	Resources    ContainerResourcesReport `json:"resources,omitempty"`
 	Pods         []PodReport              `json:"pods,omitempty"`
 	Routes       []RouteReport            `json:"routes,omitempty"`
+	DaemonSets   []DaemonSetReport        `json:"daemonSets,omitempty"`
+	Deployments  []DeploymentReport       `json:"deployments,omitempty"`
 }
 
 // PodReport represents json report of k8s pods
@@ -54,8 +58,20 @@ type RouteReport struct {
 	Path              string                             `json:"path,omitempty"`
 	AlternateBackends []O7tapiroute.RouteTargetReference `json:"alternateBackends,omitempty"`
 	TLS               *O7tapiroute.TLSConfig             `json:"tls,omitempty"`
-	To                O7tapiroute.RouteTargetReference   `json:"to,omitempty"`
+	To                O7tapiroute.RouteTargetReference   `json:"to"`
 	WildcardPolicy    O7tapiroute.WildcardPolicyType     `json:"wildcardPolicy"`
+}
+
+// DaemonSetReport represents json report of k8s DaemonSet relevant information
+type DaemonSetReport struct {
+	Name         string       `json:"name"`
+	LatestChange k8sMeta.Time `json:"latestChange,omitempty"`
+}
+
+// DeploymentReport represents json report of DeploymentReport resources
+type DeploymentReport struct {
+	Name         string       `json:"name"`
+	LatestChange k8sMeta.Time `json:"latestChange,omitempty"`
 }
 
 // ContainerResourcesReport represents json report for aggregated container resources
@@ -94,15 +110,15 @@ func (clusterReport *Report) ReportNodes(apiResources api.Resources) {
 	logrus.Debug("ClusterReport::ReportNodes")
 
 	for _, node := range apiResources.NodeList.Items {
-		nodeReport := &NodeReport{
+		nodeReport := NodeReport{
 			Name: node.ObjectMeta.Name,
 		}
 
 		isMaster, ok := node.ObjectMeta.Labels["node-role.kubernetes.io/master"]
 		nodeReport.MasterNode = ok && isMaster == "true"
 
-		ReportNodeResources(nodeReport, node.Status, apiResources)
-		clusterReport.Nodes = append(clusterReport.Nodes, *nodeReport)
+		ReportNodeResources(&nodeReport, node.Status, apiResources)
+		clusterReport.Nodes = append(clusterReport.Nodes, nodeReport)
 	}
 }
 
@@ -145,6 +161,8 @@ func (clusterReport *Report) ReportNamespaces(apiResources api.Resources) {
 		ReportPods(&reportedNamespace, resources.PodList)
 		ReportResources(&reportedNamespace, resources.PodList)
 		ReportRoutes(&reportedNamespace, resources.RouteList)
+		ReportDeployments(&reportedNamespace, resources.DeploymentList)
+		ReportDaemonSets(&reportedNamespace, resources.DaemonSetList)
 		clusterReport.Namespaces = append(clusterReport.Namespaces, reportedNamespace)
 	}
 }
@@ -152,8 +170,8 @@ func (clusterReport *Report) ReportNamespaces(apiResources api.Resources) {
 // ReportPods creates info about cluster pods
 func ReportPods(reportedNamespace *NamespaceReport, podList *k8sapicore.PodList) {
 	for _, pod := range podList.Items {
-		reportedPod := &PodReport{Name: pod.Name}
-		reportedNamespace.Pods = append(reportedNamespace.Pods, *reportedPod)
+		reportedPod := PodReport{Name: pod.Name}
+		reportedNamespace.Pods = append(reportedNamespace.Pods, reportedPod)
 
 		// Update namespace touch timestamp
 		if pod.ObjectMeta.CreationTimestamp.Time.Unix() > reportedNamespace.LatestChange.Time.Unix() {
@@ -192,7 +210,7 @@ func ReportContainerResources(reportedNamespace *NamespaceReport, pod *k8sapicor
 // ReportRoutes create report about routes
 func ReportRoutes(reportedNamespace *NamespaceReport, routeList *O7tapiroute.RouteList) {
 	for _, route := range routeList.Items {
-		reportedRoute := &RouteReport{
+		reportedRoute := RouteReport{
 			Name:              route.Name,
 			AlternateBackends: route.Spec.AlternateBackends,
 			Host:              route.Spec.Host,
@@ -202,7 +220,31 @@ func ReportRoutes(reportedNamespace *NamespaceReport, routeList *O7tapiroute.Rou
 			WildcardPolicy:    route.Spec.WildcardPolicy,
 		}
 
-		reportedNamespace.Routes = append(reportedNamespace.Routes, *reportedRoute)
+		reportedNamespace.Routes = append(reportedNamespace.Routes, reportedRoute)
+	}
+}
+
+// ReportDeployments generate Deployments report
+func ReportDeployments(reportedNamespace *NamespaceReport, deploymentList *k8sapiapps.DeploymentList) {
+	for _, deployment := range deploymentList.Items {
+		reportedDeployment := DeploymentReport{
+			Name:         deployment.Name,
+			LatestChange: deployment.ObjectMeta.CreationTimestamp,
+		}
+
+		reportedNamespace.Deployments = append(reportedNamespace.Deployments, reportedDeployment)
+	}
+}
+
+// ReportDaemonSets generate DaemonSet report
+func ReportDaemonSets(reporeportedNamespace *NamespaceReport, dsList *k8sapiapps.DaemonSetList) {
+	for _, ds := range dsList.Items {
+		reportedDS := DaemonSetReport{
+			Name:         ds.Name,
+			LatestChange: ds.ObjectMeta.CreationTimestamp,
+		}
+
+		reporeportedNamespace.DaemonSets = append(reporeportedNamespace.DaemonSets, reportedDS)
 	}
 }
 
@@ -213,7 +255,7 @@ func (clusterReport *Report) ReportPVs(apiResources api.Resources) {
 
 	// Go through all PV and save required information to report
 	for _, pv := range pvList.Items {
-		reportedPV := &PVReport{
+		reportedPV := PVReport{
 			Name:         pv.Name,
 			Driver:       pv.Spec.PersistentVolumeSource,
 			StorageClass: pv.Spec.StorageClassName,
@@ -221,7 +263,7 @@ func (clusterReport *Report) ReportPVs(apiResources api.Resources) {
 			Phase:        pv.Status.Phase,
 		}
 
-		clusterReport.PVs = append(clusterReport.PVs, *reportedPV)
+		clusterReport.PVs = append(clusterReport.PVs, reportedPV)
 	}
 }
 
@@ -231,11 +273,11 @@ func (clusterReport *Report) ReportStorageClasses(apiResources api.Resources) {
 	// Go through all storage classes and save required information to report
 	storageClassList := apiResources.StorageClassList
 	for _, storageClass := range storageClassList.Items {
-		reportedStorageClass := &StorageClassReport{
+		reportedStorageClass := StorageClassReport{
 			Name:        storageClass.Name,
 			Provisioner: storageClass.Provisioner,
 		}
 
-		clusterReport.StorageClasses = append(clusterReport.StorageClasses, *reportedStorageClass)
+		clusterReport.StorageClasses = append(clusterReport.StorageClasses, reportedStorageClass)
 	}
 }

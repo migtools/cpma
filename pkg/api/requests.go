@@ -3,6 +3,7 @@ package api
 import (
 	O7tapiroute "github.com/openshift/api/route/v1"
 
+	k8sapiapps "k8s.io/api/apps/v1"
 	k8sapicore "k8s.io/api/core/v1"
 	k8sapistorage "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,9 +19,11 @@ type Resources struct {
 
 // NamespaceResources holds all resources that belong to a namespace
 type NamespaceResources struct {
-	NamespaceName string
-	PodList       *k8sapicore.PodList
-	RouteList     *O7tapiroute.RouteList
+	NamespaceName  string
+	PodList        *k8sapicore.PodList
+	RouteList      *O7tapiroute.RouteList
+	DaemonSetList  *k8sapiapps.DaemonSetList
+	DeploymentList *k8sapiapps.DeploymentList
 }
 
 var listOptions metav1.ListOptions
@@ -53,4 +56,14 @@ func ListStorageClasses() (*k8sapistorage.StorageClassList, error) {
 // ListRoutes list all storage classes, wrapper around client-go
 func ListRoutes(namespace string) (*O7tapiroute.RouteList, error) {
 	return O7tClient.routeClient.Routes(namespace).List(listOptions)
+}
+
+// ListDeployments will list all deployments seeding in the selected namespace
+func ListDeployments(namespace string) (*k8sapiapps.DeploymentList, error) {
+	return K8sClient.AppsV1().Deployments(namespace).List(listOptions)
+}
+
+// ListDaemonSets will collect all DS from specific namespace
+func ListDaemonSets(namespace string) (*k8sapiapps.DaemonSetList, error) {
+	return K8sClient.AppsV1().DaemonSets(namespace).List(listOptions)
 }

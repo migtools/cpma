@@ -73,6 +73,18 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		}
 		namespaceResources.RouteList = routesList
 
+		deploymentList, err := api.ListDeployments(namespace.Name)
+		if err != nil {
+			return nil, err
+		}
+		namespaceResources.DeploymentList = deploymentList
+
+		daemonSetList, err := api.ListDaemonSets(namespace.Name)
+		if err != nil {
+			return nil, err
+		}
+		namespaceResources.DaemonSetList = daemonSetList
+
 		extraction.NamespaceList[i] = namespaceResources
 	}
 
