@@ -7,8 +7,8 @@ import (
 
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform"
+	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
 	"github.com/fusor/cpma/pkg/transform/oauth"
-	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

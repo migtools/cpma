@@ -8,8 +8,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
 
+	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
 	"github.com/fusor/cpma/pkg/transform/oauth"
-	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"

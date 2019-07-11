@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/fusor/cpma/pkg/transform"
+	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
 	"github.com/fusor/cpma/pkg/transform/sdn"
-	cpmatest "github.com/fusor/cpma/pkg/utils/test"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	configv1 "github.com/openshift/api/operator/v1"
 	"github.com/stretchr/testify/assert"

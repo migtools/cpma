@@ -4,13 +4,13 @@ import (
 	"io/ioutil"
 	"testing"
 
+	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
 	"github.com/fusor/cpma/pkg/transform/scheduler"
-	cpmatest "github.com/fusor/cpma/pkg/utils/test"
-
 	configv1 "github.com/openshift/api/config/v1"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
 )

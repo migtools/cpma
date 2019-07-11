@@ -5,7 +5,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/api"
 	"github.com/fusor/cpma/pkg/transform/cluster"
-	cpmatest "github.com/fusor/cpma/pkg/utils/test"
+	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
 	O7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/stretchr/testify/assert"
 	k8sapicore "k8s.io/api/core/v1"
