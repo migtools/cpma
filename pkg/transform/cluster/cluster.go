@@ -2,13 +2,15 @@ package cluster
 
 import (
 	"github.com/fusor/cpma/pkg/api"
+	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/resource"
+
 	o7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
-	"github.com/sirupsen/logrus"
+
 	k8sapiapps "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	k8sapicore "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
+	k8scorev1 "k8s.io/api/core/v1"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -142,11 +144,11 @@ type OpenshiftClusterRole struct {
 
 // OpenshiftClusterRoleBinding wrapper around openshift cluster role bindings
 type OpenshiftClusterRoleBinding struct {
-	Name       string                   `json:"name"`
-	UserNames  o7tapiauth.OptionalNames `json:"userNames" protobuf:"bytes,2,rep,name=userNames"`
-	GroupNames o7tapiauth.OptionalNames `json:"groupNames" protobuf:"bytes,3,rep,name=groupNames"`
-	Subjects   []corev1.ObjectReference `json:"subjects" protobuf:"bytes,4,rep,name=subjects"`
-	RoleRef    corev1.ObjectReference   `json:"roleRef" protobuf:"bytes,5,opt,name=roleRef"`
+	Name       string                      `json:"name"`
+	UserNames  o7tapiauth.OptionalNames    `json:"userNames" protobuf:"bytes,2,rep,name=userNames"`
+	GroupNames o7tapiauth.OptionalNames    `json:"groupNames" protobuf:"bytes,3,rep,name=groupNames"`
+	Subjects   []k8scorev1.ObjectReference `json:"subjects" protobuf:"bytes,4,rep,name=subjects"`
+	RoleRef    k8scorev1.ObjectReference   `json:"roleRef" protobuf:"bytes,5,opt,name=roleRef"`
 }
 
 // OpenshiftSecurityContextConstraints wrapper aroung opeshift scc
