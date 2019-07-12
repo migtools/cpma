@@ -1,13 +1,15 @@
 package project
 
 import (
+	"strings"
+
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	apiVersion = "operator.openshift.io/v1"
+	apiVersion = "config.openshift.io/v1"
 	kind       = "Project"
 	name       = "cluster"
 )
@@ -29,7 +31,10 @@ func Translate(projectConfig legacyconfigv1.ProjectConfig) (*configv1.Project, e
 	}
 
 	if projectConfig.ProjectRequestTemplate != "" {
-		projectCR.Spec.ProjectRequestTemplate.Name = projectConfig.ProjectRequestTemplate
+		i := strings.Index(projectConfig.ProjectRequestTemplate, "/")
+		prefix := projectConfig.ProjectRequestTemplate[0 : i+1]
+		projectRequestTemplate := strings.TrimLeft(projectConfig.ProjectRequestTemplate, prefix)
+		projectCR.Spec.ProjectRequestTemplate.Name = projectRequestTemplate
 	}
 
 	return &projectCR, nil
