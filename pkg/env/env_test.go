@@ -183,6 +183,7 @@ func TestInitLogger(t *testing.T) {
 			logrus.PanicLevel,
 			logrus.FatalLevel,
 			logrus.ErrorLevel,
+			logrus.WarnLevel,
 		},
 		Formatter: consoleFormatter,
 	}
@@ -192,7 +193,6 @@ func TestInitLogger(t *testing.T) {
 		LogLevels: []logrus.Level{
 			logrus.InfoLevel,
 			logrus.DebugLevel,
-			logrus.WarnLevel,
 		},
 		Formatter: consoleFormatter,
 	}

@@ -441,7 +441,6 @@ func InitLogger() {
 			LogLevels: []logrus.Level{
 				logrus.InfoLevel,
 				logrus.DebugLevel,
-				logrus.WarnLevel,
 			},
 			Formatter: consoleFormatter,
 		}
@@ -455,6 +454,7 @@ func InitLogger() {
 			logrus.PanicLevel,
 			logrus.FatalLevel,
 			logrus.ErrorLevel,
+			logrus.WarnLevel,
 		},
 		Formatter: consoleFormatter,
 	}
