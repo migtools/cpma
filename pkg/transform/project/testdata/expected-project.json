@@ -1,6 +1,6 @@
 {
   "kind": "Project",
-  "apiVersion": "operator.openshift.io/v1",
+  "apiVersion": "config.openshift.io/v1",
   "metadata": {
     "name": "cluster",
     "creationTimestamp": null
@@ -8,7 +8,7 @@
   "spec": {
     "projectRequestMessage": "To provision Projects you must request access in https://labs.opentlc.com or https://rhpds.redhat.com",
     "projectRequestTemplate": {
-      "name": "default/project-request"
+      "name": "project-request"
     }
   },
   "status": {}
