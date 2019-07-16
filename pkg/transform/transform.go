@@ -152,7 +152,7 @@ func GenYAML(CR interface{}) ([]byte, error) {
 }
 
 func openReports() {
-	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+	if env.Config().GetString("Mode") == env.OnlyManifestsMode {
 		return
 	}
 

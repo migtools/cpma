@@ -68,7 +68,7 @@ func (e SDNExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e SDNExtraction) buildReportOutput() (Output, error) {
-	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+	if env.Config().GetString("Mode") == env.OnlyManifestsMode {
 		logrus.Debug("Skipping SDNTransform report, only manifests mode was set")
 		return ReportOutput{}, nil
 	}

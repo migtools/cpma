@@ -96,7 +96,7 @@ func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e OAuthExtraction) buildReportOutput() (Output, error) {
-	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+	if env.Config().GetString("Mode") == env.OnlyManifestsMode {
 		logrus.Debug("Skipping OAuthTransform report, only manifests mode was set")
 		return ReportOutput{}, nil
 	}

@@ -16,3 +16,4 @@ registriesconfigfile: /etc/containers/registries.conf
 sshlogin: root
 sshport: "22"
 sshprivatekey: "/home/example/.ssh/key"
+mode: report

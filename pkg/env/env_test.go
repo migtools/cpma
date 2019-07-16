@@ -90,6 +90,11 @@ func TestInitFromEnv(t *testing.T) {
 					envValue:         "remote",
 					configEquivalent: "configsource",
 				},
+				configAsset{
+					envKey:           "CPMA_MODE",
+					envValue:         "report",
+					configEquivalent: "mode",
+				},
 			},
 		},
 		{
@@ -124,6 +129,11 @@ func TestInitFromEnv(t *testing.T) {
 					envKey:           "CPMA_REGISTRIESCONFIGFILE",
 					envValue:         "test-registries",
 					configEquivalent: "registriesconfigfile",
+				},
+				configAsset{
+					envKey:           "CPMA_MODE",
+					envValue:         "report",
+					configEquivalent: "mode",
 				},
 			},
 		},

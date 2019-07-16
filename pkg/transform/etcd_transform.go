@@ -37,7 +37,7 @@ func (e ETCDExtraction) Transform() ([]Output, error) {
 }
 
 func (e ETCDExtraction) buildReportOutput() (Output, error) {
-	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+	if env.Config().GetString("Mode") == env.OnlyManifestsMode {
 		logrus.Debug("Skipping ETCDTransform report, only manifests mode was set")
 		return ReportOutput{}, nil
 	}

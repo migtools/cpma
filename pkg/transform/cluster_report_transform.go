@@ -23,7 +23,7 @@ type ClusterTransform struct {
 func (e ClusterReportExtraction) Transform() ([]Output, error) {
 	logrus.Info("ClusterTransform::Transform")
 
-	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+	if env.Config().GetString("Mode") == env.OnlyManifestsMode {
 		logrus.Debug("Skipping ClusterTransform report, only manifest mode was set")
 		return []Output{}, nil
 	}

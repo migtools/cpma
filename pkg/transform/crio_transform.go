@@ -121,7 +121,7 @@ func (e CrioExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e CrioExtraction) buildReportOutput() (Output, error) {
-	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+	if env.Config().GetString("Mode") == env.OnlyManifestsMode {
 		logrus.Debug("Skipping CrioTransform report, only manifests mode was set")
 		return ReportOutput{}, nil
 	}

@@ -61,9 +61,13 @@ func init() {
 	rootCmd.PersistentFlags().StringP("work-dir", "w", "", "set application data working directory (Default \".\")")
 	env.Config().BindPFlag("WorkDir", rootCmd.PersistentFlags().Lookup("work-dir"))
 
-	// Set log level from CLI argument
+	// Set config source from CLI argument
 	rootCmd.PersistentFlags().String("config-source", "", "source for OCP3 config files, accepted values: remote or local")
 	env.Config().BindPFlag("ConfigSource", rootCmd.PersistentFlags().Lookup("config-source"))
+
+	// Set cpma mode level from CLI argument
+	rootCmd.PersistentFlags().String("mode", "", "Set CPMA mode: generate only report, only manifests or both. Accepted values: manifests or report")
+	env.Config().BindPFlag("Mode", rootCmd.PersistentFlags().Lookup("mode"))
 
 	// Get crio config file location
 	rootCmd.PersistentFlags().String("crio-config", "", "path to crio config file")

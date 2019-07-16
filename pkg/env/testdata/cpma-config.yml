@@ -5,3 +5,4 @@ sshport: 22
 workdir: "./data"
 clustername: "somename"
 configsource: remote
+mode: ""

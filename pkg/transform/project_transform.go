@@ -64,7 +64,7 @@ func (e ProjectExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e ProjectExtraction) buildReportOutput() (Output, error) {
-	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+	if env.Config().GetString("Mode") == env.OnlyManifestsMode {
 		return ReportOutput{}, nil
 	}
 

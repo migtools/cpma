@@ -21,9 +21,9 @@ const (
 	logFile = "cpma.log"
 
 	// OnlyReportMode holds name of cpma mode
-	OnlyReportMode = "OnlyReportMode"
-	// OnlyManifestMode holds name of cpma mode
-	OnlyManifestMode = "OnlyManifestMode"
+	OnlyReportMode = "report"
+	// OnlyManifestsMode holds name of cpma mode
+	OnlyManifestsMode = "manifests"
 )
 
 var (
@@ -98,7 +98,12 @@ func setConfigLocation() (err error) {
 }
 
 func surveyMissingValues() error {
-	err := surveyConfigSource()
+	err := surveyCPMAMode()
+	if err != nil {
+		return err
+	}
+
+	err = surveyConfigSource()
 	if err != nil {
 		return err
 	}
@@ -136,6 +141,37 @@ func surveyMissingValues() error {
 		}
 
 		viperConfig.Set("WorkDir", workDir)
+	}
+
+	return nil
+}
+
+func surveyCPMAMode() error {
+	mode := viperConfig.GetString("Mode")
+	if !viperConfig.InConfig("mode") && mode == "" {
+		prompt := &survey.Select{
+			Message: "Should CPMA generate only report, only manifests or both?",
+			Options: []string{"Both", "Reports only", "Manifests only"},
+		}
+		err := survey.AskOne(prompt, &mode, nil)
+		if err != nil {
+			return err
+		}
+
+		switch mode {
+		case "Reports only":
+			viperConfig.Set("Mode", OnlyReportMode)
+		case "Manifests only":
+			viperConfig.Set("Mode", OnlyManifestsMode)
+		}
+	}
+
+	switch viperConfig.GetString("Mode") {
+	case "report":
+	case "manifests":
+	case "":
+	default:
+		return errors.New("Accepted values for mode are: manifests or report")
 	}
 
 	return nil

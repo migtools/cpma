@@ -40,7 +40,7 @@ func (e APIExtraction) Transform() ([]Output, error) {
 }
 
 func (e APIExtraction) buildReportOutput() (Output, error) {
-	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+	if env.Config().GetString("Mode") == env.OnlyManifestsMode {
 		logrus.Debug("Skipping APITransform report, only manifest mode was set")
 		return ReportOutput{}, nil
 	}

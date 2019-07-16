@@ -20,17 +20,24 @@ $ ./bin/cpma
 
 Flags:
 ```
-  -i, --allow-insecure-host   allow insecure ssh host key
-  -c, --cluster-name string   OCP3 cluster kubeconfig name
-      --config string         config file (Default searches ./cpma.yaml, $HOME/cpma.yml)
-  -d, --debug                 show debug ouput
-  -h, --help                  help for cpma
-  -n, --hostname string       OCP3 cluster hostname
-  -w, --work-dir string       set the working directory (default ".")
-  -k, --ssh-keyfile string    OCP3 ssh keyfile path
-  -l, --ssh-login string      OCP3 ssh login
-  -p, --ssh-port string       OCP3 ssh port
-  -v, --verbose               verbose output
+  -i, --allow-insecure-host        allow insecure ssh host key
+  -c, --cluster-name string        OCP3 cluster kubeconfig name
+      --config string              config file (Default searches ./cpma.yaml, $HOME/cpma.yml)
+      --config-source string       source for OCP3 config files, accepted values: remote or local
+      --crio-config string         path to crio config file
+  -d, --debug                      show debug ouput
+      --etcd-config string         path to etcd config file
+  -h, --help                       help for cpma
+  -n, --hostname string            OCP3 cluster hostname
+      --master-config string       path to master config file
+      --mode string                Set CPMA mode: generate only report, only manifests or both. Accepted values: manifests or report
+      --node-config string         path to node config file
+      --registries-config string   path to registries config file
+  -k, --ssh-keyfile string         OCP3 ssh keyfile path
+  -l, --ssh-login string           OCP3 ssh login
+  -p, --ssh-port string            OCP3 ssh port
+  -v, --verbose                    verbose output
+  -w, --work-dir string            set application data working directory (Default ".")
 ```
 
 You can find an example config in `examples/`. If a config is not provided CPMA will prompt for configuration information and offer to save inputs to a new configuration file.

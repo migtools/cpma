@@ -53,6 +53,75 @@ func TestReport(t *testing.T) {
 	os.RemoveAll(e2eTestOut)
 }
 
+func TestCPMAModes(t *testing.T) {
+	var (
+		e2eTestDataDir string
+		e2eTestOut     string
+
+		err error
+	)
+
+	e2eTestDataDir = path.Join("test", "e2e", "testdata")
+	e2eTestOut = path.Join(e2eTestDataDir, "out")
+
+	err = openClusterSession(e2eTestOut)
+	assert.NoError(t, err, "Could not open cluster session")
+
+	os.Chdir("../..")
+	os.Setenv("CPMA_WORKDIR", e2eTestOut)
+	os.Setenv("CPMA_CREATECONFIG", "no")
+	os.Setenv("CPMA_CONFIGSOURCE", "remote")
+	os.Setenv("CPMA_INSECUREHOSTKEY", "true")
+
+	err = runCpma()
+	assert.NoError(t, err, "Couldn't execute CPMA")
+
+	testCases := []struct {
+		name string
+		mode string
+	}{
+		{
+			name: "Only report mode",
+			mode: env.OnlyReportMode,
+		},
+		{
+			name: "Only manifests mode",
+			mode: env.OnlyManifestsMode,
+		},
+		{
+			name: "Both allowed",
+			mode: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			os.Setenv("Mode", tc.mode)
+			err = runCpma()
+			assert.NoError(t, err, "Couldn't execute CPMA")
+			switch tc.mode {
+			case env.OnlyReportMode:
+				// if report mode is on, manifests should be missing
+				_, err := os.Stat(path.Join(e2eTestOut, "manifests"))
+				os.IsNotExist(err)
+				assert.Equal(t, true, os.IsNotExist(err))
+			case env.OnlyManifestsMode:
+				// if manifests mode is on, reports should be missing
+				_, err := os.Stat(path.Join(e2eTestOut, "report.json"))
+				os.IsNotExist(err)
+				assert.Equal(t, true, os.IsNotExist(err))
+			default:
+				// report.json and manifests should be present by default
+				_, err := os.Stat(path.Join(e2eTestOut, "report.json"))
+				assert.Equal(t, nil, err)
+				_, err = os.Stat(path.Join(e2eTestOut, "manifests"))
+				assert.Equal(t, nil, err)
+			}
+		})
+	}
+	os.Unsetenv("Mode")
+}
+
 // openClusterSession will ensure that cluster session is open
 func openClusterSession(tmpDir string) error {
 	cmd := exec.Command("which", "oc")

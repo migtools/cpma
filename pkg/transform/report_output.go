@@ -35,7 +35,7 @@ func (r ReportOutput) Flush() error {
 
 // DumpReports creates OCDs files
 func DumpReports(r ReportOutput) {
-	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+	if env.Config().GetString("Mode") == env.OnlyManifestsMode {
 		return
 	}
 
