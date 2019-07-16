@@ -4,8 +4,8 @@
 
 ### 1. Prerequisites
 
-Prior to working with CPMA you need to deploy an OCP3 cluster(OCP 3.7, 3.9, 3.10, 3.11 should be supported).
-In order to generate a report, CPMA interacts with OCP using it's API. This means KUBECONFIG is required as a well as user used to talk with OCP cluster API needs to have priviligies to list nodes, projects, pods etc. Recommended cluster role is `system:admin`. It can be configured with following command: `oc adm policy add-cluster-role-to-user system:admin <username>`.
+Prior to working with CPMA you need to deploy an OCP 3.7+ cluster(OCP 3.7, 3.9, 3.10, 3.11 will be supported).
+In order to generate a report, CPMA interacts with OCP using it's API. This means KUBECONFIG is required as a well as user used to talk with OCP cluster API needs to have privileges to list nodes, projects, pods etc. Recommended cluster role is `system-admin`. It can be configured with following command: `oc adm policy add-cluster-role-to-user system-admin <username>`.
 
 ---
 
@@ -38,4 +38,4 @@ If you have a predifined yaml config, you can pass it using `--config` flag, or 
 
 Generated report will be placed inside specified working directory in format of a json file. We are still working on passing this report to UI.
 
-You can find report example report in this scenario directory.
+You can find example report.json in this scenario directory.
