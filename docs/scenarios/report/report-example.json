@@ -1,0 +1,577 @@
+{
+  "cluster": {
+    "nodes": [
+      {
+        "name": "infra-0.ademicev4.lab.rdu2.cee.example.com",
+        "masterNode": false,
+        "resources": {
+          "cpu": "2",
+          "memoryConsumed": "100Mi",
+          "memoryCapacity": "8009152Ki",
+          "runningPods": "8",
+          "podCapacity": "250"
+        }
+      },
+      {
+        "name": "master-0.ademicev4.lab.rdu2.cee.example.com",
+        "masterNode": true,
+        "resources": {
+          "cpu": "2",
+          "memoryConsumed": "100Mi",
+          "memoryCapacity": "16266692Ki",
+          "runningPods": "13",
+          "podCapacity": "250"
+        }
+      }
+    ],
+    "namespaces": [
+      {
+        "name": "default",
+        "latestChange": "2019-07-16T07:12:23Z",
+        "resources": {
+          "containerCount": 5,
+          "cpuTotal": "4",
+          "memoryTotal": "1Gi"
+        },
+        "pods": [
+          {
+            "name": "docker-registry-1-75sjl"
+          },
+          {
+            "name": "registry-console-1-dkgrp"
+          },
+          {
+            "name": "router-1-5c2nz"
+          },
+          {
+            "name": "router-1-g2f4k"
+          },
+          {
+            "name": "router-1-smwss"
+          }
+        ],
+        "routes": [
+          {
+            "name": "docker-registry",
+            "host": "docker-registry-default.apps.ademicev4.lab.rdu2.cee.example.com",
+            "tls": {
+              "termination": "passthrough"
+            },
+            "to": {
+              "kind": "Service",
+              "name": "docker-registry",
+              "weight": 100
+            },
+            "wildcardPolicy": "None"
+          },
+          {
+            "name": "registry-console",
+            "host": "registry-console-default.apps.ademicev4.lab.rdu2.cee.example.com",
+            "tls": {
+              "termination": "passthrough"
+            },
+            "to": {
+              "kind": "Service",
+              "name": "registry-console",
+              "weight": 100
+            },
+            "wildcardPolicy": "None"
+          }
+        ]
+      },
+      {
+        "name": "openshift-node",
+        "latestChange": "2019-06-18T11:28:12Z",
+        "resources": {
+          "containerCount": 5,
+          "cpuTotal": "0",
+          "memoryTotal": "0"
+        },
+        "pods": [
+          {
+            "name": "sync-2ccnh"
+          },
+          {
+            "name": "sync-2t7d2"
+          },
+          {
+            "name": "sync-5wczb"
+          },
+          {
+            "name": "sync-g489j"
+          },
+          {
+            "name": "sync-jx55x"
+          }
+        ],
+        "daemonSets": [
+          {
+            "name": "sync",
+            "latestChange": "2019-06-18T11:23:10Z"
+          }
+        ]
+      }
+    ],
+    "pvs": [
+      {
+        "name": "pv1",
+        "driver": {
+          "nfs": {
+            "server": "example.com",
+            "path": "/some/path"
+          }
+        },
+        "capacity": {
+          "storage": "1Gi"
+        },
+        "phase": "Available"
+      },
+      {
+        "name": "pvc-c6e71436-9274-11e9-a906-fa163ed10b60",
+        "driver": {
+          "glusterfs": {
+            "endpoints": "glusterfs-dynamic-c6e71436-9274-11e9-a906-fa163ed10b60",
+            "path": "vol_5addbfe3562d16f722272a87d8b50af5"
+          }
+        },
+        "storageClass": "glusterfs-storage",
+        "capacity": {
+          "storage": "1Gi"
+        },
+        "phase": "Bound"
+      }
+    ],
+    "storageClasses": [
+      {
+        "name": "glusterfs-storage",
+        "provisioner": "kubernetes.io/glusterfs"
+      }
+    ],
+    "rbacreport": {
+      "users": [
+        {
+          "name": "quicklab",
+          "identities": [
+            "htpasswd_auth:quicklab"
+          ],
+          "groups": null
+        }
+      ],
+      "group": null,
+      "roles": [
+        {
+          "namespace": "default",
+          "roles": [
+            {
+              "name": "prometheus-k8s"
+            }
+          ]
+        }
+      ],
+      "clusterRoles": [
+        {
+          "name": "system:statefulset-controller"
+        },
+        {
+          "name": "system:volume-scheduler"
+        },
+        {
+          "name": "system:webhook"
+        },
+        {
+          "name": "view"
+        }
+      ],
+      "clusterRoleBindings": [
+        {
+          "name": "tsb-openshift-template-service-broker",
+          "userNames": [
+            "system:serviceaccount:openshift-template-service-broker:apiserver"
+          ],
+          "groupNames": null,
+          "subjects": [
+            {
+              "kind": "ServiceAccount",
+              "namespace": "openshift-template-service-broker",
+              "name": "apiserver"
+            }
+          ],
+          "roleRef": {
+            "name": "system:openshift:controller:template-service-broker"
+          }
+        }
+      ],
+      "securityContextConstraints": [
+        {
+          "name": "anyuid",
+          "users": [],
+          "groups": [
+            "system:cluster-admins"
+          ]
+        },
+        {
+          "name": "hostaccess",
+          "users": [],
+          "groups": []
+        },
+        {
+          "name": "hostmount-anyuid",
+          "users": [
+            "system:serviceaccount:openshift-infra:pv-recycler-controller",
+            "system:serviceaccount:kube-service-catalog:service-catalog-apiserver"
+          ],
+          "groups": []
+        },
+        {
+          "name": "hostnetwork",
+          "users": [
+            "system:serviceaccount:default:router",
+            "system:serviceaccount:default:registry"
+          ],
+          "groups": []
+        },
+        {
+          "name": "kube-state-metrics",
+          "users": [
+            "system:serviceaccount:openshift-monitoring:kube-state-metrics"
+          ],
+          "groups": []
+        },
+        {
+          "name": "node-exporter",
+          "users": [
+            "system:serviceaccount:openshift-monitoring:node-exporter"
+          ],
+          "groups": []
+        },
+        {
+          "name": "nonroot",
+          "users": [],
+          "groups": []
+        },
+        {
+          "name": "privileged",
+          "users": [
+            "system:admin",
+            "system:serviceaccount:openshift-infra:build-controller",
+            "system:serviceaccount:openshift-node:sync",
+            "system:serviceaccount:openshift-sdn:sdn",
+            "system:serviceaccount:management-infra:management-admin",
+            "system:serviceaccount:management-infra:inspector-admin",
+            "system:serviceaccount:glusterfs:default",
+            "system:serviceaccount:glusterfs:router",
+            "system:serviceaccount:glusterfs:heketi-storage-service-account"
+          ],
+          "groups": [
+            "system:cluster-admins",
+            "system:nodes",
+            "system:masters"
+          ]
+        },
+        {
+          "name": "restricted",
+          "users": [],
+          "groups": [
+            "system:authenticated"
+          ]
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "component": "API",
+      "reports": [
+        {
+          "name": "API",
+          "kind": "Port",
+          "supported": false,
+          "confidence": 0,
+          "comment": "The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port 443"
+        }
+      ]
+    },
+    {
+      "component": "Docker",
+      "reports": [
+        {
+          "name": "Docker",
+          "kind": "Container Runtime",
+          "supported": false,
+          "confidence": 0,
+          "comment": "The Docker runtime has been replaced with CRI-O"
+        }
+      ]
+    },
+    {
+      "component": "ETCD",
+      "reports": [
+        {
+          "name": "ETCD Client Port",
+          "kind": "Configuration",
+          "supported": false,
+          "confidence": 2,
+          "comment": "The Openshift 4 ETCD Cluster is not configurable and uses port 2379. Your Openshift 3 Cluster is using port 2379"
+        },
+        {
+          "name": "ETCD TLS Cipher Suites",
+          "kind": "Configuration",
+          "supported": false,
+          "confidence": 2,
+          "comment": "No Custom TLS Cipher Suites were found"
+        }
+      ]
+    },
+    {
+      "component": "OAuth",
+      "reports": [
+        {
+          "name": "HTPasswdPasswordIdentityProvider",
+          "kind": "IdentityProviders",
+          "supported": true,
+          "confidence": 2,
+          "comment": "Identity provider htpasswd_auth is supported in OCP4"
+        },
+        {
+          "name": "AccessTokenMaxAgeSeconds",
+          "kind": "TokenConfig",
+          "supported": true,
+          "confidence": 2,
+          "comment": ""
+        },
+        {
+          "name": "AuthorizeTokenMaxAgeSeconds",
+          "kind": "TokenConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Translation of AuthorizeTokenMaxAgeSeconds is not supported, it's value is 5 minutes in OCP4"
+        },
+        {
+          "name": "",
+          "kind": "AssetPublicURL",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Translation of AssetPublicURL is not supported"
+        },
+        {
+          "name": "",
+          "kind": "MasterPublicURL",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Translation of MasterPublicURL is not supported"
+        },
+        {
+          "name": "",
+          "kind": "MasterCA",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Translation of MasterCA is not supported"
+        },
+        {
+          "name": "",
+          "kind": "MasterURL",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Translation of MasterURL is not supported"
+        },
+        {
+          "name": "",
+          "kind": "GrantConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Translation of GrantConfig is not supported"
+        },
+        {
+          "name": "",
+          "kind": "SessionConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Translation of SessionConfig is not supported"
+        }
+      ]
+    },
+    {
+      "component": "SDN",
+      "reports": [
+        {
+          "name": "CIDR",
+          "kind": "ClusterNetwork",
+          "supported": true,
+          "confidence": 1,
+          "comment": "Networks must be configured during installation, it's possible to use 10.128.0.0/14"
+        },
+        {
+          "name": "HostSubnetLength",
+          "kind": "ClusterNetwork",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Networks must be configured during installation,\n hostSubnetLength was replaced with hostPrefix in OCP4, default value was set to 23"
+        },
+        {
+          "name": "172.30.0.0/16",
+          "kind": "ServiceNetwork",
+          "supported": true,
+          "confidence": 1,
+          "comment": "Networks must be configured during installation"
+        },
+        {
+          "name": "",
+          "kind": "ExternalIPNetworkCIDRs",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Configuration of ExternalIPNetworkCIDRs is not supported in OCP4"
+        },
+        {
+          "name": "",
+          "kind": "IngressIPNetworkCIDR",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Translation of this configuration is not supported, refer to ingress operator configuration for more information"
+        }
+      ]
+    },
+    {
+      "component": "Image",
+      "reports": [
+        {
+          "name": "Search",
+          "kind": "Registries",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Search registries can not be configured in OCP 4: registry.access.redhat.com"
+        },
+        {
+          "name": "Search",
+          "kind": "Registries",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Search registries can not be configured in OCP 4: docker.io"
+        },
+        {
+          "name": "Search",
+          "kind": "Registries",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Search registries can not be configured in OCP 4: registry.fedoraproject.org"
+        },
+        {
+          "name": "Search",
+          "kind": "Registries",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Search registries can not be configured in OCP 4: quay.io"
+        },
+        {
+          "name": "Search",
+          "kind": "Registries",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Search registries can not be configured in OCP 4: registry.centos.org"
+        },
+        {
+          "name": "AllowedRegistriesForImport",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": true,
+          "confidence": 2,
+          "comment": ""
+        },
+        {
+          "name": "AdditionalTrustedCA",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Each registry must provide its own self-signed CA"
+        },
+        {
+          "name": "ExternalRegistryHostname",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": true,
+          "confidence": 2,
+          "comment": ""
+        },
+        {
+          "name": "InternalRegistryHostname",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Set by OCP4 image registry operator"
+        },
+        {
+          "name": "DisableScheduledImport",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported by OCP4"
+        },
+        {
+          "name": "MaxImagesBulkImportedPerRepository",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported by OCP4"
+        },
+        {
+          "name": "MaxScheduledImageImportsPerMinute",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported by OCP4"
+        },
+        {
+          "name": "ScheduledImageImportMinimumIntervalSeconds",
+          "kind": "MasterConfig.ImagePolicyConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported by OCP4"
+        }
+      ]
+    },
+    {
+      "component": "Project",
+      "reports": [
+        {
+          "name": "ProjectRequestMessage",
+          "kind": "ProjectConfig",
+          "supported": true,
+          "confidence": 2,
+          "comment": "Networks must be configured during installation"
+        },
+        {
+          "name": "ProjectRequestTemplate",
+          "kind": "ProjectConfig",
+          "supported": true,
+          "confidence": 2,
+          "comment": "Networks must be configured during installation"
+        },
+        {
+          "name": "DefaultNodeSelector",
+          "kind": "ProjectConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported in OCP4: node-role.kubernetes.io/compute=true"
+        },
+        {
+          "name": "SecurityAllocator.mcsAllocatorRange",
+          "kind": "ProjectConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported in OCP4: s0:/2"
+        },
+        {
+          "name": "SecurityAllocator.mcsLabelsPerProject",
+          "kind": "ProjectConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported in OCP4: 5"
+        },
+        {
+          "name": "SecurityAllocator.uidAllocatorRange",
+          "kind": "ProjectConfig",
+          "supported": false,
+          "confidence": 0,
+          "comment": "Not supported in OCP4: 1000000000-1999999999/10000"
+        }
+      ]
+    }
+  ]
+}
