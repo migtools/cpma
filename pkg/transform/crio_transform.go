@@ -82,6 +82,11 @@ func (e CrioExtraction) Transform() ([]Output, error) {
 }
 
 func (e CrioExtraction) buildManifestOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyReportMode {
+		logrus.Debug("Skipping CrioTransform manifests, only report mode was set")
+		return ReportOutput{}, nil
+	}
+
 	var manifests []Manifest
 
 	const (
@@ -116,6 +121,11 @@ func (e CrioExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e CrioExtraction) buildReportOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+		logrus.Debug("Skipping CrioTransform report, only manifests mode was set")
+		return ReportOutput{}, nil
+	}
+
 	componentReport := ComponentReport{
 		Component: CrioComponentName,
 	}

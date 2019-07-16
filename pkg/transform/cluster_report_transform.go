@@ -2,6 +2,7 @@ package transform
 
 import (
 	"github.com/fusor/cpma/pkg/api"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform/cluster"
 	"github.com/sirupsen/logrus"
 )
@@ -21,6 +22,11 @@ type ClusterTransform struct {
 // Transform converts data collected from an OCP3 API into a useful output
 func (e ClusterReportExtraction) Transform() ([]Output, error) {
 	logrus.Info("ClusterTransform::Transform")
+
+	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+		logrus.Debug("Skipping ClusterTransform report, only manifest mode was set")
+		return []Output{}, nil
+	}
 
 	clusterReport := cluster.GenClusterReport(api.Resources{
 		PersistentVolumeList: e.PersistentVolumeList,

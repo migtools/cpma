@@ -3,6 +3,7 @@ package transform
 import (
 	"encoding/json"
 
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/cluster"
 	"github.com/sirupsen/logrus"
@@ -34,6 +35,10 @@ func (r ReportOutput) Flush() error {
 
 // DumpReports creates OCDs files
 func DumpReports(r ReportOutput) {
+	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+		return
+	}
+
 	var existingReports ReportOutput
 
 	jsonFile := "report.json"

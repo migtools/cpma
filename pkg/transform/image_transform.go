@@ -55,6 +55,11 @@ func (e ImageExtraction) Transform() ([]Output, error) {
 }
 
 func (e ImageExtraction) buildManifestOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyReportMode {
+		logrus.Debug("Skipping ImageTransform manifests, only report mode was set")
+		return ReportOutput{}, nil
+	}
+
 	var manifests []Manifest
 
 	const (
@@ -97,6 +102,11 @@ func (e ImageExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e ImageExtraction) buildReportOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+		logrus.Debug("Skipping ImageTransform report, only manifests mode was set")
+		return ReportOutput{}, nil
+	}
+
 	componentReport := ComponentReport{
 		Component: ImageComponentName,
 	}

@@ -39,6 +39,10 @@ func (e ProjectExtraction) Transform() ([]Output, error) {
 }
 
 func (e ProjectExtraction) buildManifestOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyReportMode {
+		return ReportOutput{}, nil
+	}
+
 	var manifests []Manifest
 
 	projectCR, err := project.Translate(e.MasterConfig.ProjectConfig)
@@ -60,6 +64,10 @@ func (e ProjectExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e ProjectExtraction) buildReportOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+		return ReportOutput{}, nil
+	}
+
 	componentReport := ComponentReport{
 		Component: ProjectComponentName,
 	}

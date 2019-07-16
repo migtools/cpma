@@ -42,6 +42,11 @@ func (e SDNExtraction) Transform() ([]Output, error) {
 }
 
 func (e SDNExtraction) buildManifestOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyReportMode {
+		logrus.Debug("Skipping SDNTransform manifests, only report mode was set")
+		return ReportOutput{}, nil
+	}
+
 	var manifests []Manifest
 
 	networkCR, err := sdn.Translate(e.MasterConfig)
@@ -63,6 +68,11 @@ func (e SDNExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e SDNExtraction) buildReportOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+		logrus.Debug("Skipping SDNTransform report, only manifests mode was set")
+		return ReportOutput{}, nil
+	}
+
 	componentReport := ComponentReport{
 		Component: SDNComponentName,
 	}

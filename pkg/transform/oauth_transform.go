@@ -43,6 +43,11 @@ func (e OAuthExtraction) Transform() ([]Output, error) {
 }
 
 func (e OAuthExtraction) buildManifestOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyReportMode {
+		logrus.Debug("Skipping OAuthTransform manifests, only report mode was set")
+		return ReportOutput{}, nil
+	}
+
 	var ocp4Cluster Cluster
 
 	oauthResources, err := oauth.Translate(e.IdentityProviders, e.TokenConfig, e.Templates)
@@ -91,6 +96,11 @@ func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e OAuthExtraction) buildReportOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+		logrus.Debug("Skipping OAuthTransform report, only manifests mode was set")
+		return ReportOutput{}, nil
+	}
+
 	componentReport := ComponentReport{
 		Component: OAuthComponentName,
 	}

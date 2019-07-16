@@ -1,6 +1,7 @@
 package transform
 
 import (
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -151,6 +152,10 @@ func GenYAML(CR interface{}) ([]byte, error) {
 }
 
 func openReports() {
+	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+		return
+	}
+
 	jsonfile := "report.json"
 	emptyReport := []byte("{}")
 

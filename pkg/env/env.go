@@ -19,6 +19,11 @@ const (
 	// AppName holds the name of this application
 	AppName = "CPMA"
 	logFile = "cpma.log"
+
+	// OnlyReportMode holds name of cpma mode
+	OnlyReportMode = "OnlyReportMode"
+	// OnlyManifestMode holds name of cpma mode
+	OnlyManifestMode = "OnlyManifestMode"
 )
 
 var (

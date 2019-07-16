@@ -29,6 +29,11 @@ func (e DockerExtraction) Transform() ([]Output, error) {
 }
 
 func (e DockerExtraction) buildReportOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+		logrus.Debug("Skipping DockerTransform report, only manifests mode was set")
+		return ReportOutput{}, nil
+	}
+
 	componentReport := ComponentReport{
 		Component: DockerComponentName,
 	}

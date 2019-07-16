@@ -37,6 +37,10 @@ func (e SchedulerExtraction) Transform() ([]Output, error) {
 }
 
 func (e SchedulerExtraction) buildManifestOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyReportMode {
+		return ReportOutput{}, nil
+	}
+
 	var manifests []Manifest
 
 	schedulerCR, err := scheduler.Translate(e.MasterConfig)
@@ -58,6 +62,11 @@ func (e SchedulerExtraction) buildManifestOutput() (Output, error) {
 }
 
 func (e SchedulerExtraction) buildReportOutput() (Output, error) {
+	if env.Config().GetString("Mode") == env.OnlyManifestMode {
+		logrus.Debug("Skipping SchedulerTransform report, only manifests mode was set")
+		return ReportOutput{}, nil
+	}
+
 	componentReport := ComponentReport{
 		Component: SchedulerComponentName,
 	}
