@@ -151,7 +151,6 @@ func TestInitFromEnv(t *testing.T) {
 				err = os.Unsetenv(asset.envKey)
 				assert.NoError(t, err, "Unable to unset %s", asset.envKey)
 			}
-			os.Remove(ConfigFile)
 		})
 	}
 }
