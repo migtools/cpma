@@ -15,8 +15,12 @@
   ],
   "quotas": [
    {
-    "name": "quota1",
-    "quota": {},
+    "name": "test-quota1",
+    "quota": {
+     "hard": {
+      "testkey": "99"
+     }
+    },
     "selector": {
      "labels": null,
      "annotations": null

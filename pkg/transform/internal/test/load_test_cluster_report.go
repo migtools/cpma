@@ -229,22 +229,27 @@ func CreateTestResourceQuotaList() *k8sapicore.ResourceQuotaList {
 
 // CreateTestQuotaList test pod list
 func CreateTestQuotaList() *o7tapiquota.ClusterResourceQuotaList {
+	testkey := resource.Quantity{
+		Format: resource.DecimalSI,
+	}
+	testkey.Set(int64(99))
+
 	quotaList := &o7tapiquota.ClusterResourceQuotaList{}
 	quotaList.Items = make([]o7tapiquota.ClusterResourceQuota, 1)
 
 	quotaList.Items[0] = o7tapiquota.ClusterResourceQuota{
 		ObjectMeta: k8smachinery.ObjectMeta{
-			Name: "quota1",
+			Name: "test-quota1",
 		},
 		Spec: o7tapiquota.ClusterResourceQuotaSpec{
 			Quota: k8sapicore.ResourceQuotaSpec{
-				Hard: k8sapicore.ResourceList{},
+				Hard: k8sapicore.ResourceList{
+					"testkey": testkey,
+				},
 			},
 			Selector: o7tapiquota.ClusterResourceQuotaSelector{},
 		},
 	}
-	//			ScopeSelector: &k8sapicore.ScopeSelector{},
-	//			Scopes:        []k8sapicore.ResourceQuotaScope{},
 	return quotaList
 }
 
