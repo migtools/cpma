@@ -5,7 +5,7 @@
 ### 1. Prerequisites
 
 Prior to working with CPMA you need to deploy an OCP 3.7+ cluster(OCP 3.7, 3.9, 3.10, 3.11 will be supported).
-In order to generate a report, CPMA interacts with OCP using it's API. This means KUBECONFIG is required as a well as user used to talk with OCP cluster API needs to have privileges to list nodes, projects, pods etc. Recommended cluster role is `system-admin`. It can be configured with following command: `oc adm policy add-cluster-role-to-user system-admin <username>`.
+In order to generate a report, CPMA interacts with OCP using it's API. This means KUBECONFIG is required as a well as user used to talk with OCP cluster API needs to have privileges to list nodes, projects, pods etc. Recommended cluster role is `cluster-admin`. It can be configured with following command: `oc adm policy add-cluster-role-to-user cluster-admin <username>`.
 
 ---
 
@@ -18,7 +18,7 @@ CPMA can be configured using either:
 ![prompt](https://user-images.githubusercontent.com/20123872/60581251-c0f57100-9d86-11e9-9ab3-7681b840731a.gif)
 
 
-2. Flags. All config values can be passed using flags. For example: `./cpma --source cluster.example.com --work-dir ./dir` Refer to CPMA's [README.md](https://github.com/fusor/cpma#usage) for full list of flags.
+2. Flags. All configuration values can be passed using flags. For example: `./cpma --source cluster.example.com --work-dir ./dir` Refer to CPMA's [README.md](https://github.com/fusor/cpma#usage) for full list of flags.
 
 3. Predefined configuration file. You can manually create a yaml configuration based on this [example](https://github.com/fusor/cpma/blob/master/examples/cpma-config.example.yaml).
 
@@ -36,6 +36,6 @@ If you have a predifined yaml configuration, you can pass it using `--config` fl
 
 ## 4. Reading report.json
 
-Generated report will be placed inside specified working directory in format of a json file. We are still working on passing this report to UI.
+Generated report will be placed inside specified working directory in format of a json file. We are planning to visualize report in one of future mig-ui versions.
 
 You can find example report.json in this scenario directory.
