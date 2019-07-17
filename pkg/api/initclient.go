@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sync"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
@@ -22,6 +25,21 @@ var (
 	K8sClient *kubernetes.Clientset
 	// O7tClient api client used for connecting to Openshift api
 	O7tClient *OpenshiftClient
+
+	kubeConfigGetter = func() (*clientcmdapi.Config, error) {
+		return KubeConfig, nil
+	}
+
+	// singleton instances
+	instances struct {
+		Openshift *OpenshiftClient
+		K8S       *kubernetes.Clientset
+	}
+
+	once struct {
+		Openshift sync.Once
+		K8S       sync.Once
+	}
 )
 
 // ParseKubeConfig parse kubeconfig
@@ -68,20 +86,12 @@ func getKubeConfigPath() (string, error) {
 
 // CreateK8sClient create api client using cluster from kubeconfig context
 func CreateK8sClient(contextCluster string) error {
-	// Check if context is present in kubeconfig
-	if err := validateConfig(contextCluster); err != nil {
+	config, err := buildConfig(contextCluster)
+	if err != nil {
 		return err
 	}
 
-	var kubeConfigGetter = func() (*clientcmdapi.Config, error) {
-		return KubeConfig, nil
-	}
-	config, err := clientcmd.BuildConfigFromKubeconfigGetter("", kubeConfigGetter)
-
-	if K8sClient, err = kubernetes.NewForConfig(config); err != nil {
-		return errors.Wrap(err, "Error in creating API client")
-	}
-
+	K8sClient = InitK8SOrDie(config)
 	logrus.Debugf("Kubernetes API client initialized for %s", contextCluster)
 
 	return nil
@@ -89,19 +99,29 @@ func CreateK8sClient(contextCluster string) error {
 
 // CreateO7tClient create api client using cluster from kubeconfig context
 func CreateO7tClient(contextCluster string) error {
-	var kubeConfigGetter = func() (*clientcmdapi.Config, error) {
-		return KubeConfig, nil
+	config, err := buildConfig(contextCluster)
+	if err != nil {
+		return err
 	}
 
-	config, err := clientcmd.BuildConfigFromKubeconfigGetter("", kubeConfigGetter)
-
-	if O7tClient, err = Openshift(config); err != nil {
-		return errors.Wrap(err, "Error in creating API client")
-	}
-
+	O7tClient = InitO7tOrDie(config)
 	logrus.Debugf("Openshift API client initialized for %s", contextCluster)
 
 	return nil
+}
+
+func buildConfig(contextCluster string) (*rest.Config, error) {
+	// Check if context is present in kubeconfig
+	if err := validateConfig(contextCluster); err != nil {
+		return nil, err
+	}
+
+	config, err := clientcmd.BuildConfigFromKubeconfigGetter("", kubeConfigGetter)
+	if err != nil {
+		return nil, errors.Wrap(err, "Error in KUBECONFIG")
+	}
+
+	return config, nil
 }
 
 func validateConfig(contextCluster string) error {
