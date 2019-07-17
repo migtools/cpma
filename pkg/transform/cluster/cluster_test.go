@@ -7,13 +7,55 @@ import (
 	"github.com/fusor/cpma/pkg/transform/cluster"
 	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
 	o7tapiauth "github.com/openshift/api/authorization/v1"
+	o7tapiquota "github.com/openshift/api/quota/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/stretchr/testify/assert"
+
 	k8sapicore "k8s.io/api/core/v1"
 	k8sapistorage "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	k8smachinery "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+func TestReportQuotas(t *testing.T) {
+	testkey := resource.Quantity{
+		Format: resource.DecimalSI,
+	}
+	testkey.Set(int64(99))
+
+	expectedQuotaReports := make([]cluster.QuotaReport, 0)
+	expectedQuotaReports = append(expectedQuotaReports, cluster.QuotaReport{
+		Name: "test-quota1",
+		Quota: k8sapicore.ResourceQuotaSpec{
+			Hard: k8sapicore.ResourceList{
+				"testkey": testkey},
+		},
+		Selector: o7tapiquota.ClusterResourceQuotaSelector{},
+	})
+
+	testCases := []struct {
+		name                 string
+		inputQuotaList       *o7tapiquota.ClusterResourceQuotaList
+		expectedQuotaReports []cluster.QuotaReport
+	}{
+		{
+			name:                 "generate cluster quota report",
+			inputQuotaList:       cpmatest.CreateTestQuotaList(),
+			expectedQuotaReports: expectedQuotaReports,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			clusterReport := &cluster.Report{}
+			clusterReport.ReportQuotas(api.Resources{
+				QuotaList: tc.inputQuotaList,
+			})
+
+			assert.Equal(t, tc.expectedQuotaReports, clusterReport.Quotas)
+		})
+	}
+}
 
 func TestReportNodes(t *testing.T) {
 	clusterReport := &cluster.Report{}

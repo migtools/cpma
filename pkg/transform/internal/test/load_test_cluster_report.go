@@ -5,8 +5,10 @@ import (
 
 	"github.com/fusor/cpma/pkg/api"
 	o7tapiauth "github.com/openshift/api/authorization/v1"
+	o7tapiquota "github.com/openshift/api/quota/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
 	o7tapisecurity "github.com/openshift/api/security/v1"
+
 	o7tapiuser "github.com/openshift/api/user/v1"
 	k8sapiapps "k8s.io/api/apps/v1"
 	k8sapicore "k8s.io/api/core/v1"
@@ -167,15 +169,88 @@ func CreateTestNameSpaceList() []api.NamespaceResources {
 
 	namespaces := make([]api.NamespaceResources, 1)
 	namespaces[0] = api.NamespaceResources{
-		NamespaceName:  "testNamespace",
-		PodList:        CreateTestPodList(),
-		RouteList:      CreateTestRouteList(),
-		DeploymentList: CreateDeploymentList(),
-		DaemonSetList:  CreateDaemonSetList(),
-		RolesList:      roleList,
+		NamespaceName:     "testNamespace",
+		ResourceQuotaList: CreateTestResourceQuotaList(),
+		PodList:           CreateTestPodList(),
+		RouteList:         CreateTestRouteList(),
+		DeploymentList:    CreateDeploymentList(),
+		DaemonSetList:     CreateDaemonSetList(),
+		RolesList:         roleList,
 	}
 
 	return namespaces
+}
+
+// CreateTestResourceQuotaList test pod list
+func CreateTestResourceQuotaList() *k8sapicore.ResourceQuotaList {
+	configmaps := resource.Quantity{
+		Format: resource.DecimalSI,
+	}
+	persistentvolumeclaims := resource.Quantity{
+		Format: resource.DecimalSI,
+	}
+	replicationcontrollers := resource.Quantity{
+		Format: resource.DecimalSI,
+	}
+	secrets := resource.Quantity{
+		Format: resource.DecimalSI,
+	}
+	services := resource.Quantity{
+		Format: resource.DecimalSI,
+	}
+	configmaps.Set(int64(10))
+	persistentvolumeclaims.Set(int64(4))
+	replicationcontrollers.Set(int64(20))
+	secrets.Set(int64(10))
+	services.Set(int64(10))
+
+	quotaList := &k8sapicore.ResourceQuotaList{}
+	quotaList.Items = make([]k8sapicore.ResourceQuota, 1)
+
+	quotaList.Items[0] = k8sapicore.ResourceQuota{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "resourcequota1",
+		},
+		Spec: k8sapicore.ResourceQuotaSpec{
+			Hard: k8sapicore.ResourceList{
+				"configmaps":             configmaps,
+				"persistentvolumeclaims": persistentvolumeclaims,
+				"replicationcontrollers": replicationcontrollers,
+				"secrets":                secrets,
+				"services":               services,
+			},
+			ScopeSelector: &k8sapicore.ScopeSelector{},
+			Scopes:        []k8sapicore.ResourceQuotaScope{},
+		},
+	}
+
+	return quotaList
+}
+
+// CreateTestQuotaList test pod list
+func CreateTestQuotaList() *o7tapiquota.ClusterResourceQuotaList {
+	testkey := resource.Quantity{
+		Format: resource.DecimalSI,
+	}
+	testkey.Set(int64(99))
+
+	quotaList := &o7tapiquota.ClusterResourceQuotaList{}
+	quotaList.Items = make([]o7tapiquota.ClusterResourceQuota, 1)
+
+	quotaList.Items[0] = o7tapiquota.ClusterResourceQuota{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "test-quota1",
+		},
+		Spec: o7tapiquota.ClusterResourceQuotaSpec{
+			Quota: k8sapicore.ResourceQuotaSpec{
+				Hard: k8sapicore.ResourceList{
+					"testkey": testkey,
+				},
+			},
+			Selector: o7tapiquota.ClusterResourceQuotaSelector{},
+		},
+	}
+	return quotaList
 }
 
 // CreateTestPodList test pod list

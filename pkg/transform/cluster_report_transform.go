@@ -23,11 +23,12 @@ func (e ClusterReportExtraction) Transform() ([]Output, error) {
 	logrus.Info("ClusterTransform::Transform")
 
 	clusterReport := cluster.GenClusterReport(api.Resources{
-		PersistentVolumeList: e.PersistentVolumeList,
-		StorageClassList:     e.StorageClassList,
+		QuotaList:            e.QuotaList,
 		NamespaceList:        e.NamespaceList,
 		NodeList:             e.NodeList,
+		PersistentVolumeList: e.PersistentVolumeList,
 		RBACResources:        e.RBACResources,
+		StorageClassList:     e.StorageClassList,
 	})
 
 	output := ReportOutput{
@@ -51,6 +52,12 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	}
 	extraction.NodeList = nodeList
 
+	quotaList, err := api.ListQuotas()
+	if err != nil {
+		return nil, err
+	}
+	extraction.QuotaList = quotaList
+
 	namespacesList, err := api.ListNamespaces()
 	if err != nil {
 		return nil, err
@@ -61,6 +68,12 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	extraction.NamespaceList = make([]api.NamespaceResources, namespaceListSize, namespaceListSize)
 	for i, namespace := range namespacesList.Items {
 		namespaceResources := api.NamespaceResources{NamespaceName: namespace.Name}
+
+		quotaList, err := api.ListResourceQuotas(namespace.Name)
+		if err != nil {
+			return nil, err
+		}
+		namespaceResources.ResourceQuotaList = quotaList
 
 		podsList, err := api.ListPods(namespace.Name)
 		if err != nil {

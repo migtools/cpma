@@ -13,6 +13,20 @@
     }
    }
   ],
+  "quotas": [
+   {
+    "name": "test-quota1",
+    "quota": {
+     "hard": {
+      "testkey": "99"
+     }
+    },
+    "selector": {
+     "labels": null,
+     "annotations": null
+    }
+   }
+  ],
   "namespaces": [
    {
     "name": "testNamespace",
@@ -63,6 +77,19 @@
      {
       "name": "testDeployment",
       "latestChange": "2019-07-07T08:45:35Z"
+     }
+    ],
+    "quotas": [
+     {
+      "name": "resourcequota1",
+      "hard": {
+       "configmaps": "10",
+       "persistentvolumeclaims": "4",
+       "replicationcontrollers": "20",
+       "secrets": "10",
+       "services": "10"
+      },
+      "selector": {}
      }
     ]
    }
