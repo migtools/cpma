@@ -1,7 +1,9 @@
-hostname: "master-0.test.example.com"
-sshlogin: "root"
-sshprivatekey: "/home/test/.ssh/testkey"
-sshport: 22
-workdir: "./data"
 clustername: "somename"
 configsource: remote
+hostname: "master-0.test.example.com"
+manifests: true
+reports: true
+sshlogin: "root"
+sshport: 22
+sshprivatekey: "/home/test/.ssh/testkey"
+workdir: "./data"

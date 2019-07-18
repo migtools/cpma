@@ -29,16 +29,26 @@ type OAuthTransform struct {
 
 // Transform converts data collected from an OCP3 into a useful output
 func (e OAuthExtraction) Transform() ([]Output, error) {
-	logrus.Info("OAuthTransform::Transform")
-	manifests, err := e.buildManifestOutput()
-	if err != nil {
-		return nil, err
+	outputs := []Output{}
+
+	if env.Config().GetBool("Manifests") {
+		logrus.Info("OAuthTransform::Transform:Manifests")
+		manifests, err := e.buildManifestOutput()
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, manifests)
 	}
-	reports, err := e.buildReportOutput()
-	if err != nil {
-		return nil, err
+
+	if env.Config().GetBool("Reports") {
+		logrus.Info("OAuthTransform::Transform:Reports")
+		reports, err := e.buildReportOutput()
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, reports)
 	}
-	outputs := []Output{manifests, reports}
+
 	return outputs, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/fusor/cpma/pkg/api"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform/cluster"
 	"github.com/fusor/cpma/pkg/transform/clusterquota"
 	"github.com/fusor/cpma/pkg/transform/quota"
@@ -24,27 +25,36 @@ type ClusterTransform struct {
 
 // Transform converts data collected from an OCP3 API into a useful output
 func (e ClusterExtraction) Transform() ([]Output, error) {
-	logrus.Info("ClusterTransform::Transform")
+	outputs := []Output{}
 
-	manifests, err := e.buildManifestOutput()
-	if err != nil {
-		return nil, err
+	if env.Config().GetBool("Manifests") {
+		logrus.Info("ClusterTransform::Transform:Manifests")
+		manifests, err := e.buildManifestOutput()
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, manifests)
 	}
 
-	clusterReport := cluster.GenClusterReport(api.Resources{
-		QuotaList:            e.QuotaList,
-		NamespaceList:        e.NamespaceList,
-		NodeList:             e.NodeList,
-		PersistentVolumeList: e.PersistentVolumeList,
-		RBACResources:        e.RBACResources,
-		StorageClassList:     e.StorageClassList,
-	})
+	if env.Config().GetBool("Reports") {
+		logrus.Info("ClusterTransform::Transform:Reports")
 
-	output := ReportOutput{
-		ClusterReport: clusterReport,
+		clusterReport := cluster.GenClusterReport(api.Resources{
+			QuotaList:            e.QuotaList,
+			NamespaceList:        e.NamespaceList,
+			NodeList:             e.NodeList,
+			PersistentVolumeList: e.PersistentVolumeList,
+			RBACResources:        e.RBACResources,
+			StorageClassList:     e.StorageClassList,
+		})
+
+		output := ReportOutput{
+			ClusterReport: clusterReport,
+		}
+
+		outputs = append(outputs, output)
 	}
 
-	outputs := []Output{output, manifests}
 	return outputs, nil
 }
 
