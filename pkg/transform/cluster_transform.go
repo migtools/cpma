@@ -1,16 +1,20 @@
 package transform
 
 import (
+	"fmt"
+
 	"github.com/fusor/cpma/pkg/api"
 	"github.com/fusor/cpma/pkg/transform/cluster"
+	"github.com/fusor/cpma/pkg/transform/clusterquota"
+	"github.com/fusor/cpma/pkg/transform/quota"
 	"github.com/sirupsen/logrus"
 )
 
 // ClusterReportName is the cluster report name
 const ClusterReportName = "ClusterReport"
 
-// ClusterReportExtraction holds data extracted from k8s API resources
-type ClusterReportExtraction struct {
+// ClusterExtraction holds data extracted from k8s API resources
+type ClusterExtraction struct {
 	api.Resources
 }
 
@@ -19,8 +23,13 @@ type ClusterTransform struct {
 }
 
 // Transform converts data collected from an OCP3 API into a useful output
-func (e ClusterReportExtraction) Transform() ([]Output, error) {
+func (e ClusterExtraction) Transform() ([]Output, error) {
 	logrus.Info("ClusterTransform::Transform")
+
+	manifests, err := e.buildManifestOutput()
+	if err != nil {
+		return nil, err
+	}
 
 	clusterReport := cluster.GenClusterReport(api.Resources{
 		QuotaList:            e.QuotaList,
@@ -35,16 +44,48 @@ func (e ClusterReportExtraction) Transform() ([]Output, error) {
 		ClusterReport: clusterReport,
 	}
 
-	outputs := []Output{output}
+	outputs := []Output{output, manifests}
 	return outputs, nil
 }
 
+func (e ClusterExtraction) buildManifestOutput() (Output, error) {
+	var manifests []Manifest
+
+	for _, clusterQuota := range e.QuotaList.Items {
+		clusterQuotaCR, err := clusterquota.BuildManifest(clusterQuota)
+		quotaCRYAML, err := GenYAML(clusterQuotaCR)
+		if err != nil {
+			return nil, err
+		}
+		name := fmt.Sprintf("100_CPMA-cluster-quota-resource-%s.yaml", clusterQuota.Name)
+		manifest := Manifest{Name: name, CRD: quotaCRYAML}
+		manifests = append(manifests, manifest)
+	}
+
+	for _, clusterNamespace := range e.NamespaceList {
+		for _, resourceQuota := range clusterNamespace.ResourceQuotaList.Items {
+			quotaCR, err := quota.BuildManifest(resourceQuota)
+			quotaCRYAML, err := GenYAML(quotaCR)
+			if err != nil {
+				return nil, err
+			}
+			name := fmt.Sprintf("100_CPMA-%s-resource-quota-%s.yaml", resourceQuota.Namespace, resourceQuota.Name)
+			manifest := Manifest{Name: name, CRD: quotaCRYAML}
+			manifests = append(manifests, manifest)
+		}
+	}
+
+	return ManifestOutput{
+		Manifests: manifests,
+	}, nil
+}
+
 // Validate no need to validate it, data is exctracted from API
-func (e ClusterReportExtraction) Validate() (err error) { return }
+func (e ClusterExtraction) Validate() (err error) { return }
 
 // Extract collects data for cluster report
 func (e ClusterTransform) Extract() (Extraction, error) {
-	extraction := &ClusterReportExtraction{}
+	extraction := &ClusterExtraction{}
 
 	nodeList, err := api.ListNodes()
 	if err != nil {

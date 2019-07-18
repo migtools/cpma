@@ -28,7 +28,7 @@ func TestClusterReportExtractionTransform(t *testing.T) {
 		},
 	}
 
-	clusterReportExtraction := transform.ClusterReportExtraction{apiResources}
+	clusterReportExtraction := transform.ClusterExtraction{apiResources}
 
 	actualClusterReport, err := clusterReportExtraction.Transform()
 	require.NoError(t, err)
