@@ -1,14 +1,11 @@
 package api
 
 import (
-	"sync"
-
 	authv1 "github.com/openshift/client-go/authorization/clientset/versioned/typed/authorization/v1"
 	quotav1 "github.com/openshift/client-go/quota/clientset/versioned/typed/quota/v1"
 	routev1 "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
 	security1 "github.com/openshift/client-go/security/clientset/versioned/typed/security/v1"
 	user1 "github.com/openshift/client-go/user/clientset/versioned/typed/user/v1"
-	"github.com/pkg/errors"
 
 	"k8s.io/client-go/rest"
 )
@@ -22,24 +19,17 @@ type OpenshiftClient struct {
 	userClient     user1.UserV1Interface
 }
 
-var instances struct {
-	Openshift *OpenshiftClient
-}
-
-var once struct {
-	Openshift sync.Once
-}
-
-// Openshift - Create a new openshift client if needed, returns reference
-func Openshift(config *rest.Config) (*OpenshiftClient, error) {
+// InitO7tOrDie - Create a new openshift client if needed, returns reference
+func InitO7tOrDie(config *rest.Config) *OpenshiftClient {
 	once.Openshift.Do(func() {
-		client, _ := newOpenshift(config)
+		client, err := newOpenshift(config)
 		instances.Openshift = client
+		if err != nil {
+			panic("OpenShift client failed to init")
+		}
 	})
-	if instances.Openshift == nil {
-		return nil, errors.New("OpenShift client instance is nil")
-	}
-	return instances.Openshift, nil
+
+	return instances.Openshift
 }
 
 func newOpenshift(config *rest.Config) (*OpenshiftClient, error) {
