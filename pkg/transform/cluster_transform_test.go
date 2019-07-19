@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClusterReportExtractionTransform(t *testing.T) {
+func TestClusterExtractionTransform(t *testing.T) {
 	apiResources := api.Resources{
 		QuotaList:            cpmatest.CreateTestQuotaList(),
 		PersistentVolumeList: cpmatest.CreateTestPVList(),
@@ -28,13 +28,13 @@ func TestClusterReportExtractionTransform(t *testing.T) {
 		},
 	}
 
-	clusterReportExtraction := transform.ClusterExtraction{apiResources}
+	clusterExtraction := transform.ClusterExtraction{apiResources}
 
-	actualClusterReport, err := clusterReportExtraction.Transform()
+	actualClusterOutput, err := clusterExtraction.Transform()
 	require.NoError(t, err)
 
 	report := transform.ReportOutput{
-		ClusterReport: actualClusterReport[0].(transform.ReportOutput).ClusterReport,
+		ClusterReport: actualClusterOutput[0].(transform.ReportOutput).ClusterReport,
 	}
 
 	actualClusterReportJSON, err := json.MarshalIndent(report, "", " ")

@@ -52,7 +52,7 @@ func (e ClusterExtraction) buildManifestOutput() (Output, error) {
 	var manifests []Manifest
 
 	for _, clusterQuota := range e.QuotaList.Items {
-		clusterQuotaCR, err := clusterquota.BuildManifest(clusterQuota)
+		clusterQuotaCR, err := clusterquota.Translate(clusterQuota)
 		quotaCRYAML, err := GenYAML(clusterQuotaCR)
 		if err != nil {
 			return nil, err
@@ -64,7 +64,7 @@ func (e ClusterExtraction) buildManifestOutput() (Output, error) {
 
 	for _, clusterNamespace := range e.NamespaceList {
 		for _, resourceQuota := range clusterNamespace.ResourceQuotaList.Items {
-			quotaCR, err := quota.BuildManifest(resourceQuota)
+			quotaCR, err := quota.Translate(resourceQuota)
 			quotaCRYAML, err := GenYAML(quotaCR)
 			if err != nil {
 				return nil, err

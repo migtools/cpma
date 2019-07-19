@@ -6,8 +6,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// BuildManifest definitions
-func BuildManifest(quota k8sapicore.ResourceQuota) (*k8sapicore.ResourceQuota, error) {
+// Translate definitions
+func Translate(quota k8sapicore.ResourceQuota) (*k8sapicore.ResourceQuota, error) {
 	const (
 		annokey = "release.openshift.io/create-only"
 		annoval = "true"
