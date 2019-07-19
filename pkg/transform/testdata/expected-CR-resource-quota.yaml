@@ -1,0 +1,17 @@
+apiVersion: quota.openshift.io/v1
+kind: ResourceQuota
+metadata:
+  annotations:
+    release.openshift.io/create-only: "true"
+  creationTimestamp: null
+  name: resourcequota1
+  namespace: namespacetest1
+spec:
+  hard:
+    configmaps: "10"
+    persistentvolumeclaims: "4"
+    replicationcontrollers: "20"
+    secrets: "10"
+    services: "10"
+  scopeSelector: {}
+status: {}

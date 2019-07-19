@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClusterReportExtractionTransform(t *testing.T) {
+func TestClusterExtractionTransform(t *testing.T) {
 	apiResources := api.Resources{
 		QuotaList:            cpmatest.CreateTestQuotaList(),
 		PersistentVolumeList: cpmatest.CreateTestPVList(),
@@ -28,13 +28,13 @@ func TestClusterReportExtractionTransform(t *testing.T) {
 		},
 	}
 
-	clusterReportExtraction := transform.ClusterReportExtraction{apiResources}
+	clusterExtraction := transform.ClusterExtraction{apiResources}
 
-	actualClusterReport, err := clusterReportExtraction.Transform()
+	actualClusterOutput, err := clusterExtraction.Transform()
 	require.NoError(t, err)
 
 	report := transform.ReportOutput{
-		ClusterReport: actualClusterReport[0].(transform.ReportOutput).ClusterReport,
+		ClusterReport: actualClusterOutput[0].(transform.ReportOutput).ClusterReport,
 	}
 
 	actualClusterReportJSON, err := json.MarshalIndent(report, "", " ")
@@ -44,4 +44,16 @@ func TestClusterReportExtractionTransform(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, expectedClusterReportJSON, actualClusterReportJSON)
+
+	manifests := actualClusterOutput[1].(transform.ManifestOutput).Manifests
+
+	expectedClusterQuotaCRD, err := ioutil.ReadFile("testdata/expected-CR-cluster-quota.yaml")
+	require.NoError(t, err)
+	assert.Equal(t, "100_CPMA-cluster-quota-resource-test-quota1.yaml", manifests[0].Name)
+	assert.Equal(t, expectedClusterQuotaCRD, manifests[0].CRD)
+
+	expectedResourceQuotaCRD, err := ioutil.ReadFile("testdata/expected-CR-resource-quota.yaml")
+	require.NoError(t, err)
+	assert.Equal(t, "100_CPMA-namespacetest1-resource-quota-resourcequota1.yaml", manifests[1].Name)
+	assert.Equal(t, expectedResourceQuotaCRD, manifests[1].CRD)
 }

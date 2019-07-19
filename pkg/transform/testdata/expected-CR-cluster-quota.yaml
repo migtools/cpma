@@ -1,0 +1,17 @@
+apiVersion: quota.openshift.io/v1
+kind: ClusterResourceQuota
+metadata:
+  annotations:
+    release.openshift.io/create-only: "true"
+  creationTimestamp: null
+  name: test-quota1
+spec:
+  quota:
+    hard:
+      testkey: "99"
+  selector:
+    annotations: null
+    labels: null
+status:
+  namespaces: null
+  total: {}

@@ -209,7 +209,8 @@ func CreateTestResourceQuotaList() *k8sapicore.ResourceQuotaList {
 
 	quotaList.Items[0] = k8sapicore.ResourceQuota{
 		ObjectMeta: k8smachinery.ObjectMeta{
-			Name: "resourcequota1",
+			Name:      "resourcequota1",
+			Namespace: "namespacetest1",
 		},
 		Spec: k8sapicore.ResourceQuotaSpec{
 			Hard: k8sapicore.ResourceList{
