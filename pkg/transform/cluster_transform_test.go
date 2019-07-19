@@ -44,4 +44,16 @@ func TestClusterExtractionTransform(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, expectedClusterReportJSON, actualClusterReportJSON)
+
+	manifests := actualClusterOutput[1].(transform.ManifestOutput).Manifests
+
+	expectedClusterQuotaCRD, err := ioutil.ReadFile("testdata/expected-CR-cluster-quota.yaml")
+	require.NoError(t, err)
+	assert.Equal(t, "100_CPMA-cluster-quota-resource-test-quota1.yaml", manifests[0].Name)
+	assert.Equal(t, expectedClusterQuotaCRD, manifests[0].CRD)
+
+	expectedResourceQuotaCRD, err := ioutil.ReadFile("testdata/expected-CR-resource-quota.yaml")
+	require.NoError(t, err)
+	assert.Equal(t, "100_CPMA-namespacetest1-resource-quota-resourcequota1.yaml", manifests[1].Name)
+	assert.Equal(t, expectedResourceQuotaCRD, manifests[1].CRD)
 }
