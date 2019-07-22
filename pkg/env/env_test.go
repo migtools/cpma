@@ -17,8 +17,7 @@ func TestInitConfig(t *testing.T) {
 	ConfigFile = "testdata/cpma-config.yml"
 	api.K8sClient = &kubernetes.Clientset{}
 	api.O7tClient = &api.OpenshiftClient{}
-	err := InitConfig()
-	if err != nil {
+	if err := InitConfig(); err != nil {
 		t.Fatal(err)
 	}
 

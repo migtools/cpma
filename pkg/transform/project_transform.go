@@ -157,8 +157,7 @@ func (e ProjectTransform) Extract() (Extraction, error) {
 
 // Validate the data extracted from the OCP3 cluster
 func (e ProjectExtraction) Validate() error {
-	err := project.Validate(e.MasterConfig.ProjectConfig)
-	if err != nil {
+	if err := project.Validate(e.MasterConfig.ProjectConfig); err != nil {
 		return err
 	}
 

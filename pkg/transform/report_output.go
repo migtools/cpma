@@ -43,8 +43,7 @@ func DumpReports(r ReportOutput) {
 		logrus.Errorf("unable to read to report file: %s", jsonFile)
 	}
 
-	err = json.Unmarshal(jsonData, &existingReports)
-	if err != nil {
+	if err := json.Unmarshal(jsonData, &existingReports); err != nil {
 		logrus.Errorf("unable to unmarshal existing report json")
 	}
 
@@ -101,8 +100,7 @@ func DumpReports(r ReportOutput) {
 		logrus.Errorf("unable to marshal reports")
 	}
 
-	err = io.WriteFile(jsonReports, jsonFile)
-	if err != nil {
+	if err := io.WriteFile(jsonReports, jsonFile); err != nil {
 		logrus.Errorf("unable to write to report file: %s", jsonFile)
 	}
 }

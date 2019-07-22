@@ -153,8 +153,7 @@ func (e SDNTransform) Extract() (Extraction, error) {
 
 // Validate the data extracted from the OCP3 cluster
 func (e SDNExtraction) Validate() error {
-	err := sdn.Validate(e.MasterConfig)
-	if err != nil {
+	if err := sdn.Validate(e.MasterConfig); err != nil {
 		return err
 	}
 

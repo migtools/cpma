@@ -46,8 +46,7 @@ func fetchFromRemote(src string) ([]byte, error) {
 		return nil, errors.New(msg)
 	}
 
-	err = WriteFile([]byte(output), dst)
-	if err != nil {
+	if err := WriteFile([]byte(output), dst); err != nil {
 		logrus.Errorf("Unable to save: %s", dst)
 		return nil, err
 	}

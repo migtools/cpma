@@ -32,10 +32,9 @@ func DumpManifests(manifests []Manifest) {
 	for _, manifest := range manifests {
 		maniftestfile := filepath.Join(env.Config().GetString("WorkDir"), "manifests", manifest.Name)
 		os.MkdirAll(path.Dir(maniftestfile), 0755)
-		err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644)
-		logrus.Printf("CRD:Added: %s", maniftestfile)
-		if err != nil {
+		if err := ioutil.WriteFile(maniftestfile, manifest.CRD, 0644); err != nil {
 			logrus.Panic(err)
 		}
+		logrus.Printf("CRD:Added: %s", maniftestfile)
 	}
 }
