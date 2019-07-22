@@ -53,7 +53,7 @@ func TestReport(t *testing.T) {
 	os.RemoveAll(e2eTestOut)
 }
 
-func TestManifestsMode(t *testing.T) {
+func TestManifestsReports(t *testing.T) {
 	var (
 		e2eTestDataDir string
 		e2eTestOut     string
