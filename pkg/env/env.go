@@ -167,7 +167,7 @@ func surveyConfigSource() error {
 
 func surveyManifests() error {
 	manifests := viperConfig.GetString("Manifests")
-	if !viperConfig.InConfig("manifests") {
+	if !viperConfig.InConfig("manifests") && manifests == "" {
 		prompt := &survey.Select{
 			Message: "Would like to generate manifests?",
 			Options: []string{"true", "false"},
@@ -175,18 +175,15 @@ func surveyManifests() error {
 		if err := survey.AskOne(prompt, &manifests, nil); err != nil {
 			return err
 		}
-		if manifests == "true" {
-			viperConfig.Set("Manifests", true)
-		} else {
-			viperConfig.Set("Manifests", false)
-		}
+		viperConfig.Set("Manifests", manifests)
+
 	}
 	return nil
 }
 
 func surveyReports() error {
 	reports := viperConfig.GetString("Reports")
-	if !viperConfig.InConfig("reports") {
+	if !viperConfig.InConfig("reports") && reports == "" {
 		prompt := &survey.Select{
 			Message: "Would you like to generate reports?",
 			Options: []string{"true", "false"},
@@ -194,11 +191,8 @@ func surveyReports() error {
 		if err := survey.AskOne(prompt, &reports, nil); err != nil {
 			return err
 		}
-		if reports == "true" {
-			viperConfig.Set("Reports", true)
-		} else {
-			viperConfig.Set("Reports", false)
-		}
+		viperConfig.Set("Manifests", reports)
+
 	}
 	return nil
 }

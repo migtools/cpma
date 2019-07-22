@@ -134,8 +134,8 @@ func TestInitFromEnv(t *testing.T) {
 			os.Setenv("CPMA_CREATECONFIG", "yes")
 			os.Setenv("CPMA_CLUSTERNAME", "somename")
 			os.Setenv("CPMA_WORKDIR", workDir)
-			Config().Set("Manifests", true)
-			Config().Set("Reports", true)
+			os.Setenv("CPMA_MANIFESTS", "true")
+			os.Setenv("CPMA_REPORTS", "true")
 
 			api.K8sClient = &kubernetes.Clientset{}
 			api.O7tClient = &api.OpenshiftClient{}
