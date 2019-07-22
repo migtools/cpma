@@ -27,13 +27,15 @@ type ETCDTransform struct {
 
 // Transform converts data collected from an OCP3 into a useful output
 func (e ETCDExtraction) Transform() ([]Output, error) {
-	logrus.Info("ETCDTransform::Transform")
-	reports, err := e.buildReportOutput()
-	if err != nil {
-		return nil, err
+	if env.Config().GetBool("Reports") {
+		logrus.Info("ETCDTransform::Transform:Reports")
+		reports, err := e.buildReportOutput()
+		if err != nil {
+			return nil, err
+		}
+		return []Output{reports}, nil
 	}
-	outputs := []Output{reports}
-	return outputs, nil
+	return nil, nil
 }
 
 func (e ETCDExtraction) buildReportOutput() (Output, error) {

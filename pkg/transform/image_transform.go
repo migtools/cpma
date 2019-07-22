@@ -41,16 +41,26 @@ type ImageTransform struct {
 
 // Transform converts data collected from an OCP3 into a useful output
 func (e ImageExtraction) Transform() ([]Output, error) {
-	logrus.Info("ImageTransform::Transform")
-	manifests, err := e.buildManifestOutput()
-	if err != nil {
-		return nil, err
+	outputs := []Output{}
+
+	if env.Config().GetBool("Manifests") {
+		logrus.Info("ImageTransform::Transform:Manifests")
+		manifests, err := e.buildManifestOutput()
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, manifests)
 	}
-	reports, err := e.buildReportOutput()
-	if err != nil {
-		return nil, err
+
+	if env.Config().GetBool("Reports") {
+		logrus.Info("ImageTransform::Transform:Reports")
+		reports, err := e.buildReportOutput()
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, reports)
 	}
-	outputs := []Output{manifests, reports}
+
 	return outputs, nil
 }
 

@@ -93,8 +93,15 @@ func setConfigLocation() (err error) {
 }
 
 func surveyMissingValues() error {
-	err := surveyConfigSource()
-	if err != nil {
+	if err := surveyManifests(); err != nil {
+		return err
+	}
+
+	if err := surveyReports(); err != nil {
+		return err
+	}
+
+	if err := surveyConfigSource(); err != nil {
 		return err
 	}
 
@@ -114,8 +121,7 @@ func surveyMissingValues() error {
 		return errors.New("Accepted values for config-source are: remote or local")
 	}
 
-	err = createAPIClients()
-	if err != nil {
+	if err := createAPIClients(); err != nil {
 		return err
 	}
 
@@ -154,6 +160,38 @@ func surveyConfigSource() error {
 		case "Local":
 			viperConfig.Set("ConfigSource", "local")
 		}
+
+	}
+	return nil
+}
+
+func surveyManifests() error {
+	manifests := viperConfig.GetString("Manifests")
+	if !viperConfig.InConfig("manifests") && manifests == "" {
+		prompt := &survey.Select{
+			Message: "Would like to generate manifests?",
+			Options: []string{"true", "false"},
+		}
+		if err := survey.AskOne(prompt, &manifests, nil); err != nil {
+			return err
+		}
+		viperConfig.Set("Manifests", manifests)
+
+	}
+	return nil
+}
+
+func surveyReports() error {
+	reports := viperConfig.GetString("Reports")
+	if !viperConfig.InConfig("reports") && reports == "" {
+		prompt := &survey.Select{
+			Message: "Would you like to generate reports?",
+			Options: []string{"true", "false"},
+		}
+		if err := survey.AskOne(prompt, &reports, nil); err != nil {
+			return err
+		}
+		viperConfig.Set("Manifests", reports)
 
 	}
 	return nil

@@ -1,6 +1,7 @@
 package transform
 
 import (
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -151,11 +152,13 @@ func GenYAML(CR interface{}) ([]byte, error) {
 }
 
 func openReports() {
-	jsonfile := "report.json"
-	emptyReport := []byte("{}")
+	if env.Config().GetBool("Reports") {
+		jsonfile := "report.json"
+		emptyReport := []byte("{}")
 
-	err := io.WriteFile(emptyReport, jsonfile)
-	if err != nil {
-		logrus.Errorf("unable to open report file: %s", jsonfile)
+		err := io.WriteFile(emptyReport, jsonfile)
+		if err != nil {
+			logrus.Errorf("unable to open report file: %s", jsonfile)
+		}
 	}
 }

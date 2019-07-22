@@ -25,16 +25,26 @@ type ProjectTransform struct {
 
 // Transform converts data collected from an OCP3 into a useful output
 func (e ProjectExtraction) Transform() ([]Output, error) {
-	logrus.Info("ProjectTransform::Transform")
-	manifests, err := e.buildManifestOutput()
-	if err != nil {
-		return nil, err
+	outputs := []Output{}
+
+	if env.Config().GetBool("Manifests") {
+		logrus.Info("ProjectTransform::Transform:Manifests")
+		manifests, err := e.buildManifestOutput()
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, manifests)
 	}
-	reports, err := e.buildReportOutput()
-	if err != nil {
-		return nil, err
+
+	if env.Config().GetBool("Reports") {
+		logrus.Info("ProjectTransform::Transform:Reports")
+		reports, err := e.buildReportOutput()
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, reports)
 	}
-	outputs := []Output{manifests, reports}
+
 	return outputs, nil
 }
 

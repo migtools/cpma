@@ -28,19 +28,28 @@ const clusterNetworkComment = `Networks must be configured during installation,
 
 // Transform converts data collected from an OCP3 into a useful output
 func (e SDNExtraction) Transform() ([]Output, error) {
-	logrus.Info("SDNTransform::Transform")
-	manifests, err := e.buildManifestOutput()
-	if err != nil {
-		return nil, err
+	outputs := []Output{}
+
+	if env.Config().GetBool("Manifests") {
+		logrus.Info("SDNTransform::Transform:Manifests")
+		manifests, err := e.buildManifestOutput()
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, manifests)
 	}
-	reports, err := e.buildReportOutput()
-	if err != nil {
-		return nil, err
+
+	if env.Config().GetBool("Reports") {
+		logrus.Info("SDNTransform::Transform:Reports")
+		reports, err := e.buildReportOutput()
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, reports)
 	}
-	outputs := []Output{manifests, reports}
+
 	return outputs, nil
 }
-
 func (e SDNExtraction) buildManifestOutput() (Output, error) {
 	var manifests []Manifest
 
