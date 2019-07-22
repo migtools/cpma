@@ -53,6 +53,82 @@ func TestReport(t *testing.T) {
 	os.RemoveAll(e2eTestOut)
 }
 
+func TestManifestsMode(t *testing.T) {
+	var (
+		e2eTestDataDir string
+		e2eTestOut     string
+
+		err error
+	)
+
+	e2eTestDataDir = path.Join("test", "e2e", "testdata")
+	e2eTestOut = path.Join(e2eTestDataDir, "out")
+
+	err = openClusterSession(e2eTestOut)
+	assert.NoError(t, err, "Could not open cluster session")
+
+	os.Chdir("../..")
+	os.Setenv("CPMA_WORKDIR", e2eTestOut)
+	os.Setenv("CPMA_CREATECONFIG", "no")
+	os.Setenv("CPMA_CONFIGSOURCE", "remote")
+	os.Setenv("CPMA_INSECUREHOSTKEY", "true")
+
+	err = runCpma()
+	assert.NoError(t, err, "Couldn't execute CPMA")
+
+	testCases := []struct {
+		name      string
+		reports   string
+		manifests string
+	}{
+		{
+			name:      "Only reports mode",
+			manifests: "false",
+			reports:   "true",
+		},
+		{
+			name:      "Only manifests mode",
+			manifests: "true",
+			reports:   "false",
+		},
+		{
+			name:      "Both allowed",
+			manifests: "true",
+			reports:   "true",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			os.Setenv("CPMA_MANIFESTS", tc.manifests)
+			os.Setenv("CPMA_REPORTS", tc.reports)
+			err = runCpma()
+			assert.NoError(t, err, "Couldn't execute CPMA")
+
+			if env.Config().GetString("Manifests") == "true" && env.Config().GetString("Reports") == "false" {
+				_, err := os.Stat(path.Join(e2eTestOut, "report.json"))
+				os.IsNotExist(err)
+				assert.Equal(t, true, os.IsNotExist(err))
+			}
+
+			if env.Config().GetString("Reports") == "true" && env.Config().GetString("Manifests") == "false" {
+				_, err := os.Stat(path.Join(e2eTestOut, "manifests"))
+				os.IsNotExist(err)
+				assert.Equal(t, true, os.IsNotExist(err))
+			}
+
+			if env.Config().GetString("Manifests") == "true" && env.Config().GetString("Manifests") == "true" {
+				_, err := os.Stat(path.Join(e2eTestOut, "report.json"))
+				assert.Equal(t, nil, err)
+				_, err = os.Stat(path.Join(e2eTestOut, "manifests"))
+				assert.Equal(t, nil, err)
+			}
+		})
+	}
+	os.Unsetenv("CPMA_MANIFESTS")
+	os.Unsetenv("CPMA_REPORTS")
+}
+
 // openClusterSession will ensure that cluster session is open
 func openClusterSession(tmpDir string) error {
 	cmd := exec.Command("which", "oc")
