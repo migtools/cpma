@@ -169,7 +169,7 @@ func surveyConfigSource() error {
 
 func surveyManifests() error {
 	manifests := viperConfig.GetString("Manifests")
-	if !viperConfig.InConfig("manifests") {
+	if !viperConfig.InConfig("manifests") && manifests == "" {
 		prompt := &survey.Select{
 			Message: "Would you like to generate manifests?",
 			Options: []string{"true", "false"},
@@ -188,7 +188,7 @@ func surveyManifests() error {
 
 func surveyReporting() error {
 	reporting := viperConfig.GetString("Reporting")
-	if !viperConfig.InConfig("reporting") {
+	if !viperConfig.InConfig("reporting") && reporting == "" {
 		prompt := &survey.Select{
 			Message: "Would you like reporting?",
 			Options: []string{"true", "false"},

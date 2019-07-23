@@ -54,11 +54,6 @@ func TestInitFromEnv(t *testing.T) {
 		envValue         string
 		configEquivalent string
 	}
-	os.Setenv("CPMA_CLUSTERNAME", "somename")
-	os.Setenv("CPMA_MANIFESTS", "true")
-	os.Setenv("CPMA_REPORTING", "true")
-	os.Setenv("CPMA_SAVECONFIG", "false")
-	os.Setenv("CPMA_WORKDIR", "testdata/out")
 
 	var err error
 
@@ -135,6 +130,12 @@ func TestInitFromEnv(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			os.Setenv("CPMA_CLUSTERNAME", "somename")
+			os.Setenv("CPMA_MANIFESTS", "true")
+			os.Setenv("CPMA_REPORTING", "true")
+			os.Setenv("CPMA_SAVECONFIG", "false")
+			os.Setenv("CPMA_WORKDIR", "testdata/out")
+
 			api.K8sClient = &kubernetes.Clientset{}
 			api.O7tClient = &api.OpenshiftClient{}
 			for _, asset := range tc.sourceConfig {
