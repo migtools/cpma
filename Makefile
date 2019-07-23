@@ -25,7 +25,8 @@ clean: ## Clean the directory tree
 ci: lint fmtcheck vet build test
 
 cover: ## Project test coverage and generate covergate html file
-	GO111MODULE=on go test -run=Coverage -covermode=count -coverprofile=coverage.out ./pkg/... ./cmd/... && go tool cover -html=coverage.out -o coverage.html
+	GO111MODULE=on go test -run=Coverage -covermode=count -coverprofile=coverage.out ./pkg/... ./cmd/... \
+	&& go tool cover -html=coverage.out -o coverage.html
 
 test: ## Test the project
 	GO111MODULE=on go test ./pkg/... ./cmd/...
