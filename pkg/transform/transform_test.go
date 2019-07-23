@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/fusor/cpma/pkg/decode"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -15,6 +16,9 @@ import (
 )
 
 func TestOauthGenYAML(t *testing.T) {
+	env.Config().Set("Manifests", true)
+	env.Config().Set("Reporting", true)
+
 	testCases := []struct {
 		name                    string
 		inputConfigfile         string
@@ -86,6 +90,9 @@ func TestOauthGenYAML(t *testing.T) {
 }
 
 func TestAllOtherCRGenYaml(t *testing.T) {
+	env.Config().Set("Manifests", true)
+	env.Config().Set("Reporting", true)
+
 	expectedConfigMapYaml, err := ioutil.ReadFile("testdata/expected-CR-configmap.yaml")
 	require.NoError(t, err)
 

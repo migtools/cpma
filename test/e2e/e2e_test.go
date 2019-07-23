@@ -33,7 +33,7 @@ func TestReport(t *testing.T) {
 
 	os.Chdir("../..")
 	os.Setenv("CPMA_WORKDIR", e2eTestOut)
-	os.Setenv("CPMA_CREATECONFIG", "no")
+	os.Setenv("CPMA_SAVECONFIG", "no")
 	os.Setenv("CPMA_CONFIGSOURCE", "remote")
 	os.Setenv("CPMA_INSECUREHOSTKEY", "true")
 
@@ -53,7 +53,7 @@ func TestReport(t *testing.T) {
 	os.RemoveAll(e2eTestOut)
 }
 
-func TestManifestsReports(t *testing.T) {
+func TestManifestsReporting(t *testing.T) {
 	var (
 		e2eTestDataDir string
 		e2eTestOut     string
@@ -69,7 +69,7 @@ func TestManifestsReports(t *testing.T) {
 
 	os.Chdir("../..")
 	os.Setenv("CPMA_WORKDIR", e2eTestOut)
-	os.Setenv("CPMA_CREATECONFIG", "no")
+	os.Setenv("CPMA_SAVECONFIG", "no")
 	os.Setenv("CPMA_CONFIGSOURCE", "remote")
 	os.Setenv("CPMA_INSECUREHOSTKEY", "true")
 
@@ -78,40 +78,40 @@ func TestManifestsReports(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		reports   string
+		reporting string
 		manifests string
 	}{
 		{
-			name:      "Only reports mode",
+			name:      "Only reporting mode",
 			manifests: "false",
-			reports:   "true",
+			reporting: "true",
 		},
 		{
 			name:      "Only manifests mode",
 			manifests: "true",
-			reports:   "false",
+			reporting: "false",
 		},
 		{
 			name:      "Both allowed",
 			manifests: "true",
-			reports:   "true",
+			reporting: "true",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			os.Setenv("CPMA_MANIFESTS", tc.manifests)
-			os.Setenv("CPMA_REPORTS", tc.reports)
+			os.Setenv("CPMA_REPORTING", tc.reporting)
 			err = runCpma()
 			assert.NoError(t, err, "Couldn't execute CPMA")
 
-			if env.Config().GetString("Manifests") == "true" && env.Config().GetString("Reports") == "false" {
+			if env.Config().GetString("Manifests") == "true" && env.Config().GetString("Reporting") == "false" {
 				_, err := os.Stat(path.Join(e2eTestOut, "report.json"))
 				os.IsNotExist(err)
 				assert.Equal(t, true, os.IsNotExist(err))
 			}
 
-			if env.Config().GetString("Reports") == "true" && env.Config().GetString("Manifests") == "false" {
+			if env.Config().GetString("Reporting") == "true" && env.Config().GetString("Manifests") == "false" {
 				_, err := os.Stat(path.Join(e2eTestOut, "manifests"))
 				os.IsNotExist(err)
 				assert.Equal(t, true, os.IsNotExist(err))
@@ -126,7 +126,7 @@ func TestManifestsReports(t *testing.T) {
 		})
 	}
 	os.Unsetenv("CPMA_MANIFESTS")
-	os.Unsetenv("CPMA_REPORTS")
+	os.Unsetenv("CPMA_REPORTING")
 }
 
 // openClusterSession will ensure that cluster session is open

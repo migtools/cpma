@@ -60,16 +60,16 @@ func init() {
 	env.Config().BindPFlag("NodeConfigFile", rootCmd.PersistentFlags().Lookup("node-config"))
 
 	// Flag to generate manifests
-	rootCmd.PersistentFlags().BoolP("manifests", "m", true, "Provide manifests")
+	rootCmd.PersistentFlags().BoolP("manifests", "m", true, "Generate manifests")
 	env.Config().BindPFlag("Manifests", rootCmd.PersistentFlags().Lookup("manifests"))
 
 	// Get registries config file location
 	rootCmd.PersistentFlags().String("registries-config", "", "path to registries config file")
 	env.Config().BindPFlag("RegistriesConfigFile", rootCmd.PersistentFlags().Lookup("registries-config"))
 
-	// Flag to generate reports
-	rootCmd.PersistentFlags().BoolP("reports", "r", true, "Provide reports ")
-	env.Config().BindPFlag("Reports", rootCmd.PersistentFlags().Lookup("reports"))
+	// Flag to generate reporting
+	rootCmd.PersistentFlags().BoolP("reporting", "r", true, "Generate reporting ")
+	env.Config().BindPFlag("Reporting", rootCmd.PersistentFlags().Lookup("reporting"))
 
 	rootCmd.PersistentFlags().StringP("ssh-keyfile", "k", "", "OCP3 ssh keyfile path")
 	env.Config().BindPFlag("SSHPrivateKey", rootCmd.PersistentFlags().Lookup("ssh-keyfile"))
@@ -78,7 +78,7 @@ func init() {
 	rootCmd.PersistentFlags().StringP("ssh-login", "l", "", "OCP3 ssh login")
 	env.Config().BindPFlag("SSHLogin", rootCmd.PersistentFlags().Lookup("ssh-login"))
 
-	rootCmd.PersistentFlags().StringP("ssh-port", "p", "", "OCP3 ssh port")
+	rootCmd.PersistentFlags().Int16P("ssh-port", "p", 0, "OCP3 ssh port")
 	env.Config().BindPFlag("SSHPort", rootCmd.PersistentFlags().Lookup("ssh-port"))
 
 	// Output logs to console if true

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/assert"
@@ -25,6 +26,9 @@ var loadCrioExtraction = func() transform.CrioExtraction {
 }()
 
 func TestCrioExtractionTransform(t *testing.T) {
+	env.Config().Set("Manifests", true)
+	env.Config().Set("Reporting", true)
+
 	var expectedManifests []transform.Manifest
 
 	var expectedCrd transform.CrioCR

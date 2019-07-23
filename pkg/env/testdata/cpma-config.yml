@@ -2,7 +2,7 @@ clustername: "somename"
 configsource: remote
 hostname: "master-0.test.example.com"
 manifests: true
-reports: true
+reporting: true
 sshlogin: "root"
 sshport: 22
 sshprivatekey: "/home/test/.ssh/testkey"

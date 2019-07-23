@@ -15,7 +15,7 @@ import (
 
 func TestClusterExtractionTransform(t *testing.T) {
 	env.Config().Set("Manifests", true)
-	env.Config().Set("Reports", true)
+	env.Config().Set("Reporting", true)
 
 	apiResources := api.Resources{
 		QuotaList:            cpmatest.CreateTestQuotaList(),

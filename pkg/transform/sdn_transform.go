@@ -39,7 +39,7 @@ func (e SDNExtraction) Transform() ([]Output, error) {
 		outputs = append(outputs, manifests)
 	}
 
-	if env.Config().GetBool("Reports") {
+	if env.Config().GetBool("Reporting") {
 		logrus.Info("SDNTransform::Transform:Reports")
 		reports, err := e.buildReportOutput()
 		if err != nil {

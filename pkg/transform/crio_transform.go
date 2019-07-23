@@ -78,7 +78,7 @@ func (e CrioExtraction) Transform() ([]Output, error) {
 		outputs = append(outputs, manifests)
 	}
 
-	if env.Config().GetBool("Reports") {
+	if env.Config().GetBool("Reporting") {
 		logrus.Info("CrioTransform::Transform:Reports")
 		reports, err := e.buildReportOutput()
 		if err != nil {

@@ -25,7 +25,8 @@ var loadAPIExtraction = func() transform.APIExtraction {
 }()
 
 func TestAPIExtractionTransform(t *testing.T) {
-	env.Config().Set("Reports", true)
+	env.Config().Set("Manifests", false)
+	env.Config().Set("Reporting", true)
 
 	expectedReport := transform.ComponentReport{
 		Component: "API",

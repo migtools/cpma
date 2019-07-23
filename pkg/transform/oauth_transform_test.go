@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform"
 	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
@@ -14,6 +15,9 @@ import (
 )
 
 func TestOAuthExtractionTransform(t *testing.T) {
+	env.Config().Set("Manifests", true)
+	env.Config().Set("Reporting", true)
+
 	var expectedManifests []transform.Manifest
 
 	expectedOAuthCRYAML, err := ioutil.ReadFile("testdata/expected-CR-oauth.yaml")
