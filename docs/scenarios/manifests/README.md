@@ -53,11 +53,12 @@ $ oc apply -f outputDirectory/100_CPMA-cluster-config-oauth.yaml
 ### 5. Complete scenario example
 
 Using configuration files stored remotely:
-![remote](https://user-images.githubusercontent.com/20123872/61694754-cff29200-ad3a-11e9-9254-de5f738e9c7d.gif)
 
+![remote](https://user-images.githubusercontent.com/20123872/61694754-cff29200-ad3a-11e9-9254-de5f738e9c7d.gif)
 
 Using configuration files stored locally:
 
-WIP
+![local](https://user-images.githubusercontent.com/20123872/61719959-9471bb00-ad6e-11e9-9d2a-59bfc223b1e5.gif)
+
 
 
