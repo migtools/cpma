@@ -18,17 +18,6 @@ type ManifestOutput struct {
 // ManifestOutputFlush flush manifests to disk
 var ManifestOutputFlush = func(manifests []Manifest) error {
 	logrus.Info("Flushing manifests to disk")
-	DumpManifests(manifests)
-	return nil
-}
-
-// Flush manifests to files
-func (m ManifestOutput) Flush() error {
-	return ManifestOutputFlush(m.Manifests)
-}
-
-// DumpManifests creates OCDs files
-func DumpManifests(manifests []Manifest) {
 	for _, manifest := range manifests {
 		maniftestfile := filepath.Join(env.Config().GetString("WorkDir"), "manifests", manifest.Name)
 		os.MkdirAll(path.Dir(maniftestfile), 0755)
@@ -37,4 +26,10 @@ func DumpManifests(manifests []Manifest) {
 		}
 		logrus.Printf("CRD:Added: %s", maniftestfile)
 	}
+	return nil
+}
+
+// Flush manifests to files
+func (m ManifestOutput) Flush() error {
+	return ManifestOutputFlush(m.Manifests)
 }
