@@ -51,8 +51,7 @@ func LoadIPTestData(file string) ([]oauth.IdentityProvider, *legacyconfigv1.OAut
 
 		provider := oauth.Provider{}
 
-		err = json.Unmarshal(providerJSON, &provider)
-		if err != nil {
+		if err := json.Unmarshal(providerJSON, &provider); err != nil {
 			return nil, nil, err
 		}
 

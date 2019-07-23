@@ -110,8 +110,7 @@ func (e SchedulerTransform) Extract() (Extraction, error) {
 
 // Validate the data extracted from the OCP3 cluster
 func (e SchedulerExtraction) Validate() error {
-	err := scheduler.Validate(e.MasterConfig)
-	if err != nil {
+	if err := scheduler.Validate(e.MasterConfig); err != nil {
 		return err
 	}
 

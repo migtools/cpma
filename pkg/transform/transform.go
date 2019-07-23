@@ -156,8 +156,7 @@ func openReports() {
 		jsonfile := "report.json"
 		emptyReport := []byte("{}")
 
-		err := io.WriteFile(emptyReport, jsonfile)
-		if err != nil {
+		if err := io.WriteFile(emptyReport, jsonfile); err != nil {
 			logrus.Errorf("unable to open report file: %s", jsonfile)
 		}
 	}

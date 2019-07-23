@@ -88,8 +88,7 @@ func (e ImageExtraction) buildManifestOutput() (Output, error) {
 	imageCR.Spec.RegistrySources.BlockedRegistries = e.RegistriesConfig.Registries["block"].List
 	imageCR.Spec.RegistrySources.InsecureRegistries = e.RegistriesConfig.Registries["insecure"].List
 
-	err := image.Translate(&imageCR, e.MasterConfig.ImagePolicyConfig)
-	if err != nil {
+	if err := image.Translate(&imageCR, e.MasterConfig.ImagePolicyConfig); err != nil {
 		return nil, err
 	}
 

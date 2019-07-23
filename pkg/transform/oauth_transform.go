@@ -240,8 +240,7 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 			}
 
 			provider := oauth.Provider{}
-			err = json.Unmarshal(providerJSON, &provider)
-			if err != nil {
+			if err := json.Unmarshal(providerJSON, &provider); err != nil {
 				return nil, err
 			}
 
@@ -304,8 +303,7 @@ func (e OAuthTransform) Extract() (Extraction, error) {
 
 // Validate confirms we have recieved good OAuth configuration data during Extract
 func (e OAuthExtraction) Validate() error {
-	err := oauth.Validate(e.IdentityProviders)
-	if err != nil {
+	if err := oauth.Validate(e.IdentityProviders); err != nil {
 		return err
 	}
 

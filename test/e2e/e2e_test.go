@@ -163,19 +163,16 @@ func openClusterSession(tmpDir string) error {
 // on provided set of environment variables
 func runCpma() error {
 	cmd := exec.Command("make", "build")
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "Couldn't build a binary")
 	}
 
-	err = env.InitConfig()
-	if err != nil {
+	if err := env.InitConfig(); err != nil {
 		return errors.Wrap(err, "Can't initialize config")
 	}
 	binary := path.Join("bin", "cpma")
 	cmd = exec.Command(binary) //, commandArgs...)
-	err = cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "Can't execute the binary")
 	}
 	return nil
@@ -187,8 +184,7 @@ func readReport(pathToReport string) (report *transform.ReportOutput, err error)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error while reading report")
 	}
-	err = json.Unmarshal(srcReport, &report)
-	if err != nil {
+	if err := json.Unmarshal(srcReport, &report); err != nil {
 		return nil, errors.Wrap(err, "Can't unmarshal report to report structure.")
 	}
 	return

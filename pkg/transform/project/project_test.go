@@ -29,7 +29,7 @@ func TestTranslate(t *testing.T) {
 		t.Fatalf("Cannot read file: %s", f)
 	}
 	expected := &configv1.Project{}
-	if err = json.Unmarshal(content, &expected); err != nil {
+	if err := json.Unmarshal(content, &expected); err != nil {
 		t.Fatalf("Error Unmarshalling %s", f)
 	}
 
