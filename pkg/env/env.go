@@ -55,17 +55,21 @@ func InitConfig() (err error) {
 		return errors.Wrap(err, "kubeconfig parsing failed")
 	}
 
-	// Ask for all values that are missing in flags or config yaml
-	if err := surveyMissingValues(); err != nil {
-		return handleInterrupt(err)
-	}
-
 	// If no config was provided, ask to create one for future use
 	if readConfigErr != nil {
 		if err := surveyCreateConfigFile(); err != nil {
 			return handleInterrupt(err)
 		}
 		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", readConfigErr)
+	}
+
+	// Ask for all values that are missing in flags or config yaml
+	if err := surveyMissingValues(); err != nil {
+		return handleInterrupt(err)
+	}
+
+	if viperConfig.GetString("CreateConfig") == "yes" {
+		viperConfig.WriteConfig()
 	}
 
 	return nil
@@ -160,9 +164,9 @@ func surveyConfigSource() error {
 
 func surveyManifests() error {
 	manifests := viperConfig.GetString("Manifests")
-	if !viperConfig.InConfig("manifests") && manifests == "" {
+	if !viperConfig.InConfig("manifests") {
 		prompt := &survey.Select{
-			Message: "Would like to generate manifests?",
+			Message: "Would you like to generate manifests?",
 			Options: []string{"true", "false"},
 		}
 		if err := survey.AskOne(prompt, &manifests, nil); err != nil {
@@ -176,9 +180,9 @@ func surveyManifests() error {
 
 func surveyReports() error {
 	reports := viperConfig.GetString("Reports")
-	if !viperConfig.InConfig("reports") && reports == "" {
+	if !viperConfig.InConfig("reports") {
 		prompt := &survey.Select{
-			Message: "Would you like to generate reports?",
+			Message: "Would you like reporting?",
 			Options: []string{"true", "false"},
 		}
 		if err := survey.AskOne(prompt, &reports, nil); err != nil {
@@ -403,12 +407,8 @@ func surveyCreateConfigFile() (err error) {
 			return err
 		}
 		viperConfig.Set("CreateConfig", createConfig)
-
 	}
 
-	if createConfig == "yes" {
-		viperConfig.WriteConfig()
-	}
 	return nil
 }
 
