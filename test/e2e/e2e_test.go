@@ -98,6 +98,11 @@ func TestManifestsReporting(t *testing.T) {
 			manifests: "true",
 			reporting: "true",
 		},
+		{
+			name:      "None allowed",
+			manifests: "false",
+			reporting: "false",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -126,10 +131,11 @@ func TestManifestsReporting(t *testing.T) {
 				_, err = os.Stat(path.Join(e2eTestOut, "manifests"))
 				assert.Equal(t, nil, err)
 			}
+
+			os.Unsetenv("CPMA_MANIFESTS")
+			os.Unsetenv("CPMA_REPORTING")
 		})
 	}
-	os.Unsetenv("CPMA_MANIFESTS")
-	os.Unsetenv("CPMA_REPORTING")
 }
 
 // openClusterSession will ensure that cluster session is open
