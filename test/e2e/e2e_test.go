@@ -32,10 +32,12 @@ func TestReport(t *testing.T) {
 	assert.NoError(t, err, "Could not open cluster session")
 
 	os.Chdir("../..")
-	os.Setenv("CPMA_WORKDIR", e2eTestOut)
-	os.Setenv("CPMA_SAVECONFIG", "no")
 	os.Setenv("CPMA_CONFIGSOURCE", "remote")
 	os.Setenv("CPMA_INSECUREHOSTKEY", "true")
+	os.Setenv("CPMA_MANIFESTS", "true")
+	os.Setenv("CPMA_REPORTING", "true")
+	os.Setenv("CPMA_SAVECONFIG", "false")
+	os.Setenv("CPMA_WORKDIR", e2eTestOut)
 
 	err = runCpma()
 	assert.NoError(t, err, "Couldn't execute CPMA")
@@ -68,10 +70,10 @@ func TestManifestsReporting(t *testing.T) {
 	assert.NoError(t, err, "Could not open cluster session")
 
 	os.Chdir("../..")
-	os.Setenv("CPMA_WORKDIR", e2eTestOut)
-	os.Setenv("CPMA_SAVECONFIG", "no")
 	os.Setenv("CPMA_CONFIGSOURCE", "remote")
 	os.Setenv("CPMA_INSECUREHOSTKEY", "true")
+	os.Setenv("CPMA_SAVECONFIG", "no")
+	os.Setenv("CPMA_WORKDIR", e2eTestOut)
 
 	err = runCpma()
 	assert.NoError(t, err, "Couldn't execute CPMA")
@@ -102,6 +104,7 @@ func TestManifestsReporting(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			os.Setenv("CPMA_MANIFESTS", tc.manifests)
 			os.Setenv("CPMA_REPORTING", tc.reporting)
+
 			err = runCpma()
 			assert.NoError(t, err, "Couldn't execute CPMA")
 
