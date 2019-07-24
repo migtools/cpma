@@ -45,3 +45,7 @@ List of supported configuration to manifest translations:
   * Project
   * Scheduler
   * SDN
+
+### See Also
+
+[Master configuration supported items](Supported.md)
