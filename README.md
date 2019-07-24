@@ -17,25 +17,28 @@ $ ./bin/cpma
 ```
 
 ## Usage
+```bash
+$ ./cpma -h
+Usage:
+  cpma [flags]
 
 Flags:
-```
   -i, --allow-insecure-host        allow insecure ssh host key
   -c, --cluster-name string        OCP3 cluster kubeconfig name
       --config string              config file (Default searches ./cpma.yaml, $HOME/cpma.yml)
       --config-source string       source for OCP3 config files, accepted values: remote or local
       --crio-config string         path to crio config file
-  -d, --debug                      show debug ouputss
+  -d, --debug                      show debug ouput
       --etcd-config string         path to etcd config file
   -h, --help                       help for cpma
   -n, --hostname string            OCP3 cluster hostname
-  -m, --manifests                  Provide manifests (default true)
+  -m, --manifests                  Generate manifests (default true)
       --node-config string         path to node config file
       --registries-config string   path to registries config file
-  -r, --reports                    Provide reports  (default true)
+  -r, --reporting                  Generate reporting  (default true)
   -k, --ssh-keyfile string         OCP3 ssh keyfile path
   -l, --ssh-login string           OCP3 ssh login
-  -p, --ssh-port string            OCP3 ssh port
+  -p, --ssh-port int16             OCP3 ssh port
   -v, --verbose                    verbose output
   -w, --work-dir string            set application data working directory (Default ".")
 ```

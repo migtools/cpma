@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/fusor/cpma/pkg/decode"
-	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,8 +24,6 @@ var loadAPIExtraction = func() transform.APIExtraction {
 }()
 
 func TestAPIExtractionTransform(t *testing.T) {
-	env.Config().Set("Reports", true)
-
 	expectedReport := transform.ComponentReport{
 		Component: "API",
 	}

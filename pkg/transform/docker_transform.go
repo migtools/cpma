@@ -19,7 +19,7 @@ type DockerTransform struct {
 
 // Transform converts data collected from an OCP3 into a useful output
 func (e DockerExtraction) Transform() ([]Output, error) {
-	if env.Config().GetBool("Reports") {
+	if env.Config().GetBool("Reporting") {
 		logrus.Info("DockerTransform::Transform:Reports")
 		reports, err := e.buildReportOutput()
 		if err != nil {

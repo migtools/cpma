@@ -152,7 +152,7 @@ func GenYAML(CR interface{}) ([]byte, error) {
 }
 
 func openReports() {
-	if env.Config().GetBool("Reports") {
+	if env.Config().GetBool("Reporting") {
 		jsonfile := "report.json"
 		emptyReport := []byte("{}")
 

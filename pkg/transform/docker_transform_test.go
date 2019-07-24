@@ -14,7 +14,6 @@ func loadDockerExtraction() (transform.DockerExtraction, error) {
 }
 
 func TestDockerExtractionTransform(t *testing.T) {
-
 	expectedReport := transform.ComponentReport{
 		Component: "Docker",
 	}

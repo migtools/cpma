@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -55,17 +56,21 @@ func InitConfig() (err error) {
 		return errors.Wrap(err, "kubeconfig parsing failed")
 	}
 
+	// If config has changed or no config was provided, ask to create or save it for future use
+	if readConfigErr != nil {
+		if err := surveySaveConfig(); err != nil {
+			return handleInterrupt(err)
+		}
+		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", readConfigErr)
+	}
+
 	// Ask for all values that are missing in flags or config yaml
 	if err := surveyMissingValues(); err != nil {
 		return handleInterrupt(err)
 	}
 
-	// If no config was provided, ask to create one for future use
-	if readConfigErr != nil {
-		if err := surveyCreateConfigFile(); err != nil {
-			return handleInterrupt(err)
-		}
-		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", readConfigErr)
+	if viperConfig.GetString("SaveConfig") == "true" {
+		viperConfig.WriteConfig()
 	}
 
 	return nil
@@ -90,11 +95,15 @@ func setConfigLocation() (err error) {
 }
 
 func surveyMissingValues() error {
+	if err := surveySaveConfig(); err != nil {
+		return err
+	}
+
 	if err := surveyManifests(); err != nil {
 		return err
 	}
 
-	if err := surveyReports(); err != nil {
+	if err := surveyReporting(); err != nil {
 		return err
 	}
 
@@ -162,29 +171,36 @@ func surveyManifests() error {
 	manifests := viperConfig.GetString("Manifests")
 	if !viperConfig.InConfig("manifests") && manifests == "" {
 		prompt := &survey.Select{
-			Message: "Would like to generate manifests?",
+			Message: "Would you like to generate manifests?",
 			Options: []string{"true", "false"},
 		}
 		if err := survey.AskOne(prompt, &manifests, nil); err != nil {
 			return err
 		}
-		viperConfig.Set("Manifests", manifests)
-
+		if manifests == "false" {
+			viperConfig.Set("Manifests", false)
+		} else {
+			viperConfig.Set("Manifests", true)
+		}
 	}
 	return nil
 }
 
-func surveyReports() error {
-	reports := viperConfig.GetString("Reports")
-	if !viperConfig.InConfig("reports") && reports == "" {
+func surveyReporting() error {
+	reporting := viperConfig.GetString("Reporting")
+	if !viperConfig.InConfig("reporting") && reporting == "" {
 		prompt := &survey.Select{
-			Message: "Would you like to generate reports?",
+			Message: "Would you like reporting?",
 			Options: []string{"true", "false"},
 		}
-		if err := survey.AskOne(prompt, &reports, nil); err != nil {
+		if err := survey.AskOne(prompt, &reporting, nil); err != nil {
 			return err
 		}
-		viperConfig.Set("Manifests", reports)
+		if reporting == "false" {
+			viperConfig.Set("Reporting", false)
+		} else {
+			viperConfig.Set("Reporting", true)
+		}
 
 	}
 	return nil
@@ -249,8 +265,8 @@ func surveySSHConfigValues() error {
 		viperConfig.Set("SSHLogin", login)
 	}
 
-	port := viperConfig.GetString("SSHPort")
-	if !viperConfig.InConfig("sshport") && port == "" {
+	port := ""
+	if !viperConfig.InConfig("sshport") && viperConfig.GetInt("SSHPort") == 0 {
 		prompt := &survey.Input{
 			Message: "SSH Port",
 			Default: "22",
@@ -259,7 +275,9 @@ func surveySSHConfigValues() error {
 			return err
 		}
 
-		viperConfig.Set("SSHPort", port)
+		if p, err := strconv.ParseInt(port, 10, 16); err == nil {
+			viperConfig.Set("SSHPort", p)
+		}
 	}
 
 	privatekey := viperConfig.GetString("SSHPrivateKey")
@@ -395,23 +413,23 @@ func createAPIClients() error {
 	return nil
 }
 
-func surveyCreateConfigFile() (err error) {
-	createConfig := viperConfig.GetString("CreateConfig")
-	if createConfig == "" {
+func surveySaveConfig() (err error) {
+	saveConfig := viperConfig.GetString("SaveConfig")
+	if saveConfig == "" {
 		prompt := &survey.Select{
-			Message: "No config file found, do you wish to create one for future use?",
-			Options: []string{"yes", "no"},
+			Message: "Do you wish to save configuration for future use?",
+			Options: []string{"true", "false"},
 		}
-		if err := survey.AskOne(prompt, &createConfig, nil); err != nil {
+		if err := survey.AskOne(prompt, &saveConfig, nil); err != nil {
 			return err
 		}
-		viperConfig.Set("CreateConfig", createConfig)
-
+	}
+	if saveConfig == "true" {
+		viperConfig.Set("SaveConfig", true)
+	} else {
+		viperConfig.Set("SaveConfig", false)
 	}
 
-	if createConfig == "yes" {
-		viperConfig.WriteConfig()
-	}
 	return nil
 }
 

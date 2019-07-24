@@ -36,7 +36,7 @@ func (e ClusterExtraction) Transform() ([]Output, error) {
 		outputs = append(outputs, manifests)
 	}
 
-	if env.Config().GetBool("Reports") {
+	if env.Config().GetBool("Reporting") {
 		logrus.Info("ClusterTransform::Transform:Reports")
 
 		clusterReport := cluster.GenClusterReport(api.Resources{

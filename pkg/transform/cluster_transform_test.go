@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/fusor/cpma/pkg/api"
-	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
 	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
 	"github.com/stretchr/testify/assert"
@@ -14,9 +13,6 @@ import (
 )
 
 func TestClusterExtractionTransform(t *testing.T) {
-	env.Config().Set("Manifests", true)
-	env.Config().Set("Reports", true)
-
 	apiResources := api.Resources{
 		QuotaList:            cpmatest.CreateTestQuotaList(),
 		PersistentVolumeList: cpmatest.CreateTestPVList(),

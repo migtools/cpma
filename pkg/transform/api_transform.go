@@ -31,7 +31,7 @@ type APITransform struct {
 // Transform converts data collected from an OCP3 into a useful output
 func (e APIExtraction) Transform() ([]Output, error) {
 	outputs := []Output{}
-	if env.Config().GetBool("Reports") {
+	if env.Config().GetBool("Reporting") {
 		logrus.Info("APITransform::Transform:Reports")
 		reports, err := e.buildReportOutput()
 		if err != nil {
