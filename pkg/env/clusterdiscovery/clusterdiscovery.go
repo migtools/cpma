@@ -11,7 +11,7 @@ import (
 // parse kubeconfig and select cluster from available contexts
 // query k8s api for nodes, get node urls from api response and survey master node
 func DiscoverCluster() (string, string, error) {
-	selectedCluster := surveyClusters()
+	selectedCluster := SurveyClusters()
 
 	// set current context to selected cluster for connecting to cluster using client-go
 	api.KubeConfig.CurrentContext = api.ClusterNames[selectedCluster]
@@ -34,7 +34,8 @@ func DiscoverCluster() (string, string, error) {
 	return selectedNode, selectedCluster, nil
 }
 
-func surveyClusters() string {
+// SurveyClusters list clusters from kubeconfig
+func SurveyClusters() string {
 	// Survey options should be an array
 	clusters := make([]string, 0, len(api.ClusterNames))
 	// It's better to have current context's cluster first, because

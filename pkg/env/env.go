@@ -353,7 +353,7 @@ func createAPIClients() error {
 		contextSource := ""
 		prompt := &survey.Select{
 			Message: "What will be the source for cluster name used to connect to API?",
-			Options: []string{"Current kubeconfig context", "Prompt"},
+			Options: []string{"Current kubeconfig context", "Select kubeconfig context", "Prompt"},
 		}
 		if err := survey.AskOne(prompt, &contextSource, nil); err != nil {
 			return err
@@ -369,13 +369,16 @@ func createAPIClients() error {
 			}
 			// set current context to cluster name for connecting to cluster using client-go
 			api.KubeConfig.CurrentContext = api.ClusterNames[clusterName]
-		} else {
+		} else if contextSource == "Current kubeconfig context" {
 			// get cluster name from current context for future use
 			for key, value := range api.ClusterNames {
 				if value == api.KubeConfig.CurrentContext {
 					clusterName = key
 				}
 			}
+		} else {
+			clusterName = clusterdiscovery.SurveyClusters()
+			api.KubeConfig.CurrentContext = api.ClusterNames[clusterName]
 		}
 
 		viperConfig.Set("ClusterName", clusterName)
