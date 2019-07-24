@@ -7,7 +7,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/fusor/cpma/pkg/decode"
-	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/stretchr/testify/assert"
@@ -28,9 +27,6 @@ func loadImageExtraction() (transform.ImageExtraction, error) {
 }
 
 func TestImageExtractionTransform(t *testing.T) {
-	env.Config().Set("Manifests", true)
-	env.Config().Set("Reporting", true)
-
 	var expectedManifests []transform.Manifest
 
 	expectedImageCRYAML, err := ioutil.ReadFile("testdata/expected-CR-image.yaml")

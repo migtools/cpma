@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/go-ini/ini.v1"
@@ -33,9 +32,6 @@ var testExtraction = func() transform.ETCDExtraction {
 }()
 
 func TestETCDExtractionTransform(t *testing.T) {
-	env.Config().Set("Manifests", false)
-	env.Config().Set("Reporting", true)
-
 	expectedReport := transform.ComponentReport{
 		Component: "ETCD",
 	}

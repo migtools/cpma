@@ -3,7 +3,6 @@ package transform_test
 import (
 	"testing"
 
-	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,9 +14,6 @@ func loadDockerExtraction() (transform.DockerExtraction, error) {
 }
 
 func TestDockerExtractionTransform(t *testing.T) {
-	env.Config().Set("Manifests", false)
-	env.Config().Set("Reporting", true)
-
 	expectedReport := transform.ComponentReport{
 		Component: "Docker",
 	}

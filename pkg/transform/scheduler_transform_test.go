@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/fusor/cpma/pkg/decode"
-	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/stretchr/testify/assert"
@@ -24,9 +23,6 @@ func loadSchedulerExtraction() (transform.SchedulerExtraction, error) {
 }
 
 func TestSchedulerExtractionTransform(t *testing.T) {
-	env.Config().Set("Manifests", true)
-	env.Config().Set("Reporting", true)
-
 	var expectedManifests []transform.Manifest
 
 	expectedSchedulerCRYAML, err := ioutil.ReadFile("testdata/expected-CR-scheduler.yaml")
