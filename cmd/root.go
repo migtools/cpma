@@ -63,6 +63,10 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("manifests", "m", true, "Generate manifests")
 	env.Config().BindPFlag("Manifests", rootCmd.PersistentFlags().Lookup("manifests"))
 
+	// Get master config file location
+	rootCmd.PersistentFlags().String("master-config", "", "path to master config file")
+	env.Config().BindPFlag("MasterConfigFile", rootCmd.PersistentFlags().Lookup("master-config"))
+
 	// Get registries config file location
 	rootCmd.PersistentFlags().String("registries-config", "", "path to registries config file")
 	env.Config().BindPFlag("RegistriesConfigFile", rootCmd.PersistentFlags().Lookup("registries-config"))

@@ -292,12 +292,6 @@ func surveySSHConfigValues() error {
 		viperConfig.Set("SSHPrivateKey", privatekey)
 	}
 
-	// set defaults for remote config files paths
-	viperConfig.SetDefault("CrioConfigFile", "/etc/crio/crio.conf")
-	viperConfig.SetDefault("ETCDConfigFile", "/etc/etcd/etcd.conf")
-	viperConfig.SetDefault("MasterConfigFile", "/etc/origin/master/master-config.yaml")
-	viperConfig.SetDefault("NodeConfigFile", "/etc/origin/node/node-config.yaml")
-	viperConfig.SetDefault("RegistriesConfigFile", "/etc/containers/registries.conf")
 	return nil
 }
 
@@ -306,7 +300,8 @@ func surveyConfigPaths() error {
 	config = viperConfig.GetString("CrioConfigFile")
 	if !viperConfig.InConfig("crioconfigfile") && config == "" {
 		prompt := &survey.Input{
-			Message: "Path to crio config file, example: /path/crio/crio.conf",
+			Message: "Path to crio config file",
+			Default: "/etc/crio/crio.conf",
 		}
 		if err := survey.AskOne(prompt, &config, nil); err != nil {
 			return err
@@ -317,7 +312,8 @@ func surveyConfigPaths() error {
 	config = viperConfig.GetString("ETCDConfigFile")
 	if !viperConfig.InConfig("etcdconfigfile") && config == "" {
 		prompt := &survey.Input{
-			Message: "Path to etcd config file, example: /path/etcd/etcd.conf",
+			Message: "Path to etcd config file",
+			Default: "/etc/etcd/etcd.conf",
 		}
 		if err := survey.AskOne(prompt, &config, nil); err != nil {
 			return err
@@ -328,7 +324,8 @@ func surveyConfigPaths() error {
 	config = viperConfig.GetString("MasterConfigFile")
 	if !viperConfig.InConfig("masterconfigfile") && config == "" {
 		prompt := &survey.Input{
-			Message: "Path to master config file, example: /path/etcd/master-config.yaml",
+			Message: "Path to master config file",
+			Default: "/etc/origin/master/master-config.yaml",
 		}
 		if err := survey.AskOne(prompt, &config, nil); err != nil {
 			return err
@@ -339,7 +336,8 @@ func surveyConfigPaths() error {
 	config = viperConfig.GetString("NodeConfigFile")
 	if !viperConfig.InConfig("nodeconfigfile") && config == "" {
 		prompt := &survey.Input{
-			Message: "Path to node config file, example: /path/node/node-config.yaml",
+			Message: "Path to node config file",
+			Default: "/etc/origin/node/node-config.yaml",
 		}
 		if err := survey.AskOne(prompt, &config, nil); err != nil {
 			return err
@@ -350,7 +348,8 @@ func surveyConfigPaths() error {
 	config = viperConfig.GetString("RegistriesConfigFile")
 	if !viperConfig.InConfig("registriesconfigfile") && config == "" {
 		prompt := &survey.Input{
-			Message: "Path to registries config file, example: /path/containers/registries.conf",
+			Message: "Path to registries config file",
+			Default: "/etc/containers/registries.conf",
 		}
 		if err := survey.AskOne(prompt, &config, nil); err != nil {
 			return err
