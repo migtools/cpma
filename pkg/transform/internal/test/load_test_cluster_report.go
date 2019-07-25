@@ -228,8 +228,8 @@ func CreateTestResourceQuotaList() *k8sapicore.ResourceQuotaList {
 	return quotaList
 }
 
-// CreateTestQuotaList test pod list
-func CreateTestQuotaList() *o7tapiquota.ClusterResourceQuotaList {
+// CreateTestClusterQuotaList test quota list
+func CreateTestClusterQuotaList() *o7tapiquota.ClusterResourceQuotaList {
 	testkey := resource.Quantity{
 		Format: resource.DecimalSI,
 	}

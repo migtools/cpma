@@ -40,7 +40,7 @@ func TestReportQuotas(t *testing.T) {
 	}{
 		{
 			name:                 "generate cluster quota report",
-			inputQuotaList:       cpmatest.CreateTestQuotaList(),
+			inputQuotaList:       cpmatest.CreateTestClusterQuotaList(),
 			expectedQuotaReports: expectedQuotaReports,
 		},
 	}
