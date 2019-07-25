@@ -12,7 +12,25 @@ There are to 2 ways for cpma to obtain desired configurations:
 
 1. Remotely retrieve configuration files using SSH, which are then stored locally (directory determined by `<workdir>` parameter) and under remote hostname sub directory. Proper SSH credentials (user, port and ssh key) are required with user having access to configuration files (sudo access might be necessary).
 
-2. Locally stored configuration files. If option 1 is not possible, files can be retrieved prior to executing CPMA. The configuration files are expected to be located in `<workdir>` parameter and under the FQDN target hostname.
+2. Locally stored configuration files. If option 1 is not possible, files can be retrieved prior to executing CPMA. The configuration files are expected to be located in `<workdir>` parameter and under the FQDN target hostname. When configuration requires a file, it should be placed in `<workDir>/<cluster hostname>/<relative path>/`. For example: 
+
+```
+oauthConfig:
+  assetPublicURL: https://example.com/console/
+  grantConfig:
+    method: auto
+  identityProviders:
+  - challenge: true
+    login: true
+    mappingMethod: claim
+    name: htpasswd_auth
+    provider:
+      apiVersion: v1
+      file: /etc/origin/master/htpasswd
+      kind: HTPasswdPasswordIdentityProvider
+```
+
+OAuth configuration requires `htpasswd` file, you can see it's path `/etc/origin/master/htpasswd`. To be found by CPMA this file must be located in` <workDir>/<cluster-hostname>/etc/origin/master/htpasswd`.
 
 ---
 
