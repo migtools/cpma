@@ -105,31 +105,6 @@ func TestInitFromEnv(t *testing.T) {
 					envValue:         "local",
 					configEquivalent: "configsource",
 				},
-				configAsset{
-					envKey:           "CPMA_CRIOCONFIGFILE",
-					envValue:         "test-crio",
-					configEquivalent: "crioconfigfile",
-				},
-				configAsset{
-					envKey:           "CPMA_ETCDCONFIGFILE",
-					envValue:         "test-etcd",
-					configEquivalent: "etcdconfigfile",
-				},
-				configAsset{
-					envKey:           "CPMA_MASTERCONFIGFILE",
-					envValue:         "test-master",
-					configEquivalent: "masterconfigfile",
-				},
-				configAsset{
-					envKey:           "CPMA_NODECONFIGFILE",
-					envValue:         "test-node",
-					configEquivalent: "nodeconfigfile",
-				},
-				configAsset{
-					envKey:           "CPMA_REGISTRIESCONFIGFILE",
-					envValue:         "test-registries",
-					configEquivalent: "registriesconfigfile",
-				},
 			},
 		},
 	}
@@ -141,6 +116,12 @@ func TestInitFromEnv(t *testing.T) {
 			os.Setenv("CPMA_REPORTING", "true")
 			os.Setenv("CPMA_SAVECONFIG", "false")
 			os.Setenv("CPMA_WORKDIR", "testdata/out")
+
+			os.Setenv("CPMA_CRIOCONFIGFILE", "/etc/crio/crio.conf")
+			os.Setenv("CPMA_ETCDCONFIGFILE", "/etc/etcd/etcd.conf")
+			os.Setenv("CPMA_MASTERCONFIGFILE", "/etc/origin/master/master-config.yaml")
+			os.Setenv("CPMA_NODECONFIGFILE", "/etc/origin/node/node-config.yaml")
+			os.Setenv("CPMA_REGISTRIESCONFIGFILE", "/etc/containers/registries.conf")
 
 			api.K8sClient = &kubernetes.Clientset{}
 			api.O7tClient = &api.OpenshiftClient{}
