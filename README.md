@@ -54,6 +54,8 @@ The reason for the latter is because some features are deprecated or used differ
 OCP 3 and 4 approach configuration management completely differently across.
 Therefore it’s expected the tool cannot port all features across.
 
+For more information about CPMA coverage please see [docs](./docs).
+
 CPMA uses an ETL pattern to process the configuration files and query APIs which produce the output in two different forms:
 - Custom Resource Manifest files in YAML format
 - A report file (by default report.json) is produced by the reporting process
