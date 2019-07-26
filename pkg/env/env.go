@@ -111,6 +111,10 @@ func surveyMissingValues() error {
 		return err
 	}
 
+	if err := surveyConfigPaths(); err != nil {
+		return err
+	}
+
 	switch viperConfig.GetString("ConfigSource") {
 	case "remote":
 		if err := surveySSHConfigValues(); err != nil {
@@ -118,9 +122,7 @@ func surveyMissingValues() error {
 		}
 		viperConfig.Set("FetchFromRemote", true)
 	case "local":
-		if err := surveyConfigPaths(); err != nil {
-			return err
-		}
+		viperConfig.Set("FetchFromRemote", false)
 	default:
 		return errors.New("Accepted values for config-source are: remote or local")
 	}
@@ -296,8 +298,7 @@ func surveySSHConfigValues() error {
 }
 
 func surveyConfigPaths() error {
-	var config string
-	config = viperConfig.GetString("CrioConfigFile")
+	config := viperConfig.GetString("CrioConfigFile")
 	if !viperConfig.InConfig("crioconfigfile") && config == "" {
 		prompt := &survey.Input{
 			Message: "Path to crio config file",
