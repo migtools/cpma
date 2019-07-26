@@ -14,6 +14,12 @@ import (
 
 func TestInitConfig(t *testing.T) {
 	t.Parallel()
+	os.Setenv("CPMA_CRIOCONFIGFILE", "dummy")
+	os.Setenv("CPMA_ETCDCONFIGFILE", "dummy")
+	os.Setenv("CPMA_MASTERCONFIGFILE", "dummy")
+	os.Setenv("CPMA_NODECONFIGFILE", "dummy")
+	os.Setenv("CPMA_REGISTRIESCONFIGFILE", "dummy")
+
 	ConfigFile = "testdata/cpma-config.yml"
 	api.K8sClient = &kubernetes.Clientset{}
 	api.O7tClient = &api.OpenshiftClient{}

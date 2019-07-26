@@ -74,6 +74,11 @@ func TestManifestsReporting(t *testing.T) {
 	os.Setenv("CPMA_INSECUREHOSTKEY", "true")
 	os.Setenv("CPMA_SAVECONFIG", "no")
 	os.Setenv("CPMA_WORKDIR", e2eTestOut)
+	os.Setenv("CPMA_CRIOCONFIGFILE", "/etc/crio/crio.conf")
+	os.Setenv("CPMA_ETCDCONFIGFILE", "/etc/etcd/etcd.conf")
+	os.Setenv("CPMA_MASTERCONFIGFILE", "/etc/origin/master/master-config.yaml")
+	os.Setenv("CPMA_NODECONFIGFILE", "/etc/origin/node/node-config.yaml")
+	os.Setenv("CPMA_REGISTRIESCONFIGFILE", "/etc/containers/registries.conf")
 
 	err = runCpma()
 	assert.NoError(t, err, "Couldn't execute CPMA")
