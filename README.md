@@ -119,7 +119,24 @@ CPMA configuration information can be provided in following ways:
 - Configuration file
 
 ### ENV
-CPMA specific environment variable must be prefixed with `CPMA_`
+CPMA specific environment variable must be prefixed with `CPMA_`:
+- CPMA_CONFIGSOURCE
+- CPMA_CLUSTERNAME
+- CPMA_CRIOCONFIGFILE
+- CPMA_DEBUG
+- CPMA_ETCDCONFIGFILE
+- CPMA_HOSTNAME
+- CPMA_INSECUREHOSTKEY
+- CPMA_NODECONFIGFILE
+- CPMA_MANIFESTS
+- CPMA_MASTERCONFIGFILE
+- CPMA_REGISTRIESCONFIGFILE
+- CPMA_REPORTING
+- CPMA_SSHPRIVATEKEY
+- CPMA_SSHLOGIN
+- CPMA_SSHPORT
+- CPMA_VERBOSE
+- CPMA_WORKDIR
 
 ### CLI
 ```console
