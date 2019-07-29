@@ -67,13 +67,21 @@ func fetchFromLocal(src string) ([]byte, error) {
 	return f, nil
 }
 
-// FetchEnv Fetch env vars from the OCP3 cluster
+// FetchEnv Fetch env vars from the OCP3 cluster or localhost
 func FetchEnv(host, envVar string) (string, error) {
-	cmd := fmt.Sprintf("print $%s", envVar)
-	output, err := remotehost.RunCMD(host, cmd)
-	if err != nil {
-		return "", errors.Wrap(err, "Can't fetch env variable")
+	var output string
+
+	if env.Config().GetBool("FetchFromRemote") {
+		var err error
+		cmd := fmt.Sprintf("printf $%s", envVar)
+		output, err = remotehost.RunCMD(host, cmd)
+		if err != nil {
+			return "", errors.Wrap(err, "Can't fetch env variable")
+		}
+	} else {
+		output = os.Getenv(envVar)
 	}
+
 	logrus.Debugf("Env:loaded: %s", envVar)
 
 	return output, nil
