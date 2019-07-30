@@ -1,6 +1,9 @@
 package cluster
 
 import (
+	"sort"
+	"strings"
+
 	"github.com/fusor/cpma/pkg/api"
 	o7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiquota "github.com/openshift/api/quota/v1"
@@ -42,14 +45,15 @@ type NodeResources struct {
 
 // NamespaceReport represents json report of k8s namespaces
 type NamespaceReport struct {
-	Name         string                   `json:"name"`
-	LatestChange k8sMeta.Time             `json:"latestChange,omitempty"`
-	Resources    ContainerResourcesReport `json:"resources,omitempty"`
-	Pods         []PodReport              `json:"pods,omitempty"`
-	Routes       []RouteReport            `json:"routes,omitempty"`
-	DaemonSets   []DaemonSetReport        `json:"daemonSets,omitempty"`
-	Deployments  []DeploymentReport       `json:"deployments,omitempty"`
-	Quotas       []ResourceQuotaReport    `json:"quotas,omitempty"`
+	Name                       string                   `json:"name"`
+	LatestChange               k8sMeta.Time             `json:"latestChange,omitempty"`
+	Resources                  ContainerResourcesReport `json:"resources,omitempty"`
+	Pods                       []PodReport              `json:"pods,omitempty"`
+	Routes                     []RouteReport            `json:"routes,omitempty"`
+	DaemonSets                 []DaemonSetReport        `json:"daemonSets,omitempty"`
+	Deployments                []DeploymentReport       `json:"deployments,omitempty"`
+	Quotas                     []ResourceQuotaReport    `json:"quotas,omitempty"`
+	SecurityContextConstraints []string                 `json:"securityContextConstraints,omitempty"`
 }
 
 // PodReport represents json report of k8s pods
@@ -170,9 +174,10 @@ type OpenshiftClusterRoleBinding struct {
 
 // OpenshiftSecurityContextConstraints wrapper aroung opeshift scc
 type OpenshiftSecurityContextConstraints struct {
-	Name   string   `json:"name"`
-	Users  []string `json:"users" protobuf:"bytes,18,rep,name=users"`
-	Groups []string `json:"groups" protobuf:"bytes,19,rep,name=groups"`
+	Name       string   `json:"name"`
+	Users      []string `json:"users" protobuf:"bytes,18,rep,name=users"`
+	Groups     []string `json:"groups" protobuf:"bytes,19,rep,name=groups"`
+	Namespaces []string `json:"namespaces"`
 }
 
 // GenClusterReport inserts report values into structures for json output
@@ -239,6 +244,11 @@ func (clusterReport *Report) ReportNamespaces(apiResources api.Resources) {
 		ReportDaemonSets(&reportedNamespace, resources.DaemonSetList)
 		clusterReport.Namespaces = append(clusterReport.Namespaces, reportedNamespace)
 	}
+
+	// we need to sort this for binary search later
+	sort.Slice(clusterReport.Namespaces, func(i, j int) bool {
+		return clusterReport.Namespaces[i].Name <= clusterReport.Namespaces[j].Name
+	})
 }
 
 // ReportNodes fills in information about nodes
@@ -448,7 +458,34 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 			Groups: scc.Groups,
 		}
 
+		// we need to create a dependency between scc and namespace, the only way is to do it
+		// using service accounts. Service accounts are listed in SCC's users list.
+		var idx int
+		for _, user := range scc.Users {
+			// Service account username format role:serviceaccount:namespace:serviceaccountname
+			splitUsername := strings.Split(user, ":")
+			// if second element is serviceaccount then next element is namespace name
+			if splitUsername[1] == "serviceaccount" {
+				reportedSCC.Namespaces = append(reportedSCC.Namespaces, splitUsername[2])
+
+				// binary search for namespace in report and add current SCC name to it
+				idx = sort.Search(len(clusterReport.Namespaces), func(i int) bool {
+					return clusterReport.Namespaces[i].Name >= splitUsername[2]
+				})
+
+				clusterReport.Namespaces[idx].SecurityContextConstraints = append(clusterReport.Namespaces[idx].SecurityContextConstraints, scc.Name)
+			}
+		}
+
+		// deduplicate namespace names
+		reportedSCC.Namespaces = deduplicate(reportedSCC.Namespaces)
+
 		clusterReport.RBACReport.SecurityContextConstraints = append(clusterReport.RBACReport.SecurityContextConstraints, reportedSCC)
+	}
+
+	// deduplicate scc names
+	for i := range clusterReport.Namespaces {
+		clusterReport.Namespaces[i].SecurityContextConstraints = deduplicate(clusterReport.Namespaces[i].SecurityContextConstraints)
 	}
 }
 
@@ -465,4 +502,20 @@ func (clusterReport *Report) ReportStorageClasses(apiResources api.Resources) {
 
 		clusterReport.StorageClasses = append(clusterReport.StorageClasses, reportedStorageClass)
 	}
+}
+
+func deduplicate(s []string) []string {
+	if len(s) <= 1 {
+		return s
+	}
+
+	result := []string{}
+	seen := make(map[string]struct{})
+	for _, val := range s {
+		if _, ok := seen[val]; !ok {
+			result = append(result, val)
+			seen[val] = struct{}{}
+		}
+	}
+	return result
 }
