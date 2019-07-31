@@ -177,7 +177,7 @@ type OpenshiftSecurityContextConstraints struct {
 	Name       string   `json:"name"`
 	Users      []string `json:"users" protobuf:"bytes,18,rep,name=users"`
 	Groups     []string `json:"groups" protobuf:"bytes,19,rep,name=groups"`
-	Namespaces []string `json:"namespaces"`
+	Namespaces []string `json:"namespaces,omitempty"`
 }
 
 // GenClusterReport inserts report values into structures for json output
@@ -464,6 +464,10 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 		for _, user := range scc.Users {
 			// Service account username format role:serviceaccount:namespace:serviceaccountname
 			splitUsername := strings.Split(user, ":")
+			if len(splitUsername) <= 1 { // safety check
+				continue
+			}
+
 			// if second element is serviceaccount then next element is namespace name
 			if splitUsername[1] == "serviceaccount" {
 				reportedSCC.Namespaces = append(reportedSCC.Namespaces, splitUsername[2])

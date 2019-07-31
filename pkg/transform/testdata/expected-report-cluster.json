@@ -29,7 +29,7 @@
   ],
   "namespaces": [
    {
-    "name": "testNamespace",
+    "name": "testnamespace1",
     "latestChange": "2009-11-17T20:34:58Z",
     "resources": {
      "containerCount": 0,
@@ -91,6 +91,9 @@
       },
       "selector": {}
      }
+    ],
+    "securityContextConstraints": [
+     "testscc1"
     ]
    }
   ],
@@ -160,7 +163,7 @@
    ],
    "roles": [
     {
-     "namespace": "testNamespace",
+     "namespace": "testnamespace1",
      "roles": [
       {
        "name": "testrole1"
@@ -190,10 +193,14 @@
     {
      "name": "testscc1",
      "users": [
-      "testuser1"
+      "testuser1",
+      "testrole:serviceaccount:testnamespace1:testsa"
      ],
      "groups": [
       "testgroup1"
+     ],
+     "namespaces": [
+      "testnamespace1"
      ]
     }
    ]
