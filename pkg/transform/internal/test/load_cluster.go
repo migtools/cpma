@@ -169,7 +169,7 @@ func CreateTestNameSpaceList() []api.NamespaceResources {
 
 	namespaces := make([]api.NamespaceResources, 1)
 	namespaces[0] = api.NamespaceResources{
-		NamespaceName:     "testNamespace",
+		NamespaceName:     "testnamespace1",
 		ResourceQuotaList: CreateTestResourceQuotaList(),
 		PodList:           CreateTestPodList(),
 		RouteList:         CreateTestRouteList(),
@@ -471,7 +471,7 @@ func CreateSCCList() *o7tapisecurity.SecurityContextConstraintsList {
 		ObjectMeta: k8smachinery.ObjectMeta{
 			Name: "testscc1",
 		},
-		Users:  []string{"testuser1"},
+		Users:  []string{"testuser1", "testrole:serviceaccount:testnamespace1:testsa"},
 		Groups: []string{"testgroup1"},
 	})
 

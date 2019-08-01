@@ -431,9 +431,10 @@ func TestRBACReport(t *testing.T) {
 
 	expectedSCC := make([]cluster.OpenshiftSecurityContextConstraints, 0)
 	expectedSCC = append(expectedSCC, cluster.OpenshiftSecurityContextConstraints{
-		Name:   "testscc1",
-		Users:  []string{"testuser1"},
-		Groups: []string{"testgroup1"},
+		Name:       "testscc1",
+		Users:      []string{"testuser1", "testrole:serviceaccount:testnamespace1:testsa"},
+		Groups:     []string{"testgroup1"},
+		Namespaces: []string{"testnamespace1"},
 	})
 
 	expectedRBACReport := &cluster.RBACReport{
@@ -469,6 +470,10 @@ func TestRBACReport(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			clusterReport := &cluster.Report{}
+			clusterReport.Namespaces = make([]cluster.NamespaceReport, 0)
+			clusterReport.Namespaces = append(clusterReport.Namespaces, cluster.NamespaceReport{
+				Name: "testnamespace1",
+			})
 			clusterReport.ReportRBAC(tc.inputRBAC)
 
 			assert.Equal(t, tc.expectedRBACReport, clusterReport.RBACReport)
