@@ -70,12 +70,21 @@ Prior to the execution of the assistant tool, the following must be met:
 * The OCP source cluster must meet all current prerequisites for the given version of OCP.
 * The OCP source cluster must be at least of any of the versions 3.7, 3.9, 3.10 or 3.11.
 
+### Authorizations
+* When using the remote mode, the ssh user provided to CPMA must have sudo permissions to read the configuration files.
+  If this is not an option the files are to be copied locally and CPMA used in local mode.
+
+
+* When accessing cluster level resources through Kubernetes and Openshift APIs, the user (determined from Kubeconfig context) needs `cluster-admin` role.
+  If needed add the role to the user, once logged as `system:admin`, using the following command:
+  `oc adm policy add-cluster-role-to-user cluster-admin <username>`
+
 ## Warning
 
 The CPMA tool is to assist with complex settings and therefore it’s mandatory to have read the corresponding documentation.
 For more information please refef to:
-- OCP 3.x documentation
-- OCP 4.x documentation
+- [OCP 3.x documentation](https://docs.openshift.com/container-platform/3.11/welcome/index.html)
+- [OCP 4.x documentation](https://docs.openshift.com/container-platform/4.1/welcome/index.html)
 
 ## Installation
 
