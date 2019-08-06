@@ -83,8 +83,8 @@ Prior to the execution of the assistant tool, the following must be met:
 
 The CPMA tool is to assist with complex settings and therefore it’s mandatory to have read the corresponding documentation.
 For more information please refef to:
-- OCP 3.x documentation
-- OCP 4.x documentation
+- [OCP 3.x documentation](https://docs.openshift.com/container-platform/3.11/welcome/index.html)
+- [OCP 4.x documentation](https://docs.openshift.com/container-platform/4.1/welcome/index.html)
 
 ## Installation
 
