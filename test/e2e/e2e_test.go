@@ -82,7 +82,7 @@ func TestManifestsReporting(t *testing.T) {
 	os.Setenv("CPMA_MASTERCONFIGFILE", "/etc/origin/master/master-config.yaml")
 	os.Setenv("CPMA_NODECONFIGFILE", "/etc/origin/node/node-config.yaml")
 	os.Setenv("CPMA_REGISTRIESCONFIGFILE", "/etc/containers/registries.conf")
-	os.Setenv("CPMA_SAVECONFIG", "no")
+	os.Setenv("CPMA_SAVECONFIG", "false")
 	os.Setenv("CPMA_WORKDIR", e2eTestOut)
 
 	err = runCpma()
