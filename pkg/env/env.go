@@ -50,21 +50,20 @@ func InitConfig() (err error) {
 
 	// If a config file is found, read it in.
 	readConfigErr := viperConfig.ReadInConfig()
-
-	// Parse kubeconfig for creating api client later
-	if err := api.ParseKubeConfig(); err != nil {
-		return errors.Wrap(err, "kubeconfig parsing failed")
-	}
-
-	// If config has changed or no config was provided, ask to create or save it for future use
-	if readConfigErr != nil {
+	// If no config file and save config file is undetermined, ask to create or save it for future use
+	if readConfigErr != nil && viperConfig.GetString("SaveConfig") != "false" {
 		if err := surveySaveConfig(); err != nil {
 			return handleInterrupt(err)
 		}
 		logrus.Debug("Can't read config file, all values were prompted and new config was asked to be created, err: ", readConfigErr)
 	}
 
-	// Ask for all values that are missing in flags or config yaml
+	// Parse kubeconfig for creating api client later
+	if err := api.ParseKubeConfig(); err != nil {
+		return errors.Wrap(err, "kubeconfig parsing failed")
+	}
+
+	// Ask for all values that are missing in ENV, flags or config yaml
 	if err := surveyMissingValues(); err != nil {
 		return handleInterrupt(err)
 	}
