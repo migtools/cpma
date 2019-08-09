@@ -3,6 +3,7 @@ package transform
 import (
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io/remotehost"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,22 +22,18 @@ type DockerTransform struct {
 func (e DockerExtraction) Transform() ([]Output, error) {
 	if env.Config().GetBool("Reporting") {
 		logrus.Info("DockerTransform::Transform:Reports")
-		reports, err := e.buildReportOutput()
-		if err != nil {
-			return nil, err
-		}
-		return []Output{reports}, nil
+		e.buildReportOutput()
 	}
 	return nil, nil
 }
 
-func (e DockerExtraction) buildReportOutput() (Output, error) {
-	componentReport := ComponentReport{
+func (e DockerExtraction) buildReportOutput() {
+	componentReport := reportoutput.ComponentReport{
 		Component: DockerComponentName,
 	}
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "Docker",
 			Kind:       "Container Runtime",
 			Supported:  false,
@@ -44,11 +41,7 @@ func (e DockerExtraction) buildReportOutput() (Output, error) {
 			Comment:    "The Docker runtime has been replaced with CRI-O",
 		})
 
-	reportOutput := ReportOutput{
-		ComponentReports: []ComponentReport{componentReport},
-	}
-
-	return reportOutput, nil
+	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
 }
 
 // Extract collects Docker configuration from an OCP3 cluster

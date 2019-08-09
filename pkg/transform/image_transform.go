@@ -8,11 +8,11 @@ import (
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/image"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/fusor/cpma/pkg/transform/registries"
+	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
-
-	configv1 "github.com/openshift/api/config/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -54,11 +54,7 @@ func (e ImageExtraction) Transform() ([]Output, error) {
 
 	if env.Config().GetBool("Reporting") {
 		logrus.Info("ImageTransform::Transform:Reports")
-		reports, err := e.buildReportOutput()
-		if err != nil {
-			return nil, err
-		}
-		outputs = append(outputs, reports)
+		e.buildReportOutput()
 	}
 
 	return outputs, nil
@@ -105,14 +101,14 @@ func (e ImageExtraction) buildManifestOutput() (Output, error) {
 	}, nil
 }
 
-func (e ImageExtraction) buildReportOutput() (Output, error) {
-	componentReport := ComponentReport{
+func (e ImageExtraction) buildReportOutput() {
+	componentReport := reportoutput.ComponentReport{
 		Component: ImageComponentName,
 	}
 
 	for _, registry := range e.RegistriesConfig.Registries["block"].List {
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "Blocked",
 				Kind:       "Registries",
 				Supported:  true,
@@ -123,7 +119,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 
 	for _, registry := range e.RegistriesConfig.Registries["insecure"].List {
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "Insecure",
 				Kind:       "Registries",
 				Supported:  true,
@@ -134,7 +130,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 
 	for _, registry := range e.RegistriesConfig.Registries["search"].List {
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "Search",
 				Kind:       "Registries",
 				Supported:  false,
@@ -144,7 +140,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 	}
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "AllowedRegistriesForImport",
 			Kind:       "MasterConfig.ImagePolicyConfig",
 			Supported:  true,
@@ -152,7 +148,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "AdditionalTrustedCA",
 			Kind:       "MasterConfig.ImagePolicyConfig",
 			Supported:  false,
@@ -161,7 +157,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "ExternalRegistryHostname",
 			Kind:       "MasterConfig.ImagePolicyConfig",
 			Supported:  true,
@@ -169,7 +165,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "InternalRegistryHostname",
 			Kind:       "MasterConfig.ImagePolicyConfig",
 			Supported:  false,
@@ -178,7 +174,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "DisableScheduledImport",
 			Kind:       "MasterConfig.ImagePolicyConfig",
 			Supported:  false,
@@ -187,7 +183,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "MaxImagesBulkImportedPerRepository",
 			Kind:       "MasterConfig.ImagePolicyConfig",
 			Supported:  false,
@@ -196,7 +192,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "MaxScheduledImageImportsPerMinute",
 			Kind:       "MasterConfig.ImagePolicyConfig",
 			Supported:  false,
@@ -205,7 +201,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "ScheduledImageImportMinimumIntervalSeconds",
 			Kind:       "MasterConfig.ImagePolicyConfig",
 			Supported:  false,
@@ -213,11 +209,7 @@ func (e ImageExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Not supported by OCP4",
 		})
 
-	reportOutput := ReportOutput{
-		ComponentReports: []ComponentReport{componentReport},
-	}
-
-	return reportOutput, nil
+	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
 }
 
 // Extract collects image configuration information from an OCP3 cluster

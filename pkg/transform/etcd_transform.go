@@ -9,6 +9,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,17 +30,13 @@ type ETCDTransform struct {
 func (e ETCDExtraction) Transform() ([]Output, error) {
 	if env.Config().GetBool("Reporting") {
 		logrus.Info("ETCDTransform::Transform:Reports")
-		reports, err := e.buildReportOutput()
-		if err != nil {
-			return nil, err
-		}
-		return []Output{reports}, nil
+		e.buildReportOutput()
 	}
 	return nil, nil
 }
 
-func (e ETCDExtraction) buildReportOutput() (Output, error) {
-	componentReport := ComponentReport{
+func (e ETCDExtraction) buildReportOutput() {
+	componentReport := reportoutput.ComponentReport{
 		Component: ETCDComponentName,
 	}
 
@@ -57,7 +54,7 @@ func (e ETCDExtraction) buildReportOutput() (Output, error) {
 	}
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "ETCD Client Port",
 			Kind:       "Configuration",
 			Supported:  false,
@@ -66,7 +63,7 @@ func (e ETCDExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "ETCD TLS Cipher Suites",
 			Kind:       "Configuration",
 			Supported:  false,
@@ -74,11 +71,7 @@ func (e ETCDExtraction) buildReportOutput() (Output, error) {
 			Comment:    TLSMessage,
 		})
 
-	reportOutput := ReportOutput{
-		ComponentReports: []ComponentReport{componentReport},
-	}
-
-	return reportOutput, nil
+	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
 }
 
 // Extract collects ETCD configuration from an OCP3 cluster

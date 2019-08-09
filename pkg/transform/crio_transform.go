@@ -4,6 +4,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -80,11 +81,7 @@ func (e CrioExtraction) Transform() ([]Output, error) {
 
 	if env.Config().GetBool("Reporting") {
 		logrus.Info("CrioTransform::Transform:Reports")
-		reports, err := e.buildReportOutput()
-		if err != nil {
-			return nil, err
-		}
-		outputs = append(outputs, reports)
+		e.buildReportOutput()
 	}
 
 	return outputs, nil
@@ -124,8 +121,8 @@ func (e CrioExtraction) buildManifestOutput() (Output, error) {
 	}, nil
 }
 
-func (e CrioExtraction) buildReportOutput() (Output, error) {
-	componentReport := ComponentReport{
+func (e CrioExtraction) buildReportOutput() {
+	componentReport := reportoutput.ComponentReport{
 		Component: CrioComponentName,
 	}
 
@@ -134,7 +131,7 @@ func (e CrioExtraction) buildReportOutput() (Output, error) {
 
 	if e.Crio.PidsLimit != 0 {
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "pidsLimit",
 				Kind:       "Configuration",
 				Supported:  supported,
@@ -143,7 +140,7 @@ func (e CrioExtraction) buildReportOutput() (Output, error) {
 	}
 	if e.Crio.LogLevel != "" {
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "logLevel",
 				Kind:       "Configuration",
 				Supported:  supported,
@@ -152,7 +149,7 @@ func (e CrioExtraction) buildReportOutput() (Output, error) {
 	}
 	if e.Crio.LogSizeMax != 0 {
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "logSizeMax",
 				Kind:       "Configuration",
 				Supported:  supported,
@@ -161,7 +158,7 @@ func (e CrioExtraction) buildReportOutput() (Output, error) {
 	}
 	if e.Crio.InfraImage != "" {
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "infrImage",
 				Kind:       "Configuration",
 				Supported:  supported,
@@ -169,11 +166,7 @@ func (e CrioExtraction) buildReportOutput() (Output, error) {
 			})
 	}
 
-	reportOutput := ReportOutput{
-		ComponentReports: []ComponentReport{componentReport},
-	}
-
-	return reportOutput, nil
+	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
 }
 
 // Extract collects Crio configuration from an OCP3 cluster
