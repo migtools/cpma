@@ -9,7 +9,7 @@ import (
 	"github.com/fusor/cpma/pkg/transform/reportoutput/templates"
 )
 
-var htmlTemplate = template.Must(template.New("html").Parse(templates.ReportHTML))
+
 
 // Output reads report stucture, generates html using go templates and writes it to a file
 func htmlOutput(report ReportOutput) error {
@@ -21,6 +21,8 @@ func htmlOutput(report ReportOutput) error {
 	if err != nil {
 		return err
 	}
+
+	htmlTemplate := template.Must(template.New("html").Parse(templates.ReportHTML))
 
 	err = htmlTemplate.Execute(f, report)
 	if err != nil {
