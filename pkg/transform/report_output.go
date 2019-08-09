@@ -7,7 +7,7 @@ import (
 
 // Report represents structure for final output
 type Report struct {
-	report reportoutput.ReportOutput
+	Report reportoutput.ReportOutput
 }
 
 // Flush reports to files
@@ -18,6 +18,6 @@ func (r Report) Flush() error {
 // ReportOutputFlush flush reports to disk
 var ReportOutputFlush = func(r Report) error {
 	logrus.Info("Flushing reports to disk")
-	reportoutput.DumpReports(r.report)
+	reportoutput.DumpReports(r.Report)
 	return nil
 }

@@ -78,7 +78,7 @@ func (e SchedulerExtraction) buildReportOutput() {
 			Comment:    "",
 		})
 
-	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects Scheduler configuration information from an OCP3 cluster

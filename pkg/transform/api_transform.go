@@ -31,12 +31,11 @@ type APITransform struct {
 
 // Transform converts data collected from an OCP3 into a useful output
 func (e APIExtraction) Transform() ([]Output, error) {
-	outputs := []Output{}
 	if env.Config().GetBool("Reporting") {
 		logrus.Info("APITransform::Transform:Reports")
 		e.buildReportOutput()
 	}
-	return outputs, nil
+	return nil, nil
 }
 
 func (e APIExtraction) buildReportOutput() {
@@ -61,7 +60,7 @@ func (e APIExtraction) buildReportOutput() {
 			Comment:    fmt.Sprintf("The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port %v", port),
 		})
 
-	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects API configuration from an OCP3 cluster

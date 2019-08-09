@@ -204,7 +204,7 @@ func (e OAuthExtraction) buildReportOutput() {
 			Comment:    "Translation of SessionConfig is not supported",
 		})
 
-	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects OAuth configuration from an OCP3 cluster

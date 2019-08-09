@@ -8,8 +8,8 @@ import (
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/image"
-	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/fusor/cpma/pkg/transform/registries"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
@@ -209,7 +209,7 @@ func (e ImageExtraction) buildReportOutput() {
 			Comment:    "Not supported by OCP4",
 		})
 
-	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects image configuration information from an OCP3 cluster

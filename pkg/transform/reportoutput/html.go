@@ -9,8 +9,6 @@ import (
 	"github.com/fusor/cpma/pkg/transform/reportoutput/templates"
 )
 
-
-
 // Output reads report stucture, generates html using go templates and writes it to a file
 func htmlOutput(report ReportOutput) error {
 	path := filepath.Join(env.Config().GetString("WorkDir"), "report.html")

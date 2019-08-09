@@ -41,7 +41,7 @@ func (e DockerExtraction) buildReportOutput() {
 			Comment:    "The Docker runtime has been replaced with CRI-O",
 		})
 
-	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects Docker configuration from an OCP3 cluster

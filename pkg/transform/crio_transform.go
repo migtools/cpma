@@ -166,7 +166,7 @@ func (e CrioExtraction) buildReportOutput() {
 			})
 	}
 
-	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects Crio configuration from an OCP3 cluster

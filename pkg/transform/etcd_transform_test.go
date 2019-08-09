@@ -6,7 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/go-ini/ini.v1"
 )
@@ -32,12 +34,12 @@ var testExtraction = func() transform.ETCDExtraction {
 }()
 
 func TestETCDExtractionTransform(t *testing.T) {
-	expectedReport := transform.ComponentReport{
+	expectedReport := reportoutput.ComponentReport{
 		Component: "ETCD",
 	}
 
 	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
+		reportoutput.Report{
 			Name:       "ETCD Client Port",
 			Kind:       "Configuration",
 			Supported:  false,
@@ -45,7 +47,7 @@ func TestETCDExtractionTransform(t *testing.T) {
 			Comment:    "The Openshift 4 ETCD Cluster is not configurable and uses port 2379. Your Openshift 3 Cluster is using port 2379",
 		})
 	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
+		reportoutput.Report{
 			Name:       "ETCD TLS Cipher Suites",
 			Kind:       "Configuration",
 			Supported:  false,
@@ -53,42 +55,44 @@ func TestETCDExtractionTransform(t *testing.T) {
 			Comment:    "The Openshift 4 ETCD Cluster is not configurable. TLS Cipher Suite configuration was detected, TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
 		})
 
-	expectedReportOutput := transform.ReportOutput{
-		ComponentReports: []transform.ComponentReport{expectedReport},
+	expectedReportOutput := reportoutput.ReportOutput{
+		ComponentReports: []reportoutput.ComponentReport{expectedReport},
 	}
 
 	testCases := []struct {
 		name            string
-		expectedReports transform.ReportOutput
+		expectedReports reportoutput.ReportOutput
 	}{
 		{
-			name:            "transform crio extraction",
+			name:            "transform etcd extraction",
 			expectedReports: expectedReportOutput,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actualReportsChan := make(chan transform.ReportOutput)
+			actualReportsChan := make(chan reportoutput.ReportOutput)
+			transform.FinalReportOutput = transform.Report{}
 
 			// Override flush method
-			transform.ReportOutputFlush = func(reports transform.ReportOutput) error {
-				actualReportsChan <- reports
+			transform.ReportOutputFlush = func(reports transform.Report) error {
+				actualReportsChan <- reports.Report
 				return nil
 			}
 
 			go func() {
-				transformOutput, err := testExtraction.Transform()
+				env.Config().Set("Reporting", true)
+				env.Config().Set("Manifests", true)
+
+				_, err := testExtraction.Transform()
 				if err != nil {
 					t.Error(err)
 				}
-				for _, output := range transformOutput {
-					output.Flush()
-				}
+				transform.FinalReportOutput.Flush()
 			}()
 
 			actualReports := <-actualReportsChan
-			assert.Equal(t, actualReports, tc.expectedReports)
+			assert.Equal(t, actualReports.ComponentReports, tc.expectedReports.ComponentReports)
 		})
 
 	}

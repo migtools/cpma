@@ -120,7 +120,7 @@ func (e SDNExtraction) buildReportOutput() {
 			Comment:    "Translation of this configuration is not supported, refer to ingress operator configuration for more information",
 		})
 
-	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects SDN configuration information from an OCP3 cluster

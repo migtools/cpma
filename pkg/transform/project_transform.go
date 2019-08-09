@@ -125,7 +125,7 @@ func (e ProjectExtraction) buildReportOutput() {
 			Comment:    fmt.Sprintf("Not supported in OCP4: %s", e.ProjectConfig.SecurityAllocator.UIDAllocatorRange),
 		})
 
-	finalReportOutput.report.ComponentReports = append(finalReportOutput.report.ComponentReports, componentReport)
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects Project configuration information from an OCP3 cluster

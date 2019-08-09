@@ -27,7 +27,8 @@ const (
 './openshift-install --dir $INSTALL_DIR  create cluster'`
 )
 
-var finalReportOutput Report
+// FinalReportOutput represents final output
+var FinalReportOutput Report
 
 // Cluster contains a cluster
 type Cluster struct {
@@ -122,7 +123,7 @@ func (r Runner) Transform(transforms []Transform) {
 		}
 	}
 
-	err := finalReportOutput.Flush()
+	err := FinalReportOutput.Flush()
 	if err != nil {
 		HandleError(err, "Report")
 	}
