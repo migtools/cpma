@@ -1,0 +1,72 @@
+{{define "namespaces"}} {{template "report-object-btn" "Namespaces"}}
+<div class="collapse" id="NamespacesCollapse">
+   <div class="card card-body">
+      <table class="table table-bordered table-hover">
+         <thead>
+            <tr>
+               <th scope="col">#</th>
+               <th scope="col">Name</th>
+               <th scope="col">Latest Change</th>
+               <th scope="col">Resources</th>
+               <th scope="col">Pods</th>
+               <th scope="col">Routes</th>
+               <th scope="col">DaemonSets</th>
+               <th scope="col">Deployments</th>
+               <th scope="col">Quotas</th>
+               <th scope="col">SССs</th>
+            </tr>
+         </thead>
+         <tbody>
+            {{ range $index, $namespace := .ClusterReport.Namespaces }}
+            <tr>
+               <th scope="row">{{$index}}</th>
+               <td>{{$namespace.Name}}</td>
+               <td>{{ $namespace.LatestChange.Format "02-Jan-2006" }}</td>
+               <td>
+                  <li class="list-group">Container Count: {{$namespace.Resources.ContainerCount}}</li>
+                  <li class="list-group">CPU Total: {{$namespace.Resources.CPUTotal}}</li>
+                  <li class="list-group">Memory Total: {{$namespace.Resources.MemoryTotal}}</li>
+               </td>
+               <td>
+                  {{ range $namespace.Pods}}
+                  <li class="list-group">Name: {{ .Name }}</li>
+                  {{ end }}
+               </td>
+               <td>
+                  {{ range $namespace.Routes}}
+                  <li class="list-group">Name: {{ .Name }}</li>
+                  {{ end }}
+               </td>
+               <td>
+                  {{ range $namespace.DaemonSets}}
+                  <li class="list-group">Name: {{ .Name }}</li>
+                  {{ end }}
+               </td>
+               <td>
+                  {{ range $namespace.Deployments}}
+                  <li class="list-group">Name: {{ .Name }}</li>
+                  {{ end }}
+               </td>
+               <td>
+                  {{ range $namespace.Quotas}}
+                  <li class="list-group">
+                    Name: {{ .Name }}
+                  </li>
+                  {{ end }}
+               </td>
+               <td>
+                  {{ range $namespace.SecurityContextConstraints}}
+                  <li class="list-group">
+                    Name: {{ . }}
+                  </li>
+                  {{ end }}
+               </td>
+            </tr>
+            <tr>
+               </td>
+               {{end}}
+         </tbody>
+      </table>
+   </div>
+</div>
+{{end}}

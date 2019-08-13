@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>CPMA report</title>
+    <style>
+        {{ stylesCSS }}
+        {{ bootstrapCSS }}
+    </style>
+</head>
+
+<body>
+    <div class="main-div">
+        <div class="report-div">
+            <p class="text-center">
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#cluserReportCollapse" aria-expanded="false" aria-controls="cluserReportCollapse">
+                    Cluster report
+                </button>
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                    Component report
+                </button>
+            </p>
+            {{ template "cluster-report-collapse-div" . }}
+        </div>
+    </div>
+     <script type="text/javascript"> {{ jqueryJS }} </script>
+     <script type="text/javascript"> {{ popperJS }} </script>
+     <script type="text/javascript"> {{ bootstrapJS }} </script>
+</body> 
+
+</html>

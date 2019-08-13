@@ -3,6 +3,7 @@ module github.com/fusor/cpma
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.0-20190531072418-dc4f7bbe639c
 	github.com/BurntSushi/toml v0.3.0
+	github.com/GeertJohan/go.rice v1.0.0
 	github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect

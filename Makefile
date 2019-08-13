@@ -15,7 +15,7 @@ help: ## Show this help screen
 		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ''
 
-build: ## Compile the project
+build: 	bundle ## Compile the project
 	@echo "GOPATH=${GOPATH}"
 	GO111MODULE=on go build -o bin/${BIN_NAME}
 
@@ -45,3 +45,10 @@ vet: ## Run go vet
 
 e2e: ## Execute e2e test
 	GO111MODULE=on go test ./test/e2e/...
+
+bundle: # Bundle files for html reports
+	cd pkg/transform/reportoutput/ && rice embed-go && cd ../../..
+
+bundle-install: ## Install go.rice
+	GO111MODULE=off go get github.com/GeertJohan/go.rice && go get github.com/GeertJohan/go.rice/rice
+

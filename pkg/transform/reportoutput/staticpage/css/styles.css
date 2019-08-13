@@ -1,0 +1,14 @@
+.report-div {
+    margin: auto;
+    width: 100%;
+}
+
+.main-div {
+    width: 95%;
+    margin: auto;
+    margin-top: 25px;
+}
+
+.collapse-btn {
+    margin-bottom: 10px;
+}
