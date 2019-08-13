@@ -30,3 +30,5 @@ coverage.*
 *.log
 
 cpma-config.yaml
+
+rice-box.go
