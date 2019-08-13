@@ -15,7 +15,7 @@
             <tbody>
                 {{range $index, $quota := .ClusterReport.Quotas }}
                 <tr>
-                    <th scope="row">{{$index}}</th>
+                    <th scope="row">{{incrementIndex $index}}</th>
                     <td>{{$quota.Name}}</td>
                     <td>
                         {{ range $key, $value := $quota.Quota.Hard }}

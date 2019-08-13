@@ -8,6 +8,7 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/fusor/cpma/pkg/env"
+	k8sapicore "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -91,7 +92,22 @@ func parseTemplates() (*template.Template, error) {
 		return nil, err
 	}
 
+	storageClassesTemplateString, err := templateBox.String("templates/storageclasses.gohtml")
+	if err != nil {
+		return nil, err
+	}
+
+	rbacTemplateString, err := templateBox.String("templates/rbac.gohtml")
+	if err != nil {
+		return nil, err
+	}
+
 	clusterReportTemplateString, err := templateBox.String("templates/cluster-report.gohtml")
+	if err != nil {
+		return nil, err
+	}
+
+	componentReportTemplateString, err := templateBox.String("templates/component-report.gohtml")
 	if err != nil {
 		return nil, err
 	}
@@ -101,24 +117,7 @@ func parseTemplates() (*template.Template, error) {
 		return nil, err
 	}
 
-	htmlTemplate := template.Must(template.New("html").Parse(helpersTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(nodesTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Funcs(template.FuncMap{
-		"formatQuantity": func(q resource.Quantity) string {
-			json, _ := json.Marshal(q)
-			return string(json)
-		},
-	}).Parse(quotasTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(namespacesTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(pvsTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(clusterReportTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Funcs(template.FuncMap{
+	htmlTemplate := template.Must(template.New("html").Funcs(template.FuncMap{
 		"bootstrapCSS": func() template.CSS {
 			return template.CSS(bootstrapCSS)
 		},
@@ -134,7 +133,38 @@ func parseTemplates() (*template.Template, error) {
 		"popperJS": func() template.JS {
 			return template.JS(popperJS)
 		},
-	}).Parse(mainTemplateString))
+		"formatQuantity": func(q resource.Quantity) string {
+			json, _ := json.Marshal(q)
+			return string(json)
+		},
+		"formatDriver": func(d k8sapicore.PersistentVolumeSource) string {
+			json, _ := json.Marshal(d)
+			return string(json)
+		},
+		"incrementIndex": func(i int) int {
+			return i + 1
+		},
+	}).Parse(helpersTemplateString))
+
+	htmlTemplate = template.Must(htmlTemplate.Parse(nodesTemplateString))
+
+	htmlTemplate = template.Must(htmlTemplate.Parse(quotasTemplateString))
+
+	htmlTemplate = template.Must(htmlTemplate.Parse(namespacesTemplateString))
+
+	htmlTemplate = template.Must(htmlTemplate.Parse(pvsTemplateString))
+
+	htmlTemplate = template.Must(htmlTemplate.Parse(storageClassesTemplateString))
+
+	htmlTemplate = template.Must(htmlTemplate.Parse(rbacTemplateString))
+
+	htmlTemplate = template.Must(htmlTemplate.Parse(pvsTemplateString))
+
+	htmlTemplate = template.Must(htmlTemplate.Parse(clusterReportTemplateString))
+
+	htmlTemplate = template.Must(htmlTemplate.Parse(componentReportTemplateString))
+
+	htmlTemplate = template.Must(htmlTemplate.Parse(mainTemplateString))
 
 	return htmlTemplate, nil
 }

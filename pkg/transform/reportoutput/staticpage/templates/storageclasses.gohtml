@@ -1,0 +1,25 @@
+{{define "storageclasses"}}
+{{template "report-object-btn" "StorageClasses"}}
+<div class="collapse" id="StorageClassesCollapse">
+    <div class="card card-body">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Provisioner</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range $index, $sc := .ClusterReport.StorageClasses}}
+                <tr>
+                    <th scope="row">{{incrementIndex $index}}</th>
+                    <td>{{$sc.Name}}</td>
+                    <td>{{$sc.Provisioner}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{end}}

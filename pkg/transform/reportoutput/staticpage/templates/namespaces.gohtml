@@ -19,7 +19,7 @@
          <tbody>
             {{ range $index, $namespace := .ClusterReport.Namespaces }}
             <tr>
-               <th scope="row">{{$index}}</th>
+               <th scope="row">{{incrementIndex $index}}</th>
                <td>{{$namespace.Name}}</td>
                <td>{{ $namespace.LatestChange.Format "02-Jan-2006" }}</td>
                <td>

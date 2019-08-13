@@ -16,8 +16,21 @@
             <tbody>
                 {{range $index, $pv := .ClusterReport.PVs}}
                 <tr>
-                    <th scope="row">{{$index}}</th>
+                    <th scope="row">{{incrementIndex $index}}</th>
                     <td>{{$pv.Name}}</td>
+                    <td id="pvdriver-{{$index}}"></td>
+                    <script>
+                      var driver = JSON.parse({{formatDriver $pv.Driver}});
+                      var driverName = Object.keys(driver)[0];
+                      document.getElementById("pvdriver-{{$index}}").innerHTML = driverName;
+                    </script>
+                    <td>{{$pv.StorageClass}}</td>
+                    <td>
+                      {{ range $pv.Capacity }}
+                          {{ formatQuantity . }}</li>
+                      {{ end }}
+                    </td>
+                    <td>{{$pv.Phase}}</td>
                 </tr>
                 {{end}}
             </tbody>

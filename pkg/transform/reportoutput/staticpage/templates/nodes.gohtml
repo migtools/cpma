@@ -18,7 +18,7 @@
             <tbody>
                 {{range $index, $node := .ClusterReport.Nodes}}
                 <tr>
-                    <th scope="row">{{$index}}</th>
+                    <th scope="row">{{incrementIndex $index}}</th>
                     <td>{{$node.Name}}</td>
                     <td>{{$node.MasterNode}}</td>
                     <td>{{$node.Resources.CPU}}</td>
