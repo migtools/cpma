@@ -46,7 +46,7 @@ func parseTemplates() (*template.Template, error) {
 		return nil, err
 	}
 
-	stylesCSS, err := templateBox.String("css/bootstrap.min.css")
+	stylesCSS, err := templateBox.String("css/styles.css")
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +86,11 @@ func parseTemplates() (*template.Template, error) {
 		return nil, err
 	}
 
+	pvsTemplateString, err := templateBox.String("templates/pvs.gohtml")
+	if err != nil {
+		return nil, err
+	}
+
 	clusterReportTemplateString, err := templateBox.String("templates/cluster-report.gohtml")
 	if err != nil {
 		return nil, err
@@ -108,6 +113,8 @@ func parseTemplates() (*template.Template, error) {
 	}).Parse(quotasTemplateString))
 
 	htmlTemplate = template.Must(htmlTemplate.Parse(namespacesTemplateString))
+
+	htmlTemplate = template.Must(htmlTemplate.Parse(pvsTemplateString))
 
 	htmlTemplate = template.Must(htmlTemplate.Parse(clusterReportTemplateString))
 
