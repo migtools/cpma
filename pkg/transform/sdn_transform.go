@@ -2,10 +2,10 @@ package transform
 
 import (
 	"fmt"
-
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/fusor/cpma/pkg/transform/sdn"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
@@ -41,11 +41,7 @@ func (e SDNExtraction) Transform() ([]Output, error) {
 
 	if env.Config().GetBool("Reporting") {
 		logrus.Info("SDNTransform::Transform:Reports")
-		reports, err := e.buildReportOutput()
-		if err != nil {
-			return nil, err
-		}
-		outputs = append(outputs, reports)
+		e.buildReportOutput()
 	}
 
 	return outputs, nil
@@ -71,15 +67,15 @@ func (e SDNExtraction) buildManifestOutput() (Output, error) {
 	}, nil
 }
 
-func (e SDNExtraction) buildReportOutput() (Output, error) {
-	componentReport := ComponentReport{
+func (e SDNExtraction) buildReportOutput() {
+	componentReport := reportoutput.ComponentReport{
 		Component: SDNComponentName,
 	}
 
 	for _, n := range e.MasterConfig.NetworkConfig.ClusterNetworks {
 		cidrComment := fmt.Sprintf("Networks must be configured during installation, it's possible to use %s", n.CIDR)
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "CIDR",
 				Kind:       "ClusterNetwork",
 				Supported:  true,
@@ -88,7 +84,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 			})
 
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "HostSubnetLength",
 				Kind:       "ClusterNetwork",
 				Supported:  false,
@@ -98,7 +94,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 	}
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       e.MasterConfig.NetworkConfig.ServiceNetworkCIDR,
 			Kind:       "ServiceNetwork",
 			Supported:  true,
@@ -107,7 +103,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "",
 			Kind:       "ExternalIPNetworkCIDRs",
 			Supported:  false,
@@ -116,7 +112,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "",
 			Kind:       "IngressIPNetworkCIDR",
 			Supported:  false,
@@ -124,11 +120,7 @@ func (e SDNExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Translation of this configuration is not supported, refer to ingress operator configuration for more information",
 		})
 
-	reportOutput := ReportOutput{
-		ComponentReports: []ComponentReport{componentReport},
-	}
-
-	return reportOutput, nil
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects SDN configuration information from an OCP3 cluster

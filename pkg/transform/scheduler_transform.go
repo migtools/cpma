@@ -4,6 +4,7 @@ import (
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/fusor/cpma/pkg/transform/scheduler"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
@@ -36,11 +37,7 @@ func (e SchedulerExtraction) Transform() ([]Output, error) {
 
 	if env.Config().GetBool("Reporting") {
 		logrus.Info("SchedulerTransform::Transform:Reports")
-		reports, err := e.buildReportOutput()
-		if err != nil {
-			return nil, err
-		}
-		outputs = append(outputs, reports)
+		e.buildReportOutput()
 	}
 
 	return outputs, nil
@@ -67,13 +64,13 @@ func (e SchedulerExtraction) buildManifestOutput() (Output, error) {
 	}, nil
 }
 
-func (e SchedulerExtraction) buildReportOutput() (Output, error) {
-	componentReport := ComponentReport{
+func (e SchedulerExtraction) buildReportOutput() {
+	componentReport := reportoutput.ComponentReport{
 		Component: SchedulerComponentName,
 	}
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "DefaultNodeSelector",
 			Kind:       "ProjectConfig",
 			Supported:  true,
@@ -81,11 +78,7 @@ func (e SchedulerExtraction) buildReportOutput() (Output, error) {
 			Comment:    "",
 		})
 
-	reportOutput := ReportOutput{
-		ComponentReports: []ComponentReport{componentReport},
-	}
-
-	return reportOutput, nil
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects Scheduler configuration information from an OCP3 cluster

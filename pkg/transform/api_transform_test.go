@@ -6,7 +6,9 @@ import (
 	"testing"
 
 	"github.com/fusor/cpma/pkg/decode"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,12 +26,12 @@ var loadAPIExtraction = func() transform.APIExtraction {
 }()
 
 func TestAPIExtractionTransform(t *testing.T) {
-	expectedReport := transform.ComponentReport{
+	expectedReport := reportoutput.ComponentReport{
 		Component: "API",
 	}
 
 	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
+		reportoutput.Report{
 			Name:       "API",
 			Kind:       "Port",
 			Supported:  false,
@@ -37,13 +39,13 @@ func TestAPIExtractionTransform(t *testing.T) {
 			Comment:    "The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port 8443",
 		})
 
-	expectedReportOutput := transform.ReportOutput{
-		ComponentReports: []transform.ComponentReport{expectedReport},
+	expectedReportOutput := reportoutput.ReportOutput{
+		ComponentReports: []reportoutput.ComponentReport{expectedReport},
 	}
 
 	testCases := []struct {
 		name            string
-		expectedReports transform.ReportOutput
+		expectedReports reportoutput.ReportOutput
 	}{
 		{
 			name:            "transform API extraction",
@@ -53,28 +55,28 @@ func TestAPIExtractionTransform(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actualReportsChan := make(chan transform.ReportOutput)
+			actualReportsChan := make(chan reportoutput.ReportOutput)
+			transform.FinalReportOutput = transform.Report{}
 
 			// Override flush method
-			transform.ReportOutputFlush = func(reports transform.ReportOutput) error {
-				actualReportsChan <- reports
+			transform.ReportOutputFlush = func(reports transform.Report) error {
+				actualReportsChan <- reports.Report
 				return nil
 			}
 
 			testExtraction := loadAPIExtraction
 
 			go func() {
-				transformOutput, err := testExtraction.Transform()
+				env.Config().Set("Reporting", true)
+				_, err := testExtraction.Transform()
 				if err != nil {
 					t.Error(err)
 				}
-				for _, output := range transformOutput {
-					output.Flush()
-				}
+				transform.FinalReportOutput.Flush()
 			}()
 
 			actualReports := <-actualReportsChan
-			assert.Equal(t, actualReports, tc.expectedReports)
+			assert.Equal(t, actualReports.ComponentReports, tc.expectedReports.ComponentReports)
 		})
 
 	}
