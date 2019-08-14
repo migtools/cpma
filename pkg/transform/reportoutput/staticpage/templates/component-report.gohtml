@@ -1,9 +1,9 @@
-{{define "component-report-collapse-div"}}
+{{ define "component-report-collapse-div" }}
 <div class="collapse" id="componentReportCollapse">
     <div class="card card-body">
-      {{range .ComponentReports}}
+        {{ range .ComponentReports}} 
         {{ template "report-object-btn" .Component }}
-        <div class="collapse" id="{{.Component}}Collapse">
+        <div class="collapse" id="{{ .Component }}Collapse">
             <div class="card card-body">
                 <table class="table table-bordered table-hover">
                     <thead>
@@ -17,31 +17,31 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{range $index, $report := .Reports}}
+                        {{ range $index, $report := .Reports }}
                         <tr>
-                            <th scope="row">{{incrementIndex $index}}</th>
+                            <th scope="row">{{  incrementIndex $index }}</th>
                             <td>{{$report.Name}}</td>
                             <td>{{$report.Kind}}</td>
                             <td>{{$report.Supported}}</td>
                             {{ $class := "" }}
-                            {{if (eq $report.Confidence 0)}}
-                              {{$class = "danger"}}
-                            {{else if (eq $report.Confidence 1)}}
-                              {{$class = "warning"}}
-                            {{else}}
-                              {{$class = "success"}}
-                            {{end}}
-                            <td class="list-group-item list-group-item-{{$class}}">
-                              {{$report.Confidence}}
+                            {{ if (eq $report.Confidence 0) }}
+                              {{ $class = "danger" }}
+                            {{ else if (eq $report.Confidence 1) }} 
+                              {{ $class = "warning" }}
+                            {{ else }}
+                              {{ $class = "success" }}
+                            {{ end }}
+                            <td class="list-group-item list-group-item-{{ $class }}">
+                                {{ $report.Confidence }}
                             </td>
-                            <td>{{$report.Comment}}</td>
+                            <td>{{ $report.Comment }}</td>
                         </tr>
-                        {{end}}
+                        {{ end }}
                     </tbody>
                 </table>
             </div>
         </div>
-      {{end}}
+        {{ end }}
     </div>
 </div>
 {{ end }}

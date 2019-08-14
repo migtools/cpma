@@ -1,12 +1,12 @@
-{{define "cluster-report-collapse-div"}}
+{{ define "cluster-report-collapse-div" }}
 <div class="collapse" id="cluserReportCollapse">
     <div class="card card-body">
-        {{template "nodes" .}}
-        {{template "quotas" .}}
-        {{template "namespaces" .}}
-        {{template "pvs" .}}
-        {{template "storageclasses" .}}
-        {{template "rbac" .}}
+        {{ template "nodes" . }}
+        {{ template "quotas" . }}
+        {{ template "namespaces" . }}
+        {{ template "pvs" . }}
+        {{ template "storageclasses" . }}
+        {{ template "rbac" . }}
     </div>
 </div>
 {{ end }}

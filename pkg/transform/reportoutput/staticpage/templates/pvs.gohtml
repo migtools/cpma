@@ -1,5 +1,5 @@
-{{define "pvs"}}
-{{template "report-object-btn" "PVs"}}
+{{ define "pvs" }}
+{{ template "report-object-btn" "PVs" }}
 <div class="collapse" id="PVsCollapse">
     <div class="card card-body">
         <table class="table table-bordered table-hover">
@@ -16,25 +16,25 @@
             <tbody>
                 {{range $index, $pv := .ClusterReport.PVs}}
                 <tr>
-                    <th scope="row">{{incrementIndex $index}}</th>
-                    <td>{{$pv.Name}}</td>
-                    <td id="pvdriver-{{$index}}"></td>
+                    <th scope="row">{{ incrementIndex $index }}</th>
+                    <td>{{ $pv.Name }}</td>
+                    <td id="pvdriver-{{ $index }}"></td>
                     <script>
-                      var driver = JSON.parse({{formatDriver $pv.Driver}});
-                      var driverName = Object.keys(driver)[0];
-                      document.getElementById("pvdriver-{{$index}}").innerHTML = driverName;
+                        var driver = JSON.parse({{formatDriver $pv.Driver}});
+                        var driverName = Object.keys(driver)[0];
+                        document.getElementById("pvdriver-{{ $index }}").innerHTML = driverName;
                     </script>
-                    <td>{{$pv.StorageClass}}</td>
+                    <td>{{ $pv.StorageClass }}</td>
                     <td>
-                      {{ range $pv.Capacity }}
-                          {{ formatQuantity . }}</li>
-                      {{ end }}
+                        {{ range $pv.Capacity }}
+                        {{ formatQuantity . }}
+                        {{ end }}
                     </td>
-                    <td>{{$pv.Phase}}</td>
+                    <td>{{ $pv.Phase }}</td>
                 </tr>
-                {{end}}
+                {{ end }}
             </tbody>
         </table>
     </div>
 </div>
-{{end}}
+{{ end }}

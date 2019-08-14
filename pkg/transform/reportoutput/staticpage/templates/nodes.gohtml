@@ -1,5 +1,5 @@
 {{ define "nodes" }}
-{{template "report-object-btn" "Nodes"}}
+{{ template "report-object-btn" "Nodes" }}
 <div class="collapse" id="NodesCollapse">
     <div class="card card-body">
         <table class="table table-bordered table-hover">
@@ -16,18 +16,18 @@
                 </tr>
             </thead>
             <tbody>
-                {{range $index, $node := .ClusterReport.Nodes}}
+                {{ range $index, $node := .ClusterReport.Nodes }}
                 <tr>
-                    <th scope="row">{{incrementIndex $index}}</th>
-                    <td>{{$node.Name}}</td>
-                    <td>{{$node.MasterNode}}</td>
-                    <td>{{$node.Resources.CPU}}</td>
-                    <td>{{$node.Resources.MemoryConsumed}}</td>
-                    <td>{{$node.Resources.MemoryCapacity}}</td>
-                    <td>{{$node.Resources.RunningPods}}</td>
-                    <td>{{$node.Resources.PodCapacity}}</td>
+                    <th scope="row">{{ incrementIndex $index }}</th>
+                    <td>{{ $node.Name }}</td>
+                    <td>{{ $node.MasterNode }}</td>
+                    <td>{{ $node.Resources.CPU }}</td>
+                    <td>{{ $node.Resources.MemoryConsumed }}</td>
+                    <td>{{ $node.Resources.MemoryCapacity }}</td>
+                    <td>{{ $node.Resources.RunningPods }}</td>
+                    <td>{{ $node.Resources.PodCapacity }}</td>
                 </tr>
-                {{end}}
+                {{ end }}
             </tbody>
         </table>
     </div>

@@ -1,5 +1,5 @@
-{{define "storageclasses"}}
-{{template "report-object-btn" "StorageClasses"}}
+{{ define "storageclasses" }}
+{{ template "report-object-btn" "StorageClasses" }}
 <div class="collapse" id="StorageClassesCollapse">
     <div class="card card-body">
         <table class="table table-bordered table-hover">
@@ -11,15 +11,15 @@
                 </tr>
             </thead>
             <tbody>
-                {{range $index, $sc := .ClusterReport.StorageClasses}}
+                {{ range $index, $sc := .ClusterReport.StorageClasses }}
                 <tr>
-                    <th scope="row">{{incrementIndex $index}}</th>
-                    <td>{{$sc.Name}}</td>
-                    <td>{{$sc.Provisioner}}</td>
+                    <th scope="row">{{ incrementIndex $index }}</th>
+                    <td>{{ $sc.Name }}</td>
+                    <td>{{ $sc.Provisioner }}</td>
                 </tr>
-                {{end}}
+                {{ end }}
             </tbody>
         </table>
     </div>
 </div>
-{{end}}
+{{ end }}
