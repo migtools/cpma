@@ -1,0 +1,542 @@
+{
+ "cluster": {
+  "nodes": [
+   {
+    "name": "test1",
+    "masterNode": false,
+    "resources": {
+     "cpu": "2",
+     "memoryConsumed": "100Mi",
+     "memoryCapacity": "8009152Ki",
+     "runningPods": "11",
+     "podCapacity": "250"
+    }
+   },
+   {
+    "name": "test2",
+    "masterNode": false,
+    "resources": {
+     "cpu": "2",
+     "memoryConsumed": "100Mi",
+     "memoryCapacity": "8009152Ki",
+     "runningPods": "11",
+     "podCapacity": "250"
+    }
+   }
+  ],
+  "quotas": [
+   {
+    "name": "test1",
+    "quota": {
+     "hard": {
+      "pods": "10",
+      "secrets": "20"
+     }
+    },
+    "selector": {
+     "labels": null,
+     "annotations": {
+      "openshift.io/requester": "test1"
+     }
+    }
+   }
+  ],
+  "namespaces": [
+   {
+    "name": "testnamespace1",
+    "latestChange": "2009-11-17T20:34:58Z",
+    "resources": {
+     "containerCount": 0,
+     "cpuTotal": "0",
+     "memoryTotal": "0"
+    },
+    "pods": [
+     {
+      "name": "test-pod1"
+     },
+     {
+      "name": "test-pod2"
+     }
+    ],
+    "routes": [
+     {
+      "name": "route1",
+      "host": "testhost",
+      "path": "testpath",
+      "alternateBackends": [
+       {
+        "kind": "testkind",
+        "name": "testname",
+        "weight": null
+       }
+      ],
+      "tls": {
+       "termination": "edge"
+      },
+      "to": {
+       "kind": "testkindTo",
+       "name": "testTo",
+       "weight": null
+      },
+      "wildcardPolicy": "None"
+     }
+    ],
+    "daemonSets": [
+     {
+      "name": "testDaemonSet",
+      "latestChange": "2019-07-07T08:45:35Z"
+     }
+    ],
+    "deployments": [
+     {
+      "name": "testDeployment",
+      "latestChange": "2019-07-07T08:45:35Z"
+     }
+    ],
+    "quotas": [
+     {
+      "name": "resourcequota1",
+      "hard": {
+       "configmaps": "10",
+       "persistentvolumeclaims": "4",
+       "replicationcontrollers": "20",
+       "secrets": "10",
+       "services": "10"
+      },
+      "selector": {}
+     }
+    ],
+    "securityContextConstraints": [
+     "testscc1"
+    ]
+   }
+  ],
+  "pvs": [
+   {
+    "name": "pv1",
+    "driver": {
+     "nfs": {
+      "server": "example.com",
+      "path": "/some/path"
+     }
+    },
+    "capacity": {
+     "storage": "1Gi"
+    },
+    "phase": "Available"
+   },
+   {
+    "name": "pv2",
+    "driver": {
+     "glusterfs": {
+      "endpoints": "test",
+      "path": "test"
+     }
+    },
+    "storageClass": "glusterfs-storage",
+    "capacity": {
+     "storage": "1Gi"
+    },
+    "phase": "Bound"
+   }
+  ],
+  "storageClasses": [
+   {
+    "name": "testclass",
+    "provisioner": "testprovisioner"
+   }
+  ],
+  "rbacreport": {
+   "users": [
+    {
+     "name": "testuser1",
+     "fullName": "full name1",
+     "identities": [
+      "test-identity1",
+      "test-identity2"
+     ],
+     "groups": [
+      "group1",
+      "group2"
+     ]
+    },
+    {
+     "name": "testuser2",
+     "fullName": "full name2",
+     "identities": [
+      "test-identity1",
+      "test-identity2"
+     ],
+     "groups": [
+      "group1",
+      "group2"
+     ]
+    }
+   ],
+   "group": [
+    {
+     "name": "testgroup1",
+     "users": [
+      "testuser1"
+     ]
+    },
+    {
+     "name": "testgroup2",
+     "users": [
+      "testuser2"
+     ]
+    }
+   ],
+   "roles": [
+    {
+     "namespace": "testnamespace1",
+     "roles": [
+      {
+       "name": "testrole1"
+      }
+     ]
+    }
+   ],
+   "clusterRoles": [
+    {
+     "name": "testrole1"
+    }
+   ],
+   "clusterRoleBindings": [
+    {
+     "name": "testbinding1",
+     "userNames": [
+      "testuser1"
+     ],
+     "groupNames": [
+      "testgroup1"
+     ],
+     "subjects": null,
+     "roleRef": {}
+    }
+   ],
+   "securityContextConstraints": [
+    {
+     "name": "testscc1",
+     "users": [
+      "testuser1",
+      "testrole:serviceaccount:testnamespace1:testsa"
+     ],
+     "groups": [
+      "testgroup1"
+     ],
+     "namespaces": [
+      "testnamespace1"
+     ]
+    }
+   ]
+  }
+ },
+ "components": [
+  {
+   "component": "Image",
+   "reports": [
+    {
+     "name": "Blocked",
+     "kind": "Registries",
+     "supported": true,
+     "confidence": 2,
+     "comment": "bad.test.com"
+    },
+    {
+     "name": "Insecure",
+     "kind": "Registries",
+     "supported": true,
+     "confidence": 2,
+     "comment": "insecure.test.com"
+    },
+    {
+     "name": "Search",
+     "kind": "Registries",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Search registries can not be configured in OCP 4: search.test.com"
+    },
+    {
+     "name": "AllowedRegistriesForImport",
+     "kind": "MasterConfig.ImagePolicyConfig",
+     "supported": true,
+     "confidence": 2,
+     "comment": ""
+    },
+    {
+     "name": "AdditionalTrustedCA",
+     "kind": "MasterConfig.ImagePolicyConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Each registry must provide its own self-signed CA"
+    },
+    {
+     "name": "ExternalRegistryHostname",
+     "kind": "MasterConfig.ImagePolicyConfig",
+     "supported": true,
+     "confidence": 2,
+     "comment": ""
+    },
+    {
+     "name": "InternalRegistryHostname",
+     "kind": "MasterConfig.ImagePolicyConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Set by OCP4 image registry operator"
+    },
+    {
+     "name": "DisableScheduledImport",
+     "kind": "MasterConfig.ImagePolicyConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Not supported by OCP4"
+    },
+    {
+     "name": "MaxImagesBulkImportedPerRepository",
+     "kind": "MasterConfig.ImagePolicyConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Not supported by OCP4"
+    },
+    {
+     "name": "MaxScheduledImageImportsPerMinute",
+     "kind": "MasterConfig.ImagePolicyConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Not supported by OCP4"
+    },
+    {
+     "name": "ScheduledImageImportMinimumIntervalSeconds",
+     "kind": "MasterConfig.ImagePolicyConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Not supported by OCP4"
+    }
+   ]
+  },
+  {
+   "component": "OAuth",
+   "reports": [
+    {
+     "name": "BasicAuthPasswordIdentityProvider",
+     "kind": "IdentityProviders",
+     "supported": true,
+     "confidence": 2,
+     "comment": "Identity provider my_remote_basic_auth_provider is supported in OCP4"
+    },
+    {
+     "name": "GitHubIdentityProvider",
+     "kind": "IdentityProviders",
+     "supported": true,
+     "confidence": 2,
+     "comment": "Identity provider github123456789 is supported in OCP4"
+    },
+    {
+     "name": "GitLabIdentityProvider",
+     "kind": "IdentityProviders",
+     "supported": true,
+     "confidence": 2,
+     "comment": "Identity provider gitlab123456789 is supported in OCP4"
+    },
+    {
+     "name": "GoogleIdentityProvider",
+     "kind": "IdentityProviders",
+     "supported": true,
+     "confidence": 2,
+     "comment": "Identity provider google123456789123456789 is supported in OCP4"
+    },
+    {
+     "name": "HTPasswdPasswordIdentityProvider",
+     "kind": "IdentityProviders",
+     "supported": true,
+     "confidence": 2,
+     "comment": "Identity provider htpasswd_auth is supported in OCP4"
+    },
+    {
+     "name": "KeystonePasswordIdentityProvider",
+     "kind": "IdentityProviders",
+     "supported": true,
+     "confidence": 2,
+     "comment": "Identity provider my_keystone_provider is supported in OCP4"
+    },
+    {
+     "name": "LDAPPasswordIdentityProvider",
+     "kind": "IdentityProviders",
+     "supported": true,
+     "confidence": 2,
+     "comment": "Identity provider my_ldap_provider is supported in OCP4"
+    },
+    {
+     "name": "RequestHeaderIdentityProvider",
+     "kind": "IdentityProviders",
+     "supported": true,
+     "confidence": 2,
+     "comment": "Identity provider my_request_header_provider is supported in OCP4"
+    },
+    {
+     "name": "OpenIDIdentityProvider",
+     "kind": "IdentityProviders",
+     "supported": true,
+     "confidence": 2,
+     "comment": "Identity provider my_openid_connect is supported in OCP4"
+    },
+    {
+     "name": "AccessTokenMaxAgeSeconds",
+     "kind": "TokenConfig",
+     "supported": true,
+     "confidence": 2,
+     "comment": ""
+    },
+    {
+     "name": "AuthorizeTokenMaxAgeSeconds",
+     "kind": "TokenConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Translation of AuthorizeTokenMaxAgeSeconds is not supported, it's value is 5 minutes in OCP4"
+    },
+    {
+     "name": "",
+     "kind": "AssetPublicURL",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Translation of AssetPublicURL is not supported"
+    },
+    {
+     "name": "",
+     "kind": "MasterPublicURL",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Translation of MasterPublicURL is not supported"
+    },
+    {
+     "name": "",
+     "kind": "MasterCA",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Translation of MasterCA is not supported"
+    },
+    {
+     "name": "",
+     "kind": "MasterURL",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Translation of MasterURL is not supported"
+    },
+    {
+     "name": "",
+     "kind": "GrantConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Translation of GrantConfig is not supported"
+    },
+    {
+     "name": "",
+     "kind": "SessionConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Translation of SessionConfig is not supported"
+    }
+   ]
+  },
+  {
+   "component": "Project",
+   "reports": [
+    {
+     "name": "ProjectRequestMessage",
+     "kind": "ProjectConfig",
+     "supported": true,
+     "confidence": 2,
+     "comment": "Networks must be configured during installation"
+    },
+    {
+     "name": "ProjectRequestTemplate",
+     "kind": "ProjectConfig",
+     "supported": true,
+     "confidence": 2,
+     "comment": "Networks must be configured during installation"
+    },
+    {
+     "name": "DefaultNodeSelector",
+     "kind": "ProjectConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Not supported in OCP4: node-role.kubernetes.io/compute=true"
+    },
+    {
+     "name": "SecurityAllocator.mcsAllocatorRange",
+     "kind": "ProjectConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Not supported in OCP4: s0:/2"
+    },
+    {
+     "name": "SecurityAllocator.mcsLabelsPerProject",
+     "kind": "ProjectConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Not supported in OCP4: 5"
+    },
+    {
+     "name": "SecurityAllocator.uidAllocatorRange",
+     "kind": "ProjectConfig",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Not supported in OCP4: 1000000000-1999999999/10000"
+    }
+   ]
+  },
+  {
+   "component": "Scheduler",
+   "reports": [
+    {
+     "name": "DefaultNodeSelector",
+     "kind": "ProjectConfig",
+     "supported": true,
+     "confidence": 2,
+     "comment": ""
+    }
+   ]
+  },
+  {
+   "component": "SDN",
+   "reports": [
+    {
+     "name": "CIDR",
+     "kind": "ClusterNetwork",
+     "supported": true,
+     "confidence": 1,
+     "comment": "Networks must be configured during installation, it's possible to use 10.128.0.0/14"
+    },
+    {
+     "name": "HostSubnetLength",
+     "kind": "ClusterNetwork",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Networks must be configured during installation,\n hostSubnetLength was replaced with hostPrefix in OCP4, default value was set to 23"
+    },
+    {
+     "name": "172.30.0.0/16",
+     "kind": "ServiceNetwork",
+     "supported": true,
+     "confidence": 1,
+     "comment": "Networks must be configured during installation"
+    },
+    {
+     "name": "",
+     "kind": "ExternalIPNetworkCIDRs",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Configuration of ExternalIPNetworkCIDRs is not supported in OCP4"
+    },
+    {
+     "name": "",
+     "kind": "IngressIPNetworkCIDR",
+     "supported": false,
+     "confidence": 0,
+     "comment": "Translation of this configuration is not supported, refer to ingress operator configuration for more information"
+    }
+   ]
+  }
+ ]
+}

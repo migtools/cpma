@@ -25,6 +25,11 @@ type Report struct {
 	Comment    string `json:"comment"`
 }
 
+var (
+	htmlFileName = "report.html"
+	jsonFileName = "report.json"
+)
+
 // DumpReports creates OCDs files
 func DumpReports(r ReportOutput) {
 	// reportOutputFormat := env.Config().GetString("OutputFormat")

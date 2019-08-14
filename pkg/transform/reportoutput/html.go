@@ -15,7 +15,7 @@ import (
 
 // Output reads report stucture, generates html using go templates and writes it to a file
 func htmlOutput(report ReportOutput) {
-	path := filepath.Join(env.Config().GetString("WorkDir"), "report.html")
+	path := filepath.Join(env.Config().GetString("WorkDir"), htmlFileName)
 
 	f, err := os.Create(path)
 	defer f.Close()

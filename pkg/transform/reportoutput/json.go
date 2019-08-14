@@ -8,14 +8,12 @@ import (
 )
 
 func jsonOutput(r ReportOutput) {
-	jsonFile := "report.json"
-
 	jsonReports, err := json.MarshalIndent(r, "", " ")
 	if err != nil {
 		panic(errors.Wrap(err, "unable to marshal reports"))
 	}
 
-	if err := io.WriteFile(jsonReports, jsonFile); err != nil {
-		panic(errors.Wrapf(err, "unable to write to report file: %s", jsonFile))
+	if err := io.WriteFile(jsonReports, jsonFileName); err != nil {
+		panic(errors.Wrapf(err, "unable to write to report file: %s", jsonFileName))
 	}
 }
