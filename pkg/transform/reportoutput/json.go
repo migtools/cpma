@@ -7,17 +7,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-func jsonOutput(r ReportOutput) error {
-	jsonFile := "report.json"
-
+func jsonOutput(r ReportOutput) {
 	jsonReports, err := json.MarshalIndent(r, "", " ")
 	if err != nil {
-		return errors.Wrap(err, "unable to marshal reports")
+		panic(errors.Wrap(err, "unable to marshal reports"))
 	}
 
-	if err := io.WriteFile(jsonReports, jsonFile); err != nil {
-		return errors.Wrapf(err, "unable to write to report file: %s", jsonFile)
+	if err := io.WriteFile(jsonReports, jsonFileName); err != nil {
+		panic(errors.Wrapf(err, "unable to write to report file: %s", jsonFileName))
 	}
-
-	return nil
 }

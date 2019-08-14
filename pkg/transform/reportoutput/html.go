@@ -8,31 +8,31 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/fusor/cpma/pkg/env"
+	"github.com/pkg/errors"
+	k8sapicore "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // Output reads report stucture, generates html using go templates and writes it to a file
-func htmlOutput(report ReportOutput) error {
-	path := filepath.Join(env.Config().GetString("WorkDir"), "report.html")
+func htmlOutput(report ReportOutput) {
+	path := filepath.Join(env.Config().GetString("WorkDir"), htmlFileName)
 
 	f, err := os.Create(path)
 	defer f.Close()
 
 	if err != nil {
-		return err
+		panic(errors.Wrap(err, "unable to create html file"))
 	}
 
 	htmlTemplate, err := parseTemplates()
 	if err != nil {
-		return err
+		panic(errors.Wrap(err, "unable to parse templates"))
 	}
 
 	err = htmlTemplate.Execute(f, report)
 	if err != nil {
-		return err
+		panic(errors.Wrap(err, "unable to apply parsed template"))
 	}
-
-	return nil
 }
 
 func parseTemplates() (*template.Template, error) {
@@ -41,29 +41,22 @@ func parseTemplates() (*template.Template, error) {
 		return nil, err
 	}
 
-	bootstrapCSS, err := templateBox.String("css/bootstrap.min.css")
-	if err != nil {
-		return nil, err
+	var fileStringMap = make(map[string]string)
+
+	cssJSFilesPath := []string{
+		"css/bootstrap.min.css",
+		"css/styles.css",
+		"js/bootstrap.min.js",
+		"js/jquery-3.3.1.slim.min.js",
+		"js/popper.min.js",
 	}
 
-	stylesCSS, err := templateBox.String("css/styles.css")
-	if err != nil {
-		return nil, err
-	}
-
-	bootstrapJS, err := templateBox.String("js/bootstrap.min.js")
-	if err != nil {
-		return nil, err
-	}
-
-	jqueryJS, err := templateBox.String("js/jquery-3.3.1.slim.min.js")
-	if err != nil {
-		return nil, err
-	}
-
-	popperJS, err := templateBox.String("js/popper.min.js")
-	if err != nil {
-		return nil, err
+	for _, path := range cssJSFilesPath {
+		stringFile, err := templateBox.String(path)
+		if err != nil {
+			return nil, err
+		}
+		fileStringMap[path] = stringFile
 	}
 
 	helpersTemplateString, err := templateBox.String("templates/helpers.gohtml")
@@ -71,70 +64,54 @@ func parseTemplates() (*template.Template, error) {
 		return nil, err
 	}
 
-	nodesTemplateString, err := templateBox.String("templates/nodes.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	quotasTemplateString, err := templateBox.String("templates/quotas.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	namespacesTemplateString, err := templateBox.String("templates/namespaces.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	pvsTemplateString, err := templateBox.String("templates/pvs.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	clusterReportTemplateString, err := templateBox.String("templates/cluster-report.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	mainTemplateString, err := templateBox.String("templates/main.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	htmlTemplate := template.Must(template.New("html").Parse(helpersTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(nodesTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Funcs(template.FuncMap{
+	htmlTemplate := template.Must(template.New("html").Funcs(template.FuncMap{
+		"bootstrapCSS": func() template.CSS {
+			return template.CSS(fileStringMap["css/bootstrap.min.css"])
+		},
+		"stylesCSS": func() template.CSS {
+			return template.CSS(fileStringMap["css/styles.css"])
+		},
+		"bootstrapJS": func() template.JS {
+			return template.JS(fileStringMap["js/bootstrap.min.js"])
+		},
+		"jqueryJS": func() template.JS {
+			return template.JS(fileStringMap["js/jquery-3.3.1.slim.min.js"])
+		},
+		"popperJS": func() template.JS {
+			return template.JS(fileStringMap["js/popper.min.js"])
+		},
 		"formatQuantity": func(q resource.Quantity) string {
 			json, _ := json.Marshal(q)
 			return string(json)
 		},
-	}).Parse(quotasTemplateString))
+		"formatDriver": func(d k8sapicore.PersistentVolumeSource) string {
+			json, _ := json.Marshal(d)
+			return string(json)
+		},
+		"incrementIndex": func(i int) int {
+			return i + 1
+		},
+	}).Parse(helpersTemplateString))
 
-	htmlTemplate = template.Must(htmlTemplate.Parse(namespacesTemplateString))
+	templatePaths := []string{
+		"templates/nodes.gohtml",
+		"templates/quotas.gohtml",
+		"templates/namespaces.gohtml",
+		"templates/pvs.gohtml",
+		"templates/storageclasses.gohtml",
+		"templates/rbac.gohtml",
+		"templates/cluster-report.gohtml",
+		"templates/component-report.gohtml",
+		"templates/main.gohtml",
+	}
 
-	htmlTemplate = template.Must(htmlTemplate.Parse(pvsTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(clusterReportTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Funcs(template.FuncMap{
-		"bootstrapCSS": func() template.CSS {
-			return template.CSS(bootstrapCSS)
-		},
-		"stylesCSS": func() template.CSS {
-			return template.CSS(stylesCSS)
-		},
-		"bootstrapJS": func() template.JS {
-			return template.JS(bootstrapJS)
-		},
-		"jqueryJS": func() template.JS {
-			return template.JS(jqueryJS)
-		},
-		"popperJS": func() template.JS {
-			return template.JS(popperJS)
-		},
-	}).Parse(mainTemplateString))
+	for _, path := range templatePaths {
+		stringTemplate, err := templateBox.String(path)
+		if err != nil {
+			return nil, err
+		}
+		htmlTemplate = template.Must(htmlTemplate.Parse(stringTemplate))
+	}
 
 	return htmlTemplate, nil
 }

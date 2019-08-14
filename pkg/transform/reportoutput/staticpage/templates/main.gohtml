@@ -17,11 +17,12 @@
                 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#cluserReportCollapse" aria-expanded="false" aria-controls="cluserReportCollapse">
                     Cluster report
                 </button>
-                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#componentReportCollapse" aria-expanded="false" aria-controls="componentReportCollapse">
                     Component report
                 </button>
             </p>
             {{ template "cluster-report-collapse-div" . }}
+            {{ template "component-report-collapse-div" . }}
         </div>
     </div>
      <script type="text/javascript"> {{ jqueryJS }} </script>

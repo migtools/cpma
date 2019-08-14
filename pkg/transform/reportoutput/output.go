@@ -2,7 +2,6 @@ package reportoutput
 
 import (
 	"github.com/fusor/cpma/pkg/transform/cluster"
-	"github.com/sirupsen/logrus"
 )
 
 // ReportOutput holds a collection of reports to be written to file
@@ -26,6 +25,11 @@ type Report struct {
 	Comment    string `json:"comment"`
 }
 
+var (
+	htmlFileName = "report.html"
+	jsonFileName = "report.json"
+)
+
 // DumpReports creates OCDs files
 func DumpReports(r ReportOutput) {
 	// reportOutputFormat := env.Config().GetString("OutputFormat")
@@ -40,6 +44,6 @@ func DumpReports(r ReportOutput) {
 		jsonOutput(r)
 		htmlOutput(r)
 	default:
-		logrus.Error("This format type is not supported")
+		panic("This format type is not supported")
 	}
 }
