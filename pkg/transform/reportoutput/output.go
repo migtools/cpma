@@ -2,7 +2,6 @@ package reportoutput
 
 import (
 	"github.com/fusor/cpma/pkg/transform/cluster"
-	"github.com/sirupsen/logrus"
 )
 
 // ReportOutput holds a collection of reports to be written to file
@@ -40,6 +39,6 @@ func DumpReports(r ReportOutput) {
 		jsonOutput(r)
 		htmlOutput(r)
 	default:
-		logrus.Error("This format type is not supported")
+		panic("This format type is not supported")
 	}
 }

@@ -8,32 +8,31 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/fusor/cpma/pkg/env"
+	"github.com/pkg/errors"
 	k8sapicore "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // Output reads report stucture, generates html using go templates and writes it to a file
-func htmlOutput(report ReportOutput) error {
+func htmlOutput(report ReportOutput) {
 	path := filepath.Join(env.Config().GetString("WorkDir"), "report.html")
 
 	f, err := os.Create(path)
 	defer f.Close()
 
 	if err != nil {
-		return err
+		panic(errors.Wrap(err, "unable to create html file"))
 	}
 
 	htmlTemplate, err := parseTemplates()
 	if err != nil {
-		return err
+		panic(errors.Wrap(err, "unable to parse templates"))
 	}
 
 	err = htmlTemplate.Execute(f, report)
 	if err != nil {
-		return err
+		panic(errors.Wrap(err, "unable to apply parsed template"))
 	}
-
-	return nil
 }
 
 func parseTemplates() (*template.Template, error) {
