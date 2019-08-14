@@ -42,29 +42,22 @@ func parseTemplates() (*template.Template, error) {
 		return nil, err
 	}
 
-	bootstrapCSS, err := templateBox.String("css/bootstrap.min.css")
-	if err != nil {
-		return nil, err
+	var fileStringMap = make(map[string]string)
+
+	cssJSFilesPath := []string{
+		"css/bootstrap.min.css",
+		"css/styles.css",
+		"js/bootstrap.min.js",
+		"js/jquery-3.3.1.slim.min.js",
+		"js/popper.min.js",
 	}
 
-	stylesCSS, err := templateBox.String("css/styles.css")
-	if err != nil {
-		return nil, err
-	}
-
-	bootstrapJS, err := templateBox.String("js/bootstrap.min.js")
-	if err != nil {
-		return nil, err
-	}
-
-	jqueryJS, err := templateBox.String("js/jquery-3.3.1.slim.min.js")
-	if err != nil {
-		return nil, err
-	}
-
-	popperJS, err := templateBox.String("js/popper.min.js")
-	if err != nil {
-		return nil, err
+	for _, path := range cssJSFilesPath {
+		stringFile, err := templateBox.String(path)
+		if err != nil {
+			return nil, err
+		}
+		fileStringMap[path] = stringFile
 	}
 
 	helpersTemplateString, err := templateBox.String("templates/helpers.gohtml")
@@ -72,66 +65,21 @@ func parseTemplates() (*template.Template, error) {
 		return nil, err
 	}
 
-	nodesTemplateString, err := templateBox.String("templates/nodes.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	quotasTemplateString, err := templateBox.String("templates/quotas.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	namespacesTemplateString, err := templateBox.String("templates/namespaces.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	pvsTemplateString, err := templateBox.String("templates/pvs.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	storageClassesTemplateString, err := templateBox.String("templates/storageclasses.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	rbacTemplateString, err := templateBox.String("templates/rbac.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	clusterReportTemplateString, err := templateBox.String("templates/cluster-report.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	componentReportTemplateString, err := templateBox.String("templates/component-report.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
-	mainTemplateString, err := templateBox.String("templates/main.gohtml")
-	if err != nil {
-		return nil, err
-	}
-
 	htmlTemplate := template.Must(template.New("html").Funcs(template.FuncMap{
 		"bootstrapCSS": func() template.CSS {
-			return template.CSS(bootstrapCSS)
+			return template.CSS(fileStringMap["css/bootstrap.min.css"])
 		},
 		"stylesCSS": func() template.CSS {
-			return template.CSS(stylesCSS)
+			return template.CSS(fileStringMap["css/styles.css"])
 		},
 		"bootstrapJS": func() template.JS {
-			return template.JS(bootstrapJS)
+			return template.JS(fileStringMap["js/bootstrap.min.js"])
 		},
 		"jqueryJS": func() template.JS {
-			return template.JS(jqueryJS)
+			return template.JS(fileStringMap["js/jquery-3.3.1.slim.min.js"])
 		},
 		"popperJS": func() template.JS {
-			return template.JS(popperJS)
+			return template.JS(fileStringMap["js/popper.min.js"])
 		},
 		"formatQuantity": func(q resource.Quantity) string {
 			json, _ := json.Marshal(q)
@@ -146,25 +94,25 @@ func parseTemplates() (*template.Template, error) {
 		},
 	}).Parse(helpersTemplateString))
 
-	htmlTemplate = template.Must(htmlTemplate.Parse(nodesTemplateString))
+	templatePaths := []string{
+		"templates/nodes.gohtml",
+		"templates/quotas.gohtml",
+		"templates/namespaces.gohtml",
+		"templates/pvs.gohtml",
+		"templates/storageclasses.gohtml",
+		"templates/rbac.gohtml",
+		"templates/cluster-report.gohtml",
+		"templates/component-report.gohtml",
+		"templates/main.gohtml",
+	}
 
-	htmlTemplate = template.Must(htmlTemplate.Parse(quotasTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(namespacesTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(pvsTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(storageClassesTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(rbacTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(pvsTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(clusterReportTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(componentReportTemplateString))
-
-	htmlTemplate = template.Must(htmlTemplate.Parse(mainTemplateString))
+	for _, path := range templatePaths {
+		stringTemplate, err := templateBox.String(path)
+		if err != nil {
+			return nil, err
+		}
+		htmlTemplate = template.Must(htmlTemplate.Parse(stringTemplate))
+	}
 
 	return htmlTemplate, nil
 }
