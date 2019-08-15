@@ -5,6 +5,19 @@
 
 .collapse-btn {
     margin-bottom: 10px;
+    background-color: grey;
+    border-color: grey;
+}
+
+.btn-primary:hover {
+    color: #fff;
+    background-color: #656464;
+    border-color: #656464;
+}
+.btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show>.btn-primary.dropdown-toggle {
+    color: #fff;
+    background-color: #656464;
+    border-color: #656464;
 }
 
 .report-header {
