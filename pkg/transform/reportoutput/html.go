@@ -46,9 +46,11 @@ func parseTemplates() (*template.Template, error) {
 	cssJSFilesPath := []string{
 		"css/bootstrap.min.css",
 		"css/styles.css",
+		"css/patternfly.min.css",
 		"js/bootstrap.min.js",
 		"js/jquery-3.3.1.slim.min.js",
 		"js/popper.min.js",
+		"js/custom.js",
 	}
 
 	for _, path := range cssJSFilesPath {
@@ -71,6 +73,9 @@ func parseTemplates() (*template.Template, error) {
 		"stylesCSS": func() template.CSS {
 			return template.CSS(fileStringMap["css/styles.css"])
 		},
+		"patternflyCSS": func() template.CSS {
+			return template.CSS(fileStringMap["css/patternfly.min.css"])
+		},
 		"bootstrapJS": func() template.JS {
 			return template.JS(fileStringMap["js/bootstrap.min.js"])
 		},
@@ -79,6 +84,9 @@ func parseTemplates() (*template.Template, error) {
 		},
 		"popperJS": func() template.JS {
 			return template.JS(fileStringMap["js/popper.min.js"])
+		},
+		"customJS": func() template.JS {
+			return template.JS(fileStringMap["js/custom.js"])
 		},
 		"formatQuantity": func(q resource.Quantity) string {
 			json, _ := json.Marshal(q)

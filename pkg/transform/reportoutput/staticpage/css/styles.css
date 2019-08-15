@@ -1,14 +1,15 @@
-.report-div {
-    margin: auto;
-    width: 100%;
-}
-
 .main-div {
-    width: 95%;
     margin: auto;
-    margin-top: 25px;
+    margin-top: 40px;
 }
 
 .collapse-btn {
     margin-bottom: 10px;
+}
+
+.report-header {
+    height: 100px;
+    background-color: black;
+    padding-top: 30px;
+    padding-left: 30px;
 }
