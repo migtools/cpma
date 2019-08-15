@@ -4,30 +4,65 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>CPMA report</title>
-    <style>
-        {{ stylesCSS }}
+    <style> 
         {{ bootstrapCSS }}
+        {{ patternflyCSS }}
+        {{ stylesCSS }}
     </style>
 </head>
 
 <body>
+    <header role="banner" class="report-header">
+        {{ template "header" }}
+    </header>
     <div class="main-div">
-        <div class="report-div">
-            <p class="text-center">
-                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#cluserReportCollapse" aria-expanded="false" aria-controls="cluserReportCollapse">
-                    Cluster report
-                </button>
-                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#componentReportCollapse" aria-expanded="false" aria-controls="componentReportCollapse">
-                    Component report
-                </button>
-            </p>
-            {{ template "cluster-report-collapse-div" . }}
-            {{ template "component-report-collapse-div" . }}
-        </div>
+        <ul class="pf-c-data-list" role="list">
+            <li class="pf-c-data-list__item" aria-labelledby="cluster-report-item">
+                <div class="pf-c-data-list__item-row">
+                    <div class="pf-c-data-list__item-control">
+                        <div class="pf-c-data-list__toggle">
+                            <button class="pf-c-button pf-m-plain report-btn" type="button" data-toggle="collapse" data-target="#cluster-report" aria-expanded="false" aria-controls="cluster-report">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="pf-c-data-list__item-content">
+                        <div class="pf-c-data-list__cell">
+                            <div id="cluster-report-item">Cluster report</div>
+                        </div>
+                    </div>
+                </div>
+                <section class="collapse pf-c-data-list__expandable-content" id="cluster-report" aria-label="Secondary content details">
+                    <div class="pf-c-data-list__expandable-content-body">
+                        {{ template "cluster-report-collapse-div" . }}
+                    </div>
+                </section>
+            </li>
+            <li class="pf-c-data-list__item" aria-labelledby="cluster-component-item">
+                <div class="pf-c-data-list__item-row">
+                    <div class="pf-c-data-list__item-control">
+                        <div class="pf-c-data-list__toggle">
+                            <button class="pf-c-button pf-m-plain report-btn" type="button" data-toggle="collapse" data-target="#cluster-component" aria-expanded="false" aria-controls="cluster-component">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="pf-c-data-list__item-content">
+                        <div class="pf-c-data-list__cell">
+                            <div id="cluster-report-item">Component report</div>
+                        </div>
+                    </div>
+                </div>
+                <section class="collapse pf-c-data-list__expandable-content" id="cluster-component">
+                    <div class="pf-c-data-list__expandable-content-body">
+                        {{ template "component-report-collapse-div" . }}
+                    </div>
+                </section>
+            </li>
+        </ul>
     </div>
-     <script type="text/javascript"> {{ jqueryJS }} </script>
-     <script type="text/javascript"> {{ popperJS }} </script>
-     <script type="text/javascript"> {{ bootstrapJS }} </script>
-</body> 
+    <script> {{ jqueryJS }} </script>
+    <script> {{ popperJS }} </script>
+    <script> {{ bootstrapJS }} </script>
+    <script> {{ customJS }} </script>
+</body>
 
 </html>
