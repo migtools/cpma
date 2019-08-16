@@ -414,6 +414,10 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 
 	clusterReport.RBACReport.Roles = make([]OpenshiftNamespaceRole, 0)
 	for _, namespace := range apiResources.NamespaceList {
+		if len(namespace.RolesList.Items) == 0 {
+			continue
+		}
+
 		reportedNamespaceRoles := OpenshiftNamespaceRole{Namespace: namespace.NamespaceName}
 
 		reportedNamespaceRoles.Roles = make([]OpenshiftRole, 0)
