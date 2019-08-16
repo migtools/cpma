@@ -442,7 +442,7 @@ func TestRBACReport(t *testing.T) {
 		Groups:                     expectedGroups,
 		Roles:                      expectedNamespaceRoles,
 		ClusterRoles:               expectedClusterRoles,
-		ClusterRoleBinding:         expectedClusterRoleBindings,
+		ClusterRoleBindings:        expectedClusterRoleBindings,
 		SecurityContextConstraints: expectedSCC,
 	}
 
