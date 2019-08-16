@@ -38,11 +38,11 @@ func fetchFromRemote(src string) ([]byte, error) {
 	cmd := fmt.Sprintf("sudo cat %s", src)
 	output, err := remotehost.RunCMD(host, cmd)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "Unable to read %s content, file may not exist", dst)
 	}
 
 	if output == "" {
-		msg := fmt.Sprintf("Empty or missing file: %s", dst)
+		msg := fmt.Sprintf("Empty file: %s", dst)
 		return nil, errors.New(msg)
 	}
 
