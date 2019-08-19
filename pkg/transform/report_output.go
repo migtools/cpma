@@ -83,8 +83,8 @@ func DumpReports(r ReportOutput) {
 		existingReports.ClusterReport.RBACReport.ClusterRoles = append(existingReports.ClusterReport.RBACReport.ClusterRoles, clusterRoles)
 	}
 
-	for _, clusterRoles := range r.ClusterReport.RBACReport.ClusterRoleBinding {
-		existingReports.ClusterReport.RBACReport.ClusterRoleBinding = append(existingReports.ClusterReport.RBACReport.ClusterRoleBinding, clusterRoles)
+	for _, clusterRoles := range r.ClusterReport.RBACReport.ClusterRoleBindings {
+		existingReports.ClusterReport.RBACReport.ClusterRoleBindings = append(existingReports.ClusterReport.RBACReport.ClusterRoleBindings, clusterRoles)
 	}
 
 	for _, scc := range r.ClusterReport.RBACReport.SecurityContextConstraints {

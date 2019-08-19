@@ -127,7 +127,7 @@ type RBACReport struct {
 	Groups                     []OpenshiftGroup                      `json:"group"`
 	Roles                      []OpenshiftNamespaceRole              `json:"roles"`
 	ClusterRoles               []OpenshiftClusterRole                `json:"clusterRoles"`
-	ClusterRoleBinding         []OpenshiftClusterRoleBinding         `json:"clusterRoleBindings"`
+	ClusterRoleBindings        []OpenshiftClusterRoleBinding         `json:"clusterRoleBindings"`
 	SecurityContextConstraints []OpenshiftSecurityContextConstraints `json:"securityContextConstraints"`
 }
 
@@ -436,7 +436,7 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 		clusterReport.RBACReport.ClusterRoles = append(clusterReport.RBACReport.ClusterRoles, reportedClusterRole)
 	}
 
-	clusterReport.RBACReport.ClusterRoleBinding = make([]OpenshiftClusterRoleBinding, 0)
+	clusterReport.RBACReport.ClusterRoleBindings = make([]OpenshiftClusterRoleBinding, 0)
 	for _, clusterRoleBinding := range apiResources.RBACResources.ClusterRolesBindingsList.Items {
 		reportedClusterRoleBinding := OpenshiftClusterRoleBinding{
 			Name:       clusterRoleBinding.Name,
@@ -446,7 +446,7 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 			RoleRef:    clusterRoleBinding.RoleRef,
 		}
 
-		clusterReport.RBACReport.ClusterRoleBinding = append(clusterReport.RBACReport.ClusterRoleBinding, reportedClusterRoleBinding)
+		clusterReport.RBACReport.ClusterRoleBindings = append(clusterReport.RBACReport.ClusterRoleBindings, reportedClusterRoleBinding)
 	}
 
 	clusterReport.RBACReport.SecurityContextConstraints = make([]OpenshiftSecurityContextConstraints, 0)
