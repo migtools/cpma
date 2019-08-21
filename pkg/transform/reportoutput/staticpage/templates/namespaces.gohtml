@@ -2,72 +2,204 @@
 {{ template "report-object-btn" "Namespaces" }}
 <div class="collapse" id="NamespacesCollapse">
     <div class="card card-body">
-        <table class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Latest Change</th>
-                    <th scope="col">Resources</th>
-                    <th scope="col">Pods</th>
-                    <th scope="col">Routes</th>
-                    <th scope="col">DaemonSets</th>
-                    <th scope="col">Deployments</th>
-                    <th scope="col">Quotas</th>
-                    <th scope="col">SССs</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{ range $index, $namespace := .ClusterReport.Namespaces }}
-                <tr>
-                    <th scope="row">{{incrementIndex $index}}</th>
-                    <td>{{ $namespace.Name }}</td>
-                    <td>{{ $namespace.LatestChange.Format "02-Jan-2006" }}</td>
-                    <td>
-                        <li class="list-group">Container Count: {{ $namespace.Resources.ContainerCount }}</li>
-                        <li class="list-group">CPU Total: {{ $namespace.Resources.CPUTotal }}</li>
-                        <li class="list-group">Memory Total: {{ $namespace.Resources.MemoryTotal }}</li>
-                    </td>
-                    <td>
-                        {{ range $namespace.Pods }}
-                        <li class="list-group">Name: {{ .Name }}</li>
-                        {{ end }}
-                    </td>
-                    <td>
-                        {{ range $namespace.Routes }}
-                        <li class="list-group">Name: {{ .Name }}</li>
-                        {{ end }}
-                    </td>
-                    <td>
-                        {{ range $namespace.DaemonSets}}
-                        <li class="list-group">Name: {{ .Name }}</li>
-                        {{ end }}
-                    </td>
-                    <td>
-                        {{ range $namespace.Deployments }}
-                        <li class="list-group">Name: {{ .Name }}</li>
-                        {{ end }}
-                    </td>
-                    <td>
-                        {{ range $namespace.Quotas }}
-                        <li class="list-group">
-                            Name: {{ .Name }}
-                        </li>
-                        {{ end }}
-                    </td>
-                    <td>
-                        {{ range $namespace.SecurityContextConstraints }}
-                        <li class="list-group">
-                            Name: {{ . }}
-                        </li>
-                        {{ end }}
-                    </td>
-                </tr>
-                <tr>
-                    </td>
+        {{ template "report-object-btn" "Activity" }}
+        <div class="collapse" id="ActivityCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Latest Change</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $namespace := .ClusterReport.Namespaces }}
+                    <tr>
+                        <th scope="row">{{incrementIndex $index}}</th>
+                        <td>{{ $namespace.Name }}</td>
+                        <td>{{ $namespace.LatestChange.Format "02-Jan-2006" }}</td>
+                    </tr>
                     {{ end }}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "Resources" }}
+        <div class="collapse" id="ResourcesCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Container Count</th>
+                        <th scope="col">CPU Total</th>
+                        <th scope="col">Memory Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $namespace := .ClusterReport.Namespaces }}
+                    <tr>
+                        <th scope="row">{{incrementIndex $index}}</th>
+                        <td>{{ $namespace.Name }}</td>
+                        <td>{{ $namespace.Resources.ContainerCount }}</td>
+                        <td>{{ $namespace.Resources.CPUTotal }}</td>
+                        <td>{{ $namespace.Resources.MemoryTotal }}</td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "Pods" }}
+        <div class="collapse" id="PodsCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Pods</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $namespace := .ClusterReport.Namespaces }}
+                    <tr>
+                        <th scope="row">{{incrementIndex $index}}</th>
+                        <td>{{ $namespace.Name }}</td>
+                        <td>
+                            {{ range $namespace.Pods }}
+                            <li class="list-group">Name: {{ .Name }}</li>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "Routes" }}
+        <div class="collapse" id="RoutesCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Routes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $namespace := .ClusterReport.Namespaces }}
+                    <tr>
+                        <th scope="row">{{incrementIndex $index}}</th>
+                        <td>{{ $namespace.Name }}</td>
+                        <td>
+                            {{ range $namespace.Routes }}
+                            <li class="list-group">Name: {{ .Name }}</li>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "DaemonSets" }}
+        <div class="collapse" id="DaemonSetsCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">DaemonSets</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $namespace := .ClusterReport.Namespaces }}
+                    <tr>
+                        <th scope="row">{{incrementIndex $index}}</th>
+                        <td>{{ $namespace.Name }}</td>
+                        <td>
+                            {{ range $namespace.DaemonSets }}
+                            <li class="list-group">Name: {{ .Name }}</li>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "Deployments" }}
+        <div class="collapse" id="DeploymentsCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Deployments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $namespace := .ClusterReport.Namespaces }}
+                    <tr>
+                        <th scope="row">{{incrementIndex $index}}</th>
+                        <td>{{ $namespace.Name }}</td>
+                        <td>
+                            {{ range $namespace.Deployments }}
+                            <li class="list-group">Name: {{ .Name }}</li>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "NamespaceQuotas" }}
+        <div class="collapse" id="NamespaceQuotasCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Quotas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $namespace := .ClusterReport.Namespaces }}
+                    <tr>
+                        <th scope="row">{{incrementIndex $index}}</th>
+                        <td>{{ $namespace.Name }}</td>
+                        <td>
+                            {{ range $namespace.Quotas }}
+                            <li class="list-group">Name: {{ .Name }}</li>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "SССs" }}
+        <div class="collapse" id="SССsCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">SССs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $namespace := .ClusterReport.Namespaces }}
+                    <tr>
+                        <th scope="row">{{incrementIndex $index}}</th>
+                        <td>{{ $namespace.Name }}</td>
+                        <td>
+                            {{ range $namespace.SecurityContextConstraints }}
+                            <li class="list-group">
+                                Name: {{ . }}
+                            </li>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {{ end }}
