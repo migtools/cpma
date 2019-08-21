@@ -117,7 +117,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{ range $index, $clusterRole := .ClusterReport.RBACReport.ClusterRoleBinding }}
+                    {{ range $index, $clusterRole := .ClusterReport.RBACReport.ClusterRoleBindings }}
                     <tr>
                         <th scope="row">{{incrementIndex $index}}</th>
                         <td>{{ $clusterRole.Name}}</td>
