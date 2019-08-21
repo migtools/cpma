@@ -3,6 +3,9 @@
 BIN_NAME=cpma
 SOURCES:=$(shell find . -name '*.go')
 SOURCE_DIRS=cmd pkg
+DATE:=`date -u +%Y/%m/%d.%H:%M:%S`
+VERSION:=`git describe --tags --always --long --dirty`
+LDFLAGS=-ldflags "-X=github.com/fusor/cpma/cmd.BuildVersion=$(VERSION) -X=github.com/fusor/cpma/cmd.BuildTime=$(DATE)"
 
 default: build
 
@@ -17,7 +20,7 @@ help: ## Show this help screen
 
 build: ## Compile the project
 	@echo "GOPATH=${GOPATH}"
-	GO111MODULE=on go build -o bin/${BIN_NAME}
+	GO111MODULE=on go build $(LDFLAGS) -o bin/${BIN_NAME}
 
 clean: ## Clean the directory tree
 	@test ! -e bin/${BIN_NAME} || rm bin/${BIN_NAME}
