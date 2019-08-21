@@ -1,0 +1,10 @@
+{{ define "cluster-report-collapse-div" }}
+<div class="card card-body">
+    {{ template "nodes" . }}
+    {{ template "quotas" . }}
+    {{ template "namespaces" . }}
+    {{ template "pvs" . }}
+    {{ template "storageclasses" . }}
+    {{ template "rbac" . }}
+</div>
+{{ end }}

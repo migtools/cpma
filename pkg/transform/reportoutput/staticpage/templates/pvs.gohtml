@@ -1,0 +1,40 @@
+{{ define "pvs" }}
+{{ template "report-object-btn" "PVs" }}
+<div class="collapse" id="PVsCollapse">
+    <div class="card card-body">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Driver</th>
+                    <th scope="col">StorageClass</th>
+                    <th scope="col">Capacity</th>
+                    <th scope="col">Phase</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range $index, $pv := .ClusterReport.PVs}}
+                <tr>
+                    <th scope="row">{{ incrementIndex $index }}</th>
+                    <td>{{ $pv.Name }}</td>
+                    <td id="pvdriver-{{ $index }}"></td>
+                    <script>
+                        var driver = JSON.parse({{formatDriver $pv.Driver}});
+                        var driverName = Object.keys(driver)[0];
+                        document.getElementById("pvdriver-{{ $index }}").innerHTML = driverName;
+                    </script>
+                    <td>{{ $pv.StorageClass }}</td>
+                    <td>
+                        {{ range $pv.Capacity }}
+                        {{ formatQuantity . }}
+                        {{ end }}
+                    </td>
+                    <td>{{ $pv.Phase }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{ end }}

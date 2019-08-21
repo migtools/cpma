@@ -1,8 +1,6 @@
 package transform
 
 import (
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/ghodss/yaml"
@@ -29,6 +27,9 @@ const (
 './openshift-install --dir $INSTALL_DIR  create cluster'`
 )
 
+// FinalReportOutput represents final output
+var FinalReportOutput Report
+
 // Cluster contains a cluster
 type Cluster struct {
 	Master Master
@@ -45,15 +46,6 @@ type Master struct {
 type Manifest struct {
 	Name string
 	CRD  []byte
-}
-
-// Report of OCP 4 component configuration compatibility
-type Report struct {
-	Name       string `json:"name"`
-	Kind       string `json:"kind"`
-	Supported  bool   `json:"supported"`
-	Confidence int    `json:"confidence"`
-	Comment    string `json:"comment"`
 }
 
 // Runner a generic transform runner
@@ -80,8 +72,6 @@ type Output interface {
 //Start generating manifests to be used with Openshift 4
 func Start() {
 	runner := NewRunner()
-
-	openReports()
 
 	runner.Transform([]Transform{
 		APITransform{},
@@ -121,12 +111,21 @@ func (r Runner) Transform(transforms []Transform) {
 			HandleError(err, transform.Name())
 			continue
 		}
+
 		for _, output := range outputs {
-			if err := output.Flush(); err != nil {
-				HandleError(err, transform.Name())
-				continue
+			switch output.(type) {
+			case ManifestOutput:
+				if err := output.Flush(); err != nil {
+					HandleError(err, transform.Name())
+					continue
+				}
 			}
 		}
+	}
+
+	err := FinalReportOutput.Flush()
+	if err != nil {
+		HandleError(err, "Report")
 	}
 }
 
@@ -149,15 +148,4 @@ func GenYAML(CR interface{}) ([]byte, error) {
 	}
 
 	return yamlBytes, nil
-}
-
-func openReports() {
-	if env.Config().GetBool("Reporting") {
-		jsonfile := "report.json"
-		emptyReport := []byte("{}")
-
-		if err := io.WriteFile(emptyReport, jsonfile); err != nil {
-			logrus.Errorf("unable to open report file: %s", jsonfile)
-		}
-	}
 }

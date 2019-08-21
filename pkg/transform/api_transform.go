@@ -8,6 +8,7 @@ import (
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,20 +31,15 @@ type APITransform struct {
 
 // Transform converts data collected from an OCP3 into a useful output
 func (e APIExtraction) Transform() ([]Output, error) {
-	outputs := []Output{}
 	if env.Config().GetBool("Reporting") {
 		logrus.Info("APITransform::Transform:Reports")
-		reports, err := e.buildReportOutput()
-		if err != nil {
-			return nil, err
-		}
-		outputs = append(outputs, reports)
+		e.buildReportOutput()
 	}
-	return outputs, nil
+	return nil, nil
 }
 
-func (e APIExtraction) buildReportOutput() (Output, error) {
-	componentReport := ComponentReport{
+func (e APIExtraction) buildReportOutput() {
+	componentReport := reportoutput.ComponentReport{
 		Component: APIComponentName,
 	}
 
@@ -56,7 +52,7 @@ func (e APIExtraction) buildReportOutput() (Output, error) {
 	}
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "API",
 			Kind:       "Port",
 			Supported:  false,
@@ -64,11 +60,7 @@ func (e APIExtraction) buildReportOutput() (Output, error) {
 			Comment:    fmt.Sprintf("The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port %v", port),
 		})
 
-	reportOutput := ReportOutput{
-		ComponentReports: []ComponentReport{componentReport},
-	}
-
-	return reportOutput, nil
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects API configuration from an OCP3 cluster

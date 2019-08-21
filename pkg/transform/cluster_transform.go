@@ -48,11 +48,7 @@ func (e ClusterExtraction) Transform() ([]Output, error) {
 			StorageClassList:     e.StorageClassList,
 		})
 
-		output := ReportOutput{
-			ClusterReport: clusterReport,
-		}
-
-		outputs = append(outputs, output)
+		FinalReportOutput.Report.ClusterReport = clusterReport
 	}
 
 	return outputs, nil

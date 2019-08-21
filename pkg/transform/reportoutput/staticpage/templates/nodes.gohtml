@@ -1,0 +1,35 @@
+{{ define "nodes" }}
+{{ template "report-object-btn" "Nodes" }}
+<div class="collapse" id="NodesCollapse">
+    <div class="card card-body">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Master Node</th>
+                    <th scope="col">CPU</th>
+                    <th scope="col">MemoryConsumed</th>
+                    <th scope="col">MemoryCapacity</th>
+                    <th scope="col">RunningPods</th>
+                    <th scope="col">PodCapacity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range $index, $node := .ClusterReport.Nodes }}
+                <tr>
+                    <th scope="row">{{ incrementIndex $index }}</th>
+                    <td>{{ $node.Name }}</td>
+                    <td>{{ $node.MasterNode }}</td>
+                    <td>{{ $node.Resources.CPU }}</td>
+                    <td>{{ $node.Resources.MemoryConsumed }}</td>
+                    <td>{{ $node.Resources.MemoryCapacity }}</td>
+                    <td>{{ $node.Resources.RunningPods }}</td>
+                    <td>{{ $node.Resources.PodCapacity }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{ end }}
