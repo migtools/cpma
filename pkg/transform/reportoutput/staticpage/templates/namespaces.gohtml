@@ -200,6 +200,49 @@
                 </tbody>
             </table>
         </div>
+        {{ template "report-object-btn" "PVCs" }}
+        <div class="collapse" id="PVCsCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">PVC Name</th>
+                        <th scope="col">PV Name</th>
+                        <th scope="col">Access Modes</th>
+                        <th scope="col">Storage Class</th>
+                        <th scope="col">Capacity</th>
+                        <th scope="col">Reclaim Policy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $namespace := .ClusterReport.Namespaces }}
+                    <tr>
+                        {{ range $index, $pvc := $namespace.PVCs }}
+                        <th scope="row">{{incrementIndex $index}}</th>
+                        <td>{{ $namespace.Name }}</td>
+                        <td>{{ $pvc.Name }}</td>
+                        <td>{{ $pvc.PVName }}</td>
+                        <td>
+                            {{ range $pvc.AccessModes }}
+                            <li class="list-group">
+                                Name: {{ . }}
+                            </li>
+                            {{ end }}
+                        </td>
+                        <td>{{ $pvc.StorageClass }}</td>
+                        <td>
+                            {{ range $pvc.Capacity }}
+                            {{ formatQuantity . }}
+                            {{ end }}
+                        </td>
+                        <td>{{ $pvc.ReclaimPolicy }}</td>
+                        {{ end }}
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {{ end }}
