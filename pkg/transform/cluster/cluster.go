@@ -54,6 +54,7 @@ type NamespaceReport struct {
 	Deployments                []DeploymentReport       `json:"deployments,omitempty"`
 	Quotas                     []ResourceQuotaReport    `json:"quotas,omitempty"`
 	SecurityContextConstraints []string                 `json:"securityContextConstraints,omitempty"`
+	PVCs                       []PVСReport              `json:"persistentVolumeClaims,omitempty"`
 }
 
 // PodReport represents json report of k8s pods
@@ -108,11 +109,12 @@ type ContainerResourcesReport struct {
 
 // PVReport represents json report of k8s PVs
 type PVReport struct {
-	Name         string                            `json:"name"`
-	Driver       k8sapicore.PersistentVolumeSource `json:"driver"`
-	StorageClass string                            `json:"storageClass,omitempty"`
-	Capacity     k8sapicore.ResourceList           `json:"capacity,omitempty"`
-	Phase        k8sapicore.PersistentVolumePhase  `json:"phase,omitempty"`
+	Name          string                                   `json:"name"`
+	Driver        k8sapicore.PersistentVolumeSource        `json:"driver"`
+	StorageClass  string                                   `json:"storageClass,omitempty"`
+	Capacity      k8sapicore.ResourceList                  `json:"capacity,omitempty"`
+	Phase         k8sapicore.PersistentVolumePhase         `json:"phase,omitempty"`
+	ReclaimPolicy k8sapicore.PersistentVolumeReclaimPolicy `json:"persistentVolumeReclaimPolicy,omitempty" protobuf:"bytes,5,opt,name=persistentVolumeReclaimPolicy,casttype=PersistentVolumeReclaimPolicy"`
 }
 
 // StorageClassReport represents json report of k8s storage classes
@@ -180,12 +182,22 @@ type OpenshiftSecurityContextConstraints struct {
 	Namespaces []string `json:"namespaces,omitempty"`
 }
 
+// PVСReport represents json report of k8s PVs
+type PVСReport struct {
+	Name          string                                   `json:"name"`
+	PVName        string                                   `json:"pvname"`
+	AccessModes   []k8scorev1.PersistentVolumeAccessMode   `json:"accessModes,omitempty" protobuf:"bytes,1,rep,name=accessModes,casttype=PersistentVolumeAccessMode"`
+	StorageClass  string                                   `json:"storageClass"`
+	Capacity      k8sapicore.ResourceList                  `json:"capacity,omitempty"`
+	ReclaimPolicy k8sapicore.PersistentVolumeReclaimPolicy `json:"persistentVolumeReclaimPolicy,omitempty" protobuf:"bytes,5,opt,name=persistentVolumeReclaimPolicy,casttype=PersistentVolumeReclaimPolicy"`
+}
+
 // GenClusterReport inserts report values into structures for json output
 func GenClusterReport(apiResources api.Resources) (clusterReport Report) {
 	clusterReport.ReportQuotas(apiResources)
+	clusterReport.ReportPVs(apiResources)
 	clusterReport.ReportNamespaces(apiResources)
 	clusterReport.ReportNodes(apiResources)
-	clusterReport.ReportPVs(apiResources)
 	clusterReport.ReportRBAC(apiResources)
 	clusterReport.ReportStorageClasses(apiResources)
 	return
@@ -242,6 +254,7 @@ func (clusterReport *Report) ReportNamespaces(apiResources api.Resources) {
 		ReportRoutes(&reportedNamespace, resources.RouteList)
 		ReportDeployments(&reportedNamespace, resources.DeploymentList)
 		ReportDaemonSets(&reportedNamespace, resources.DaemonSetList)
+		ReportPVCs(&reportedNamespace, resources.PVCList, clusterReport.PVs)
 		clusterReport.Namespaces = append(clusterReport.Namespaces, reportedNamespace)
 	}
 
@@ -376,14 +389,41 @@ func (clusterReport *Report) ReportPVs(apiResources api.Resources) {
 	// Go through all PV and save required information to report
 	for _, pv := range pvList.Items {
 		reportedPV := PVReport{
-			Name:         pv.Name,
-			Driver:       pv.Spec.PersistentVolumeSource,
-			StorageClass: pv.Spec.StorageClassName,
-			Capacity:     pv.Spec.Capacity,
-			Phase:        pv.Status.Phase,
+			Name:          pv.Name,
+			Driver:        pv.Spec.PersistentVolumeSource,
+			StorageClass:  pv.Spec.StorageClassName,
+			Capacity:      pv.Spec.Capacity,
+			Phase:         pv.Status.Phase,
+			ReclaimPolicy: pv.Spec.PersistentVolumeReclaimPolicy,
 		}
 
 		clusterReport.PVs = append(clusterReport.PVs, reportedPV)
+	}
+
+	// we need to sort this for binary search later
+	sort.Slice(clusterReport.PVs, func(i, j int) bool {
+		return clusterReport.PVs[i].Name <= clusterReport.PVs[j].Name
+	})
+}
+
+// ReportPVCs generate PVC report
+func ReportPVCs(reporeportedNamespace *NamespaceReport, pvcList *k8scorev1.PersistentVolumeClaimList, pvList []PVReport) {
+	for _, pvc := range pvcList.Items {
+		idx := sort.Search(len(pvList), func(i int) bool {
+			return pvList[i].Name >= pvc.Spec.VolumeName
+		})
+		pv := pvList[idx]
+
+		reportedPVC := PVСReport{
+			Name:          pvc.Name,
+			PVName:        pvc.Spec.VolumeName,
+			AccessModes:   pvc.Spec.AccessModes,
+			StorageClass:  *pvc.Spec.StorageClassName,
+			Capacity:      pv.Capacity,
+			ReclaimPolicy: pv.ReclaimPolicy,
+		}
+
+		reporeportedNamespace.PVCs = append(reporeportedNamespace.PVCs, reportedPVC)
 	}
 }
 
