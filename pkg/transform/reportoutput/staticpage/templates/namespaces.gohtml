@@ -206,7 +206,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col">Namespace</th>
                         <th scope="col">PVC Name</th>
                         <th scope="col">PV Name</th>
                         <th scope="col">Access Modes</th>
@@ -216,27 +216,28 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{ range $index, $namespace := .ClusterReport.Namespaces }}
+                    {{ $index := pvcIndex }}
+                    {{ range $namespace := .ClusterReport.Namespaces }}
                     <tr>
-                        {{ range $index, $pvc := $namespace.PVCs }}
-                        <th scope="row">{{incrementIndex $index}}</th>
+                        {{ range $namespace.PVCs }}
+                        <th scope="row">{{incrementPVCIndex $index}}</th>
                         <td>{{ $namespace.Name }}</td>
-                        <td>{{ $pvc.Name }}</td>
-                        <td>{{ $pvc.PVName }}</td>
+                        <td>{{ .Name }}</td>
+                        <td>{{ .PVName }}</td>
                         <td>
-                            {{ range $pvc.AccessModes }}
+                            {{ range .AccessModes }}
                             <li class="list-group">
                                 Name: {{ . }}
                             </li>
                             {{ end }}
                         </td>
-                        <td>{{ $pvc.StorageClass }}</td>
+                        <td>{{ .StorageClass }}</td>
                         <td>
-                            {{ range $pvc.Capacity }}
-                            {{ formatQuantity . }}
+                            {{ range .Capacity }}
+                              {{ formatQuantity . }}
                             {{ end }}
                         </td>
-                        <td>{{ $pvc.ReclaimPolicy }}</td>
+                        <td>{{ .ReclaimPolicy }}</td>
                         {{ end }}
                     </tr>
                     {{ end }}
