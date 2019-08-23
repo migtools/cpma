@@ -25,7 +25,7 @@ build: 	bundle ## Compile the project
 clean: ## Clean the directory tree
 	@test ! -e bin/${BIN_NAME} || rm bin/${BIN_NAME}
 
-ci: lint fmtcheck vet build test
+ci: bundle lint fmtcheck vet build test
 
 cover: ## Project test coverage and generate covergate html file
 	GO111MODULE=on go test -cover -covermode=count -coverprofile=coverage.out ./pkg/... ./cmd/... \
@@ -50,8 +50,5 @@ e2e: ## Execute e2e test
 	GO111MODULE=on go test ./test/e2e/...
 
 bundle: # Bundle files for html reports
-	cd pkg/transform/reportoutput/ && rice embed-go && cd ../../..
-
-bundle-install: ## Install go.rice
-	GO111MODULE=off go get github.com/GeertJohan/go.rice && go get github.com/GeertJohan/go.rice/rice
+	cd pkg/transform/reportoutput/ && go generate && cd ../../..
 

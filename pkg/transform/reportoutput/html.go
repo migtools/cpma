@@ -3,15 +3,17 @@ package reportoutput
 import (
 	"encoding/json"
 	"html/template"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
-	rice "github.com/GeertJohan/go.rice"
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/pkg/errors"
 	k8sapicore "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
+
+//go:generate go run assets_generate.go
 
 // Output reads report stucture, generates html using go templates and writes it to a file
 func htmlOutput(report ReportOutput) {
@@ -36,11 +38,6 @@ func htmlOutput(report ReportOutput) {
 }
 
 func parseTemplates() (*template.Template, error) {
-	templateBox, err := rice.FindBox("staticpage")
-	if err != nil {
-		return nil, err
-	}
-
 	var fileStringMap = make(map[string]string)
 
 	cssJSFilesPath := []string{
@@ -54,14 +51,14 @@ func parseTemplates() (*template.Template, error) {
 	}
 
 	for _, path := range cssJSFilesPath {
-		stringFile, err := templateBox.String(path)
+		stringFile, err := readAsset(path)
 		if err != nil {
 			return nil, err
 		}
 		fileStringMap[path] = stringFile
 	}
 
-	helpersTemplateString, err := templateBox.String("templates/helpers.gohtml")
+	helpersTemplateString, err := readAsset("templates/helpers.gohtml")
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +120,7 @@ func parseTemplates() (*template.Template, error) {
 	}
 
 	for _, path := range templatePaths {
-		stringTemplate, err := templateBox.String(path)
+		stringTemplate, err := readAsset(path)
 		if err != nil {
 			return nil, err
 		}
@@ -131,4 +128,19 @@ func parseTemplates() (*template.Template, error) {
 	}
 
 	return htmlTemplate, nil
+}
+
+func readAsset(path string) (string, error) {
+	file, err := assets.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	fileContent, err := ioutil.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+
+	return string(fileContent), nil
 }
