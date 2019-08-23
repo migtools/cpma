@@ -6,7 +6,7 @@
             <thead>
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col">Name</th>
+                    <th scope="col" class="string-th" sorted="false">Name</th>
                     <th scope="col">Hard Quota</th>
                     <th scope="col">Label Selector</th>
                     <th scope="col">Annotation Selector</th>
@@ -16,7 +16,7 @@
                 {{ range $index, $quota := .ClusterReport.Quotas }}
                 <tr>
                     <th scope="row">{{ incrementIndex $index }}</th>
-                    <td>{{ $quota.Name }}</td>
+                    <td class="string-td">{{ $quota.Name }}</td>
                     <td>
                         {{ range $key, $value := $quota.Quota.Hard }}
                         <li class="list-group">{{ $key }}: {{ formatQuantity $value }}</li>

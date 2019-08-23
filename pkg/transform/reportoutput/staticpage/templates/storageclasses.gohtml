@@ -6,16 +6,16 @@
             <thead>
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Provisioner</th>
+                    <th scope="col" class="string-th" sorted="false">Name</th>
+                    <th scope="col" class="string-th" sorted="false">Provisioner</th>
                 </tr>
             </thead>
             <tbody>
                 {{ range $index, $sc := .ClusterReport.StorageClasses }}
                 <tr>
                     <th scope="row">{{ incrementIndex $index }}</th>
-                    <td>{{ $sc.Name }}</td>
-                    <td>{{ $sc.Provisioner }}</td>
+                    <td class="string-td">{{ $sc.Name }}</td>
+                    <td class="string-td">{{ $sc.Provisioner }}</td>
                 </tr>
                 {{ end }}
             </tbody>

@@ -8,8 +8,8 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Full Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Full Name</th>
                         <th scope="col">Identities</th>
                         <th scope="col">Groups</th>
                     </tr>
@@ -18,8 +18,8 @@
                     {{ range $index, $user := .ClusterReport.RBACReport.Users }}
                     <tr>
                         <th scope="row">{{ incrementIndex $index }}</th>
-                        <td>{{ $user.Name }}</td>
-                        <td>{{ $user.FullName }}</td>
+                        <td class="string-td">{{ $user.Name }}</td>
+                        <td class="string-td">{{ $user.FullName }}</td>
                         <td>
                             {{ range $user.Identities }}
                             <li class="list-group"> {{ . }} </li>
@@ -41,7 +41,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
                         <th scope="col">Users</th>
                     </tr>
                 </thead>
@@ -49,7 +49,7 @@
                     {{ range $index, $group := .ClusterReport.RBACReport.Groups }}
                     <tr>
                         <th scope="row">{{incrementIndex $index}}</th>
-                        <td>{{ $group.Name }}</td>
+                        <td class="string-td">{{ $group.Name }}</td>
                         <td>
                             {{ range $group.Users }}
                             <li class="list-group"> {{ . }} </li>
@@ -66,7 +66,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Namespace</th>
+                        <th scope="col" class="string-th" sorted="false">Namespace</th>
                         <th scope="col">Roles</th>
                     </tr>
                 </thead>
@@ -74,7 +74,7 @@
                     {{ range $index, $role := .ClusterReport.RBACReport.Roles }}
                     <tr>
                         <th scope="row">{{ incrementIndex $index }}</th>
-                        <td>{{ $role.Namespace }}</td>
+                        <td class="string-td">{{ $role.Namespace }}</td>
                         <td>
                             {{ range $role.Roles }}
                             <li class="list-group"> Name: {{ .Name }} </li>
@@ -91,14 +91,14 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{ range $index, $user := .ClusterReport.RBACReport.ClusterRoles }}
                     <tr>
                         <th scope="row">{{ incrementIndex $index }}</th>
-                        <td>{{ $user.Name }}</td>
+                        <td class="string-td">{{ $user.Name }}</td>
                     </tr>
                     {{ end }}
                 </tbody>
@@ -110,7 +110,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
                         <th scope="col">Usernames</th>
                         <th scope="col">Group Names</th>
                         <th scope="col">Subjects</th>
@@ -120,7 +120,7 @@
                     {{ range $index, $clusterRole := .ClusterReport.RBACReport.ClusterRoleBindings }}
                     <tr>
                         <th scope="row">{{incrementIndex $index}}</th>
-                        <td>{{ $clusterRole.Name}}</td>
+                        <td class="string-td">{{ $clusterRole.Name}}</td>
                         <td>
                             {{ range $clusterRole.UserNames }}
                             <li class="list-group"> {{ . }} </li>
@@ -147,7 +147,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
                         <th scope="col">Users</th>
                         <th scope="col">Groups</th>
                         <th scope="col">Namespaces</th>
@@ -157,7 +157,7 @@
                     {{ range $index, $scc := .ClusterReport.RBACReport.SecurityContextConstraints }}
                     <tr>
                         <th scope="row">{{ incrementIndex $index }}</th>
-                        <td>{{ $scc.Name }}</td>
+                        <td class="string-td">{{ $scc.Name }}</td>
                         <td>
                             {{ range $scc.Users }}
                             <li class="list-group"> {{ . }} </li>

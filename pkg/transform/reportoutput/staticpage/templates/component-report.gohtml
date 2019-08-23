@@ -8,8 +8,8 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Kind</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Kind</th>
                         <th scope="col">Supported</th>
                         <th scope="col">Confidence</th>
                         <th scope="col">Comment</th>
@@ -19,8 +19,8 @@
                     {{ range $index, $report := .Reports }}
                     <tr>
                         <th scope="row">{{  incrementIndex $index }}</th>
-                        <td>{{$report.Name}}</td>
-                        <td>{{$report.Kind}}</td>
+                        <td class="string-td">{{$report.Name}}</td>
+                        <td class="string-td">{{$report.Kind}}</td>
                         <td>{{$report.Supported}}</td>
                         {{ $class := "" }}
                         {{ if (eq $report.Confidence 0) }}
