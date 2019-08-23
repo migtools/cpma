@@ -152,6 +152,12 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		}
 		namespaceResources.RolesList = rolesList
 
+		pvcList, err := api.ListPVCs(namespace.Name)
+		if err != nil {
+			return nil, err
+		}
+		namespaceResources.PVCList = pvcList
+
 		extraction.NamespaceList[i] = namespaceResources
 	}
 

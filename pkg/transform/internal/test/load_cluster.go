@@ -46,9 +46,10 @@ func CreateTestPVList() *k8sapicore.PersistentVolumeList {
 			Name: "testpv",
 		},
 		Spec: k8sapicore.PersistentVolumeSpec{
-			PersistentVolumeSource: driver,
-			StorageClassName:       "testclass",
-			Capacity:               resources,
+			PersistentVolumeSource:        driver,
+			StorageClassName:              "testclass",
+			Capacity:                      resources,
+			PersistentVolumeReclaimPolicy: k8sapicore.PersistentVolumeReclaimPolicy("testpolicy"),
 		},
 		Status: k8sapicore.PersistentVolumeStatus{
 			Phase: k8sapicore.VolumePending,
@@ -176,6 +177,7 @@ func CreateTestNameSpaceList() []api.NamespaceResources {
 		DeploymentList:    CreateDeploymentList(),
 		DaemonSetList:     CreateDaemonSetList(),
 		RolesList:         roleList,
+		PVCList:           CreatePVCList(),
 	}
 
 	return namespaces
@@ -476,4 +478,24 @@ func CreateSCCList() *o7tapisecurity.SecurityContextConstraintsList {
 	})
 
 	return sccList
+}
+
+// CreatePVCList create test scc
+func CreatePVCList() *k8sapicore.PersistentVolumeClaimList {
+	pvcList := &k8sapicore.PersistentVolumeClaimList{}
+	pvcList.Items = make([]k8sapicore.PersistentVolumeClaim, 0)
+
+	storageClass := "teststorageclass"
+	pvcList.Items = append(pvcList.Items, k8sapicore.PersistentVolumeClaim{
+		ObjectMeta: k8smachinery.ObjectMeta{
+			Name: "testPVC",
+		},
+		Spec: k8sapicore.PersistentVolumeClaimSpec{
+			VolumeName:       "testpv",
+			AccessModes:      []k8sapicore.PersistentVolumeAccessMode{"testmode"},
+			StorageClassName: &storageClass,
+		},
+	})
+
+	return pvcList
 }

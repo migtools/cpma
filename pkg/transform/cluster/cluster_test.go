@@ -298,11 +298,12 @@ func TestPVReport(t *testing.T) {
 
 	expectedPVReport := make([]cluster.PVReport, 0)
 	expectedPVReport = append(expectedPVReport, cluster.PVReport{
-		Name:         "testpv",
-		Driver:       driver,
-		StorageClass: "testclass",
-		Capacity:     resources,
-		Phase:        k8sapicore.VolumePending,
+		Name:          "testpv",
+		Driver:        driver,
+		StorageClass:  "testclass",
+		Capacity:      resources,
+		Phase:         k8sapicore.VolumePending,
+		ReclaimPolicy: k8sapicore.PersistentVolumeReclaimPolicy("testpolicy"),
 	})
 
 	testCases := []struct {

@@ -41,6 +41,7 @@ type NamespaceResources struct {
 	ResourceQuotaList *k8sapicore.ResourceQuotaList
 	RolesList         *o7tapiauth.RoleList
 	RouteList         *o7tapiroute.RouteList
+	PVCList           *k8sapicore.PersistentVolumeClaimList
 }
 
 var listOptions metav1.ListOptions
@@ -123,4 +124,9 @@ func ListClusterRolesBindings() (*o7tapiauth.ClusterRoleBindingList, error) {
 // ListSCC list all security context constraints, wrapper around client-go
 func ListSCC() (*o7tapisecurity.SecurityContextConstraintsList, error) {
 	return O7tClient.securityClient.SecurityContextConstraints().List(listOptions)
+}
+
+// ListPVCs list all PVs, wrapper around client-go
+func ListPVCs(namespace string) (*k8sapicore.PersistentVolumeClaimList, error) {
+	return K8sClient.CoreV1().PersistentVolumeClaims(namespace).List(listOptions)
 }

@@ -99,6 +99,15 @@ func parseTemplates() (*template.Template, error) {
 		"incrementIndex": func(i int) int {
 			return i + 1
 		},
+		"pvcIndex": func() *int {
+			i := new(int)
+			*i = 0
+			return i
+		},
+		"incrementPVCIndex": func(i *int) int {
+			*i = *i + 1
+			return *i
+		},
 	}).Parse(helpersTemplateString))
 
 	templatePaths := []string{
