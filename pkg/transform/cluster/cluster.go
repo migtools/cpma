@@ -414,11 +414,18 @@ func ReportPVCs(reporeportedNamespace *NamespaceReport, pvcList *k8scorev1.Persi
 		})
 		pv := pvList[idx]
 
+		var storageClass string
+		if pvc.Spec.StorageClassName != nil {
+			storageClass = *pvc.Spec.StorageClassName
+		} else {
+			storageClass = "None"
+		}
+
 		reportedPVC := PVСReport{
 			Name:          pvc.Name,
 			PVName:        pvc.Spec.VolumeName,
 			AccessModes:   pvc.Spec.AccessModes,
-			StorageClass:  *pvc.Spec.StorageClassName,
+			StorageClass:  storageClass,
 			Capacity:      pv.Capacity,
 			ReclaimPolicy: pv.ReclaimPolicy,
 		}
