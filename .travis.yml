@@ -21,7 +21,6 @@ matrix:
 
 before_install:
   - env GO111MODULE=off go get -u golang.org/x/lint/golint
-  - env GO111MODULE=off make bundle-install
 
 before_script:
   - mkdir $HOME/.kube

@@ -31,4 +31,4 @@ coverage.*
 
 cpma-config.yaml
 
-rice-box.go
+assets_vfsdata.go

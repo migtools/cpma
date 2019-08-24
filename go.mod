@@ -3,7 +3,6 @@ module github.com/fusor/cpma
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.0-20190531072418-dc4f7bbe639c
 	github.com/BurntSushi/toml v0.3.0
-	github.com/GeertJohan/go.rice v1.0.0
 	github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
@@ -20,6 +19,8 @@ require (
 	github.com/openshift/client-go v0.0.0-20190617165122-8892c0adc000
 	github.com/pkg/errors v0.8.1
 	github.com/pkg/sftp v1.10.0
+	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
+	github.com/shurcooL/vfsgen v0.0.0-20181202132449-6a9ea43bcacd // indirect
 	github.com/sirupsen/logrus v1.4.1
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/spf13/cobra v0.0.3
