@@ -8,16 +8,16 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Latest Change</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
+                        <th scope="col" class="date-th" sorted="false">Latest Change</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{ range $index, $namespace := .ClusterReport.Namespaces }}
                     <tr>
-                        <th scope="row">{{incrementIndex $index}}</th>
-                        <td>{{ $namespace.Name }}</td>
-                        <td>{{ $namespace.LatestChange.Format "02-Jan-2006" }}</td>
+                        <th scope="row" class="index-th">{{incrementIndex $index}}</th>
+                        <td class="string-td">{{ $namespace.Name }}</td>
+                        <td class="date-td">{{ $namespace.LatestChange.Format "02-Jan-2006" }}</td>
                     </tr>
                     {{ end }}
                 </tbody>
@@ -29,7 +29,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
                         <th scope="col">Container Count</th>
                         <th scope="col">CPU Total</th>
                         <th scope="col">Memory Total</th>
@@ -39,9 +39,9 @@
                     {{ range $index, $namespace := .ClusterReport.Namespaces }}
                     <tr>
                         <th scope="row">{{incrementIndex $index}}</th>
-                        <td>{{ $namespace.Name }}</td>
-                        <td>{{ $namespace.Resources.ContainerCount }}</td>
-                        <td>{{ $namespace.Resources.CPUTotal }}</td>
+                        <td class="string-td">{{ $namespace.Name }}</td>
+                        <td class>{{ $namespace.Resources.ContainerCount }}</td>
+                        <td class>{{ $namespace.Resources.CPUTotal }}</td>
                         <td>{{ $namespace.Resources.MemoryTotal }}</td>
                     </tr>
                     {{ end }}
@@ -54,7 +54,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
                         <th scope="col">Pods</th>
                     </tr>
                 </thead>
@@ -62,7 +62,7 @@
                     {{ range $index, $namespace := .ClusterReport.Namespaces }}
                     <tr>
                         <th scope="row">{{incrementIndex $index}}</th>
-                        <td>{{ $namespace.Name }}</td>
+                        <td class="string-td">{{ $namespace.Name }}</td>
                         <td>
                             {{ range $namespace.Pods }}
                             <li class="list-group">Name: {{ .Name }}</li>
@@ -79,7 +79,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
                         <th scope="col">Routes</th>
                     </tr>
                 </thead>
@@ -87,7 +87,7 @@
                     {{ range $index, $namespace := .ClusterReport.Namespaces }}
                     <tr>
                         <th scope="row">{{incrementIndex $index}}</th>
-                        <td>{{ $namespace.Name }}</td>
+                        <td class="string-td">{{ $namespace.Name }}</td>
                         <td>
                             {{ range $namespace.Routes }}
                             <li class="list-group">Name: {{ .Name }}</li>
@@ -104,7 +104,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
                         <th scope="col">DaemonSets</th>
                     </tr>
                 </thead>
@@ -112,7 +112,7 @@
                     {{ range $index, $namespace := .ClusterReport.Namespaces }}
                     <tr>
                         <th scope="row">{{incrementIndex $index}}</th>
-                        <td>{{ $namespace.Name }}</td>
+                        <td class="string-td">{{ $namespace.Name }}</td>
                         <td>
                             {{ range $namespace.DaemonSets }}
                             <li class="list-group">Name: {{ .Name }}</li>
@@ -129,7 +129,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
                         <th scope="col">Deployments</th>
                     </tr>
                 </thead>
@@ -137,7 +137,7 @@
                     {{ range $index, $namespace := .ClusterReport.Namespaces }}
                     <tr>
                         <th scope="row">{{incrementIndex $index}}</th>
-                        <td>{{ $namespace.Name }}</td>
+                        <td class="string-td">{{ $namespace.Name }}</td>
                         <td>
                             {{ range $namespace.Deployments }}
                             <li class="list-group">Name: {{ .Name }}</li>
@@ -154,7 +154,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
                         <th scope="col">Quotas</th>
                     </tr>
                 </thead>
@@ -162,7 +162,7 @@
                     {{ range $index, $namespace := .ClusterReport.Namespaces }}
                     <tr>
                         <th scope="row">{{incrementIndex $index}}</th>
-                        <td>{{ $namespace.Name }}</td>
+                        <td class="string-td">{{ $namespace.Name }}</td>
                         <td>
                             {{ range $namespace.Quotas }}
                             <li class="list-group">Name: {{ .Name }}</li>
@@ -179,7 +179,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
                         <th scope="col">SССs</th>
                     </tr>
                 </thead>
@@ -187,7 +187,7 @@
                     {{ range $index, $namespace := .ClusterReport.Namespaces }}
                     <tr>
                         <th scope="row">{{incrementIndex $index}}</th>
-                        <td>{{ $namespace.Name }}</td>
+                        <td class="string-td">{{ $namespace.Name }}</td>
                         <td>
                             {{ range $namespace.SecurityContextConstraints }}
                             <li class="list-group">
@@ -206,7 +206,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Namespace</th>
+                        <th scope="col" class="string-th" sorted="false">Namespace</th>
                         <th scope="col">PVC Name</th>
                         <th scope="col">PV Name</th>
                         <th scope="col">Access Modes</th>
@@ -218,28 +218,29 @@
                 <tbody>
                     {{ $index := pvcIndex }}
                     {{ range $namespace := .ClusterReport.Namespaces }}
-                    <tr>
-                        {{ range $namespace.PVCs }}
-                        <th scope="row">{{incrementPVCIndex $index}}</th>
-                        <td>{{ $namespace.Name }}</td>
-                        <td>{{ .Name }}</td>
-                        <td>{{ .PVName }}</td>
-                        <td>
-                            {{ range .AccessModes }}
-                            <li class="list-group">
-                                Name: {{ . }}
-                            </li>
-                            {{ end }}
-                        </td>
-                        <td>{{ .StorageClass }}</td>
-                        <td>
-                            {{ range .Capacity }}
-                              {{ formatQuantity . }}
-                            {{ end }}
-                        </td>
-                        <td>{{ .ReclaimPolicy }}</td>
-                        {{ end }}
-                    </tr>
+                      {{ range $namespace.PVCs }}
+                        <tr>
+                            
+                            <th scope="row">{{incrementPVCIndex $index}}</th>
+                            <td class="string-td">{{ $namespace.Name }}</td>
+                            <td>{{ .Name }}</td>
+                            <td>{{ .PVName }}</td>
+                            <td>
+                                {{ range .AccessModes }}
+                                <li class="list-group">
+                                    Name: {{ . }}
+                                </li>
+                                {{ end }}
+                            </td>
+                            <td>{{ .StorageClass }}</td>
+                            <td>
+                                {{ range .Capacity }}
+                                  {{ formatQuantity . }}
+                                {{ end }}
+                            </td>
+                            <td>{{ .ReclaimPolicy }}</td> 
+                        </tr>
+                      {{ end }}
                     {{ end }}
                 </tbody>
             </table>
