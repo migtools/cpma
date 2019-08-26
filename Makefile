@@ -50,5 +50,4 @@ e2e: ## Execute e2e test
 	GO111MODULE=on go test ./test/e2e/...
 
 bundle: # Bundle files for html reports
-	cd pkg/transform/reportoutput/ && go generate && cd ../../..
-
+	cd pkg/transform/reportoutput/ && go generate && cd -
