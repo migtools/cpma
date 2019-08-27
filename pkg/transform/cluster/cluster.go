@@ -243,7 +243,7 @@ func ReportDeployments(reportedNamespace *NamespaceReport, deploymentList *k8sap
 
 // ReportNamespaces fills in information about Namespaces
 func (clusterReport *Report) ReportNamespaces(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportNamespaces")
+	logrus.Info("ClusterReport::ReportNamespaces")
 
 	for _, resources := range apiResources.NamespaceList {
 		reportedNamespace := NamespaceReport{Name: resources.NamespaceName}
@@ -266,7 +266,7 @@ func (clusterReport *Report) ReportNamespaces(apiResources api.Resources) {
 
 // ReportNodes fills in information about nodes
 func (clusterReport *Report) ReportNodes(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportNodes")
+	logrus.Info("ClusterReport::ReportNodes")
 
 	for _, node := range apiResources.NodeList.Items {
 		nodeReport := NodeReport{
@@ -312,7 +312,7 @@ func ReportNodeResources(repotedNode *NodeReport, nodeStatus k8sapicore.NodeStat
 
 // ReportQuotas creates report about cluster quotas
 func (clusterReport *Report) ReportQuotas(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportQuotas")
+	logrus.Info("ClusterReport::ReportQuotas")
 
 	for _, quota := range apiResources.QuotaList.Items {
 		quotaReport := QuotaReport{
@@ -383,7 +383,7 @@ func ReportRoutes(reportedNamespace *NamespaceReport, routeList *o7tapiroute.Rou
 
 // ReportPVs create report oabout pvs
 func (clusterReport *Report) ReportPVs(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportPVs")
+	logrus.Info("ClusterReport::ReportPVs")
 	pvList := apiResources.PersistentVolumeList
 
 	// Go through all PV and save required information to report
@@ -436,7 +436,7 @@ func ReportPVCs(reporeportedNamespace *NamespaceReport, pvcList *k8scorev1.Persi
 
 // ReportRBAC create report about RBAC policy
 func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportRBAC")
+	logrus.Info("ClusterReport::ReportRBAC")
 
 	clusterReport.RBACReport.Users = make([]OpenshiftUser, 0)
 	for _, user := range apiResources.RBACResources.UsersList.Items {
@@ -546,7 +546,7 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 
 // ReportStorageClasses create report about storage classes
 func (clusterReport *Report) ReportStorageClasses(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportStorageClasses")
+	logrus.Info("ClusterReport::ReportStorageClasses")
 	// Go through all storage classes and save required information to report
 	storageClassList := apiResources.StorageClassList
 	for _, storageClass := range storageClassList.Items {

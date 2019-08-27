@@ -25,7 +25,7 @@ func TestInitDefaults(t *testing.T) {
 	assert.Equal(t, "", env.Config().GetString("SSHPrivateKey"))
 	assert.Equal(t, "", env.Config().GetString("SSHLogin"))
 	assert.Equal(t, "0", env.Config().GetString("SSHPort"))
-	assert.Equal(t, false, env.Config().Get("Verbose"))
+	assert.Equal(t, false, env.Config().Get("Silent"))
 	assert.Equal(t, "", env.Config().GetString("WorkDIr"))
 }
 

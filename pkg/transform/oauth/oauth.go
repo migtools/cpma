@@ -119,7 +119,7 @@ func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, te
 		case "BasicAuthPasswordIdentityProvider":
 			providerResources, err = buildBasicAuthIP(serializer, p)
 		default:
-			logrus.Infof("Can't handle %s OAuth kind", kind)
+			logrus.Warnf("Can't handle %s OAuth kind", kind)
 			continue
 		}
 
