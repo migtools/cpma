@@ -174,7 +174,7 @@ func (e CrioTransform) Extract() (Extraction, error) {
 	logrus.Info("CrioTransform::Extract")
 	content, err := io.FetchFile(env.Config().GetString("CrioConfigFile"))
 	if err != nil {
-		return nil, err
+		return nil, errors.New("No configuration file available")
 	}
 
 	var extraction CrioExtraction
