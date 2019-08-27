@@ -1,4 +1,4 @@
-apiVersion: quota.openshift.io/v1
+apiVersion: v1
 kind: ResourceQuota
 metadata:
   annotations:

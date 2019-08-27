@@ -24,7 +24,7 @@ func TestTranslate(t *testing.T) {
 		quota, err := quota.Translate(quotaList.Items[0])
 		require.NoError(t, err)
 		assert.Equal(t, "ResourceQuota", quota.TypeMeta.Kind)
-		assert.Equal(t, "quota.openshift.io/v1", quota.TypeMeta.APIVersion)
+		assert.Equal(t, "v1", quota.TypeMeta.APIVersion)
 		assert.Equal(t, "resourcequota1", quota.ObjectMeta.Name)
 		assert.Equal(t, "namespacetest1", quota.ObjectMeta.Namespace)
 		assert.Equal(t, "true", quota.ObjectMeta.Annotations["release.openshift.io/create-only"])

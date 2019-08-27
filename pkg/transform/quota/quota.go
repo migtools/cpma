@@ -13,7 +13,7 @@ func Translate(quota k8sapicore.ResourceQuota) (*k8sapicore.ResourceQuota, error
 		annoval = "true"
 	)
 
-	quota.APIVersion = "quota.openshift.io/v1"
+	quota.APIVersion = "v1"
 	quota.Kind = "ResourceQuota"
 	quota.ObjectMeta = metav1.ObjectMeta{
 		Name:        quota.Name,
