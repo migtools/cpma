@@ -470,7 +470,7 @@ func InitLogger() {
 		ForceColors:     true,
 	}
 
-	if viperConfig.GetBool("verbose") {
+	if !viperConfig.GetBool("silent") {
 		stdoutHook := &ConsoleWriterHook{
 			Writer: os.Stdout,
 			LogLevels: []logrus.Level{

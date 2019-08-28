@@ -5,6 +5,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 func jsonOutput(r ReportOutput) {
@@ -16,4 +17,6 @@ func jsonOutput(r ReportOutput) {
 	if err := io.WriteFile(jsonReports, jsonFileName); err != nil {
 		panic(errors.Wrapf(err, "unable to write to report file: %s", jsonFileName))
 	}
+
+	logrus.Infof("Report:Added: %s", jsonFileName)
 }

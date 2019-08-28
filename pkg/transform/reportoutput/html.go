@@ -9,6 +9,7 @@ import (
 
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	k8sapicore "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -126,6 +127,8 @@ func parseTemplates() (*template.Template, error) {
 		}
 		htmlTemplate = template.Must(htmlTemplate.Parse(stringTemplate))
 	}
+
+	logrus.Infof("Report:Added: %s", htmlFileName)
 
 	return htmlTemplate, nil
 }

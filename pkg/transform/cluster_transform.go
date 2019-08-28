@@ -11,8 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ClusterReportName is the cluster report name
-const ClusterReportName = "ClusterReport"
+// ClusterTransformName is the cluster report name
+const ClusterTransformName = "Cluster"
 
 // ClusterExtraction holds data extracted from k8s API resources
 type ClusterExtraction struct {
@@ -208,5 +208,5 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 
 // Name returns a human readable name for the transform
 func (e ClusterTransform) Name() string {
-	return ClusterReportName
+	return ClusterTransformName
 }

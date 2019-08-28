@@ -85,9 +85,9 @@ func init() {
 	rootCmd.PersistentFlags().Int16P("ssh-port", "p", 0, "OCP3 ssh port")
 	env.Config().BindPFlag("SSHPort", rootCmd.PersistentFlags().Lookup("ssh-port"))
 
-	// Output logs to console if true
-	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose output")
-	env.Config().BindPFlag("Verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	// Don't output logs to console if true
+	rootCmd.PersistentFlags().BoolP("silent", "s", false, "silent output")
+	env.Config().BindPFlag("Silent", rootCmd.PersistentFlags().Lookup("silent"))
 
 	// Get config file from an save to viper config
 	rootCmd.PersistentFlags().StringP("work-dir", "w", "", "set application data working directory (Default \".\")")
