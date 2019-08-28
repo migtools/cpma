@@ -22,7 +22,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &keystone); err != nil {
-		return nil, errors.Wrap(err, "Failed to decode keystone, see error")
+		return nil, errors.Wrap(err, "Failed to decode keystone. Check ssh user permissions and file content, see error")
 	}
 
 	idP.Type = "Keystone"
@@ -73,7 +73,7 @@ func validateKeystoneProvider(serializer *json.Serializer, p IdentityProvider) e
 	var keystone legacyconfigv1.KeystonePasswordIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &keystone); err != nil {
-		return errors.Wrap(err, "Failed to decode keystone, see error")
+		return errors.Wrap(err, "Failed to decode keystone. Check ssh user permissions and file content, see error")
 	}
 
 	if p.Name == "" {

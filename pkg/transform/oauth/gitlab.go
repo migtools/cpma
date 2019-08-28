@@ -22,7 +22,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &gitlab); err != nil {
-		return nil, errors.Wrap(err, "Failed to decode gitlab, see error")
+		return nil, errors.Wrap(err, "Failed to decode gitlab. Check ssh user permissions and file content, see error")
 	}
 
 	idP.Type = "GitLab"
@@ -63,7 +63,7 @@ func validateGitLabProvider(serializer *json.Serializer, p IdentityProvider) err
 	var gitlab legacyconfigv1.GitLabIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &gitlab); err != nil {
-		return errors.Wrap(err, "Failed to decode gitlab, see error")
+		return errors.Wrap(err, "Failed to decode gitlab. Check ssh user permissions and file content, see error")
 	}
 
 	if p.Name == "" {

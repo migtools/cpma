@@ -20,7 +20,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &google); err != nil {
-		return nil, errors.Wrap(err, "Failed to decode google, see error")
+		return nil, errors.Wrap(err, "Failed to decode google. Check ssh user permissions and file content, see error")
 	}
 
 	idP.Type = "Google"
@@ -54,7 +54,7 @@ func validateGoogleProvider(serializer *json.Serializer, p IdentityProvider) err
 	var google legacyconfigv1.GoogleIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &google); err != nil {
-		return errors.Wrap(err, "Failed to decode google, see error")
+		return errors.Wrap(err, "Failed to decode google. Check ssh user permissions and file content, see error")
 	}
 
 	if p.Name == "" {

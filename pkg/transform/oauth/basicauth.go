@@ -22,7 +22,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Provide
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &basicAuth); err != nil {
-		return nil, errors.Wrap(err, "Failed to decode basic auth, see error")
+		return nil, errors.Wrap(err, "Failed to decode basic auth. Check ssh user permissions and file content, see error")
 	}
 
 	idP.Type = "BasicAuth"
@@ -44,7 +44,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Provide
 		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
 		certSecret, err := secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.BasicAuthSecretType)
 		if err != nil {
-			return nil, errors.Wrap(err, "Failed to generate cert secret for basic auth, see error")
+			return nil, errors.Wrap(err, "Failed to generate cert secret for basic auth. Check ssh user permissions and file content, see error")
 		}
 		providerSecrets = append(providerSecrets, certSecret)
 

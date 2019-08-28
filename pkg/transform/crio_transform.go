@@ -179,7 +179,7 @@ func (e CrioTransform) Extract() (Extraction, error) {
 
 	var extraction CrioExtraction
 	if _, err := toml.Decode(string(content), &extraction); err != nil {
-		return nil, errors.Wrap(err, "Failed to decode crio, see error")
+		return nil, errors.Wrap(err, "Failed to decode CRI-O. Check ssh user permissions and file content, see error")
 	}
 	return extraction, nil
 }

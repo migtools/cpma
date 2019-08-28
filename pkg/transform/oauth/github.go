@@ -23,7 +23,7 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &github); err != nil {
-		return nil, errors.Wrap(err, "Failed to decode github, see error")
+		return nil, errors.Wrap(err, "Failed to decode github. Check ssh user permissions and file content, see error")
 	}
 
 	idP.Type = "GitHub"
@@ -66,7 +66,7 @@ func validateGithubProvider(serializer *json.Serializer, p IdentityProvider) err
 	var github legacyconfigv1.GitHubIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &github); err != nil {
-		return errors.Wrap(err, "Failed to decode github, see error")
+		return errors.Wrap(err, "Failed to decode github. Check ssh user permissions and file content, see error")
 	}
 
 	if p.Name == "" {

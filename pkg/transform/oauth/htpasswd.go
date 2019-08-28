@@ -19,7 +19,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &htpasswd); err != nil {
-		return nil, errors.Wrap(err, "Failed to decode htpasswd, see error")
+		return nil, errors.Wrap(err, "Failed to decode htpasswd. Check ssh user permissions and file content, see error")
 	}
 
 	idP.Name = p.Name
@@ -48,7 +48,7 @@ func validateHTPasswdProvider(serializer *json.Serializer, p IdentityProvider) e
 	var htpasswd legacyconfigv1.HTPasswdPasswordIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &htpasswd); err != nil {
-		return errors.Wrap(err, "Failed to decode htpasswd, see error")
+		return errors.Wrap(err, "Failed to decode htpasswd. Check ssh user permissions and file content, see error")
 	}
 
 	if p.Name == "" {

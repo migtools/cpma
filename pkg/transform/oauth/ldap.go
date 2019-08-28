@@ -18,7 +18,7 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*ProviderReso
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &ldap); err != nil {
-		return nil, errors.Wrap(err, "Failed to decode ldap, see error")
+		return nil, errors.Wrap(err, "Failed to decode ldap. Check ssh user permissions and file content, see error")
 	}
 
 	idP.Type = "LDAP"
@@ -59,7 +59,7 @@ func validateLDAPProvider(serializer *json.Serializer, p IdentityProvider) error
 	var ldap legacyconfigv1.LDAPPasswordIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &ldap); err != nil {
-		return errors.Wrap(err, "Failed to decode ldap, see error")
+		return errors.Wrap(err, "Failed to decode ldap. Check ssh user permissions and file content, see error")
 	}
 
 	if p.Name == "" {

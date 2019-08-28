@@ -20,7 +20,7 @@ func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &openID); err != nil {
-		return nil, errors.Wrap(err, "Failed to decode openID, see error")
+		return nil, errors.Wrap(err, "Failed to decode openID. Check ssh user permissions and file content, see error")
 	}
 
 	idP.Type = "OpenID"
@@ -57,7 +57,7 @@ func validateOpenIDProvider(serializer *json.Serializer, p IdentityProvider) err
 	var openID legacyconfigv1.OpenIDIdentityProvider
 
 	if _, _, err := serializer.Decode(p.Provider.Raw, nil, &openID); err != nil {
-		return errors.Wrap(err, "Failed to decode openID, see error")
+		return errors.Wrap(err, "Failed to decode openID. Check ssh user permissions and file content, see error")
 	}
 
 	if p.Name == "" {
