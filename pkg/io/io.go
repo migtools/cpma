@@ -35,10 +35,21 @@ func fetchFromRemote(src string) ([]byte, error) {
 	host := env.Config().GetString("Hostname")
 	dst := filepath.Join(host, src)
 
-	cmd := fmt.Sprintf("sudo cat %s", src)
+	cmd := fmt.Sprintf("sudo sh -c 'if [[ ! -f %s ]]; then echo not-found; fi'", src)
+	output0, err := remotehost.RunCMD(host, cmd)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error accessing file %s", dst)
+	}
+
+	if output0 == "not-found" {
+		msg := fmt.Sprintf("File %s not found", dst)
+		return nil, errors.New(msg)
+	}
+
+	cmd = fmt.Sprintf("sudo cat %s", src)
 	output, err := remotehost.RunCMD(host, cmd)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Unable to read %s content, file may not exist", dst)
+		return nil, errors.Wrapf(err, "Error accessing file %s", dst)
 	}
 
 	if output == "" {
@@ -47,7 +58,7 @@ func fetchFromRemote(src string) ([]byte, error) {
 	}
 
 	if err := WriteFile([]byte(output), dst); err != nil {
-		logrus.Errorf("Unable to save: %s", dst)
+		logrus.Errorf("Unable to save file: %s", dst)
 		return nil, err
 	}
 
