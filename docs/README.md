@@ -38,6 +38,8 @@ Report consist of 2 parts:
 ### Manifests
 
 List of supported configuration to manifest translations:
+  * API Certificate
+    * The TLS Certificate defined in Master configuration file under ServingInfo section is ported to a TLS secret and saved under the '100_CPMA-cluster-config-APISecret.yaml' file.
   * CRI-O
     * If defined in OCP3's cluster, the CRI-O configuration defined in 'crio.conf' is ported to a machineconfiguration.openshift.io resource and saved under '100_CPMA-crio-config.yaml'.
   * Cluster Resources Quotas

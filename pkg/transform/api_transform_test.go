@@ -20,7 +20,8 @@ var loadAPIExtraction = func() transform.APIExtraction {
 		fmt.Printf("Error decoding file: %s\n", file)
 	}
 	var extraction transform.APIExtraction
-	extraction.HTTPServingInfo.BindAddress = masterConfig.ServingInfo.BindAddress
+	extraction.ServingInfo.BindAddress = masterConfig.ServingInfo.BindAddress
+	extraction.ServingInfo.CertInfo = masterConfig.ServingInfo.CertInfo
 
 	return extraction
 }()
