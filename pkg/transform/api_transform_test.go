@@ -10,6 +10,7 @@ import (
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var loadAPIExtraction = func() transform.APIExtraction {
@@ -27,6 +28,14 @@ var loadAPIExtraction = func() transform.APIExtraction {
 }()
 
 func TestAPIExtractionTransform(t *testing.T) {
+	var expectedManifests []transform.Manifest
+
+	expectedAPISecretCRYAML, err := ioutil.ReadFile("testdata/expected-CR-APISecret.yaml")
+	require.NoError(t, err)
+
+	expectedManifests = append(expectedManifests,
+		transform.Manifest{Name: "100_CPMA-cluster-config-APISecret.yaml", CRD: expectedAPISecretCRYAML})
+
 	expectedReport := reportoutput.ComponentReport{
 		Component: "API",
 	}
@@ -45,21 +54,28 @@ func TestAPIExtractionTransform(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name            string
-		expectedReports reportoutput.ReportOutput
+		name              string
+		expectedManifests []transform.Manifest
+		expectedReports   reportoutput.ReportOutput
 	}{
 		{
-			name:            "transform API extraction",
-			expectedReports: expectedReportOutput,
+			name:              "transform API extraction",
+			expectedManifests: expectedManifests,
+			expectedReports:   expectedReportOutput,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			actualManifestsChan := make(chan []transform.Manifest)
 			actualReportsChan := make(chan reportoutput.ReportOutput)
 			transform.FinalReportOutput = transform.Report{}
 
 			// Override flush method
+			transform.ManifestOutputFlush = func(manifests []transform.Manifest) error {
+				actualManifestsChan <- manifests
+				return nil
+			}
 			transform.ReportOutputFlush = func(reports transform.Report) error {
 				actualReportsChan <- reports.Report
 				return nil
@@ -68,14 +84,21 @@ func TestAPIExtractionTransform(t *testing.T) {
 			testExtraction := loadAPIExtraction
 
 			go func() {
+				env.Config().Set("Manifests", true)
 				env.Config().Set("Reporting", true)
-				_, err := testExtraction.Transform()
+
+				transformOutput, err := testExtraction.Transform()
 				if err != nil {
 					t.Error(err)
+				}
+				for _, output := range transformOutput {
+					output.Flush()
 				}
 				transform.FinalReportOutput.Flush()
 			}()
 
+			actualManifests := <-actualManifestsChan
+			assert.Equal(t, actualManifests, tc.expectedManifests)
 			actualReports := <-actualReportsChan
 			assert.Equal(t, actualReports.ComponentReports, tc.expectedReports.ComponentReports)
 		})
