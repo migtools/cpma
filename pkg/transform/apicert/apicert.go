@@ -16,53 +16,36 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// Translate ImagePolicyConfig definitions
-func Translate(servingInfo legacyconfigv1.ServingInfo) (*corev1.Secret, error) {
-	const (
-		secretName      = "api-server-cert-secret"
-		namespace       = "openshift-config"
-		defaultCertPath = "/etc/origin/master"
-	)
-
-	if servingInfo.CertFile == "" || servingInfo.KeyFile == "" {
-		return nil, errors.New("No Secret available")
-	}
-
-	path := defaultCertPath
-	dir, file := filepath.Split(servingInfo.CertFile)
+// setDefaultPath determines a default path for given filename
+func setDefaultPath(name string, defaultPath string) string {
+	path := defaultPath
+	dir, file := filepath.Split(name)
 	if dir != "" {
 		path = dir
 	}
-	certFile := filepath.Join(path, file)
-	certContent, err := io.FetchFile(certFile)
-	if err != nil {
-		return nil, err
-	}
+	return filepath.Join(path, file)
+}
 
-	if strings.Contains(certSigner(certContent), "openshift-signer@") {
-		logrus.Info("APITransform: API certficate is openshift signed, not transformed")
+func getCert(certName, keyName string) ([]byte, []byte) {
+	const defaultCertPath = "/etc/origin/master"
+
+	crtFile := setDefaultPath(certName, defaultCertPath)
+	keyFile := setDefaultPath(keyName, defaultCertPath)
+
+	crtContent, err := io.FetchFile(crtFile)
+	if err != nil {
 		return nil, nil
 	}
 
-	path = defaultCertPath
-	dir, file = filepath.Split(servingInfo.KeyFile)
-	if dir != "" {
-		path = dir
-	}
-	keyFile := filepath.Join(path, file)
 	keyContent, err := io.FetchFile(keyFile)
 	if err != nil {
-		return nil, err
+		return nil, nil
 	}
 
-	tlsSecret, err := secrets.GenTLSSecret(secretName, namespace, certContent, keyContent)
-	if err != nil {
-		return nil, errors.Wrap(err, "Failed to generate TLS secret, see error")
-	}
-
-	return tlsSecret, nil
+	return crtContent, keyContent
 }
 
+// certSigner gets certificate CN
 func certSigner(certContent []byte) string {
 	block, _ := pem.Decode(certContent)
 	if block == nil || block.Type != "CERTIFICATE" {
@@ -74,4 +57,29 @@ func certSigner(certContent []byte) string {
 		log.Fatalf("Can't read certif: %s", err)
 	}
 	return certif.Issuer.CommonName
+}
+
+// Translate ImagePolicyConfig definitions
+func Translate(servingInfo legacyconfigv1.ServingInfo) (*corev1.Secret, error) {
+	const (
+		namespace  = "openshift-config"
+		secretName = "api-server-cert-secret"
+	)
+
+	if servingInfo.CertFile == "" || servingInfo.KeyFile == "" {
+		return nil, errors.New("No Secret available")
+	}
+
+	crtContent, keyContent := getCert(servingInfo.CertFile, servingInfo.KeyFile)
+	if strings.Contains(certSigner(crtContent), "openshift-signer@") {
+		logrus.Info("APITransform: OpenShift signed API certificate -> No porting ")
+		return nil, nil
+	}
+
+	tlsSecret, err := secrets.GenTLSSecret(secretName, namespace, crtContent, keyContent)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to generate TLS secret, see error")
+	}
+
+	return tlsSecret, nil
 }
