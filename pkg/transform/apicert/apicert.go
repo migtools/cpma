@@ -40,7 +40,8 @@ func Translate(servingInfo legacyconfigv1.ServingInfo) (*corev1.Secret, error) {
 	}
 
 	if strings.Contains(certSigner(certContent), "openshift-signer@") {
-		logrus.Info("APITransform:API certficate is openshift signed")
+		logrus.Info("APITransform: API certficate is openshift signed, not transformed")
+		return nil, nil
 	}
 
 	path = defaultCertPath

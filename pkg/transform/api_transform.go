@@ -32,7 +32,7 @@ func (e APIExtraction) Transform() ([]Output, error) {
 	outputs := []Output{}
 
 	if env.Config().GetBool("Manifests") {
-		logrus.Info("OAuthTransform::Transform:Manifests")
+		logrus.Info("APITransform::Transform:Manifests")
 		manifests, err := e.buildManifestOutput()
 		if err != nil {
 			return nil, err
@@ -54,6 +54,10 @@ func (e APIExtraction) buildManifestOutput() (Output, error) {
 	APISecretCR, err := apicert.Translate(e.ServingInfo)
 	if err != nil {
 		return nil, err
+	}
+
+	if APISecretCR == nil {
+		return nil, nil
 	}
 
 	APISecretCRYAML, err := GenYAML(APISecretCR)
