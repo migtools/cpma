@@ -95,7 +95,28 @@ func (e APIExtraction) buildReportOutput() {
 			Comment:    fmt.Sprintf("The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port %v", port),
 		})
 
+	if apicert.OCPSigned(e.ServingInfo.CertFile) {
+		componentReport.Reports = append(componentReport.Reports,
+			reportoutput.Report{
+				Name:       "API",
+				Kind:       "Certficate",
+				Supported:  false,
+				Confidence: HighConfidence,
+				Comment:    "API certificate is OpenShift signe: Not porting",
+			})
+	} else {
+		componentReport.Reports = append(componentReport.Reports,
+			reportoutput.Report{
+				Name:       "API",
+				Kind:       "Certficate",
+				Supported:  true,
+				Confidence: HighConfidence,
+				Comment:    "API certificate has been ported",
+			})
+	}
+
 	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
+
 }
 
 // Extract collects API configuration from an OCP3 cluster

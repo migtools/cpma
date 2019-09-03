@@ -45,6 +45,18 @@ func getCert(certName, keyName string) ([]byte, []byte) {
 	return crtContent, keyContent
 }
 
+func getLocalCert(certName string) []byte {
+	const defaultCertPath = "/etc/origin/master"
+
+	crtFile := setDefaultPath(certName, defaultCertPath)
+	crtContent, err := io.FetchFromLocal(crtFile)
+	if err != nil {
+		return nil
+	}
+
+	return crtContent
+}
+
 // certSigner gets certificate CN
 func certSigner(certContent []byte) string {
 	block, _ := pem.Decode(certContent)
@@ -57,6 +69,15 @@ func certSigner(certContent []byte) string {
 		log.Fatalf("Can't read certif: %s", err)
 	}
 	return certif.Issuer.CommonName
+}
+
+// OCPSigned tells if locally stored certificate is OCP signed or not
+func OCPSigned(crtFile string) bool {
+	crtContent := getLocalCert(crtFile)
+	if strings.Contains(certSigner(crtContent), "openshift-signer@") {
+		return true
+	}
+	return false
 }
 
 // Translate ImagePolicyConfig definitions
