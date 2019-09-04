@@ -170,6 +170,7 @@ Flags:
       --node-config string         path to node config file
       --registries-config string   path to registries config file
   -r, --reporting                  Generate reporting  (default true)
+  -s, --silent                     silent mode, disable logging output to console
   -k, --ssh-keyfile string         OCP3 ssh keyfile path
   -l, --ssh-login string           OCP3 ssh login
   -p, --ssh-port int16             OCP3 ssh port

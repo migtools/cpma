@@ -86,7 +86,7 @@ func init() {
 	env.Config().BindPFlag("SSHPort", rootCmd.PersistentFlags().Lookup("ssh-port"))
 
 	// Don't output logs to console if true
-	rootCmd.PersistentFlags().BoolP("silent", "s", false, "silent output")
+	rootCmd.PersistentFlags().BoolP("silent", "s", false, "silent mode, disable logging output to console")
 	env.Config().BindPFlag("Silent", rootCmd.PersistentFlags().Lookup("silent"))
 
 	// Get config file from an save to viper config
