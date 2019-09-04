@@ -146,7 +146,7 @@ CPMA specific environment variable must be prefixed with `CPMA_`:
 - CPMA_SSHPRIVATEKEY
 - CPMA_SSHLOGIN
 - CPMA_SSHPORT
-- CPMA_VERBOSE
+- CPMA_SILENT
 - CPMA_WORKDIR
 
 ### CLI
@@ -174,13 +174,12 @@ Flags:
   -k, --ssh-keyfile string         OCP3 ssh keyfile path
   -l, --ssh-login string           OCP3 ssh login
   -p, --ssh-port int16             OCP3 ssh port
-  -v, --verbose                    verbose output
   -w, --work-dir string            set application data working directory (Default ".")
 ```
 
 Example:
 ```console
-$ ./bin/cpma --config /path/to/config/.yml --verbose --debug
+$ ./bin/cpma --config /path/to/config/.yml --debug
 ```
 
 ### User Prompt
@@ -208,7 +207,7 @@ saveconfig: true
 sshlogin: testuser
 sshport: 0
 sshprivatekey: /home/users/test/.ssh/testuser
-verbose: true
+silent: false
 workdir: data
 
 ```
