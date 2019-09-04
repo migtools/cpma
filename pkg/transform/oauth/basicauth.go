@@ -9,6 +9,8 @@ import (
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -17,7 +19,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Provide
 		err                error
 		idP                = &configv1.IdentityProvider{}
 		basicAuth          legacyconfigv1.BasicAuthPasswordIdentityProvider
-		providerSecrets    []*secrets.Secret
+		providerSecrets    []*corev1.Secret
 		providerConfigMaps []*configmaps.ConfigMap
 	)
 

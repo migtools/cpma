@@ -9,6 +9,8 @@ import (
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -16,7 +18,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 	var (
 		err                error
 		idP                = &configv1.IdentityProvider{}
-		providerSecrets    []*secrets.Secret
+		providerSecrets    []*corev1.Secret
 		providerConfigMaps []*configmaps.ConfigMap
 		gitlab             legacyconfigv1.GitLabIdentityProvider
 	)

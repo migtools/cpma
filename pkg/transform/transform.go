@@ -2,10 +2,11 @@ package transform
 
 import (
 	"github.com/fusor/cpma/pkg/transform/configmaps"
-	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/ghodss/yaml"
 	configv1 "github.com/openshift/api/config/v1"
 	"github.com/sirupsen/logrus"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -38,7 +39,7 @@ type Cluster struct {
 // Master is a cluster Master
 type Master struct {
 	OAuth      configv1.OAuth
-	Secrets    []*secrets.Secret
+	Secrets    []*corev1.Secret
 	ConfigMaps []*configmaps.ConfigMap
 }
 

@@ -6,6 +6,8 @@ import (
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -14,8 +16,8 @@ const (
 	providerSelectionSecret = "templates-providerselect-secret"
 )
 
-func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAuthTemplates, []*secrets.Secret, error) {
-	var templateSecrets []*secrets.Secret
+func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAuthTemplates, []*corev1.Secret, error) {
+	var templateSecrets []*corev1.Secret
 
 	translatedTemplates := &configv1.OAuthTemplates{}
 

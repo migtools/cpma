@@ -4,11 +4,12 @@ import (
 	"errors"
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
-	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -53,14 +54,14 @@ type IdentityProvider struct {
 // ResultResources stores all oAuth config parts
 type ResultResources struct {
 	OAuthCRD   *configv1.OAuth
-	Secrets    []*secrets.Secret
+	Secrets    []*corev1.Secret
 	ConfigMaps []*configmaps.ConfigMap
 }
 
 // ProviderResources stores all resources related to one provider
 type ProviderResources struct {
 	IDP        *configv1.IdentityProvider
-	Secrets    []*secrets.Secret
+	Secrets    []*corev1.Secret
 	ConfigMaps []*configmaps.ConfigMap
 }
 
@@ -80,7 +81,7 @@ const (
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
 func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, templates legacyconfigv1.OAuthTemplates) (*ResultResources, error) {
 	var err error
-	var secretsSlice []*secrets.Secret
+	var secretsSlice []*corev1.Secret
 	var сonfigMapSlice []*configmaps.ConfigMap
 	var providerResources *ProviderResources
 
