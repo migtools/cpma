@@ -1,0 +1,24 @@
+{
+  "cluster": {},
+  "components": [
+    {
+      "component": "API",
+      "reports": [
+        {
+          "name": "API",
+          "kind": "Port",
+          "supported": false,
+          "confidence": 0,
+          "comment": "The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port 8443"
+        },
+        {
+          "name": "API",
+          "kind": "Certficate",
+          "supported": true,
+          "confidence": 2,
+          "comment": "API certificate has been ported"
+        }
+      ]
+    }
+  ]
+}

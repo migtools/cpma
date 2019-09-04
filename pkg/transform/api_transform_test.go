@@ -1,12 +1,14 @@
 package transform_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"testing"
 
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform"
 	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/stretchr/testify/assert"
@@ -30,28 +32,18 @@ var loadAPIExtraction = func() transform.APIExtraction {
 func TestAPIExtractionTransform(t *testing.T) {
 	var expectedManifests []transform.Manifest
 
-	expectedAPISecretCRYAML, err := ioutil.ReadFile("testdata/expected-CR-APISecret.yaml")
+	expectedAPISecretCRYAML, err := ioutil.ReadFile("testdata/expected-CR-API-cert-secret.yaml")
 	require.NoError(t, err)
 
 	expectedManifests = append(expectedManifests,
-		transform.Manifest{Name: "100_CPMA-cluster-config-APISecret.yaml", CRD: expectedAPISecretCRYAML})
+		transform.Manifest{Name: "100_CPMA-cluster-config-API-certificate-secret.yaml", CRD: expectedAPISecretCRYAML})
 
-	expectedReport := reportoutput.ComponentReport{
-		Component: "API",
-	}
+	expectedReport := reportoutput.ReportOutput{}
+	jsonData, err := io.ReadFile("testdata/expected-report-api.json")
+	require.NoError(t, err)
 
-	expectedReport.Reports = append(expectedReport.Reports,
-		reportoutput.Report{
-			Name:       "API",
-			Kind:       "Port",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port 8443",
-		})
-
-	expectedReportOutput := reportoutput.ReportOutput{
-		ComponentReports: []reportoutput.ComponentReport{expectedReport},
-	}
+	err = json.Unmarshal(jsonData, &expectedReport)
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name              string
@@ -61,7 +53,7 @@ func TestAPIExtractionTransform(t *testing.T) {
 		{
 			name:              "transform API extraction",
 			expectedManifests: expectedManifests,
-			expectedReports:   expectedReportOutput,
+			expectedReports:   expectedReport,
 		},
 	}
 

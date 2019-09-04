@@ -65,7 +65,7 @@ func (e APIExtraction) buildManifestOutput() (Output, error) {
 		return nil, err
 	}
 
-	manifest := Manifest{Name: "100_CPMA-cluster-config-APISecret.yaml", CRD: APISecretCRYAML}
+	manifest := Manifest{Name: "100_CPMA-cluster-config-API-certificate-secret.yaml", CRD: APISecretCRYAML}
 	manifests = append(manifests, manifest)
 
 	return ManifestOutput{
