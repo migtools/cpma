@@ -25,7 +25,7 @@ var FetchFile = func(src string) ([]byte, error) {
 	if env.Config().GetBool("FetchFromRemote") {
 		f, err = fetchFromRemote(src)
 	} else {
-		f, err = fetchFromLocal(src)
+		f, err = FetchFromLocal(src)
 	}
 
 	return f, err
@@ -69,7 +69,8 @@ func fetchFromRemote(src string) ([]byte, error) {
 	return netFile, nil
 }
 
-func fetchFromLocal(src string) ([]byte, error) {
+// FetchFromLocal retrieve file from local WorkDir
+func FetchFromLocal(src string) ([]byte, error) {
 	localSrc := filepath.Join(env.Config().GetString("WorkDir"), env.Config().GetString("Hostname"), src)
 	f, err := ioutil.ReadFile(localSrc)
 	if err != nil {
