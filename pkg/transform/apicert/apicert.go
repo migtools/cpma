@@ -16,14 +16,18 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// setDefaultPath determines a default path for given filename
-func setDefaultPath(name string, defaultPath string) string {
-	path := defaultPath
-	dir, file := filepath.Split(name)
-	if dir != "" {
-		path = dir
+// certSigner gets certificate CN
+func certSigner(certContent []byte) string {
+	block, _ := pem.Decode(certContent)
+	if block == nil || block.Type != "CERTIFICATE" {
+		return ""
 	}
-	return filepath.Join(path, file)
+
+	certif, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		log.Fatalf("Can't read certif: %s", err)
+	}
+	return certif.Issuer.CommonName
 }
 
 func getCert(certName, keyName string) ([]byte, []byte) {
@@ -57,18 +61,14 @@ func getLocalCert(certName string) []byte {
 	return crtContent
 }
 
-// certSigner gets certificate CN
-func certSigner(certContent []byte) string {
-	block, _ := pem.Decode(certContent)
-	if block == nil || block.Type != "CERTIFICATE" {
-		return ""
+// setDefaultPath determines a default path for given filename
+func setDefaultPath(name string, defaultPath string) string {
+	path := defaultPath
+	dir, file := filepath.Split(name)
+	if dir != "" {
+		path = dir
 	}
-
-	certif, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		log.Fatalf("Can't read certif: %s", err)
-	}
-	return certif.Issuer.CommonName
+	return filepath.Join(path, file)
 }
 
 // OCPSigned tells if locally stored certificate is OCP signed or not
