@@ -29,11 +29,11 @@ var typeArray = []string{
 	"BasicAuthSecretType",
 }
 
-// APIVersion is the apiVersion string
-var APIVersion = "v1"
-
-const secretNameError = `Secret name is no valid, make sure it consists of lower case alphanumeric characters, ‘-’ or ‘.’,` +
-	`and must start and end with an alphanumeric character (e.g. ‘example.com’, regex used for validation is ‘[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*’)`
+const (
+	apiVersion      = "v1"
+	secretNameError = `Secret name is no valid, make sure it consists of lower case alphanumeric characters, ‘-’ or ‘.’,` +
+		`and must start and end with an alphanumeric character (e.g. ‘example.com’, regex used for validation is ‘[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*’)`
+)
 
 // GenTLSSecret generates a TLS secret
 func GenTLSSecret(name string, namespace string, cert []byte, key []byte) (*corev1.Secret, error) {
@@ -44,7 +44,7 @@ func GenTLSSecret(name string, namespace string, cert []byte, key []byte) (*core
 
 	secret := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
+			APIVersion: apiVersion,
 			Kind:       "Secret",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -75,7 +75,7 @@ func GenSecret(name string, secretContent string, namespace string, secretType S
 
 	secret := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: APIVersion,
+			APIVersion: apiVersion,
 			Kind:       "Secret",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -110,16 +110,8 @@ func buildData(secretType SecretType, secretContent string) (map[string][]byte, 
 			"basicAuth": []byte(secretContent),
 		}
 	default:
-		return nil, errors.New("Not a valid secret type " + secretType.String())
+		return nil, errors.New("Unknown secret type")
 	}
 
 	return data, nil
-}
-
-// SecretType.String returns a string representation for SecretType enum
-func (secType SecretType) String() string {
-	if secType >= KeystoneSecretType && int(secType) < len(typeArray) {
-		return typeArray[secType]
-	}
-	return "unknown"
 }
