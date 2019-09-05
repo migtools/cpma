@@ -121,6 +121,9 @@ func surveyMissingValues() error {
 		}
 		viperConfig.Set("FetchFromRemote", true)
 	case "local":
+		if err := surveyHostname(); err != nil {
+			return err
+		}
 		viperConfig.Set("FetchFromRemote", false)
 	default:
 		return errors.New("Accepted values for config-source are: remote or local")
@@ -207,7 +210,7 @@ func surveyReporting() error {
 	return nil
 }
 
-func surveySSHConfigValues() error {
+func surveyHostname() error {
 	hostname := viperConfig.GetString("Hostname")
 	if !viperConfig.InConfig("hostname") && hostname == "" {
 		discoverCluster := ""
@@ -251,6 +254,14 @@ func surveySSHConfigValues() error {
 		}
 
 		viperConfig.Set("ClusterName", clusterName)
+	}
+
+	return nil
+}
+
+func surveySSHConfigValues() error {
+	if err := surveyHostname(); err != nil {
+		return err
 	}
 
 	login := viperConfig.GetString("SSHLogin")
