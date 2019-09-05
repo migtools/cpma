@@ -77,7 +77,7 @@ func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 				return nil, err
 			}
 
-			filename := "100_CPMA-cluster-config-secret-" + secret.Metadata.Name + ".yaml"
+			filename := "100_CPMA-cluster-config-secret-" + secret.Name + ".yaml"
 			m := Manifest{Name: filename, CRD: secretCR}
 			manifests = append(manifests, m)
 		}

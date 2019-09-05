@@ -8,41 +8,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 )
 
-// HTPasswdFileSecret is an htpasswd secret
-type HTPasswdFileSecret struct {
-	HTPasswd string `json:"htpasswd"`
-}
-
-// KeystoneFileSecret is a keystone secret
-type KeystoneFileSecret struct {
-	Keystone string `json:"keystone"`
-}
-
-// LiteralSecret is a literal secret
-type LiteralSecret struct {
-	ClientSecret string `json:"clientSecret"`
-}
-
-// BasicAuthFileSecret is a basic auth secret
-type BasicAuthFileSecret struct {
-	BasicAuth string `json:"basicAuth"`
-}
-
-// Secret contains a secret
-type Secret struct {
-	APIVersion string      `json:"apiVersion"`
-	Kind       string      `json:"kind"`
-	Type       string      `json:"type"`
-	Metadata   MetaData    `json:"metadata"`
-	Data       interface{} `json:"data"`
-}
-
-// MetaData is the Metadata for a secret
-type MetaData struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace"`
-}
-
 // SecretType is an enumerator for secret types
 type SecretType int
 
@@ -64,11 +29,11 @@ var typeArray = []string{
 	"BasicAuthSecretType",
 }
 
-// APIVersion is the apiVersion string
-var APIVersion = "v1"
-
-const secretNameError = `Secret name is no valid, make sure it consists of lower case alphanumeric characters, ‘-’ or ‘.’,` +
-	`and must start and end with an alphanumeric character (e.g. ‘example.com’, regex used for validation is ‘[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*’)`
+const (
+	apiVersion      = "v1"
+	secretNameError = `Secret name is no valid, make sure it consists of lower case alphanumeric characters, ‘-’ or ‘.’,` +
+		`and must start and end with an alphanumeric character (e.g. ‘example.com’, regex used for validation is ‘[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*’)`
+)
 
 // GenTLSSecret generates a TLS secret
 func GenTLSSecret(name string, namespace string, cert []byte, key []byte) (*corev1.Secret, error) {
@@ -79,7 +44,7 @@ func GenTLSSecret(name string, namespace string, cert []byte, key []byte) (*core
 
 	secret := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
+			APIVersion: apiVersion,
 			Kind:       "Secret",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -97,9 +62,8 @@ func GenTLSSecret(name string, namespace string, cert []byte, key []byte) (*core
 }
 
 // GenSecret generates a secret
-func GenSecret(name string, secretContent string, namespace string, secretType SecretType) (*Secret, error) {
+func GenSecret(name string, secretContent string, namespace string, secretType SecretType) (*corev1.Secret, error) {
 	nameErrors := validation.IsDNS1123Label(name)
-
 	if nameErrors != nil {
 		return nil, errors.New(secretNameError)
 	}
@@ -109,42 +73,45 @@ func GenSecret(name string, secretContent string, namespace string, secretType S
 		return nil, err
 	}
 
-	var secret = Secret{
-		APIVersion: APIVersion,
-		Data:       data,
-		Kind:       "Secret",
-		Type:       "Opaque",
-		Metadata: MetaData{
+	secret := &corev1.Secret{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: apiVersion,
+			Kind:       "Secret",
+		},
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
+		Type: "Opaque",
+		Data: data,
 	}
-	return &secret, nil
+
+	return secret, nil
 }
 
-func buildData(secretType SecretType, secretContent string) (interface{}, error) {
-	var data interface{}
+func buildData(secretType SecretType, secretContent string) (map[string][]byte, error) {
+	var data map[string][]byte
 
 	switch secretType {
 	case KeystoneSecretType:
-		data = KeystoneFileSecret{Keystone: secretContent}
+		data = map[string][]byte{
+			"keystone": []byte(secretContent),
+		}
 	case HtpasswdSecretType:
-		data = HTPasswdFileSecret{HTPasswd: secretContent}
+		data = map[string][]byte{
+			"htpasswd": []byte(secretContent),
+		}
 	case LiteralSecretType:
-		data = LiteralSecret{ClientSecret: secretContent}
+		data = map[string][]byte{
+			"clientSecret": []byte(secretContent),
+		}
 	case BasicAuthSecretType:
-		data = BasicAuthFileSecret{BasicAuth: secretContent}
+		data = map[string][]byte{
+			"basicAuth": []byte(secretContent),
+		}
 	default:
-		return nil, errors.New("Not a valid secret type " + secretType.String())
+		return nil, errors.New("Unknown secret type")
 	}
 
 	return data, nil
-}
-
-// SecretType.String returns a string representation for SecretType enum
-func (secType SecretType) String() string {
-	if secType >= KeystoneSecretType && int(secType) < len(typeArray) {
-		return typeArray[secType]
-	}
-	return "unknown"
 }

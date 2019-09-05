@@ -9,10 +9,12 @@ import (
 	"github.com/fusor/cpma/pkg/env"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
-	"github.com/fusor/cpma/pkg/transform/secrets"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestOauthGenYAML(t *testing.T) {
@@ -118,15 +120,19 @@ func TestAllOtherCRGenYaml(t *testing.T) {
 		},
 		{
 			name: "generate yaml from secret",
-			inputCR: secrets.Secret{
-				APIVersion: secrets.APIVersion,
-				Data:       secrets.LiteralSecret{ClientSecret: "some-value"},
-				Kind:       "Secret",
-				Type:       "Opaque",
-				Metadata: secrets.MetaData{
+			inputCR: corev1.Secret{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "Secret",
+				},
+				Data: map[string][]byte{
+					"clientSecret": []byte("some-value"),
+				},
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "literal-secret",
 					Namespace: "openshift-config",
 				},
+				Type: "Opaque",
 			},
 			expectedYaml: expectedSecretYaml,
 		},

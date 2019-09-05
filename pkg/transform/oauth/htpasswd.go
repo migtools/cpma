@@ -7,6 +7,8 @@ import (
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -14,7 +16,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 	var (
 		err             error
 		idP             = &configv1.IdentityProvider{}
-		providerSecrets []*secrets.Secret
+		providerSecrets []*corev1.Secret
 		htpasswd        legacyconfigv1.HTPasswdPasswordIdentityProvider
 	)
 

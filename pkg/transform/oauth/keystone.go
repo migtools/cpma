@@ -9,13 +9,15 @@ import (
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
 		idP                = &configv1.IdentityProvider{}
-		providerSecrets    []*secrets.Secret
+		providerSecrets    []*corev1.Secret
 		providerConfigMaps []*configmaps.ConfigMap
 		err                error
 		keystone           legacyconfigv1.KeystonePasswordIdentityProvider

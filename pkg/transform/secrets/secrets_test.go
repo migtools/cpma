@@ -6,6 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestGenSecret(t *testing.T) {
@@ -15,7 +18,7 @@ func TestGenSecret(t *testing.T) {
 		inputSecretName string
 		inputSecretFile string
 		inputSecretType SecretType
-		expected        Secret
+		expected        corev1.Secret
 		expectederr     bool
 	}{
 		{
@@ -23,15 +26,19 @@ func TestGenSecret(t *testing.T) {
 			inputSecretName: "htpasswd-test",
 			inputSecretFile: "testfile1",
 			inputSecretType: HtpasswdSecretType,
-			expected: Secret{
-				APIVersion: APIVersion,
-				Data:       HTPasswdFileSecret{HTPasswd: "testfile1"},
-				Kind:       "Secret",
-				Type:       "Opaque",
-				Metadata: MetaData{
+			expected: corev1.Secret{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "Secret",
+				},
+				Data: map[string][]byte{
+					"htpasswd": []byte("testfile1"),
+				},
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "htpasswd-test",
 					Namespace: "openshift-config",
 				},
+				Type: "Opaque",
 			},
 			expectederr: false,
 		},
@@ -40,15 +47,19 @@ func TestGenSecret(t *testing.T) {
 			inputSecretName: "keystone-test",
 			inputSecretFile: "testfile2",
 			inputSecretType: KeystoneSecretType,
-			expected: Secret{
-				APIVersion: APIVersion,
-				Data:       KeystoneFileSecret{Keystone: "testfile2"},
-				Kind:       "Secret",
-				Type:       "Opaque",
-				Metadata: MetaData{
+			expected: corev1.Secret{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "Secret",
+				},
+				Data: map[string][]byte{
+					"keystone": []byte("testfile2"),
+				},
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "keystone-test",
 					Namespace: "openshift-config",
 				},
+				Type: "Opaque",
 			},
 			expectederr: false,
 		},
@@ -57,15 +68,19 @@ func TestGenSecret(t *testing.T) {
 			inputSecretName: "basicauth-test",
 			inputSecretFile: "testfile3",
 			inputSecretType: BasicAuthSecretType,
-			expected: Secret{
-				APIVersion: APIVersion,
-				Data:       BasicAuthFileSecret{BasicAuth: "testfile3"},
-				Kind:       "Secret",
-				Type:       "Opaque",
-				Metadata: MetaData{
+			expected: corev1.Secret{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "Secret",
+				},
+				Data: map[string][]byte{
+					"basicAuth": []byte("testfile3"),
+				},
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "basicauth-test",
 					Namespace: "openshift-config",
 				},
+				Type: "Opaque",
 			},
 			expectederr: false,
 		},
@@ -74,15 +89,19 @@ func TestGenSecret(t *testing.T) {
 			inputSecretName: "literal-secret",
 			inputSecretFile: "some-value",
 			inputSecretType: LiteralSecretType,
-			expected: Secret{
-				APIVersion: APIVersion,
-				Data:       LiteralSecret{ClientSecret: "some-value"},
-				Kind:       "Secret",
-				Type:       "Opaque",
-				Metadata: MetaData{
+			expected: corev1.Secret{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "Secret",
+				},
+				Data: map[string][]byte{
+					"clientSecret": []byte("some-value"),
+				},
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "literal-secret",
 					Namespace: "openshift-config",
 				},
+				Type: "Opaque",
 			},
 			expectederr: false,
 		},

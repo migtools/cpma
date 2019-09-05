@@ -8,13 +8,15 @@ import (
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 func buildOpenIDIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
 		err             error
-		providerSecrets []*secrets.Secret
+		providerSecrets []*corev1.Secret
 		idP             = &configv1.IdentityProvider{}
 		openID          legacyconfigv1.OpenIDIdentityProvider
 	)
