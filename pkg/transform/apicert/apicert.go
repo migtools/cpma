@@ -93,7 +93,7 @@ func Translate(servingInfo legacyconfigv1.ServingInfo) (*corev1.Secret, error) {
 
 	crtContent, keyContent := getCert(servingInfo.CertFile, servingInfo.KeyFile)
 	if strings.Contains(certSigner(crtContent), "openshift-signer@") {
-		logrus.Info("APITransform: OpenShift signed API certificate -> No porting ")
+		logrus.Info("APITransform: API certificate is OpenShift signed, not ported")
 		return nil, nil
 	}
 
