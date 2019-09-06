@@ -1,7 +1,7 @@
 .PHONY: build clean test help default ci
 
 BIN_NAME=cpma
-SOURCES:=$(shell find . -name '*.go')
+SOURCES:=$(shell find . -name '*.go' -not -path "*/vendor/*")
 SOURCE_DIRS=cmd pkg
 DATE:=`date -u +%Y/%m/%d.%H:%M:%S`
 VERSION:=`git describe --tags --always --long --dirty`
