@@ -112,6 +112,7 @@ func TestInitFromEnv(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			os.Setenv("CPMA_CLUSTERNAME", "somename")
+			os.Setenv("CPMA_HOSTNAME", "master.example.org")
 			os.Setenv("CPMA_MANIFESTS", "true")
 			os.Setenv("CPMA_REPORTING", "true")
 			os.Setenv("CPMA_SAVECONFIG", "false")
