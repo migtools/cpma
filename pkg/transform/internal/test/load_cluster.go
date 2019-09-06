@@ -10,8 +10,9 @@ import (
 	o7tapisecurity "github.com/openshift/api/security/v1"
 
 	o7tapiuser "github.com/openshift/api/user/v1"
-	k8sapiapps "k8s.io/api/apps/v1"
+	"k8s.io/api/apps/v1beta1"
 	k8sapicore "k8s.io/api/core/v1"
+	extv1b1 "k8s.io/api/extensions/v1beta1"
 	k8sapistorage "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	k8smachinery "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -316,11 +317,11 @@ func CreateTestRouteList() *o7tapiroute.RouteList {
 }
 
 // CreateDeploymentList create test resources for DeploymentList
-func CreateDeploymentList() *k8sapiapps.DeploymentList {
-	deploymentList := &k8sapiapps.DeploymentList{}
-	deploymentList.Items = make([]k8sapiapps.Deployment, 1)
+func CreateDeploymentList() *v1beta1.DeploymentList {
+	deploymentList := &v1beta1.DeploymentList{}
+	deploymentList.Items = make([]v1beta1.Deployment, 1)
 
-	deployment := k8sapiapps.Deployment{}
+	deployment := v1beta1.Deployment{}
 
 	timestamp, _ := time.Parse(time.RFC1123Z, "Sun, 07 Jul 2019 09:45:35 +0100")
 	deployment.ObjectMeta = k8smachinery.ObjectMeta{
@@ -333,11 +334,11 @@ func CreateDeploymentList() *k8sapiapps.DeploymentList {
 }
 
 // CreateDaemonSetList create test resources for DeploymentList
-func CreateDaemonSetList() *k8sapiapps.DaemonSetList {
-	daemonSetList := &k8sapiapps.DaemonSetList{}
-	daemonSetList.Items = make([]k8sapiapps.DaemonSet, 1)
+func CreateDaemonSetList() *extv1b1.DaemonSetList {
+	daemonSetList := &extv1b1.DaemonSetList{}
+	daemonSetList.Items = make([]extv1b1.DaemonSet, 1)
 
-	daemonSet := k8sapiapps.DaemonSet{}
+	daemonSet := extv1b1.DaemonSet{}
 
 	timestamp, _ := time.Parse(time.RFC1123Z, "Sun, 07 Jul 2019 09:45:35 +0100")
 	daemonSet.ObjectMeta = k8smachinery.ObjectMeta{

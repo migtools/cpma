@@ -7,8 +7,9 @@ import (
 	o7tapisecurity "github.com/openshift/api/security/v1"
 	o7tapiuser "github.com/openshift/api/user/v1"
 
-	k8sapiapps "k8s.io/api/apps/v1"
+	"k8s.io/api/apps/v1beta1"
 	k8sapicore "k8s.io/api/core/v1"
+	extv1b1 "k8s.io/api/extensions/v1beta1"
 	k8sapistorage "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -35,8 +36,8 @@ type RBACResources struct {
 // NamespaceResources holds all resources that belong to a namespace
 type NamespaceResources struct {
 	NamespaceName     string
-	DaemonSetList     *k8sapiapps.DaemonSetList
-	DeploymentList    *k8sapiapps.DeploymentList
+	DaemonSetList     *extv1b1.DaemonSetList
+	DeploymentList    *v1beta1.DeploymentList
 	PodList           *k8sapicore.PodList
 	ResourceQuotaList *k8sapicore.ResourceQuotaList
 	RolesList         *o7tapiauth.RoleList
@@ -87,13 +88,13 @@ func ListStorageClasses() (*k8sapistorage.StorageClassList, error) {
 }
 
 // ListDeployments will list all deployments seeding in the selected namespace
-func ListDeployments(namespace string) (*k8sapiapps.DeploymentList, error) {
-	return K8sClient.AppsV1().Deployments(namespace).List(listOptions)
+func ListDeployments(namespace string) (*v1beta1.DeploymentList, error) {
+	return K8sClient.AppsV1beta1().Deployments(namespace).List(listOptions)
 }
 
 // ListDaemonSets will collect all DS from specific namespace
-func ListDaemonSets(namespace string) (*k8sapiapps.DaemonSetList, error) {
-	return K8sClient.AppsV1().DaemonSets(namespace).List(listOptions)
+func ListDaemonSets(namespace string) (*extv1b1.DaemonSetList, error) {
+	return K8sClient.ExtensionsV1beta1().DaemonSets(namespace).List(listOptions)
 }
 
 // ListUsers list all users, wrapper around client-go

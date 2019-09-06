@@ -10,9 +10,10 @@ import (
 	o7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/sirupsen/logrus"
 
-	k8sapiapps "k8s.io/api/apps/v1"
+	"k8s.io/api/apps/v1beta1"
 	k8sapicore "k8s.io/api/core/v1"
 	k8scorev1 "k8s.io/api/core/v1"
+	extv1b1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -218,7 +219,7 @@ func ReportContainerResources(reportedNamespace *NamespaceReport, pod *k8sapicor
 }
 
 // ReportDaemonSets generate DaemonSet report
-func ReportDaemonSets(reporeportedNamespace *NamespaceReport, dsList *k8sapiapps.DaemonSetList) {
+func ReportDaemonSets(reporeportedNamespace *NamespaceReport, dsList *extv1b1.DaemonSetList) {
 	for _, ds := range dsList.Items {
 		reportedDS := DaemonSetReport{
 			Name:         ds.Name,
@@ -230,7 +231,7 @@ func ReportDaemonSets(reporeportedNamespace *NamespaceReport, dsList *k8sapiapps
 }
 
 // ReportDeployments generate Deployments report
-func ReportDeployments(reportedNamespace *NamespaceReport, deploymentList *k8sapiapps.DeploymentList) {
+func ReportDeployments(reportedNamespace *NamespaceReport, deploymentList *v1beta1.DeploymentList) {
 	for _, deployment := range deploymentList.Items {
 		reportedDeployment := DeploymentReport{
 			Name:         deployment.Name,
@@ -409,6 +410,9 @@ func (clusterReport *Report) ReportPVs(apiResources api.Resources) {
 // ReportPVCs generate PVC report
 func ReportPVCs(reporeportedNamespace *NamespaceReport, pvcList *k8scorev1.PersistentVolumeClaimList, pvList []PVReport) {
 	for _, pvc := range pvcList.Items {
+		if len(pvList) == 0 {
+			return
+		}
 		idx := sort.Search(len(pvList), func(i int) bool {
 			return pvList[i].Name >= pvc.Spec.VolumeName
 		})
