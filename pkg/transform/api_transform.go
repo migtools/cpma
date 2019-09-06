@@ -102,7 +102,7 @@ func (e APIExtraction) buildReportOutput() {
 				Kind:       "Certficate",
 				Supported:  false,
 				Confidence: HighConfidence,
-				Comment:    "API certificate is OpenShift signe: Not porting",
+				Comment:    "API certificate is OpenShift signed, no porting required",
 			})
 	} else {
 		componentReport.Reports = append(componentReport.Reports,
