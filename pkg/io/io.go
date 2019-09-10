@@ -35,6 +35,7 @@ func fetchFromRemote(src string) ([]byte, error) {
 	host := env.Config().GetString("Hostname")
 	dst := filepath.Join(host, src)
 
+	logrus.Debugf("Fetching Remote File %s:%s", host, src)
 	cmd := fmt.Sprintf("sudo sh -c 'if [[ ! -f %s ]]; then echo not-found; fi'", src)
 	output0, err := remotehost.RunCMD(host, cmd)
 	if err != nil {
@@ -72,6 +73,7 @@ func fetchFromRemote(src string) ([]byte, error) {
 // FetchFromLocal retrieve file from local WorkDir
 func FetchFromLocal(src string) ([]byte, error) {
 	localSrc := filepath.Join(env.Config().GetString("WorkDir"), env.Config().GetString("Hostname"), src)
+	logrus.Debugf("Fetching Local File %s", localSrc)
 	f, err := ioutil.ReadFile(localSrc)
 	if err != nil {
 		return nil, err
@@ -79,7 +81,7 @@ func FetchFromLocal(src string) ([]byte, error) {
 	return f, nil
 }
 
-// FetchEnv Fetch env vars from the OCP3 cluster or localhost
+// FetchEnv Fetch env vars from either the source cluster or localhost
 func FetchEnv(host, envVar string) (string, error) {
 	var output string
 
@@ -99,7 +101,7 @@ func FetchEnv(host, envVar string) (string, error) {
 	return output, nil
 }
 
-// FetchStringSource fetches a string from an OCP3 cluster
+// FetchStringSource fetches a string from an source cluster
 func FetchStringSource(stringSource legacyconfigv1.StringSource) (string, error) {
 	if stringSource.Value != "" {
 		return stringSource.Value, nil
@@ -127,13 +129,13 @@ func FetchStringSource(stringSource legacyconfigv1.StringSource) (string, error)
 	return "", nil
 }
 
-// ReadFile reads a file in WorkDir and returns its contents
+// ReadFile reads a file from WorkDir and returns its contents
 func ReadFile(file string) ([]byte, error) {
 	src := filepath.Join(env.Config().GetString("WorkDir"), file)
 	return ioutil.ReadFile(src)
 }
 
-// WriteFile writes data to a file in WorkDir
+// WriteFile writes data to a file into WorkDir
 func WriteFile(content []byte, file string) error {
 	dst := filepath.Join(env.Config().GetString("WorkDir"), file)
 	os.MkdirAll(path.Dir(dst), 0750)
