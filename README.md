@@ -251,7 +251,7 @@ CPMA can be used in either remote or local modes.
 
 Whether the files are retrieved by CPMA (remote mode) or manually (local mode), the tool always relies on the local file system to process a cluster node files using `<workDir>/<Hostname>/`.
 
-## Debuging and troubleshooting
+## Debugging and troubleshooting
 When using the debugging option `-d` or `--debug` more information is provided along the process to help troubleshooting.
 A debug message provides a full path to the involved source file, the source line and a more detailed message.
 
