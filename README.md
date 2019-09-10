@@ -25,7 +25,7 @@ The generated CR Manifests can be applied to an Openshift 4 cluster as Day-2 ope
 
 Applying the CRs to the Openshift 4 cluster directly is currently not an intended feature for this utility.
 The user must review the output CRs and filter the desired ones to be applied to a targeted OCP 4 cluster.
-Migrating workloads are not to be done with CPMA, please use the appropriate migration tool for this purpose.
+Migrating workloads are not to be done with CPMA, please use the workload migration tool for such purpose.
 
 ### Operation Overview
 
@@ -82,7 +82,7 @@ Prior to the execution of the assistant tool, the following must be met:
 ## Warning
 
 The CPMA tool is to assist with complex settings and therefore it’s mandatory to have read the corresponding documentation.
-For more information please refef to:
+For more information please refer to:
 - [OCP 3.x documentation](https://docs.openshift.com/container-platform/3.11/welcome/index.html)
 - [OCP 4.x documentation](https://docs.openshift.com/container-platform/4.1/welcome/index.html)
 
@@ -143,10 +143,10 @@ CPMA specific environment variable must be prefixed with `CPMA_`:
 - CPMA_MASTERCONFIGFILE
 - CPMA_REGISTRIESCONFIGFILE
 - CPMA_REPORTING
-- CPMA_SSHPRIVATEKEY
+- CPMA_SILENT
 - CPMA_SSHLOGIN
 - CPMA_SSHPORT
-- CPMA_SILENT
+- CPMA_SSHPRIVATEKEY
 - CPMA_WORKDIR
 
 ### CLI
@@ -221,15 +221,17 @@ data
 ├── manifests
 ├── master-0.example.com
 |   └── etc
-|       └── origin
-|           ├── master
-|               ├── htpasswd
-|               └── master-config.yaml
-└── node-1.example.com
-|   └── etc
-|       └── origin
-|           └── node
-|               └── node-config.yaml
+│       ├── containers
+│       │   └── registries.conf
+│       ├── etcd
+│       │   └── etcd.conf
+│       └── origin
+│           └── master
+│               ├── htpasswd
+│               ├── master-config.yaml
+│               ├── master.server.crt
+│               └── master.server.key
+└── report.hmtl
 └── report.json
 ```
 
@@ -237,10 +239,9 @@ The `WorkDir` option ('data' in above example) determines the directory containi
 
 The `manifests` subfolder will contain all generated Custom Resource manifests.
 
-Each cluster endpoint is identified by its FQDN (master-0.example.com in above example) and its subfolders contain the configuration files retrieved and to
-process.
+Each cluster endpoint is identified by its FQDN (master-0.example.com in above example) and its subfolders contain the configuration files retrieved which are to be processed.
 
-And finally `report.json` contains the result of the reporting analysis.
+And finally the reporting analysis generated as JSON and HTML formats are stored in the `report.html` and `report.json` files.
 
 ### Local or remote modes
 
@@ -249,6 +250,10 @@ CPMA can be used in either remote or local modes.
 - Conversely, in local mode, configuration files must have been copied locally prior to launching CPMA.
 
 Whether the files are retrieved by CPMA (remote mode) or manually (local mode), the tool always relies on the local file system to process a cluster node files using `<workDir>/<Hostname>/`.
+
+## Debuging and troubleshooting
+When using the debugging option `-d` or `--debug` more information is provided along the process to help troubleshooting.
+A debug message provides a full path to the involved source file, the source line and a more detailed message.
 
 ## Contribute
 
