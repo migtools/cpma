@@ -31,8 +31,8 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 	idP.Name = p.Name
 	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
 	idP.GitHub = &configv1.GitHubIdentityProvider{}
-	idP.GitHub.Hostname = github.Hostname
 	idP.GitHub.ClientID = github.ClientID
+	idP.GitHub.Hostname = github.Hostname
 	idP.GitHub.Organizations = github.Organizations
 	idP.GitHub.Teams = github.Teams
 
@@ -84,6 +84,10 @@ func validateGithubProvider(serializer *json.Serializer, p IdentityProvider) err
 
 	if err := validateClientData(github.ClientID, github.ClientSecret); err != nil {
 		return err
+	}
+
+	if github.Hostname == "" && (len(github.Organizations) == 0 || len(github.Teams) == 0) {
+		return errors.New("GitHub (non enterprise) provider without organizations or teams field is not supported")
 	}
 
 	return nil
