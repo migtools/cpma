@@ -4,6 +4,8 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fusor/cpma/pkg/api"
 	"github.com/pkg/errors"
+
+	k8sapicore "k8s.io/api/core/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
@@ -61,10 +63,9 @@ func SurveyClusters() string {
 }
 
 func queryNodes(apiClient corev1.CoreV1Interface) ([]string, error) {
-	nodeList, err := api.ListNodes()
-	if err != nil {
-		return nil, err
-	}
+	chanNodes := make(chan *k8sapicore.NodeList)
+	go api.ListNodes(chanNodes)
+	nodeList := <-chanNodes
 
 	nodes := make([]string, 0, len(nodeList.Items))
 	for _, node := range nodeList.Items {
