@@ -74,11 +74,15 @@ func fetchFromRemote(src string) ([]byte, error) {
 func FetchFromLocal(src string) ([]byte, error) {
 	localSrc := filepath.Join(env.Config().GetString("WorkDir"), env.Config().GetString("Hostname"), src)
 	logrus.Debugf("Fetching Local File %s", localSrc)
-	f, err := ioutil.ReadFile(localSrc)
-	if err != nil {
-		return nil, err
+	if fileExists(localSrc) {
+		f, err := ioutil.ReadFile(localSrc)
+		if err != nil {
+			return nil, err
+		}
+		return f, nil
 	}
-	return f, nil
+	msg := fmt.Sprintf("No such file %s", localSrc)
+	return nil, errors.New(msg)
 }
 
 // FetchEnv Fetch env vars from either the source cluster or localhost
@@ -140,4 +144,12 @@ func WriteFile(content []byte, file string) error {
 	dst := filepath.Join(env.Config().GetString("WorkDir"), file)
 	os.MkdirAll(path.Dir(dst), 0750)
 	return ioutil.WriteFile(dst, content, 0640)
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
