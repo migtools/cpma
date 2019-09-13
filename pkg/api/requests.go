@@ -6,6 +6,7 @@ import (
 	o7tapiroute "github.com/openshift/api/route/v1"
 	o7tapisecurity "github.com/openshift/api/security/v1"
 	o7tapiuser "github.com/openshift/api/user/v1"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/api/apps/v1beta1"
 	k8sapicore "k8s.io/api/core/v1"
@@ -48,86 +49,154 @@ type NamespaceResources struct {
 var listOptions metav1.ListOptions
 
 // ListNamespaces list all namespaces, wrapper around client-go
-func ListNamespaces() (*k8sapicore.NamespaceList, error) {
-	return K8sClient.CoreV1().Namespaces().List(listOptions)
+func ListNamespaces(ch chan<- *k8sapicore.NamespaceList) {
+	namespaces, err := K8sClient.CoreV1().Namespaces().List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- namespaces
 }
 
 // ListPods list all pods in namespace, wrapper around client-go
-func ListPods(namespace string) (*k8sapicore.PodList, error) {
-	return K8sClient.CoreV1().Pods(namespace).List(listOptions)
+func ListPods(namespace string, ch chan<- *k8sapicore.PodList) {
+	pods, err := K8sClient.CoreV1().Pods(namespace).List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- pods
 }
 
 // ListPVs list all PVs, wrapper around client-go
-func ListPVs() (*k8sapicore.PersistentVolumeList, error) {
-	return K8sClient.CoreV1().PersistentVolumes().List(listOptions)
+func ListPVs(ch chan<- *k8sapicore.PersistentVolumeList) {
+	pvs, err := K8sClient.CoreV1().PersistentVolumes().List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- pvs
 }
 
 // ListNodes list all nodes, wrapper around client-go
-func ListNodes() (*k8sapicore.NodeList, error) {
-	return K8sClient.CoreV1().Nodes().List(listOptions)
+func ListNodes(ch chan<- *k8sapicore.NodeList) {
+	nodes, err := K8sClient.CoreV1().Nodes().List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- nodes
 }
 
 // ListQuotas list all cluster quotas classes, wrapper around client-go
-func ListQuotas() (*o7tapiquota.ClusterResourceQuotaList, error) {
-	return O7tClient.quotaClient.ClusterResourceQuotas().List(listOptions)
+func ListQuotas(ch chan<- *o7tapiquota.ClusterResourceQuotaList) {
+	quotas, err := O7tClient.quotaClient.ClusterResourceQuotas().List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- quotas
 }
 
 // ListResourceQuotas list all quotas classes, wrapper around client-go
-func ListResourceQuotas(namespace string) (*k8sapicore.ResourceQuotaList, error) {
-	return K8sClient.CoreV1().ResourceQuotas(namespace).List(listOptions)
+func ListResourceQuotas(namespace string, ch chan<- *k8sapicore.ResourceQuotaList) {
+	quotas, err := K8sClient.CoreV1().ResourceQuotas(namespace).List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- quotas
 }
 
 // ListRoutes list all routes classes, wrapper around client-go
-func ListRoutes(namespace string) (*o7tapiroute.RouteList, error) {
-	return O7tClient.routeClient.Routes(namespace).List(listOptions)
+func ListRoutes(namespace string, ch chan<- *o7tapiroute.RouteList) {
+	routes, err := O7tClient.routeClient.Routes(namespace).List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- routes
 }
 
 // ListStorageClasses list all storage classes, wrapper around client-go
-func ListStorageClasses() (*k8sapistorage.StorageClassList, error) {
-	return K8sClient.StorageV1().StorageClasses().List(listOptions)
+func ListStorageClasses(ch chan<- *k8sapistorage.StorageClassList) {
+	sc, err := K8sClient.StorageV1().StorageClasses().List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- sc
 }
 
 // ListDeployments will list all deployments seeding in the selected namespace
-func ListDeployments(namespace string) (*v1beta1.DeploymentList, error) {
-	return K8sClient.AppsV1beta1().Deployments(namespace).List(listOptions)
+func ListDeployments(namespace string, ch chan<- *v1beta1.DeploymentList) {
+	deployments, err := K8sClient.AppsV1beta1().Deployments(namespace).List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- deployments
 }
 
 // ListDaemonSets will collect all DS from specific namespace
-func ListDaemonSets(namespace string) (*extv1b1.DaemonSetList, error) {
-	return K8sClient.ExtensionsV1beta1().DaemonSets(namespace).List(listOptions)
+func ListDaemonSets(namespace string, ch chan<- *extv1b1.DaemonSetList) {
+	daemonSets, err := K8sClient.ExtensionsV1beta1().DaemonSets(namespace).List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- daemonSets
 }
 
 // ListUsers list all users, wrapper around client-go
-func ListUsers() (*o7tapiuser.UserList, error) {
-	return O7tClient.userClient.Users().List(listOptions)
+func ListUsers(ch chan<- *o7tapiuser.UserList) {
+	users, err := O7tClient.userClient.Users().List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- users
 }
 
 // ListGroups list all users, wrapper around client-go
-func ListGroups() (*o7tapiuser.GroupList, error) {
-	return O7tClient.userClient.Groups().List(listOptions)
+func ListGroups(ch chan<- *o7tapiuser.GroupList) {
+	groups, err := O7tClient.userClient.Groups().List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- groups
 }
 
 // ListRoles list all storage classes, wrapper around client-go
-func ListRoles(namespace string) (*o7tapiauth.RoleList, error) {
-	return O7tClient.authClient.Roles(namespace).List(listOptions)
+func ListRoles(namespace string, ch chan<- *o7tapiauth.RoleList) {
+	roles, err := O7tClient.authClient.Roles(namespace).List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- roles
 }
 
 // ListClusterRoles list all storage classes, wrapper around client-go
-func ListClusterRoles() (*o7tapiauth.ClusterRoleList, error) {
-	return O7tClient.authClient.ClusterRoles().List(listOptions)
+func ListClusterRoles(ch chan<- *o7tapiauth.ClusterRoleList) {
+	clusterRoles, err := O7tClient.authClient.ClusterRoles().List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- clusterRoles
 }
 
 // ListClusterRolesBindings list all storage classes, wrapper around client-go
-func ListClusterRolesBindings() (*o7tapiauth.ClusterRoleBindingList, error) {
-	return O7tClient.authClient.ClusterRoleBindings().List(listOptions)
+func ListClusterRolesBindings(ch chan<- *o7tapiauth.ClusterRoleBindingList) {
+	clusterRolesBindings, err := O7tClient.authClient.ClusterRoleBindings().List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- clusterRolesBindings
 }
 
 // ListSCC list all security context constraints, wrapper around client-go
-func ListSCC() (*o7tapisecurity.SecurityContextConstraintsList, error) {
-	return O7tClient.securityClient.SecurityContextConstraints().List(listOptions)
+func ListSCC(ch chan<- *o7tapisecurity.SecurityContextConstraintsList) {
+	scc, err := O7tClient.securityClient.SecurityContextConstraints().List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- scc
 }
 
 // ListPVCs list all PVs, wrapper around client-go
-func ListPVCs(namespace string) (*k8sapicore.PersistentVolumeClaimList, error) {
-	return K8sClient.CoreV1().PersistentVolumeClaims(namespace).List(listOptions)
+func ListPVCs(namespace string, ch chan<- *k8sapicore.PersistentVolumeClaimList) {
+	pvcs, err := K8sClient.CoreV1().PersistentVolumeClaims(namespace).List(listOptions)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- pvcs
 }
