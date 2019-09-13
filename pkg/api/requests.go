@@ -6,6 +6,7 @@ import (
 	o7tapiroute "github.com/openshift/api/route/v1"
 	o7tapisecurity "github.com/openshift/api/security/v1"
 	o7tapiuser "github.com/openshift/api/user/v1"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/api/apps/v1beta1"
 	k8sapicore "k8s.io/api/core/v1"
@@ -51,7 +52,7 @@ var listOptions metav1.ListOptions
 func ListNamespaces(ch chan<- *k8sapicore.NamespaceList) {
 	namespaces, err := K8sClient.CoreV1().Namespaces().List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- namespaces
 }
@@ -60,7 +61,7 @@ func ListNamespaces(ch chan<- *k8sapicore.NamespaceList) {
 func ListPods(namespace string, ch chan<- *k8sapicore.PodList) {
 	pods, err := K8sClient.CoreV1().Pods(namespace).List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- pods
 }
@@ -69,7 +70,7 @@ func ListPods(namespace string, ch chan<- *k8sapicore.PodList) {
 func ListPVs(ch chan<- *k8sapicore.PersistentVolumeList) {
 	pvs, err := K8sClient.CoreV1().PersistentVolumes().List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- pvs
 }
@@ -78,7 +79,7 @@ func ListPVs(ch chan<- *k8sapicore.PersistentVolumeList) {
 func ListNodes(ch chan<- *k8sapicore.NodeList) {
 	nodes, err := K8sClient.CoreV1().Nodes().List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- nodes
 }
@@ -87,7 +88,7 @@ func ListNodes(ch chan<- *k8sapicore.NodeList) {
 func ListQuotas(ch chan<- *o7tapiquota.ClusterResourceQuotaList) {
 	quotas, err := O7tClient.quotaClient.ClusterResourceQuotas().List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- quotas
 }
@@ -96,7 +97,7 @@ func ListQuotas(ch chan<- *o7tapiquota.ClusterResourceQuotaList) {
 func ListResourceQuotas(namespace string, ch chan<- *k8sapicore.ResourceQuotaList) {
 	quotas, err := K8sClient.CoreV1().ResourceQuotas(namespace).List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- quotas
 }
@@ -105,7 +106,7 @@ func ListResourceQuotas(namespace string, ch chan<- *k8sapicore.ResourceQuotaLis
 func ListRoutes(namespace string, ch chan<- *o7tapiroute.RouteList) {
 	routes, err := O7tClient.routeClient.Routes(namespace).List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- routes
 }
@@ -114,7 +115,7 @@ func ListRoutes(namespace string, ch chan<- *o7tapiroute.RouteList) {
 func ListStorageClasses(ch chan<- *k8sapistorage.StorageClassList) {
 	sc, err := K8sClient.StorageV1().StorageClasses().List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- sc
 }
@@ -123,7 +124,7 @@ func ListStorageClasses(ch chan<- *k8sapistorage.StorageClassList) {
 func ListDeployments(namespace string, ch chan<- *v1beta1.DeploymentList) {
 	deployments, err := K8sClient.AppsV1beta1().Deployments(namespace).List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- deployments
 }
@@ -132,7 +133,7 @@ func ListDeployments(namespace string, ch chan<- *v1beta1.DeploymentList) {
 func ListDaemonSets(namespace string, ch chan<- *extv1b1.DaemonSetList) {
 	daemonSets, err := K8sClient.ExtensionsV1beta1().DaemonSets(namespace).List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- daemonSets
 }
@@ -141,7 +142,7 @@ func ListDaemonSets(namespace string, ch chan<- *extv1b1.DaemonSetList) {
 func ListUsers(ch chan<- *o7tapiuser.UserList) {
 	users, err := O7tClient.userClient.Users().List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- users
 }
@@ -150,7 +151,7 @@ func ListUsers(ch chan<- *o7tapiuser.UserList) {
 func ListGroups(ch chan<- *o7tapiuser.GroupList) {
 	groups, err := O7tClient.userClient.Groups().List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- groups
 }
@@ -159,7 +160,7 @@ func ListGroups(ch chan<- *o7tapiuser.GroupList) {
 func ListRoles(namespace string, ch chan<- *o7tapiauth.RoleList) {
 	roles, err := O7tClient.authClient.Roles(namespace).List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- roles
 }
@@ -168,7 +169,7 @@ func ListRoles(namespace string, ch chan<- *o7tapiauth.RoleList) {
 func ListClusterRoles(ch chan<- *o7tapiauth.ClusterRoleList) {
 	clusterRoles, err := O7tClient.authClient.ClusterRoles().List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- clusterRoles
 }
@@ -177,7 +178,7 @@ func ListClusterRoles(ch chan<- *o7tapiauth.ClusterRoleList) {
 func ListClusterRolesBindings(ch chan<- *o7tapiauth.ClusterRoleBindingList) {
 	clusterRolesBindings, err := O7tClient.authClient.ClusterRoleBindings().List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- clusterRolesBindings
 }
@@ -186,7 +187,7 @@ func ListClusterRolesBindings(ch chan<- *o7tapiauth.ClusterRoleBindingList) {
 func ListSCC(ch chan<- *o7tapisecurity.SecurityContextConstraintsList) {
 	scc, err := O7tClient.securityClient.SecurityContextConstraints().List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- scc
 }
@@ -195,7 +196,7 @@ func ListSCC(ch chan<- *o7tapisecurity.SecurityContextConstraintsList) {
 func ListPVCs(namespace string, ch chan<- *k8sapicore.PersistentVolumeClaimList) {
 	pvcs, err := K8sClient.CoreV1().PersistentVolumeClaims(namespace).List(listOptions)
 	if err != nil {
-		panic(err)
+		logrus.Fatal(err)
 	}
 	ch <- pvcs
 }
