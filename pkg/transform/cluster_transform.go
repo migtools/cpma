@@ -8,7 +8,17 @@ import (
 	"github.com/fusor/cpma/pkg/transform/cluster"
 	"github.com/fusor/cpma/pkg/transform/clusterquota"
 	"github.com/fusor/cpma/pkg/transform/quota"
+	o7tapiauth "github.com/openshift/api/authorization/v1"
+	o7tapiquota "github.com/openshift/api/quota/v1"
+	o7tapiroute "github.com/openshift/api/route/v1"
+	o7tapisecurity "github.com/openshift/api/security/v1"
+	o7tapiuser "github.com/openshift/api/user/v1"
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/api/apps/v1beta1"
+	k8sapicore "k8s.io/api/core/v1"
+	extv1b1 "k8s.io/api/extensions/v1beta1"
+	k8sapistorage "k8s.io/api/storage/v1"
 )
 
 // ClusterTransformName is the cluster report name
@@ -91,117 +101,73 @@ func (e ClusterExtraction) Validate() (err error) { return }
 
 // Extract collects data for cluster report
 func (e ClusterTransform) Extract() (Extraction, error) {
+	chanNodes := make(chan *k8sapicore.NodeList)
+	chanClusterQuotas := make(chan *o7tapiquota.ClusterResourceQuotaList)
+	chanNamespaces := make(chan *k8sapicore.NamespaceList)
+	chanPVs := make(chan *k8sapicore.PersistentVolumeList)
+	chanUsers := make(chan *o7tapiuser.UserList)
+	chanGroups := make(chan *o7tapiuser.GroupList)
+	chanClusterRoles := make(chan *o7tapiauth.ClusterRoleList)
+	chanClusterRolesListBindings := make(chan *o7tapiauth.ClusterRoleBindingList)
+	chanStorageClassList := make(chan *k8sapistorage.StorageClassList)
+	chanSecurityContextConstraints := make(chan *o7tapisecurity.SecurityContextConstraintsList)
+
+	go api.ListNamespaces(chanNamespaces)
+	go api.ListNodes(chanNodes)
+	go api.ListQuotas(chanClusterQuotas)
+	go api.ListPVs(chanPVs)
+	go api.ListUsers(chanUsers)
+	go api.ListGroups(chanGroups)
+	go api.ListClusterRoles(chanClusterRoles)
+	go api.ListClusterRolesBindings(chanClusterRolesListBindings)
+	go api.ListSCC(chanSecurityContextConstraints)
+	go api.ListStorageClasses(chanStorageClassList)
+
 	extraction := &ClusterExtraction{}
 
-	nodeList, err := api.ListNodes()
-	if err != nil {
-		return nil, err
-	}
-	extraction.NodeList = nodeList
-
-	quotaList, err := api.ListQuotas()
-	if err != nil {
-		return nil, err
-	}
-	extraction.QuotaList = quotaList
-
-	namespacesList, err := api.ListNamespaces()
-	if err != nil {
-		return nil, err
-	}
-
 	// Map all namespaces to their resources
+	namespacesList := <-chanNamespaces
 	namespaceListSize := len(namespacesList.Items)
 	extraction.NamespaceList = make([]api.NamespaceResources, namespaceListSize, namespaceListSize)
 	for i, namespace := range namespacesList.Items {
 		namespaceResources := api.NamespaceResources{NamespaceName: namespace.Name}
 
-		quotaList, err := api.ListResourceQuotas(namespace.Name)
-		if err != nil {
-			return nil, err
-		}
-		namespaceResources.ResourceQuotaList = quotaList
+		chanQuotas := make(chan *k8sapicore.ResourceQuotaList)
+		chanPods := make(chan *k8sapicore.PodList)
+		chanRoutes := make(chan *o7tapiroute.RouteList)
+		chanDeployments := make(chan *v1beta1.DeploymentList)
+		chanDaemonSets := make(chan *extv1b1.DaemonSetList)
+		chanRoles := make(chan *o7tapiauth.RoleList)
+		chanPVCs := make(chan *k8sapicore.PersistentVolumeClaimList)
 
-		podsList, err := api.ListPods(namespace.Name)
-		if err != nil {
-			return nil, err
-		}
-		namespaceResources.PodList = podsList
+		go api.ListResourceQuotas(namespace.Name, chanQuotas)
+		go api.ListPods(namespace.Name, chanPods)
+		go api.ListRoutes(namespace.Name, chanRoutes)
+		go api.ListDeployments(namespace.Name, chanDeployments)
+		go api.ListDaemonSets(namespace.Name, chanDaemonSets)
+		go api.ListRoles(namespace.Name, chanRoles)
+		go api.ListPVCs(namespace.Name, chanPVCs)
 
-		routesList, err := api.ListRoutes(namespace.Name)
-		if err != nil {
-			return nil, err
-		}
-		namespaceResources.RouteList = routesList
-
-		deploymentList, err := api.ListDeployments(namespace.Name)
-		if err != nil {
-			return nil, err
-		}
-		namespaceResources.DeploymentList = deploymentList
-
-		daemonSetList, err := api.ListDaemonSets(namespace.Name)
-		if err != nil {
-			return nil, err
-		}
-		namespaceResources.DaemonSetList = daemonSetList
-
-		rolesList, err := api.ListRoles(namespace.Name)
-		if err != nil {
-			return nil, err
-		}
-		namespaceResources.RolesList = rolesList
-
-		pvcList, err := api.ListPVCs(namespace.Name)
-		if err != nil {
-			return nil, err
-		}
-		namespaceResources.PVCList = pvcList
+		namespaceResources.ResourceQuotaList = <-chanQuotas
+		namespaceResources.PodList = <-chanPods
+		namespaceResources.RouteList = <-chanRoutes
+		namespaceResources.DeploymentList = <-chanDeployments
+		namespaceResources.DaemonSetList = <-chanDaemonSets
+		namespaceResources.RolesList = <-chanRoles
+		namespaceResources.PVCList = <-chanPVCs
 
 		extraction.NamespaceList[i] = namespaceResources
 	}
 
-	pvList, err := api.ListPVs()
-	if err != nil {
-		return nil, err
-	}
-	extraction.PersistentVolumeList = pvList
-
-	storageClassList, err := api.ListStorageClasses()
-	if err != nil {
-		return nil, err
-	}
-	extraction.StorageClassList = storageClassList
-
-	userList, err := api.ListUsers()
-	if err != nil {
-		return nil, err
-	}
-	extraction.RBACResources.UsersList = userList
-
-	groupList, err := api.ListGroups()
-	if err != nil {
-		return nil, err
-	}
-	extraction.RBACResources.GroupList = groupList
-
-	clusterRolesList, err := api.ListClusterRoles()
-	if err != nil {
-		return nil, err
-	}
-	extraction.RBACResources.ClusterRolesList = clusterRolesList
-
-	clusterRolesListBindings, err := api.ListClusterRolesBindings()
-	if err != nil {
-		return nil, err
-	}
-	extraction.RBACResources.ClusterRolesBindingsList = clusterRolesListBindings
-
-	securityContextConstraints, err := api.ListSCC()
-	if err != nil {
-		return nil, err
-	}
-	extraction.RBACResources.SecurityContextConstraintsList = securityContextConstraints
+	extraction.NodeList = <-chanNodes
+	extraction.QuotaList = <-chanClusterQuotas
+	extraction.PersistentVolumeList = <-chanPVs
+	extraction.RBACResources.UsersList = <-chanUsers
+	extraction.RBACResources.GroupList = <-chanGroups
+	extraction.RBACResources.ClusterRolesList = <-chanClusterRoles
+	extraction.RBACResources.ClusterRolesBindingsList = <-chanClusterRolesListBindings
+	extraction.RBACResources.SecurityContextConstraintsList = <-chanSecurityContextConstraints
+	extraction.StorageClassList = <-chanStorageClassList
 
 	return *extraction, nil
 }
