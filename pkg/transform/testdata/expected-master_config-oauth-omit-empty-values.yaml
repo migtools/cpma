@@ -24,6 +24,8 @@ spec:
       clientSecret:
         name: github-secret
       hostname: ""
+      organizations:
+      - blah
     mappingMethod: claim
     name: github123456789
     type: GitHub
