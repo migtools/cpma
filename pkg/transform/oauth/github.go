@@ -36,6 +36,10 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 	idP.GitHub.Organizations = github.Organizations
 	idP.GitHub.Teams = github.Teams
 
+	if github.Hostname == "" && len(github.Organizations) == 0 && len(github.Teams) == 0 {
+		return nil, errors.New("GitHub provider ignored: OCP 4 requires at least one of 'organizations' or 'teams' field present")
+	}
+
 	if github.CA != "" {
 		caConfigmap := configmaps.GenConfigMap("github-configmap", OAuthNamespace, p.CAData)
 		idP.GitHub.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
