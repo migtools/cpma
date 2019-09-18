@@ -20,6 +20,8 @@ oauthConfig:
       kind: GitHubIdentityProvider
       clientID: 2d85ea3f45d6777bffd7
       clientSecret: e16a59ad33d7c29fd4354f46059f0950c609a7ea
+      organizations: 
+      - blah
   - name: gitlab123456789
     challenge: true
     login: true
