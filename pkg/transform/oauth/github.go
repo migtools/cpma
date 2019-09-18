@@ -78,8 +78,10 @@ func validateGithubProvider(serializer *json.Serializer, p IdentityProvider) err
 		return errors.New("Name can't be empty")
 	}
 
-	if err := validateMappingMethod(p.MappingMethod); err != nil {
-		return err
+	if p.MappingMethod != "" {
+		if err := validateMappingMethod(p.MappingMethod); err != nil {
+			return err
+		}
 	}
 
 	if github.ClientSecret.KeyFile != "" {
