@@ -1,8 +1,6 @@
 package oauth
 
 import (
-	"encoding/base64"
-
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
@@ -22,8 +20,7 @@ func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAut
 	translatedTemplates := &configv1.OAuthTemplates{}
 
 	if templates.Login != "" {
-		encoded := base64.StdEncoding.EncodeToString([]byte(templates.Login))
-		secret, err := secrets.GenSecret(loginSecret, encoded, OAuthNamespace, secrets.LiteralSecretType)
+		secret, err := secrets.GenSecret(loginSecret, []byte(templates.Login), OAuthNamespace, secrets.LiteralSecretType)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -32,8 +29,7 @@ func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAut
 	}
 
 	if templates.Error != "" {
-		encoded := base64.StdEncoding.EncodeToString([]byte(templates.Error))
-		secret, err := secrets.GenSecret(errorSecret, encoded, OAuthNamespace, secrets.LiteralSecretType)
+		secret, err := secrets.GenSecret(errorSecret, []byte(templates.Error), OAuthNamespace, secrets.LiteralSecretType)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -42,8 +38,7 @@ func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAut
 	}
 
 	if templates.ProviderSelection != "" {
-		encoded := base64.StdEncoding.EncodeToString([]byte(templates.ProviderSelection))
-		secret, err := secrets.GenSecret(providerSelectionSecret, encoded, OAuthNamespace, secrets.LiteralSecretType)
+		secret, err := secrets.GenSecret(providerSelectionSecret, []byte(templates.ProviderSelection), OAuthNamespace, secrets.LiteralSecretType)
 		if err != nil {
 			return nil, nil, err
 		}
