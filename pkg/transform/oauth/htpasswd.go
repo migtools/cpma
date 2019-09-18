@@ -1,8 +1,6 @@
 package oauth
 
 import (
-	"encoding/base64"
-
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
@@ -32,9 +30,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 	idP.HTPasswd = &configv1.HTPasswdIdentityProvider{}
 	idP.HTPasswd.FileData.Name = secretName
 
-	encoded := base64.StdEncoding.EncodeToString(p.HTFileData)
-
-	secret, err := secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.HtpasswdSecretType)
+	secret, err := secrets.GenSecret(secretName, p.HTFileData, OAuthNamespace, secrets.HtpasswdSecretType)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to generate secret for htpasswd, see error")
 	}
