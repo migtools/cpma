@@ -62,10 +62,14 @@ func GenTLSSecret(name string, namespace string, cert []byte, key []byte) (*core
 }
 
 // GenSecret generates a secret
-func GenSecret(name string, secretContent string, namespace string, secretType SecretType) (*corev1.Secret, error) {
+func GenSecret(name string, secretContent []byte, namespace string, secretType SecretType) (*corev1.Secret, error) {
 	nameErrors := validation.IsDNS1123Label(name)
 	if nameErrors != nil {
 		return nil, errors.New(secretNameError)
+	}
+
+	if secretContent == nil {
+		secretContent = []byte("")
 	}
 
 	data, err := buildData(secretType, secretContent)
@@ -89,25 +93,25 @@ func GenSecret(name string, secretContent string, namespace string, secretType S
 	return secret, nil
 }
 
-func buildData(secretType SecretType, secretContent string) (map[string][]byte, error) {
+func buildData(secretType SecretType, secretContent []byte) (map[string][]byte, error) {
 	var data map[string][]byte
 
 	switch secretType {
 	case KeystoneSecretType:
 		data = map[string][]byte{
-			"keystone": []byte(secretContent),
+			"keystone": secretContent,
 		}
 	case HtpasswdSecretType:
 		data = map[string][]byte{
-			"htpasswd": []byte(secretContent),
+			"htpasswd": secretContent,
 		}
 	case LiteralSecretType:
 		data = map[string][]byte{
-			"clientSecret": []byte(secretContent),
+			"clientSecret": secretContent,
 		}
 	case BasicAuthSecretType:
 		data = map[string][]byte{
-			"basicAuth": []byte(secretContent),
+			"basicAuth": secretContent,
 		}
 	default:
 		return nil, errors.New("Unknown secret type")

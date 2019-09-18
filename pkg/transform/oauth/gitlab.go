@@ -1,8 +1,6 @@
 package oauth
 
 import (
-	"encoding/base64"
-
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
@@ -47,8 +45,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 		return nil, errors.Wrap(err, "Failed to fetch client secret for gitlab, see error")
 	}
 
-	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
-	secret, err := secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
+	secret, err := secrets.GenSecret(secretName, []byte(secretContent), OAuthNamespace, secrets.LiteralSecretType)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to generate secret for gitlab, see error")
 	}
