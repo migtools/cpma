@@ -1,8 +1,6 @@
 package oauth
 
 import (
-	"encoding/base64"
-
 	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
@@ -47,8 +45,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 	if keystone.CertFile != "" {
 		certSecretName := "keystone-client-cert-secret"
 		idP.Keystone.TLSClientCert.Name = certSecretName
-		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-		certSecret, err := secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType)
+		certSecret, err := secrets.GenSecret(certSecretName, p.CrtData, OAuthNamespace, secrets.KeystoneSecretType)
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to generate cert secret for keystone, see error")
 		}
@@ -56,8 +53,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 
 		keySecretName := "keystone-client-key-secret"
 		idP.Keystone.TLSClientKey.Name = keySecretName
-		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
-		keySecret, err := secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType)
+		keySecret, err := secrets.GenSecret(keySecretName, p.KeyData, OAuthNamespace, secrets.KeystoneSecretType)
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to generate key secret for keystone, see error")
 		}

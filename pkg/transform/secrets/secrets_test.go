@@ -116,7 +116,7 @@ func TestGenSecret(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resSecret, err := GenSecret(tc.inputSecretName, tc.inputSecretFile, "openshift-config", tc.inputSecretType)
+			resSecret, err := GenSecret(tc.inputSecretName, []byte(tc.inputSecretFile), "openshift-config", tc.inputSecretType)
 			if tc.expectederr {
 				err := errors.New("Not valid secret type " + "notvalidtype")
 				require.Error(t, err)
