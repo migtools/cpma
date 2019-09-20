@@ -1,7 +1,7 @@
 module github.com/fusor/cpma
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.0.0-20190531072418-dc4f7bbe639c
+	github.com/AlecAivazis/survey/v2 v2.0.2
 	github.com/BurntSushi/toml v0.3.0
 	github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
 	github.com/gogo/protobuf v1.2.1 // indirect

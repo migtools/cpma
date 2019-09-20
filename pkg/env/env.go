@@ -139,7 +139,7 @@ func surveyMissingValues() error {
 			Message: "Path to application data, skip to use current directory",
 			Default: ".",
 		}
-		if err := survey.AskOne(prompt, &workDir, nil); err != nil {
+		if err := survey.AskOne(prompt, &workDir); err != nil {
 			return err
 		}
 
@@ -157,7 +157,7 @@ func surveyConfigSource() error {
 			Message: "What will be the source for OCP3 config files?",
 			Options: []string{"Remote host", "Local"},
 		}
-		if err := survey.AskOne(prompt, &configSource, nil); err != nil {
+		if err := survey.AskOne(prompt, &configSource); err != nil {
 			return err
 		}
 		switch configSource {
@@ -178,7 +178,7 @@ func surveyManifests() error {
 			Message: "Would you like to generate manifests?",
 			Options: []string{"true", "false"},
 		}
-		if err := survey.AskOne(prompt, &manifests, nil); err != nil {
+		if err := survey.AskOne(prompt, &manifests); err != nil {
 			return err
 		}
 		if manifests == "false" {
@@ -197,7 +197,7 @@ func surveyReporting() error {
 			Message: "Would you like reporting?",
 			Options: []string{"true", "false"},
 		}
-		if err := survey.AskOne(prompt, &reporting, nil); err != nil {
+		if err := survey.AskOne(prompt, &reporting); err != nil {
 			return err
 		}
 		if reporting == "false" {
@@ -222,7 +222,7 @@ func surveyHostname() error {
 			Message: "Do wish to find source cluster using KUBECONFIG or prompt it?",
 			Options: []string{"KUBECONFIG", "prompt"},
 		}
-		if err := survey.AskOne(prompt, &discoverCluster, nil); err != nil {
+		if err := survey.AskOne(prompt, &discoverCluster); err != nil {
 			return err
 		}
 
@@ -236,7 +236,7 @@ func surveyHostname() error {
 			prompt := &survey.Input{
 				Message: "OCP3 Cluster hostname",
 			}
-			if err := survey.AskOne(prompt, &hostname, survey.ComposeValidators(survey.Required)); err != nil {
+			if err := survey.AskOne(prompt, &hostname, survey.WithValidator(survey.Required)); err != nil {
 				return err
 			}
 		}
@@ -249,7 +249,7 @@ func surveyHostname() error {
 		prompt := &survey.Input{
 			Message: "Cluster name",
 		}
-		if err := survey.AskOne(prompt, &clusterName, nil); err != nil {
+		if err := survey.AskOne(prompt, &clusterName); err != nil {
 			return err
 		}
 
@@ -270,7 +270,7 @@ func surveySSHConfigValues() error {
 			Message: "SSH login",
 			Default: "root",
 		}
-		if err := survey.AskOne(prompt, &login, nil); err != nil {
+		if err := survey.AskOne(prompt, &login); err != nil {
 			return err
 		}
 
@@ -283,7 +283,7 @@ func surveySSHConfigValues() error {
 			Message: "SSH Port",
 			Default: "22",
 		}
-		if err := survey.AskOne(prompt, &port, nil); err != nil {
+		if err := survey.AskOne(prompt, &port); err != nil {
 			return err
 		}
 
@@ -297,7 +297,7 @@ func surveySSHConfigValues() error {
 		prompt := &survey.Input{
 			Message: "Path to private SSH key",
 		}
-		if err := survey.AskOne(prompt, &privatekey, survey.ComposeValidators(survey.Required)); err != nil {
+		if err := survey.AskOne(prompt, &privatekey, survey.WithValidator(survey.Required)); err != nil {
 			return err
 		}
 
@@ -314,7 +314,7 @@ func surveyConfigPaths() error {
 			Message: "Path to crio config file",
 			Default: "/etc/crio/crio.conf",
 		}
-		if err := survey.AskOne(prompt, &config, nil); err != nil {
+		if err := survey.AskOne(prompt, &config); err != nil {
 			return err
 		}
 		viperConfig.Set("CrioConfigFile", config)
@@ -326,7 +326,7 @@ func surveyConfigPaths() error {
 			Message: "Path to etcd config file",
 			Default: "/etc/etcd/etcd.conf",
 		}
-		if err := survey.AskOne(prompt, &config, nil); err != nil {
+		if err := survey.AskOne(prompt, &config); err != nil {
 			return err
 		}
 		viperConfig.Set("ETCDConfigFile", config)
@@ -338,7 +338,7 @@ func surveyConfigPaths() error {
 			Message: "Path to master config file",
 			Default: "/etc/origin/master/master-config.yaml",
 		}
-		if err := survey.AskOne(prompt, &config, nil); err != nil {
+		if err := survey.AskOne(prompt, &config); err != nil {
 			return err
 		}
 		viperConfig.Set("MasterConfigFile", config)
@@ -350,7 +350,7 @@ func surveyConfigPaths() error {
 			Message: "Path to node config file",
 			Default: "/etc/origin/node/node-config.yaml",
 		}
-		if err := survey.AskOne(prompt, &config, nil); err != nil {
+		if err := survey.AskOne(prompt, &config); err != nil {
 			return err
 		}
 		viperConfig.Set("NodeConfigFile", config)
@@ -362,7 +362,7 @@ func surveyConfigPaths() error {
 			Message: "Path to registries config file",
 			Default: "/etc/containers/registries.conf",
 		}
-		if err := survey.AskOne(prompt, &config, nil); err != nil {
+		if err := survey.AskOne(prompt, &config); err != nil {
 			return err
 		}
 		viperConfig.Set("RegistriesConfigFile", config)
@@ -383,7 +383,7 @@ func createAPIClients() error {
 			Message: "What will be the source for cluster name used to connect to API?",
 			Options: []string{"Current kubeconfig context", "Select kubeconfig context", "Prompt"},
 		}
-		if err := survey.AskOne(prompt, &contextSource, nil); err != nil {
+		if err := survey.AskOne(prompt, &contextSource); err != nil {
 			return err
 		}
 
@@ -392,7 +392,7 @@ func createAPIClients() error {
 			prompt := &survey.Input{
 				Message: "Cluster name",
 			}
-			if err := survey.AskOne(prompt, &clusterName, nil); err != nil {
+			if err := survey.AskOne(prompt, &clusterName); err != nil {
 				return err
 			}
 			// set current context to cluster name for connecting to cluster using client-go
@@ -430,7 +430,7 @@ func surveySaveConfig() (err error) {
 			Message: "Do you wish to save configuration for future use?",
 			Options: []string{"true", "false"},
 		}
-		if err := survey.AskOne(prompt, &saveConfig, nil); err != nil {
+		if err := survey.AskOne(prompt, &saveConfig); err != nil {
 			return err
 		}
 	}
