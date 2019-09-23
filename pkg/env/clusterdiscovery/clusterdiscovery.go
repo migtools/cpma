@@ -57,7 +57,7 @@ func SurveyClusters() string {
 		Message: "Select cluster obtained from KUBECONFIG contexts",
 		Options: clusters,
 	}
-	survey.AskOne(prompt, &selectedCluster, nil)
+	survey.AskOne(prompt, &selectedCluster)
 
 	return selectedCluster
 }
@@ -81,7 +81,7 @@ func surveyNodes(nodes []string) string {
 		Message: "Select master node",
 		Options: nodes,
 	}
-	survey.AskOne(prompt, &selectedNode, nil)
+	survey.AskOne(prompt, &selectedNode)
 
 	return selectedNode
 }
