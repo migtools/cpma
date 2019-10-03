@@ -121,6 +121,16 @@ func (e OAuthExtraction) buildReportOutput() {
 					Confidence: HighConfidence,
 					Comment:    fmt.Sprintf("Identity provider %s is supported in OCP4", p.Name),
 				})
+			if p.Kind == "OpenIDIdentityProvider" {
+				componentReport.Reports = append(componentReport.Reports,
+					reportoutput.Report{
+						Name:       "Issuer",
+						Kind:       fmt.Sprintf("IdentityProviders:%s", p.Kind),
+						Supported:  true,
+						Confidence: HighConfidence,
+						Comment:    "OCP4 requires an 'issuer' URL, please edit OAuth manifest file and configure this field",
+					})
+			}
 		default:
 			componentReport.Reports = append(componentReport.Reports,
 				reportoutput.Report{
