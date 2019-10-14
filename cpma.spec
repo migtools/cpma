@@ -6,7 +6,7 @@
 %global gopath      %{_datadir}/gocode
 %global import_path github.com/fusor/cpma
 
-Source0: %{name}-%{version}.tar.gz
+Source0: https://github.com/fusor/cpma/archive/release-1.0.tar.gz#/%{name}-%{version}.tar.gz
 Name:           cpma
 Version:        1.0.0
 Release:        1
@@ -23,22 +23,20 @@ ExclusiveArch:  x86_64 aarch64 ppc64le s390x
 
 BuildRequires: golang
 
-Provides:       %{name}
-Obsoletes:      %{name}
+Provides:       %{name} = %{version}-%{release}
 
 %description
 %{summary}
 
 %package redistributable
 Summary:        CPMA Client Binaries for Linux, Mac, and Windows
-Provides:       %{name}-redistributable
-Obsoletes:      %{name}-redistributable
+Provides:       %{name}-redistributable = %{version}-%{release}
 
 %description redistributable
 %{summary}
 
 %prep
-%setup
+%setup -q
 
 %build
 mkdir -p "$(dirname __gopath/src/%{import_path})"
