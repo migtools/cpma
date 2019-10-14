@@ -5,6 +5,8 @@ import (
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -12,7 +14,7 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*Pro
 	var (
 		err                error
 		idP                = &configv1.IdentityProvider{}
-		providerConfigMaps []*configmaps.ConfigMap
+		providerConfigMaps []*corev1.ConfigMap
 		requestHeader      legacyconfigv1.RequestHeaderIdentityProvider
 	)
 
@@ -29,7 +31,7 @@ func buildRequestHeaderIP(serializer *json.Serializer, p IdentityProvider) (*Pro
 
 	if requestHeader.ClientCA != "" {
 		caConfigmap := configmaps.GenConfigMap("requestheader-configmap", OAuthNamespace, p.CAData)
-		idP.RequestHeader.ClientCA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		idP.RequestHeader.ClientCA = configv1.ConfigMapNameReference{Name: caConfigmap.ObjectMeta.Name}
 		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 

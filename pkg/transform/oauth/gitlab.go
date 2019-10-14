@@ -17,7 +17,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 		err                error
 		idP                = &configv1.IdentityProvider{}
 		providerSecrets    []*corev1.Secret
-		providerConfigMaps []*configmaps.ConfigMap
+		providerConfigMaps []*corev1.ConfigMap
 		gitlab             legacyconfigv1.GitLabIdentityProvider
 	)
 
@@ -34,7 +34,7 @@ func buildGitLabIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 
 	if gitlab.CA != "" {
 		caConfigmap := configmaps.GenConfigMap("gitlab-configmap", OAuthNamespace, p.CAData)
-		idP.GitLab.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		idP.GitLab.CA = configv1.ConfigMapNameReference{Name: caConfigmap.ObjectMeta.Name}
 		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 
