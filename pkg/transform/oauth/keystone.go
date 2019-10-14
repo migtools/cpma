@@ -16,7 +16,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 	var (
 		idP                = &configv1.IdentityProvider{}
 		providerSecrets    []*corev1.Secret
-		providerConfigMaps []*configmaps.ConfigMap
+		providerConfigMaps []*corev1.ConfigMap
 		err                error
 		keystone           legacyconfigv1.KeystonePasswordIdentityProvider
 	)
@@ -34,7 +34,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 
 	if keystone.CA != "" {
 		caConfigmap := configmaps.GenConfigMap("keystone-configmap", OAuthNamespace, p.CAData)
-		idP.Keystone.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		idP.Keystone.CA = configv1.ConfigMapNameReference{Name: caConfigmap.ObjectMeta.Name}
 		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 

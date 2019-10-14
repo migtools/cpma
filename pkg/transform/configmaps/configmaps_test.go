@@ -4,6 +4,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestGenConfigMap(t *testing.T) {
@@ -13,22 +16,24 @@ func TestGenConfigMap(t *testing.T) {
 		configMapname string
 		CAData        []byte
 		namespace     string
-		expected      ConfigMap
+		expected      corev1.ConfigMap
 	}{
 		{
 			name:          "generate configmap",
 			configMapname: "testname",
 			CAData:        []byte("testdata"),
 			namespace:     "openshift-config",
-			expected: ConfigMap{
-				APIVersion: APIVersion,
-				Data: Data{
-					CAData: "testdata",
+			expected: corev1.ConfigMap{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "ConfigMap",
 				},
-				Kind: Kind,
-				Metadata: MetaData{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "testname",
 					Namespace: "openshift-config",
+				},
+				Data: map[string]string{
+					"ca.crt": "testdata",
 				},
 			},
 		},

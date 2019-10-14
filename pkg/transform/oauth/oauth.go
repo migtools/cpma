@@ -3,7 +3,6 @@ package oauth
 import (
 	"errors"
 
-	"github.com/fusor/cpma/pkg/transform/configmaps"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
@@ -55,14 +54,14 @@ type IdentityProvider struct {
 type ResultResources struct {
 	OAuthCRD   *configv1.OAuth
 	Secrets    []*corev1.Secret
-	ConfigMaps []*configmaps.ConfigMap
+	ConfigMaps []*corev1.ConfigMap
 }
 
 // ProviderResources stores all resources related to one provider
 type ProviderResources struct {
 	IDP        *configv1.IdentityProvider
 	Secrets    []*corev1.Secret
-	ConfigMaps []*configmaps.ConfigMap
+	ConfigMaps []*corev1.ConfigMap
 }
 
 // TokenConfig store internal OAuth tokens duration
@@ -82,7 +81,7 @@ const (
 func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, templates legacyconfigv1.OAuthTemplates) (*ResultResources, error) {
 	var err error
 	var secretsSlice []*corev1.Secret
-	var сonfigMapSlice []*configmaps.ConfigMap
+	var сonfigMapSlice []*corev1.ConfigMap
 	var providerResources *ProviderResources
 
 	// Translate configuration of diffent oAuth providers to CRD, secrets and config maps

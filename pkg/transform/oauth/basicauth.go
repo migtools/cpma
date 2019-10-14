@@ -18,7 +18,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Provide
 		idP                = &configv1.IdentityProvider{}
 		basicAuth          legacyconfigv1.BasicAuthPasswordIdentityProvider
 		providerSecrets    []*corev1.Secret
-		providerConfigMaps []*configmaps.ConfigMap
+		providerConfigMaps []*corev1.ConfigMap
 	)
 
 	if _, _, err = serializer.Decode(p.Provider.Raw, nil, &basicAuth); err != nil {
@@ -33,7 +33,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Provide
 
 	if basicAuth.CA != "" {
 		caConfigmap := configmaps.GenConfigMap("basicauth-configmap", OAuthNamespace, p.CAData)
-		idP.BasicAuth.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		idP.BasicAuth.CA = configv1.ConfigMapNameReference{Name: caConfigmap.ObjectMeta.Name}
 		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 

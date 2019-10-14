@@ -1,7 +1,6 @@
 package transform
 
 import (
-	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/ghodss/yaml"
 	configv1 "github.com/openshift/api/config/v1"
 	"github.com/sirupsen/logrus"
@@ -40,7 +39,7 @@ type Cluster struct {
 type Master struct {
 	OAuth      configv1.OAuth
 	Secrets    []*corev1.Secret
-	ConfigMaps []*configmaps.ConfigMap
+	ConfigMaps []*corev1.ConfigMap
 }
 
 // Manifest to be exported for use with OCP 4
