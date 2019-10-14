@@ -1,42 +1,25 @@
 package configmaps
 
-// ConfigMap represent configmap definition
-type ConfigMap struct {
-	APIVersion string   `json:"apiVersion"`
-	Kind       string   `json:"kind"`
-	Metadata   MetaData `json:"metadata"`
-	Data       Data     `json:"data"`
-}
-
-// MetaData configmap's metadata
-type MetaData struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace"`
-}
-
-// Data contains CA
-type Data struct {
-	CAData string `json:"ca"`
-}
-
-const (
-	// APIVersion is the apiVersion string
-	APIVersion = "v1"
-	// Kind is config map resource type
-	Kind = "ConfigMap"
+import (
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// GenConfigMap generates a secret
-func GenConfigMap(name string, namespace string, CAData []byte) *ConfigMap {
-	return &ConfigMap{
-		APIVersion: APIVersion,
-		Data: Data{
-			CAData: string(CAData),
+// GenConfigMap generates a ConfigMap for certificate authority
+func GenConfigMap(name string, namespace string, CAData []byte) *corev1.ConfigMap {
+	configMap := &corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "ConfigMap",
 		},
-		Kind: Kind,
-		Metadata: MetaData{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
+		Data: map[string]string{
+			"ca.crt": string(CAData),
+		},
 	}
+
+	return configMap
 }
