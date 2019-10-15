@@ -37,7 +37,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 		return nil, errors.Wrap(err, "Failed to fetch client secret for google, see error")
 	}
 
-	secret, err := secrets.GenSecret(secretName, []byte(secretContent), OAuthNamespace, secrets.LiteralSecretType)
+	secret, err := secrets.Opaque(secretName, []byte(secretContent), OAuthNamespace, "clientSecret")
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to generate client secret for google, see error")
 	}
