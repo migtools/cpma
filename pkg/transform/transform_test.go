@@ -7,7 +7,6 @@ import (
 
 	"github.com/fusor/cpma/pkg/decode"
 	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/transform/configmaps"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
@@ -105,15 +104,17 @@ func TestAllOtherCRGenYaml(t *testing.T) {
 	}{
 		{
 			name: "generate yaml from configmap",
-			inputCR: configmaps.ConfigMap{
-				APIVersion: configmaps.APIVersion,
-				Data: configmaps.Data{
-					CAData: "testval: 123",
+			inputCR: corev1.ConfigMap{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "ConfigMap",
 				},
-				Kind: configmaps.Kind,
-				Metadata: configmaps.MetaData{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "testname",
 					Namespace: "openshift-config",
+				},
+				Data: map[string]string{
+					"ca.crt": "testval: 123",
 				},
 			},
 			expectedYaml: expectedConfigMapYaml,
