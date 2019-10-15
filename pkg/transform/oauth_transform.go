@@ -9,7 +9,7 @@ import (
 	"github.com/fusor/cpma/pkg/io"
 	"github.com/fusor/cpma/pkg/transform/oauth"
 	"github.com/fusor/cpma/pkg/transform/reportoutput"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -21,7 +21,7 @@ const OAuthComponentName = "OAuth"
 type OAuthExtraction struct {
 	IdentityProviders []oauth.IdentityProvider
 	TokenConfig       oauth.TokenConfig
-	Templates         configv1.OAuthTemplates
+	Templates         legacyconfigv1.OAuthTemplates
 }
 
 // OAuthTransform is an OAuth specific transform

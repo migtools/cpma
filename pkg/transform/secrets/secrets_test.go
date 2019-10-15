@@ -17,7 +17,7 @@ func TestGenSecret(t *testing.T) {
 		name            string
 		inputSecretName string
 		inputSecretFile string
-		inputSecretType SecretType
+		inputSecretType string
 		expected        corev1.Secret
 		expectederr     bool
 	}{
@@ -25,7 +25,7 @@ func TestGenSecret(t *testing.T) {
 			name:            "generate htpasswd secret",
 			inputSecretName: "htpasswd-test",
 			inputSecretFile: "testfile1",
-			inputSecretType: HtpasswdSecretType,
+			inputSecretType: "htpasswd",
 			expected: corev1.Secret{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: "v1",
@@ -46,7 +46,7 @@ func TestGenSecret(t *testing.T) {
 			name:            "generate keystone secret",
 			inputSecretName: "keystone-test",
 			inputSecretFile: "testfile2",
-			inputSecretType: KeystoneSecretType,
+			inputSecretType: "keystone",
 			expected: corev1.Secret{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: "v1",
@@ -67,14 +67,14 @@ func TestGenSecret(t *testing.T) {
 			name:            "generate basic auth secret",
 			inputSecretName: "basicauth-test",
 			inputSecretFile: "testfile3",
-			inputSecretType: BasicAuthSecretType,
+			inputSecretType: "testname",
 			expected: corev1.Secret{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: "v1",
 					Kind:       "Secret",
 				},
 				Data: map[string][]byte{
-					"basicAuth": []byte("testfile3"),
+					"testname": []byte("testfile3"),
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "basicauth-test",
@@ -88,7 +88,7 @@ func TestGenSecret(t *testing.T) {
 			name:            "generate litetal secret",
 			inputSecretName: "literal-secret",
 			inputSecretFile: "some-value",
-			inputSecretType: LiteralSecretType,
+			inputSecretType: "clientSecret",
 			expected: corev1.Secret{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: "v1",
@@ -105,18 +105,11 @@ func TestGenSecret(t *testing.T) {
 			},
 			expectederr: false,
 		},
-		{
-			name:            "fail generating invalid secret",
-			inputSecretName: "notvalid-secret",
-			inputSecretFile: "some-value",
-			inputSecretType: 42, // Unknown secret type value
-			expectederr:     true,
-		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			resSecret, err := GenSecret(tc.inputSecretName, []byte(tc.inputSecretFile), "openshift-config", tc.inputSecretType)
+			resSecret, err := Opaque(tc.inputSecretName, []byte(tc.inputSecretFile), "openshift-config", tc.inputSecretType)
 			if tc.expectederr {
 				err := errors.New("Not valid secret type " + "notvalidtype")
 				require.Error(t, err)

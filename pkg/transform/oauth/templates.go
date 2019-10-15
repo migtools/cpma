@@ -20,7 +20,7 @@ func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAut
 	translatedTemplates := &configv1.OAuthTemplates{}
 
 	if templates.Login != "" {
-		secret, err := secrets.GenSecret(loginSecret, []byte(templates.Login), OAuthNamespace, secrets.LiteralSecretType)
+		secret, err := secrets.Opaque(loginSecret, []byte(templates.Login), OAuthNamespace, "clientSecret")
 		if err != nil {
 			return nil, nil, err
 		}
@@ -29,7 +29,7 @@ func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAut
 	}
 
 	if templates.Error != "" {
-		secret, err := secrets.GenSecret(errorSecret, []byte(templates.Error), OAuthNamespace, secrets.LiteralSecretType)
+		secret, err := secrets.Opaque(errorSecret, []byte(templates.Error), OAuthNamespace, "clientSecret")
 		if err != nil {
 			return nil, nil, err
 		}
@@ -38,7 +38,7 @@ func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAut
 	}
 
 	if templates.ProviderSelection != "" {
-		secret, err := secrets.GenSecret(providerSelectionSecret, []byte(templates.ProviderSelection), OAuthNamespace, secrets.LiteralSecretType)
+		secret, err := secrets.Opaque(providerSelectionSecret, []byte(templates.ProviderSelection), OAuthNamespace, "clientSecret")
 		if err != nil {
 			return nil, nil, err
 		}
