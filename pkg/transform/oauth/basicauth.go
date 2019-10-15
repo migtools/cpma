@@ -1,6 +1,8 @@
 package oauth
 
 import (
+	"path/filepath"
+
 	configv1 "github.com/openshift/api/config/v1"
 
 	"github.com/fusor/cpma/pkg/transform/configmaps"
@@ -30,7 +32,6 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Provide
 	idP.MappingMethod = configv1.MappingMethodType(p.MappingMethod)
 	idP.BasicAuth = &configv1.BasicAuthIdentityProvider{}
 	idP.BasicAuth.URL = basicAuth.URL
-
 	if basicAuth.CA != "" {
 		caConfigmap := configmaps.GenConfigMap("basicauth-configmap", OAuthNamespace, p.CAData)
 		idP.BasicAuth.CA = configv1.ConfigMapNameReference{Name: caConfigmap.ObjectMeta.Name}
@@ -41,7 +42,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Provide
 		certSecretName := "basicauth-client-cert-secret"
 		idP.BasicAuth.TLSClientCert.Name = certSecretName
 
-		certSecret, err := secrets.GenSecret(certSecretName, p.CrtData, OAuthNamespace, secrets.BasicAuthSecretType)
+		certSecret, err := secrets.Opaque(certSecretName, p.CrtData, OAuthNamespace, filepath.Base(basicAuth.CertFile))
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to generate cert secret for basic auth, see error")
 		}
@@ -50,7 +51,7 @@ func buildBasicAuthIP(serializer *json.Serializer, p IdentityProvider) (*Provide
 		keySecretName := "basicauth-client-key-secret"
 		idP.BasicAuth.TLSClientKey.Name = keySecretName
 
-		keySecret, err := secrets.GenSecret(keySecretName, p.KeyData, OAuthNamespace, secrets.BasicAuthSecretType)
+		keySecret, err := secrets.Opaque(keySecretName, p.KeyData, OAuthNamespace, filepath.Base(basicAuth.KeyFile))
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to generate key secret for basic auth, see error")
 		}

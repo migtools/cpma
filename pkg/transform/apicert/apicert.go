@@ -97,7 +97,7 @@ func Translate(servingInfo legacyconfigv1.ServingInfo) (*corev1.Secret, error) {
 		return nil, nil
 	}
 
-	tlsSecret, err := secrets.GenTLSSecret(secretName, namespace, crtContent, keyContent)
+	tlsSecret, err := secrets.TLS(secretName, namespace, crtContent, keyContent)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to generate TLS secret, see error")
 	}

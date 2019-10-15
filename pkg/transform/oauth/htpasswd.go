@@ -30,7 +30,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 	idP.HTPasswd = &configv1.HTPasswdIdentityProvider{}
 	idP.HTPasswd.FileData.Name = secretName
 
-	secret, err := secrets.GenSecret(secretName, p.HTFileData, OAuthNamespace, secrets.HtpasswdSecretType)
+	secret, err := secrets.Opaque(secretName, p.HTFileData, OAuthNamespace, "htpasswd")
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to generate secret for htpasswd, see error")
 	}

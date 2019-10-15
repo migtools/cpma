@@ -45,7 +45,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 	if keystone.CertFile != "" {
 		certSecretName := "keystone-client-cert-secret"
 		idP.Keystone.TLSClientCert.Name = certSecretName
-		certSecret, err := secrets.GenSecret(certSecretName, p.CrtData, OAuthNamespace, secrets.KeystoneSecretType)
+		certSecret, err := secrets.Opaque(certSecretName, p.CrtData, OAuthNamespace, "keystone")
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to generate cert secret for keystone, see error")
 		}
@@ -53,7 +53,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 
 		keySecretName := "keystone-client-key-secret"
 		idP.Keystone.TLSClientKey.Name = keySecretName
-		keySecret, err := secrets.GenSecret(keySecretName, p.KeyData, OAuthNamespace, secrets.KeystoneSecretType)
+		keySecret, err := secrets.Opaque(keySecretName, p.KeyData, OAuthNamespace, "keystone")
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to generate key secret for keystone, see error")
 		}
