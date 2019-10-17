@@ -3,6 +3,10 @@
 # modifying the Go binaries breaks the DWARF debugging
 %global __os_install_post %{_rpmconfigdir}/brp-compress
 
+%if ! 0%{?gobuild:1}
+%define gobuild(o:) go build -buildmode pie -tags=rpm_crashtraceback -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '-Wl,-z,relro,-z,now'" -a -v -x %{?**};
+%endif
+
 %global gopath      %{_datadir}/gocode
 %global import_path github.com/fusor/cpma
 
@@ -61,7 +65,7 @@ GOOS=linux
 GOARCH=s390x
 %endif
 pushd pkg/transform/reportoutput/ && go generate && popd
-go build -o %{name}
+%gobuild -o %{name}
 
 %ifarch x86_64
 CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 GO_BUILD_FLAGS="-tags 'include_gcs include_oss containers_image_openpgp'" go build -o _output/darwin_amd64/%{name}
