@@ -41,7 +41,7 @@ List of supported configuration to manifest translations:
   * API Certificate
   * When an API TLS Certificate defined in Master configuration file under ServingInfo section is not signed by openshif itself (therefore changed by user for a proper CA signed certificate) then it's ported to a TLS secret and saved under the '100_CPMA-cluster-config-APISecret.yaml' file. To apply the secret and update the API server, follow this [procedure](https://docs.openshift.com/container-platform/4.1/authentication/certificates/api-server.html#add-named-api-server_api-server-certificates).
   * CRI-O
-    * If defined in OCP3's cluster, the CRI-O configuration defined in 'crio.conf' is ported to a machineconfiguration.openshift.io resource and saved under '100_CPMA-crio-config.yaml'.
+    * If defined in OCP3's cluster, the CRI-O configuration defined in 'crio.conf' is ported to a machineconfiguration.openshift.io resource and saved under '100_CPMA-crio-config.yaml'. The Machine Configuration Operator supports only the runtime table for pids_limit, log_level and log_size_max. Other fields including globals and other tables fields are ignored.
   * Cluster Resources Quotas
     * Every quota defined at the cluster level is exported into equivalent OCP4 CR file. The file name is in the form: '100_CPMA-cluster-quota-resource-<ClusterQuota name>.yaml'
   * Resources Quotas
