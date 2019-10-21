@@ -17,12 +17,14 @@ import (
 var loadCrioExtraction = func() transform.CrioExtraction {
 	file := "testdata/crio.conf"
 	content, _ := ioutil.ReadFile(file)
-	var extraction transform.CrioExtraction
-	_, err := toml.Decode(string(content), &extraction)
+	var config transform.Crios
+	_, err := toml.Decode(string(content), &config)
 	if err != nil {
 		fmt.Printf("Error decoding file: %s\n", file)
 	}
 
+	var extraction transform.CrioExtraction
+	extraction.Runtime = config["crio"].Runtime
 	return extraction
 }()
 
@@ -37,7 +39,6 @@ func TestCrioExtractionTransform(t *testing.T) {
 	expectedCrd.Spec.ContainerRuntimeConfig.PidsLimit = 2048
 	expectedCrd.Spec.ContainerRuntimeConfig.LogLevel = "debug"
 	expectedCrd.Spec.ContainerRuntimeConfig.LogSizeMax = 100000
-	expectedCrd.Spec.ContainerRuntimeConfig.InfraImage = "image/infraImage:1"
 
 	crioCRYAML, err := yaml.Marshal(&expectedCrd)
 	require.NoError(t, err)
@@ -66,13 +67,6 @@ func TestCrioExtractionTransform(t *testing.T) {
 	expectedReport.Reports = append(expectedReport.Reports,
 		reportoutput.Report{
 			Name:       "logSizeMax",
-			Kind:       "Configuration",
-			Supported:  true,
-			Confidence: 2,
-		})
-	expectedReport.Reports = append(expectedReport.Reports,
-		reportoutput.Report{
-			Name:       "infrImage",
 			Kind:       "Configuration",
 			Supported:  true,
 			Confidence: 2,
