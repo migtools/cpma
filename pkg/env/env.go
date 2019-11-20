@@ -114,19 +114,15 @@ func surveyMissingValues() error {
 		return err
 	}
 
-	switch viperConfig.GetString("ConfigSource") {
-	case "remote":
+	if err := surveyHostname(); err != nil {
+		return err
+	}
+
+	if viperConfig.GetString("ConfigSource") == "remote" {
 		if err := surveySSHConfigValues(); err != nil {
 			return err
 		}
 		viperConfig.Set("FetchFromRemote", true)
-	case "local":
-		if err := surveyHostname(); err != nil {
-			return err
-		}
-		viperConfig.Set("FetchFromRemote", false)
-	default:
-		return errors.New("Accepted values for config-source are: remote or local")
 	}
 
 	if err := createAPIClients(); err != nil {
@@ -260,10 +256,6 @@ func surveyHostname() error {
 }
 
 func surveySSHConfigValues() error {
-	if err := surveyHostname(); err != nil {
-		return err
-	}
-
 	login := viperConfig.GetString("SSHLogin")
 	if !viperConfig.InConfig("sshlogin") && login == "" {
 		prompt := &survey.Input{
