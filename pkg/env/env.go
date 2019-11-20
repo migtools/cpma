@@ -364,42 +364,6 @@ func createAPIClients() error {
 		return nil
 	}
 
-	// Ask for cluster name if not provided, can be either prompter or read from current context
-	if viperConfig.GetString("ClusterName") == "" {
-		contextSource := ""
-		prompt := &survey.Select{
-			Message: "What will be the source for cluster name used to connect to API?",
-			Options: []string{"Current kubeconfig context", "Select kubeconfig context", "Prompt"},
-		}
-		if err := survey.AskOne(prompt, &contextSource); err != nil {
-			return err
-		}
-
-		clusterName := ""
-		if contextSource == "Prompt" {
-			prompt := &survey.Input{
-				Message: "Cluster name",
-			}
-			if err := survey.AskOne(prompt, &clusterName); err != nil {
-				return err
-			}
-			// set current context to cluster name for connecting to cluster using client-go
-			api.KubeConfig.CurrentContext = api.ClusterNames[clusterName]
-		} else if contextSource == "Current kubeconfig context" {
-			// get cluster name from current context for future use
-			for key, value := range api.ClusterNames {
-				if value == api.KubeConfig.CurrentContext {
-					clusterName = key
-				}
-			}
-		} else {
-			clusterName = clusterdiscovery.SurveyClusters()
-			api.KubeConfig.CurrentContext = api.ClusterNames[clusterName]
-		}
-
-		viperConfig.Set("ClusterName", clusterName)
-	}
-
 	if err := api.CreateK8sClient(viperConfig.GetString("ClusterName")); err != nil {
 		return errors.Wrap(err, "k8s api client failed to create")
 	}
