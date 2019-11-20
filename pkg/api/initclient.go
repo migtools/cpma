@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"sync"
 
 	"github.com/mitchellh/go-homedir"
@@ -120,6 +121,12 @@ func buildConfig(contextCluster string) (*rest.Config, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Error in KUBECONFIG")
 	}
+
+	config.AcceptContentTypes = "application/vnd.kubernetes.protobuf,application/json"
+	config.UserAgent = fmt.Sprintf(
+		"cpma/v1.0 (%s/%s) kubernetes/v1.0",
+		runtime.GOOS, runtime.GOARCH,
+	)
 
 	return config, nil
 }
