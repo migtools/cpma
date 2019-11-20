@@ -226,7 +226,6 @@ func surveyHostname() error {
 			if hostname, clusterName, err = clusterdiscovery.DiscoverCluster(); err != nil {
 				return err
 			}
-			// set cluster name in viper for dumping this value in reusable yaml config
 			viperConfig.Set("ClusterName", clusterName)
 		} else {
 			prompt := &survey.Input{
@@ -235,21 +234,18 @@ func surveyHostname() error {
 			if err := survey.AskOne(prompt, &hostname, survey.WithValidator(survey.Required)); err != nil {
 				return err
 			}
+
+			prompt = &survey.Input{
+				Message: "Cluster name",
+			}
+			if err := survey.AskOne(prompt, &clusterName); err != nil {
+				return err
+			}
+
+			viperConfig.Set("ClusterName", clusterName)
 		}
 
 		viperConfig.Set("Hostname", hostname)
-	}
-
-	clusterName := viperConfig.GetString("ClusterName")
-	if !viperConfig.InConfig("clustername") && clusterName == "" {
-		prompt := &survey.Input{
-			Message: "Cluster name",
-		}
-		if err := survey.AskOne(prompt, &clusterName); err != nil {
-			return err
-		}
-
-		viperConfig.Set("ClusterName", clusterName)
 	}
 
 	return nil
