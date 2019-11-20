@@ -114,19 +114,15 @@ func surveyMissingValues() error {
 		return err
 	}
 
-	switch viperConfig.GetString("ConfigSource") {
-	case "remote":
+	if err := surveyHostname(); err != nil {
+		return err
+	}
+
+	if viperConfig.GetString("ConfigSource") == "remote" {
 		if err := surveySSHConfigValues(); err != nil {
 			return err
 		}
 		viperConfig.Set("FetchFromRemote", true)
-	case "local":
-		if err := surveyHostname(); err != nil {
-			return err
-		}
-		viperConfig.Set("FetchFromRemote", false)
-	default:
-		return errors.New("Accepted values for config-source are: remote or local")
 	}
 
 	if err := createAPIClients(); err != nil {
@@ -230,7 +226,6 @@ func surveyHostname() error {
 			if hostname, clusterName, err = clusterdiscovery.DiscoverCluster(); err != nil {
 				return err
 			}
-			// set cluster name in viper for dumping this value in reusable yaml config
 			viperConfig.Set("ClusterName", clusterName)
 		} else {
 			prompt := &survey.Input{
@@ -239,31 +234,24 @@ func surveyHostname() error {
 			if err := survey.AskOne(prompt, &hostname, survey.ComposeValidators(survey.Required)); err != nil {
 				return err
 			}
+
+			prompt = &survey.Input{
+				Message: "Cluster name",
+			}
+			if err := survey.AskOne(prompt, &clusterName, nil); err != nil {
+				return err
+			}
+
+			viperConfig.Set("ClusterName", clusterName)
 		}
 
 		viperConfig.Set("Hostname", hostname)
-	}
-
-	clusterName := viperConfig.GetString("ClusterName")
-	if !viperConfig.InConfig("clustername") && clusterName == "" {
-		prompt := &survey.Input{
-			Message: "Cluster name",
-		}
-		if err := survey.AskOne(prompt, &clusterName, nil); err != nil {
-			return err
-		}
-
-		viperConfig.Set("ClusterName", clusterName)
 	}
 
 	return nil
 }
 
 func surveySSHConfigValues() error {
-	if err := surveyHostname(); err != nil {
-		return err
-	}
-
 	login := viperConfig.GetString("SSHLogin")
 	if !viperConfig.InConfig("sshlogin") && login == "" {
 		prompt := &survey.Input{
@@ -374,42 +362,6 @@ func surveyConfigPaths() error {
 func createAPIClients() error {
 	if api.O7tClient != nil && api.K8sClient != nil {
 		return nil
-	}
-
-	// Ask for cluster name if not provided, can be either prompter or read from current context
-	if viperConfig.GetString("ClusterName") == "" {
-		contextSource := ""
-		prompt := &survey.Select{
-			Message: "What will be the source for cluster name used to connect to API?",
-			Options: []string{"Current kubeconfig context", "Select kubeconfig context", "Prompt"},
-		}
-		if err := survey.AskOne(prompt, &contextSource, nil); err != nil {
-			return err
-		}
-
-		clusterName := ""
-		if contextSource == "Prompt" {
-			prompt := &survey.Input{
-				Message: "Cluster name",
-			}
-			if err := survey.AskOne(prompt, &clusterName, nil); err != nil {
-				return err
-			}
-			// set current context to cluster name for connecting to cluster using client-go
-			api.KubeConfig.CurrentContext = api.ClusterNames[clusterName]
-		} else if contextSource == "Current kubeconfig context" {
-			// get cluster name from current context for future use
-			for key, value := range api.ClusterNames {
-				if value == api.KubeConfig.CurrentContext {
-					clusterName = key
-				}
-			}
-		} else {
-			clusterName = clusterdiscovery.SurveyClusters()
-			api.KubeConfig.CurrentContext = api.ClusterNames[clusterName]
-		}
-
-		viperConfig.Set("ClusterName", clusterName)
 	}
 
 	if err := api.CreateK8sClient(viperConfig.GetString("ClusterName")); err != nil {
