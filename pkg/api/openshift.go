@@ -19,17 +19,14 @@ type OpenshiftClient struct {
 	userClient     user1.UserV1Interface
 }
 
-// InitO7tOrDie - Create a new openshift client if needed, returns reference
-func InitO7tOrDie(config *rest.Config) *OpenshiftClient {
-	once.Openshift.Do(func() {
-		client, err := newOpenshift(config)
-		instances.Openshift = client
-		if err != nil {
-			panic("OpenShift client failed to init")
-		}
-	})
+// NewO7tOrDie - Create a new openshift client if needed, returns reference
+func NewO7tOrDie(config *rest.Config) *OpenshiftClient {
+	client, err := newOpenshift(config)
+	if err != nil {
+		panic("OpenShift client failed to init")
+	}
 
-	return instances.Openshift
+	return client
 }
 
 func newOpenshift(config *rest.Config) (*OpenshiftClient, error) {
