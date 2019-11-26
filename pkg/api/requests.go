@@ -17,6 +17,7 @@ import (
 
 // Resources represent api resources used in report
 type Resources struct {
+	GroupVersions        []string
 	QuotaList            *o7tapiquota.ClusterResourceQuotaList
 	NodeList             *k8sapicore.NodeList
 	PersistentVolumeList *k8sapicore.PersistentVolumeList
@@ -47,6 +48,15 @@ type NamespaceResources struct {
 }
 
 var listOptions metav1.ListOptions
+
+// ListGroupVersions list all GV
+func ListGroupVersions(ch chan<- *metav1.APIGroupList) {
+	groupVersions, err := Discovery.ServerGroups()
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	ch <- groupVersions
+}
 
 // ListNamespaces list all namespaces, wrapper around client-go
 func ListNamespaces(ch chan<- *k8sapicore.NamespaceList) {
