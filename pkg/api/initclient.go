@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"runtime"
-	"sync"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
@@ -29,17 +28,6 @@ var (
 
 	kubeConfigGetter = func() (*clientcmdapi.Config, error) {
 		return KubeConfig, nil
-	}
-
-	// singleton instances
-	instances struct {
-		Openshift *OpenshiftClient
-		K8S       *kubernetes.Clientset
-	}
-
-	once struct {
-		Openshift sync.Once
-		K8S       sync.Once
 	}
 )
 
@@ -92,9 +80,10 @@ func CreateK8sClient(contextCluster string) error {
 		return err
 	}
 
-	K8sClient = InitK8SOrDie(config)
-	logrus.Debugf("Kubernetes API client initialized for %s", contextCluster)
-
+	if K8sClient == nil {
+		K8sClient = NewK8SOrDie(config)
+		logrus.Debugf("Kubernetes API client initialized for %s", contextCluster)
+	}
 	return nil
 }
 
@@ -105,8 +94,10 @@ func CreateO7tClient(contextCluster string) error {
 		return err
 	}
 
-	O7tClient = InitO7tOrDie(config)
-	logrus.Debugf("Openshift API client initialized for %s", contextCluster)
+	if O7tClient == nil {
+		O7tClient = NewO7tOrDie(config)
+		logrus.Debugf("Openshift API client initialized for %s", contextCluster)
+	}
 
 	return nil
 }

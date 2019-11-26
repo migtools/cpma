@@ -19,50 +19,13 @@ type OpenshiftClient struct {
 	userClient     user1.UserV1Interface
 }
 
-// InitO7tOrDie - Create a new openshift client if needed, returns reference
-func InitO7tOrDie(config *rest.Config) *OpenshiftClient {
-	once.Openshift.Do(func() {
-		client, err := newOpenshift(config)
-		instances.Openshift = client
-		if err != nil {
-			panic("OpenShift client failed to init")
-		}
-	})
-
-	return instances.Openshift
-}
-
-func newOpenshift(config *rest.Config) (*OpenshiftClient, error) {
-	authClient, err := authv1.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	quotaClient, err := quotav1.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	routeClient, err := routev1.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	securityClient, err := security1.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	userClient, err := user1.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
+// NewO7tOrDie - Create a new openshift client if needed, returns reference
+func NewO7tOrDie(config *rest.Config) *OpenshiftClient {
 	return &OpenshiftClient{
-		authClient:     authClient,
-		quotaClient:    quotaClient,
-		routeClient:    routeClient,
-		securityClient: securityClient,
-		userClient:     userClient,
-	}, nil
+		authClient:     authv1.NewForConfigOrDie(config),
+		quotaClient:    quotav1.NewForConfigOrDie(config),
+		routeClient:    routev1.NewForConfigOrDie(config),
+		securityClient: security1.NewForConfigOrDie(config),
+		userClient:     user1.NewForConfigOrDie(config),
+	}
 }
