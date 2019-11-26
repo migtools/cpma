@@ -19,6 +19,7 @@ import (
 	k8sapicore "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
 	k8sapistorage "k8s.io/api/storage/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ClusterTransformName is the cluster report name
@@ -101,6 +102,7 @@ func (e ClusterExtraction) Validate() (err error) { return }
 
 // Extract collects data for cluster report
 func (e ClusterTransform) Extract() (Extraction, error) {
+	chanGVs := make(chan *metav1.APIGroupList)
 	chanNodes := make(chan *k8sapicore.NodeList)
 	chanClusterQuotas := make(chan *o7tapiquota.ClusterResourceQuotaList)
 	chanNamespaces := make(chan *k8sapicore.NamespaceList)
@@ -112,6 +114,7 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	chanStorageClassList := make(chan *k8sapistorage.StorageClassList)
 	chanSecurityContextConstraints := make(chan *o7tapisecurity.SecurityContextConstraintsList)
 
+	go api.ListGroupVersions(chanGVs)
 	go api.ListNamespaces(chanNamespaces)
 	go api.ListNodes(chanNodes)
 	go api.ListQuotas(chanClusterQuotas)
@@ -159,6 +162,7 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		extraction.NamespaceList[i] = namespaceResources
 	}
 
+	extraction.GroupVersions = filterGVs(<-chanGVs)
 	extraction.NodeList = <-chanNodes
 	extraction.QuotaList = <-chanClusterQuotas
 	extraction.PersistentVolumeList = <-chanPVs
@@ -170,6 +174,16 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	extraction.StorageClassList = <-chanStorageClassList
 
 	return *extraction, nil
+}
+
+func filterGVs(gvs *metav1.APIGroupList) []string {
+	list := []string{}
+	for _, group := range gvs.Groups {
+		for _, version := range group.Versions {
+			list = append(list, version.GroupVersion)
+		}
+	}
+	return list
 }
 
 // Name returns a human readable name for the transform
