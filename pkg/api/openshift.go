@@ -21,45 +21,11 @@ type OpenshiftClient struct {
 
 // NewO7tOrDie - Create a new openshift client if needed, returns reference
 func NewO7tOrDie(config *rest.Config) *OpenshiftClient {
-	client, err := newOpenshift(config)
-	if err != nil {
-		panic("OpenShift client failed to init")
-	}
-
-	return client
-}
-
-func newOpenshift(config *rest.Config) (*OpenshiftClient, error) {
-	authClient, err := authv1.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	quotaClient, err := quotav1.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	routeClient, err := routev1.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	securityClient, err := security1.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	userClient, err := user1.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
 	return &OpenshiftClient{
-		authClient:     authClient,
-		quotaClient:    quotaClient,
-		routeClient:    routeClient,
-		securityClient: securityClient,
-		userClient:     userClient,
-	}, nil
+		authClient:     authv1.NewForConfigOrDie(config),
+		quotaClient:    quotav1.NewForConfigOrDie(config),
+		routeClient:    routev1.NewForConfigOrDie(config),
+		securityClient: security1.NewForConfigOrDie(config),
+		userClient:     user1.NewForConfigOrDie(config),
+	}
 }
