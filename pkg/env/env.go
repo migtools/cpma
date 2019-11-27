@@ -125,6 +125,10 @@ func surveyMissingValues() error {
 		viperConfig.Set("FetchFromRemote", true)
 	}
 
+	if err := surveyTargetCluster(); err != nil {
+		return err
+	}
+
 	if viperConfig.GetString("WorkDir") == "" {
 		workDir := "."
 		prompt := &survey.Input{
@@ -138,14 +142,23 @@ func surveyMissingValues() error {
 		viperConfig.Set("WorkDir", workDir)
 	}
 
-	if err := api.CreateK8sClient(viperConfig.GetString("ClusterName")); err != nil {
+	srcClusterName := viperConfig.GetString("ClusterName")
+	// set current context to selected cluster for cclient-go
+	api.KubeConfig.CurrentContext = api.ClusterNames[srcClusterName]
+	if err := api.CreateK8sClient(srcClusterName); err != nil {
 		return errors.Wrap(err, "k8s api client failed to create")
 	}
-
-	if err := api.CreateO7tClient(viperConfig.GetString("ClusterName")); err != nil {
+	if err := api.CreateO7tClient(srcClusterName); err != nil {
 		return errors.Wrap(err, "OpenShift api client failed to create")
 	}
 
+	dstClusterName := viperConfig.GetString("TargetClusterName")
+	if viperConfig.GetString("TargetCluster") == "true" && dstClusterName != "" {
+		api.KubeConfig.CurrentContext = api.ClusterNames[dstClusterName]
+		if err := api.CreateK8sDstClient(dstClusterName); err != nil {
+			return errors.Wrap(err, "k8s api client failed to create for destination cluster")
+		}
+	}
 	return nil
 }
 
@@ -252,6 +265,33 @@ func surveyHostname() error {
 		viperConfig.Set("Hostname", hostname)
 	}
 
+	return nil
+}
+
+func surveyTargetCluster() error {
+	targetCluster := viperConfig.GetString("TargetCluster")
+
+	if !viperConfig.InConfig("Target") && targetCluster == "" {
+		prompt := &survey.Select{
+			Message: "Do you wish to use target cluster?",
+			Options: []string{"true", "false"},
+		}
+		if err := survey.AskOne(prompt, &targetCluster); err != nil {
+			return err
+		}
+
+		if targetCluster == "true" {
+			clusterName := ""
+			var err error
+
+			if clusterName, err = clusterdiscovery.DiscoverDstCluster(); err == nil {
+				viperConfig.Set("TargetCluster", targetCluster)
+				viperConfig.Set("TargetClusterName", clusterName)
+			} else {
+				return err
+			}
+		}
+	}
 	return nil
 }
 

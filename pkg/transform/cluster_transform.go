@@ -173,6 +173,21 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	extraction.RBACResources.SecurityContextConstraintsList = <-chanSecurityContextConstraints
 	extraction.StorageClassList = <-chanStorageClassList
 
+	// move up
+	dstChanGVs := make(chan *metav1.APIGroupList)
+	go api.ListGroupVersions(api.K8sDstClient, dstChanGVs)
+	dstGroupVersions := filterGVs(<-dstChanGVs)
+
+	fmt.Println("src")
+	for _, g := range extraction.GroupVersions {
+		fmt.Println(g)
+	}
+
+	fmt.Println("dst")
+	for _, g := range dstGroupVersions {
+		fmt.Println(g)
+	}
+
 	return *extraction, nil
 }
 

@@ -50,6 +50,14 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "show debug ouput")
 	env.Config().BindPFlag("Debug", rootCmd.PersistentFlags().Lookup("debug"))
 
+	// Target cluster
+	rootCmd.PersistentFlags().Bool("target-cluster", false, "target cluster")
+	env.Config().BindPFlag("TargetCluster", rootCmd.PersistentFlags().Lookup("target-cluster"))
+
+	// Target cluster name for Kubeconfig context
+	rootCmd.PersistentFlags().StringP("target-cluster-name", "t", "", "target cluster name")
+	env.Config().BindPFlag("TargetClusterName", rootCmd.PersistentFlags().Lookup("target-cluster-name"))
+
 	// Get etcd config file location
 	rootCmd.PersistentFlags().String("etcd-config", "", "path to etcd config file")
 	env.Config().BindPFlag("ETCDConfigFile", rootCmd.PersistentFlags().Lookup("etcd-config"))

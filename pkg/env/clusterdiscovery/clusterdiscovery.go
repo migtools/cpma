@@ -9,15 +9,17 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// DiscoverDstCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
+// parse kubeconfig and select targeted cluster from available contexts
+func DiscoverDstCluster() (string, error) {
+	return SurveyClusters(), nil
+}
+
 // DiscoverCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
-// parse kubeconfig and select cluster from available contexts
+// parse kubeconfig and select source cluster from available contexts
 // query k8s api for nodes, get node urls from api response and survey master node
 func DiscoverCluster() (string, string, error) {
 	selectedCluster := SurveyClusters()
-
-	// set current context to selected cluster for connecting to cluster using client-go
-	api.KubeConfig.CurrentContext = api.ClusterNames[selectedCluster]
-
 	if err := api.CreateK8sClient(selectedCluster); err != nil {
 		return "", "", errors.Wrap(err, "k8s api client failed to create")
 	}
@@ -39,6 +41,7 @@ func SurveyClusters() string {
 	// It's better to have current context's cluster first, because
 	// it will be easier to select it using survey
 	currentContext := api.KubeConfig.CurrentContext
+
 	currentContextCluster := api.KubeConfig.Contexts[currentContext].Cluster
 	clusters = append(clusters, currentContextCluster)
 
