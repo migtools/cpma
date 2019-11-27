@@ -7,7 +7,6 @@ import (
 
 	k8sapicore "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
 // DiscoverCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
@@ -23,7 +22,7 @@ func DiscoverCluster() (string, string, error) {
 		return "", "", errors.Wrap(err, "k8s api client failed to create")
 	}
 
-	clusterNodes, err := queryNodes(api.K8sClient, api.K8sClient.CoreV1())
+	clusterNodes, err := queryNodes(api.K8sClient)
 	if err != nil {
 		return "", "", errors.Wrap(err, "cluster node query failed")
 	}
@@ -59,7 +58,7 @@ func SurveyClusters() string {
 	return selectedCluster
 }
 
-func queryNodes(client *kubernetes.Clientset, apiClient corev1.CoreV1Interface) ([]string, error) {
+func queryNodes(client *kubernetes.Clientset) ([]string, error) {
 	chanNodes := make(chan *k8sapicore.NodeList)
 	go api.ListNodes(client, chanNodes)
 	nodeList := <-chanNodes
