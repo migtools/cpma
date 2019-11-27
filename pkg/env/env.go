@@ -125,10 +125,6 @@ func surveyMissingValues() error {
 		viperConfig.Set("FetchFromRemote", true)
 	}
 
-	if err := createAPIClients(); err != nil {
-		return err
-	}
-
 	if viperConfig.GetString("WorkDir") == "" {
 		workDir := "."
 		prompt := &survey.Input{
@@ -140,6 +136,14 @@ func surveyMissingValues() error {
 		}
 
 		viperConfig.Set("WorkDir", workDir)
+	}
+
+	if err := api.CreateK8sClient(viperConfig.GetString("ClusterName")); err != nil {
+		return errors.Wrap(err, "k8s api client failed to create")
+	}
+
+	if err := api.CreateO7tClient(viperConfig.GetString("ClusterName")); err != nil {
+		return errors.Wrap(err, "OpenShift api client failed to create")
 	}
 
 	return nil
@@ -354,22 +358,6 @@ func surveyConfigPaths() error {
 			return err
 		}
 		viperConfig.Set("RegistriesConfigFile", config)
-	}
-
-	return nil
-}
-
-func createAPIClients() error {
-	if api.O7tClient != nil && api.K8sClient != nil {
-		return nil
-	}
-
-	if err := api.CreateK8sClient(viperConfig.GetString("ClusterName")); err != nil {
-		return errors.Wrap(err, "k8s api client failed to create")
-	}
-
-	if err := api.CreateO7tClient(viperConfig.GetString("ClusterName")); err != nil {
-		return errors.Wrap(err, "OpenShift api client failed to create")
 	}
 
 	return nil

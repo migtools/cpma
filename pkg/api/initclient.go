@@ -75,12 +75,12 @@ func getKubeConfigPath() (string, error) {
 
 // CreateK8sClient create api client using cluster from kubeconfig context
 func CreateK8sClient(contextCluster string) error {
-	config, err := buildConfig(contextCluster)
-	if err != nil {
-		return err
-	}
-
 	if K8sClient == nil {
+		config, err := buildConfig(contextCluster)
+		if err != nil {
+			return err
+		}
+
 		K8sClient = NewK8SOrDie(config)
 		logrus.Debugf("Kubernetes API client initialized for %s", contextCluster)
 	}
@@ -90,12 +90,12 @@ func CreateK8sClient(contextCluster string) error {
 
 // CreateO7tClient create api client using cluster from kubeconfig context
 func CreateO7tClient(contextCluster string) error {
-	config, err := buildConfig(contextCluster)
-	if err != nil {
-		return err
-	}
-
 	if O7tClient == nil {
+		config, err := buildConfig(contextCluster)
+		if err != nil {
+			return err
+		}
+
 		O7tClient = NewO7tOrDie(config)
 		logrus.Debugf("Openshift API client initialized for %s", contextCluster)
 	}
