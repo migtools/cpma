@@ -363,9 +363,6 @@ func createAPIClients() error {
 	if api.O7tClient != nil && api.K8sClient != nil {
 		return nil
 	}
-	if err := api.CreateDiscoveryClient(viperConfig.GetString("ClusterName")); err != nil {
-		return errors.Wrap(err, "discovery api client failed to create")
-	}
 
 	if err := api.CreateK8sClient(viperConfig.GetString("ClusterName")); err != nil {
 		return errors.Wrap(err, "k8s api client failed to create")
