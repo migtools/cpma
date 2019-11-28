@@ -57,6 +57,7 @@ func (e ClusterExtraction) Transform() ([]Output, error) {
 			PersistentVolumeList: e.PersistentVolumeList,
 			RBACResources:        e.RBACResources,
 			StorageClassList:     e.StorageClassList,
+			MissingGVs:           e.MissingGVs,
 		})
 
 		FinalReportOutput.Report.ClusterReport = clusterReport
@@ -173,6 +174,25 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	extraction.RBACResources.SecurityContextConstraintsList = <-chanSecurityContextConstraints
 	extraction.StorageClassList = <-chanStorageClassList
 
+	if api.K8sDstClient != nil {
+		dstChanGVs := make(chan *metav1.APIGroupList)
+		go api.ListGroupVersions(api.K8sDstClient, dstChanGVs)
+		dstGroupVersions := filterGVs(<-dstChanGVs)
+
+		missing := []string{}
+		for _, dstGroup := range dstGroupVersions {
+			found := false
+			for _, srcGroup := range extraction.GroupVersions {
+				if dstGroup == srcGroup {
+					found = true
+				}
+			}
+			if found == false {
+				missing = append(missing, dstGroup)
+			}
+		}
+		extraction.MissingGVs = missing
+	}
 	return *extraction, nil
 }
 

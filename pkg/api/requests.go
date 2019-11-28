@@ -25,6 +25,7 @@ type Resources struct {
 	StorageClassList     *k8sapistorage.StorageClassList
 	NamespaceList        []NamespaceResources
 	RBACResources        RBACResources
+	MissingGVs           []string
 }
 
 // RBACResources contains all resources related to RBAC report

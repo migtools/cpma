@@ -26,6 +26,7 @@ type Report struct {
 	PVs            []PVReport           `json:"pvs,omitempty"`
 	StorageClasses []StorageClassReport `json:"storageClasses,omitempty"`
 	RBACReport     RBACReport           `json:"rbacreport,omitempty"`
+	MissingGVs     []MissingGVsReport   `json:"missingGVs,omitempty"`
 }
 
 // NodeReport represents json report of k8s nodes
@@ -134,6 +135,11 @@ type RBACReport struct {
 	SecurityContextConstraints []OpenshiftSecurityContextConstraints `json:"securityContextConstraints"`
 }
 
+// MissingGVsReport represents json report of k8s storage classes
+type MissingGVsReport struct {
+	GroupVersion string `json:"groupversion"`
+}
+
 // OpenshiftUser wrapper around openshift user
 type OpenshiftUser struct {
 	Name       string   `json:"name"`
@@ -201,6 +207,7 @@ func GenClusterReport(apiResources api.Resources) (clusterReport Report) {
 	clusterReport.ReportNodes(apiResources)
 	clusterReport.ReportRBAC(apiResources)
 	clusterReport.ReportStorageClasses(apiResources)
+	clusterReport.ReportMissingGVs(apiResources.MissingGVs)
 	return
 }
 
@@ -560,6 +567,18 @@ func (clusterReport *Report) ReportStorageClasses(apiResources api.Resources) {
 		}
 
 		clusterReport.StorageClasses = append(clusterReport.StorageClasses, reportedStorageClass)
+	}
+}
+
+// ReportMissingGVs reports GroupVersion present in target but in source cluster
+func (clusterReport *Report) ReportMissingGVs(missingList []string) {
+	logrus.Info("ClusterReport::ReportMissingGVs")
+	for _, groupVersion := range missingList {
+		reportedMissingGVs := MissingGVsReport{
+			GroupVersion: groupVersion,
+		}
+
+		clusterReport.MissingGVs = append(clusterReport.MissingGVs, reportedMissingGVs)
 	}
 }
 
