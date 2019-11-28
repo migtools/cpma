@@ -6,23 +6,25 @@ import (
 	"github.com/pkg/errors"
 
 	k8sapicore "k8s.io/api/core/v1"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
+// DiscoverDstCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
+// parse kubeconfig and select targeted cluster from available contexts
+func DiscoverDstCluster() (string, error) {
+	return SurveyClusters(), nil
+}
+
 // DiscoverCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
-// parse kubeconfig and select cluster from available contexts
+// parse kubeconfig and select source cluster from available contexts
 // query k8s api for nodes, get node urls from api response and survey master node
 func DiscoverCluster() (string, string, error) {
 	selectedCluster := SurveyClusters()
-
-	// set current context to selected cluster for connecting to cluster using client-go
-	api.KubeConfig.CurrentContext = api.ClusterNames[selectedCluster]
-
 	if err := api.CreateK8sClient(selectedCluster); err != nil {
 		return "", "", errors.Wrap(err, "k8s api client failed to create")
 	}
 
-	clusterNodes, err := queryNodes(api.K8sClient.CoreV1())
+	clusterNodes, err := queryNodes(api.K8sClient)
 	if err != nil {
 		return "", "", errors.Wrap(err, "cluster node query failed")
 	}
@@ -39,6 +41,7 @@ func SurveyClusters() string {
 	// It's better to have current context's cluster first, because
 	// it will be easier to select it using survey
 	currentContext := api.KubeConfig.CurrentContext
+
 	currentContextCluster := api.KubeConfig.Contexts[currentContext].Cluster
 	clusters = append(clusters, currentContextCluster)
 
@@ -58,9 +61,9 @@ func SurveyClusters() string {
 	return selectedCluster
 }
 
-func queryNodes(apiClient corev1.CoreV1Interface) ([]string, error) {
+func queryNodes(client *kubernetes.Clientset) ([]string, error) {
 	chanNodes := make(chan *k8sapicore.NodeList)
-	go api.ListNodes(chanNodes)
+	go api.ListNodes(client, chanNodes)
 	nodeList := <-chanNodes
 
 	nodes := make([]string, 0, len(nodeList.Items))

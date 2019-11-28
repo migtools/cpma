@@ -34,6 +34,7 @@ func TestReport(t *testing.T) {
 	os.Chdir("../..")
 	os.Setenv("CPMA_CONFIGSOURCE", "remote")
 	os.Setenv("CPMA_CRIOCONFIGFILE", "/etc/crio/crio.conf")
+	os.Setenv("CPMA_DESTINATION", "false")
 	os.Setenv("CPMA_ETCDCONFIGFILE", "/etc/etcd/etcd.conf")
 	os.Setenv("CPMA_INSECUREHOSTKEY", "true")
 	os.Setenv("CPMA_MANIFESTS", "true")
@@ -84,6 +85,8 @@ func TestManifestsReporting(t *testing.T) {
 	os.Setenv("CPMA_REGISTRIESCONFIGFILE", "/etc/containers/registries.conf")
 	os.Setenv("CPMA_SAVECONFIG", "false")
 	os.Setenv("CPMA_WORKDIR", e2eTestOut)
+	os.Setenv("CPMA_TARGETCLUSTER", "false")
+	os.Setenv("CPMA_TARGETCLUSTERNAME", "")
 
 	err = runCpma()
 	assert.NoError(t, err, "Couldn't execute CPMA")
