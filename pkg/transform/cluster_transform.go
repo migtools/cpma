@@ -181,21 +181,29 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 
 	if api.K8sDstClient != nil {
 		extraction.DstGroupVersions = <-chanDstGVs
-		newGV := []string{}
-		for _, dstGV := range filterGVs(extraction.DstGroupVersions) {
-			found := false
-			for _, srcGV := range filterGVs(extraction.GroupVersions) {
-				if dstGV == srcGV {
-					found = true
-				}
-			}
-			if found == false {
-				newGV = append(newGV, dstGV)
-			}
-		}
-		extraction.NewGVs = newGV
+		extraction.NewGVs = NewGroupVersions(extraction.GroupVersions, extraction.DstGroupVersions)
+	}
+	for _, GVs := range extraction.GroupVersions.Groups {
+		fmt.Printf("%+v\n", GVs)
 	}
 	return *extraction, nil
+}
+
+// NewGroupVersions returns the list of new GroupVersions available in destination but in source
+func NewGroupVersions(src *metav1.APIGroupList, dst *metav1.APIGroupList) []string {
+	list := []string{}
+	for _, dstGV := range filterGVs(dst) {
+		found := false
+		for _, srcGV := range filterGVs(src) {
+			if dstGV == srcGV {
+				found = true
+			}
+		}
+		if found == false {
+			list = append(list, dstGV)
+		}
+	}
+	return list
 }
 
 // Name returns a human readable name for the transform

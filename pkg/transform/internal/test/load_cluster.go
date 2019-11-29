@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/fusor/cpma/pkg/api"
@@ -15,7 +16,8 @@ import (
 	extv1b1 "k8s.io/api/extensions/v1beta1"
 	k8sapistorage "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	k8smachinery "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // CreateTestPVList create test pv list
@@ -43,7 +45,7 @@ func CreateTestPVList() *k8sapicore.PersistentVolumeList {
 	}
 
 	pvList.Items[0] = k8sapicore.PersistentVolume{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "testpv",
 		},
 		Spec: k8sapicore.PersistentVolumeSpec{
@@ -129,7 +131,7 @@ func CreateTestNodeList() *k8sapicore.NodeList {
 	// Init fake nodes
 	nodes := make([]k8sapicore.Node, 1)
 	nodes[0] = k8sapicore.Node{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   "test-master",
 			Labels: masterNodeLabels,
 		},
@@ -149,7 +151,7 @@ func CreateStorageClassList() *k8sapistorage.StorageClassList {
 	storageClassList := &k8sapistorage.StorageClassList{}
 	storageClassList.Items = make([]k8sapistorage.StorageClass, 1)
 	storageClassList.Items[0] = k8sapistorage.StorageClass{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "testclass",
 		},
 		Provisioner: "testprovisioner",
@@ -164,7 +166,7 @@ func CreateTestNameSpaceList() []api.NamespaceResources {
 	roleList.Items = make([]o7tapiauth.Role, 0)
 
 	roleList.Items = append(roleList.Items, o7tapiauth.Role{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "testrole1",
 		},
 	})
@@ -211,7 +213,7 @@ func CreateTestResourceQuotaList() *k8sapicore.ResourceQuotaList {
 	quotaList.Items = make([]k8sapicore.ResourceQuota, 1)
 
 	quotaList.Items[0] = k8sapicore.ResourceQuota{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "resourcequota1",
 			Namespace: "namespacetest1",
 		},
@@ -242,7 +244,7 @@ func CreateTestClusterQuotaList() *o7tapiquota.ClusterResourceQuotaList {
 	quotaList.Items = make([]o7tapiquota.ClusterResourceQuota, 1)
 
 	quotaList.Items[0] = o7tapiquota.ClusterResourceQuota{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "test-quota1",
 		},
 		Spec: o7tapiquota.ClusterResourceQuotaSpec{
@@ -263,16 +265,16 @@ func CreateTestPodList() *k8sapicore.PodList {
 	podList.Items = make([]k8sapicore.Pod, 2)
 	timeStamp, _ := time.Parse(time.RFC1123Z, "Tue, 17 Nov 2009 21:34:58 +0100")
 	podList.Items[0] = k8sapicore.Pod{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:              "test-pod1",
-			CreationTimestamp: k8smachinery.NewTime(timeStamp),
+			CreationTimestamp: metav1.NewTime(timeStamp),
 		},
 	}
 
 	podList.Items[1] = k8sapicore.Pod{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:              "test-pod2",
-			CreationTimestamp: k8smachinery.NewTime(timeStamp),
+			CreationTimestamp: metav1.NewTime(timeStamp),
 		},
 	}
 
@@ -300,7 +302,7 @@ func CreateTestRouteList() *o7tapiroute.RouteList {
 	}
 
 	routeList.Items[0] = o7tapiroute.Route{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "route1",
 		},
 		Spec: o7tapiroute.RouteSpec{
@@ -324,9 +326,9 @@ func CreateDeploymentList() *v1beta1.DeploymentList {
 	deployment := v1beta1.Deployment{}
 
 	timestamp, _ := time.Parse(time.RFC1123Z, "Sun, 07 Jul 2019 09:45:35 +0100")
-	deployment.ObjectMeta = k8smachinery.ObjectMeta{
+	deployment.ObjectMeta = metav1.ObjectMeta{
 		Name:              "testDeployment",
-		CreationTimestamp: k8smachinery.NewTime(timestamp),
+		CreationTimestamp: metav1.NewTime(timestamp),
 	}
 	deploymentList.Items[0] = deployment
 
@@ -341,9 +343,9 @@ func CreateDaemonSetList() *extv1b1.DaemonSetList {
 	daemonSet := extv1b1.DaemonSet{}
 
 	timestamp, _ := time.Parse(time.RFC1123Z, "Sun, 07 Jul 2019 09:45:35 +0100")
-	daemonSet.ObjectMeta = k8smachinery.ObjectMeta{
+	daemonSet.ObjectMeta = metav1.ObjectMeta{
 		Name:              "testDaemonSet",
-		CreationTimestamp: k8smachinery.NewTime(timestamp),
+		CreationTimestamp: metav1.NewTime(timestamp),
 	}
 	daemonSetList.Items[0] = daemonSet
 
@@ -394,7 +396,7 @@ func CreateUserList() *o7tapiuser.UserList {
 	userList.Items = make([]o7tapiuser.User, 0)
 
 	userList.Items = append(userList.Items, o7tapiuser.User{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "testuser1",
 		},
 		FullName:   "full name1",
@@ -403,7 +405,7 @@ func CreateUserList() *o7tapiuser.UserList {
 	})
 
 	userList.Items = append(userList.Items, o7tapiuser.User{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "testuser2",
 		},
 		FullName:   "full name2",
@@ -420,14 +422,14 @@ func CreateGroupList() *o7tapiuser.GroupList {
 	groupList.Items = make([]o7tapiuser.Group, 0)
 
 	groupList.Items = append(groupList.Items, o7tapiuser.Group{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "testgroup1",
 		},
 		Users: []string{"testuser1"},
 	})
 
 	groupList.Items = append(groupList.Items, o7tapiuser.Group{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "testgroup2",
 		},
 		Users: []string{"testuser2"},
@@ -442,7 +444,7 @@ func CreateClusterRoleList() *o7tapiauth.ClusterRoleList {
 	clusterRoleList.Items = make([]o7tapiauth.ClusterRole, 0)
 
 	clusterRoleList.Items = append(clusterRoleList.Items, o7tapiauth.ClusterRole{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "testrole1",
 		},
 	})
@@ -456,7 +458,7 @@ func CreateClusterRoleBindingsList() *o7tapiauth.ClusterRoleBindingList {
 	clusterRoleBindingsList.Items = make([]o7tapiauth.ClusterRoleBinding, 0)
 
 	clusterRoleBindingsList.Items = append(clusterRoleBindingsList.Items, o7tapiauth.ClusterRoleBinding{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "testbinding1",
 		},
 		UserNames:  []string{"testuser1"},
@@ -471,7 +473,7 @@ func CreateSCCList() *o7tapisecurity.SecurityContextConstraintsList {
 	sccList.Items = make([]o7tapisecurity.SecurityContextConstraints, 0)
 
 	sccList.Items = append(sccList.Items, o7tapisecurity.SecurityContextConstraints{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "testscc1",
 		},
 		Users:  []string{"testuser1", "testrole:serviceaccount:testnamespace1:testsa"},
@@ -488,7 +490,7 @@ func CreatePVCList() *k8sapicore.PersistentVolumeClaimList {
 
 	storageClass := "teststorageclass"
 	pvcList.Items = append(pvcList.Items, k8sapicore.PersistentVolumeClaim{
-		ObjectMeta: k8smachinery.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "testPVC",
 		},
 		Spec: k8sapicore.PersistentVolumeClaimSpec{
@@ -499,4 +501,28 @@ func CreatePVCList() *k8sapicore.PersistentVolumeClaimList {
 	})
 
 	return pvcList
+}
+
+// CreateTestClusterGroupVersions test for GroupVersionList
+func CreateTestClusterGroupVersions(group string, version string) *metav1.APIGroupList {
+	groupList := &metav1.APIGroupList{}
+	groupList.Groups = make([]metav1.APIGroup, 1)
+
+	groupList.Groups[0] = metav1.APIGroup{
+		TypeMeta: v1.TypeMeta{
+			Kind:       "",
+			APIVersion: "",
+		},
+		Name: group,
+		Versions: []metav1.GroupVersionForDiscovery{
+			{GroupVersion: fmt.Sprintf("%s/%s", group, version),
+				Version: version},
+		},
+		PreferredVersion: metav1.GroupVersionForDiscovery{
+			GroupVersion: fmt.Sprintf("%s/%s", group, version),
+			Version:      version,
+		},
+	}
+
+	return groupList
 }
