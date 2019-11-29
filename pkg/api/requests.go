@@ -18,14 +18,15 @@ import (
 
 // Resources represent api resources used in report
 type Resources struct {
-	GroupVersions        []string
+	GroupVersions        *metav1.APIGroupList
+	DstGroupVersions     *metav1.APIGroupList
 	QuotaList            *o7tapiquota.ClusterResourceQuotaList
 	NodeList             *k8sapicore.NodeList
 	PersistentVolumeList *k8sapicore.PersistentVolumeList
 	StorageClassList     *k8sapistorage.StorageClassList
 	NamespaceList        []NamespaceResources
 	RBACResources        RBACResources
-	MissingGVs           []string
+	NewGVs               []string
 }
 
 // RBACResources contains all resources related to RBAC report

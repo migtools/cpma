@@ -57,7 +57,7 @@ func (e ClusterExtraction) Transform() ([]Output, error) {
 			PersistentVolumeList: e.PersistentVolumeList,
 			RBACResources:        e.RBACResources,
 			StorageClassList:     e.StorageClassList,
-			MissingGVs:           e.MissingGVs,
+			NewGVs:               e.NewGVs,
 		})
 
 		FinalReportOutput.Report.ClusterReport = clusterReport
@@ -103,6 +103,7 @@ func (e ClusterExtraction) Validate() (err error) { return }
 
 // Extract collects data for cluster report
 func (e ClusterTransform) Extract() (Extraction, error) {
+	chanDstGVs := make(chan *metav1.APIGroupList)
 	chanGVs := make(chan *metav1.APIGroupList)
 	chanNodes := make(chan *k8sapicore.NodeList)
 	chanClusterQuotas := make(chan *o7tapiquota.ClusterResourceQuotaList)
@@ -114,6 +115,10 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	chanClusterRolesListBindings := make(chan *o7tapiauth.ClusterRoleBindingList)
 	chanStorageClassList := make(chan *k8sapistorage.StorageClassList)
 	chanSecurityContextConstraints := make(chan *o7tapisecurity.SecurityContextConstraintsList)
+
+	if api.K8sDstClient != nil {
+		go api.ListGroupVersions(api.K8sDstClient, chanDstGVs)
+	}
 
 	go api.ListGroupVersions(api.K8sClient, chanGVs)
 	go api.ListNamespaces(api.K8sClient, chanNamespaces)
@@ -163,7 +168,7 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		extraction.NamespaceList[i] = namespaceResources
 	}
 
-	extraction.GroupVersions = filterGVs(<-chanGVs)
+	extraction.GroupVersions = <-chanGVs
 	extraction.NodeList = <-chanNodes
 	extraction.QuotaList = <-chanClusterQuotas
 	extraction.PersistentVolumeList = <-chanPVs
@@ -175,25 +180,27 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	extraction.StorageClassList = <-chanStorageClassList
 
 	if api.K8sDstClient != nil {
-		dstChanGVs := make(chan *metav1.APIGroupList)
-		go api.ListGroupVersions(api.K8sDstClient, dstChanGVs)
-		dstGroupVersions := filterGVs(<-dstChanGVs)
-
-		missing := []string{}
-		for _, dstGroup := range dstGroupVersions {
+		extraction.DstGroupVersions = <-chanDstGVs
+		newGV := []string{}
+		for _, dstGV := range filterGVs(extraction.DstGroupVersions) {
 			found := false
-			for _, srcGroup := range extraction.GroupVersions {
-				if dstGroup == srcGroup {
+			for _, srcGV := range filterGVs(extraction.GroupVersions) {
+				if dstGV == srcGV {
 					found = true
 				}
 			}
 			if found == false {
-				missing = append(missing, dstGroup)
+				newGV = append(newGV, dstGV)
 			}
 		}
-		extraction.MissingGVs = missing
+		extraction.NewGVs = newGV
 	}
 	return *extraction, nil
+}
+
+// Name returns a human readable name for the transform
+func (e ClusterTransform) Name() string {
+	return ClusterTransformName
 }
 
 func filterGVs(gvs *metav1.APIGroupList) []string {
@@ -204,9 +211,4 @@ func filterGVs(gvs *metav1.APIGroupList) []string {
 		}
 	}
 	return list
-}
-
-// Name returns a human readable name for the transform
-func (e ClusterTransform) Name() string {
-	return ClusterTransformName
 }
