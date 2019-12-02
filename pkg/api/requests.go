@@ -1,16 +1,16 @@
 package api
 
 import (
-	o7tapiauth "github.com/openshift/api/authorization/v1"
-	o7tapiquota "github.com/openshift/api/quota/v1"
-	o7tapiroute "github.com/openshift/api/route/v1"
-	o7tapisecurity "github.com/openshift/api/security/v1"
-	o7tapiuser "github.com/openshift/api/user/v1"
+	o7tauthv1 "github.com/openshift/api/authorization/v1"
+	o7tquotav1 "github.com/openshift/api/quota/v1"
+	o7troutev1 "github.com/openshift/api/route/v1"
+	o7tsecurityv1 "github.com/openshift/api/security/v1"
+	o7tuserv1 "github.com/openshift/api/user/v1"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/api/apps/v1beta1"
 	corev1 "k8s.io/api/core/v1"
-	extv1b1 "k8s.io/api/extensions/v1beta1"
+	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -20,7 +20,7 @@ import (
 type Resources struct {
 	GroupVersions        *metav1.APIGroupList
 	DstGroupVersions     *metav1.APIGroupList
-	QuotaList            *o7tapiquota.ClusterResourceQuotaList
+	QuotaList            *o7tquotav1.ClusterResourceQuotaList
 	NodeList             *corev1.NodeList
 	PersistentVolumeList *corev1.PersistentVolumeList
 	StorageClassList     *storagev1.StorageClassList
@@ -31,22 +31,22 @@ type Resources struct {
 
 // RBACResources contains all resources related to RBAC report
 type RBACResources struct {
-	UsersList                      *o7tapiuser.UserList
-	GroupList                      *o7tapiuser.GroupList
-	ClusterRolesList               *o7tapiauth.ClusterRoleList
-	ClusterRolesBindingsList       *o7tapiauth.ClusterRoleBindingList
-	SecurityContextConstraintsList *o7tapisecurity.SecurityContextConstraintsList
+	UsersList                      *o7tuserv1.UserList
+	GroupList                      *o7tuserv1.GroupList
+	ClusterRolesList               *o7tauthv1.ClusterRoleList
+	ClusterRolesBindingsList       *o7tauthv1.ClusterRoleBindingList
+	SecurityContextConstraintsList *o7tsecurityv1.SecurityContextConstraintsList
 }
 
 // NamespaceResources holds all resources that belong to a namespace
 type NamespaceResources struct {
 	NamespaceName     string
-	DaemonSetList     *extv1b1.DaemonSetList
+	DaemonSetList     *extv1beta1.DaemonSetList
 	DeploymentList    *v1beta1.DeploymentList
 	PodList           *corev1.PodList
 	ResourceQuotaList *corev1.ResourceQuotaList
-	RolesList         *o7tapiauth.RoleList
-	RouteList         *o7tapiroute.RouteList
+	RolesList         *o7tauthv1.RoleList
+	RouteList         *o7troutev1.RouteList
 	PVCList           *corev1.PersistentVolumeClaimList
 }
 
@@ -98,7 +98,7 @@ func ListNodes(client *kubernetes.Clientset, ch chan<- *corev1.NodeList) {
 }
 
 // ListQuotas list all cluster quotas classes, wrapper around client-go
-func ListQuotas(client *OpenshiftClient, ch chan<- *o7tapiquota.ClusterResourceQuotaList) {
+func ListQuotas(client *OpenshiftClient, ch chan<- *o7tquotav1.ClusterResourceQuotaList) {
 	quotas, err := client.quotaClient.ClusterResourceQuotas().List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -116,7 +116,7 @@ func ListResourceQuotas(client *kubernetes.Clientset, namespace string, ch chan<
 }
 
 // ListRoutes list all routes classes, wrapper around client-go
-func ListRoutes(client *OpenshiftClient, namespace string, ch chan<- *o7tapiroute.RouteList) {
+func ListRoutes(client *OpenshiftClient, namespace string, ch chan<- *o7troutev1.RouteList) {
 	routes, err := client.routeClient.Routes(namespace).List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -143,7 +143,7 @@ func ListDeployments(client *kubernetes.Clientset, namespace string, ch chan<- *
 }
 
 // ListDaemonSets will collect all DS from specific namespace
-func ListDaemonSets(client *kubernetes.Clientset, namespace string, ch chan<- *extv1b1.DaemonSetList) {
+func ListDaemonSets(client *kubernetes.Clientset, namespace string, ch chan<- *extv1beta1.DaemonSetList) {
 	daemonSets, err := client.ExtensionsV1beta1().DaemonSets(namespace).List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -152,7 +152,7 @@ func ListDaemonSets(client *kubernetes.Clientset, namespace string, ch chan<- *e
 }
 
 // ListUsers list all users, wrapper around client-go
-func ListUsers(client *OpenshiftClient, ch chan<- *o7tapiuser.UserList) {
+func ListUsers(client *OpenshiftClient, ch chan<- *o7tuserv1.UserList) {
 	users, err := client.userClient.Users().List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -161,7 +161,7 @@ func ListUsers(client *OpenshiftClient, ch chan<- *o7tapiuser.UserList) {
 }
 
 // ListGroups list all users, wrapper around client-go
-func ListGroups(client *OpenshiftClient, ch chan<- *o7tapiuser.GroupList) {
+func ListGroups(client *OpenshiftClient, ch chan<- *o7tuserv1.GroupList) {
 	groups, err := client.userClient.Groups().List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -170,7 +170,7 @@ func ListGroups(client *OpenshiftClient, ch chan<- *o7tapiuser.GroupList) {
 }
 
 // ListRoles list all storage classes, wrapper around client-go
-func ListRoles(client *OpenshiftClient, namespace string, ch chan<- *o7tapiauth.RoleList) {
+func ListRoles(client *OpenshiftClient, namespace string, ch chan<- *o7tauthv1.RoleList) {
 	roles, err := client.authClient.Roles(namespace).List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -179,7 +179,7 @@ func ListRoles(client *OpenshiftClient, namespace string, ch chan<- *o7tapiauth.
 }
 
 // ListClusterRoles list all storage classes, wrapper around client-go
-func ListClusterRoles(client *OpenshiftClient, ch chan<- *o7tapiauth.ClusterRoleList) {
+func ListClusterRoles(client *OpenshiftClient, ch chan<- *o7tauthv1.ClusterRoleList) {
 	clusterRoles, err := client.authClient.ClusterRoles().List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -188,7 +188,7 @@ func ListClusterRoles(client *OpenshiftClient, ch chan<- *o7tapiauth.ClusterRole
 }
 
 // ListClusterRolesBindings list all storage classes, wrapper around client-go
-func ListClusterRolesBindings(client *OpenshiftClient, ch chan<- *o7tapiauth.ClusterRoleBindingList) {
+func ListClusterRolesBindings(client *OpenshiftClient, ch chan<- *o7tauthv1.ClusterRoleBindingList) {
 	clusterRolesBindings, err := client.authClient.ClusterRoleBindings().List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -197,7 +197,7 @@ func ListClusterRolesBindings(client *OpenshiftClient, ch chan<- *o7tapiauth.Clu
 }
 
 // ListSCC list all security context constraints, wrapper around client-go
-func ListSCC(client *OpenshiftClient, ch chan<- *o7tapisecurity.SecurityContextConstraintsList) {
+func ListSCC(client *OpenshiftClient, ch chan<- *o7tsecurityv1.SecurityContextConstraintsList) {
 	scc, err := client.securityClient.SecurityContextConstraints().List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
