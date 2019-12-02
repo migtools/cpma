@@ -9,9 +9,9 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/api/apps/v1beta1"
-	k8sapicore "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
-	k8sapistorage "k8s.io/api/storage/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -21,9 +21,9 @@ type Resources struct {
 	GroupVersions        *metav1.APIGroupList
 	DstGroupVersions     *metav1.APIGroupList
 	QuotaList            *o7tapiquota.ClusterResourceQuotaList
-	NodeList             *k8sapicore.NodeList
-	PersistentVolumeList *k8sapicore.PersistentVolumeList
-	StorageClassList     *k8sapistorage.StorageClassList
+	NodeList             *corev1.NodeList
+	PersistentVolumeList *corev1.PersistentVolumeList
+	StorageClassList     *storagev1.StorageClassList
 	NamespaceList        []NamespaceResources
 	RBACResources        RBACResources
 	NewGVs               []string
@@ -43,11 +43,11 @@ type NamespaceResources struct {
 	NamespaceName     string
 	DaemonSetList     *extv1b1.DaemonSetList
 	DeploymentList    *v1beta1.DeploymentList
-	PodList           *k8sapicore.PodList
-	ResourceQuotaList *k8sapicore.ResourceQuotaList
+	PodList           *corev1.PodList
+	ResourceQuotaList *corev1.ResourceQuotaList
 	RolesList         *o7tapiauth.RoleList
 	RouteList         *o7tapiroute.RouteList
-	PVCList           *k8sapicore.PersistentVolumeClaimList
+	PVCList           *corev1.PersistentVolumeClaimList
 }
 
 var listOptions metav1.ListOptions
@@ -62,7 +62,7 @@ func ListGroupVersions(client *kubernetes.Clientset, ch chan<- *metav1.APIGroupL
 }
 
 // ListNamespaces list all namespaces, wrapper around client-go
-func ListNamespaces(client *kubernetes.Clientset, ch chan<- *k8sapicore.NamespaceList) {
+func ListNamespaces(client *kubernetes.Clientset, ch chan<- *corev1.NamespaceList) {
 	namespaces, err := client.CoreV1().Namespaces().List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -71,7 +71,7 @@ func ListNamespaces(client *kubernetes.Clientset, ch chan<- *k8sapicore.Namespac
 }
 
 // ListPods list all pods in namespace, wrapper around client-go
-func ListPods(client *kubernetes.Clientset, namespace string, ch chan<- *k8sapicore.PodList) {
+func ListPods(client *kubernetes.Clientset, namespace string, ch chan<- *corev1.PodList) {
 	pods, err := client.CoreV1().Pods(namespace).List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -80,7 +80,7 @@ func ListPods(client *kubernetes.Clientset, namespace string, ch chan<- *k8sapic
 }
 
 // ListPVs list all PVs, wrapper around client-go
-func ListPVs(client *kubernetes.Clientset, ch chan<- *k8sapicore.PersistentVolumeList) {
+func ListPVs(client *kubernetes.Clientset, ch chan<- *corev1.PersistentVolumeList) {
 	pvs, err := client.CoreV1().PersistentVolumes().List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -89,7 +89,7 @@ func ListPVs(client *kubernetes.Clientset, ch chan<- *k8sapicore.PersistentVolum
 }
 
 // ListNodes list all nodes, wrapper around client-go
-func ListNodes(client *kubernetes.Clientset, ch chan<- *k8sapicore.NodeList) {
+func ListNodes(client *kubernetes.Clientset, ch chan<- *corev1.NodeList) {
 	nodes, err := client.CoreV1().Nodes().List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -107,7 +107,7 @@ func ListQuotas(client *OpenshiftClient, ch chan<- *o7tapiquota.ClusterResourceQ
 }
 
 // ListResourceQuotas list all quotas classes, wrapper around client-go
-func ListResourceQuotas(client *kubernetes.Clientset, namespace string, ch chan<- *k8sapicore.ResourceQuotaList) {
+func ListResourceQuotas(client *kubernetes.Clientset, namespace string, ch chan<- *corev1.ResourceQuotaList) {
 	quotas, err := client.CoreV1().ResourceQuotas(namespace).List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -125,7 +125,7 @@ func ListRoutes(client *OpenshiftClient, namespace string, ch chan<- *o7tapirout
 }
 
 // ListStorageClasses list all storage classes, wrapper around client-go
-func ListStorageClasses(client *kubernetes.Clientset, ch chan<- *k8sapistorage.StorageClassList) {
+func ListStorageClasses(client *kubernetes.Clientset, ch chan<- *storagev1.StorageClassList) {
 	sc, err := client.StorageV1().StorageClasses().List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
@@ -206,7 +206,7 @@ func ListSCC(client *OpenshiftClient, ch chan<- *o7tapisecurity.SecurityContextC
 }
 
 // ListPVCs list all PVs, wrapper around client-go
-func ListPVCs(client *kubernetes.Clientset, namespace string, ch chan<- *k8sapicore.PersistentVolumeClaimList) {
+func ListPVCs(client *kubernetes.Clientset, namespace string, ch chan<- *corev1.PersistentVolumeClaimList) {
 	pvcs, err := client.CoreV1().PersistentVolumeClaims(namespace).List(listOptions)
 	if err != nil {
 		logrus.Fatal(err)
