@@ -9,7 +9,7 @@
 Source0: https://github.com/fusor/cpma/archive/release-1.0.tar.gz#/%{name}-%{version}.tar.gz
 Name:           cpma
 Version:        1.0.0
-Release:        1
+Release:        1%{?dist}
 Summary:        CPMA Client
 License:        ASL 2.0
 URL:            https://%{import_path}
