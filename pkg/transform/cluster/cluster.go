@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/konveyor/cpma/pkg/api"
+	"github.com/fusor/cpma/pkg/api"
 	o7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiquota "github.com/openshift/api/quota/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"

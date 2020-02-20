@@ -2,7 +2,7 @@ package clusterdiscovery
 
 import (
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/konveyor/cpma/pkg/api"
+	"github.com/fusor/cpma/pkg/api"
 	"github.com/pkg/errors"
 
 	k8sapicore "k8s.io/api/core/v1"

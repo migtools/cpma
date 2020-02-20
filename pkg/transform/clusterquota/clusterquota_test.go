@@ -3,8 +3,8 @@ package clusterquota_test
 import (
 	"testing"
 
-	"github.com/konveyor/cpma/pkg/transform/clusterquota"
-	cpmatest "github.com/konveyor/cpma/pkg/transform/internal/test"
+	"github.com/fusor/cpma/pkg/transform/clusterquota"
+	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

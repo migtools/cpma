@@ -18,8 +18,8 @@ import (
 	//Workaround go mod vendor issue 27063
 	_ "github.com/shurcooL/vfsgen"
 
-	"github.com/konveyor/cpma/pkg/env"
-	"github.com/konveyor/cpma/pkg/transform"
+	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/transform"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

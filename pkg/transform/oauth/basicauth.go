@@ -3,8 +3,8 @@ package oauth
 import (
 	configv1 "github.com/openshift/api/config/v1"
 
-	"github.com/konveyor/cpma/pkg/transform/configmaps"
-	"github.com/konveyor/cpma/pkg/transform/secrets"
+	"github.com/fusor/cpma/pkg/transform/configmaps"
+	"github.com/fusor/cpma/pkg/transform/secrets"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 

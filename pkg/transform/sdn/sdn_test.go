@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/konveyor/cpma/pkg/transform"
-	cpmatest "github.com/konveyor/cpma/pkg/transform/internal/test"
-	"github.com/konveyor/cpma/pkg/transform/sdn"
+	"github.com/fusor/cpma/pkg/transform"
+	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
+	"github.com/fusor/cpma/pkg/transform/sdn"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	configv1 "github.com/openshift/api/operator/v1"
 	"github.com/stretchr/testify/assert"

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/konveyor/cpma/pkg/api"
+	"github.com/fusor/cpma/pkg/api"
 	"github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"

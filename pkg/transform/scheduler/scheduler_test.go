@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	cpmatest "github.com/konveyor/cpma/pkg/transform/internal/test"
-	"github.com/konveyor/cpma/pkg/transform/scheduler"
+	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
+	"github.com/fusor/cpma/pkg/transform/scheduler"
 	configv1 "github.com/openshift/api/config/v1"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"

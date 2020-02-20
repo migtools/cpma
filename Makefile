@@ -5,7 +5,7 @@ SOURCES:=$(shell find . -name '*.go' -not -path "*/vendor/*")
 SOURCE_DIRS=cmd pkg
 DATE:=`date -u +%Y/%m/%d.%H:%M:%S`
 VERSION:=`git describe --tags --always --long --dirty`
-LDFLAGS=-ldflags "-X=github.com/konveyor/cpma/cmd.BuildVersion=$(VERSION) -X=github.com/konveyor/cpma/cmd.BuildTime=$(DATE)"
+LDFLAGS=-ldflags "-X=github.com/fusor/cpma/cmd.BuildVersion=$(VERSION) -X=github.com/fusor/cpma/cmd.BuildTime=$(DATE)"
 
 default: build
 

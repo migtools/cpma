@@ -1,4 +1,4 @@
-module github.com/konveyor/cpma
+module github.com/fusor/cpma
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.2

@@ -1,7 +1,7 @@
 package transform
 
 import (
-	"github.com/konveyor/cpma/pkg/transform/reportoutput"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/sirupsen/logrus"
 )
 

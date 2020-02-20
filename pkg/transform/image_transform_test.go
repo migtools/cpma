@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"github.com/BurntSushi/toml"
-	"github.com/konveyor/cpma/pkg/decode"
-	"github.com/konveyor/cpma/pkg/env"
-	"github.com/konveyor/cpma/pkg/io"
-	"github.com/konveyor/cpma/pkg/transform"
-	"github.com/konveyor/cpma/pkg/transform/reportoutput"
+	"github.com/fusor/cpma/pkg/decode"
+	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/transform"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

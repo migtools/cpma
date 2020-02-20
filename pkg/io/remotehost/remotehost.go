@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/konveyor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/pkg/errors"
 	"github.com/pkg/sftp"
 	"github.com/sirupsen/logrus"

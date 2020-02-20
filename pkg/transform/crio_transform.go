@@ -2,9 +2,9 @@ package transform
 
 import (
 	"github.com/BurntSushi/toml"
-	"github.com/konveyor/cpma/pkg/env"
-	"github.com/konveyor/cpma/pkg/io"
-	"github.com/konveyor/cpma/pkg/transform/reportoutput"
+	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

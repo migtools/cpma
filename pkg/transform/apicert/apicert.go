@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/konveyor/cpma/pkg/io"
-	"github.com/konveyor/cpma/pkg/transform/secrets"
+	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/transform/secrets"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

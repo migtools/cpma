@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.com/konveyor/cpma/pkg/decode"
-	"github.com/konveyor/cpma/pkg/transform"
-	"github.com/konveyor/cpma/pkg/transform/oauth"
+	"github.com/fusor/cpma/pkg/decode"
+	"github.com/fusor/cpma/pkg/transform"
+	"github.com/fusor/cpma/pkg/transform/oauth"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	k8sjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"

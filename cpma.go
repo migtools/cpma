@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/konveyor/cpma/cmd"
+	"github.com/fusor/cpma/cmd"
 )
 
 func main() {

@@ -1,8 +1,8 @@
 package oauth
 
 import (
-	"github.com/konveyor/cpma/pkg/io"
-	"github.com/konveyor/cpma/pkg/transform/secrets"
+	"github.com/fusor/cpma/pkg/io"
+	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"

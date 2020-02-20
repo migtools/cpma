@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/konveyor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/env"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

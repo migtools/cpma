@@ -1,9 +1,9 @@
 package transform
 
 import (
-	"github.com/konveyor/cpma/pkg/env"
-	"github.com/konveyor/cpma/pkg/io/remotehost"
-	"github.com/konveyor/cpma/pkg/transform/reportoutput"
+	"github.com/fusor/cpma/pkg/env"
+	"github.com/fusor/cpma/pkg/io/remotehost"
+	"github.com/fusor/cpma/pkg/transform/reportoutput"
 	"github.com/sirupsen/logrus"
 )
 
