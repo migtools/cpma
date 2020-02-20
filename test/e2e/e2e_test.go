@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/transform"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/transform"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )

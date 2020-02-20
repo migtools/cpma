@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/decode"
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/transform/oauth"
+	"github.com/konveyor/cpma/pkg/decode"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/transform/oauth"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

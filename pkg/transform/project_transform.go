@@ -3,11 +3,11 @@ package transform
 import (
 	"fmt"
 
-	"github.com/fusor/cpma/pkg/decode"
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/transform/project"
-	"github.com/fusor/cpma/pkg/transform/reportoutput"
+	"github.com/konveyor/cpma/pkg/decode"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform/project"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
 )

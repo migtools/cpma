@@ -3,8 +3,8 @@ package quota_test
 import (
 	"testing"
 
-	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
-	"github.com/fusor/cpma/pkg/transform/quota"
+	cpmatest "github.com/konveyor/cpma/pkg/transform/internal/test"
+	"github.com/konveyor/cpma/pkg/transform/quota"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

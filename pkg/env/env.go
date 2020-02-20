@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/fusor/cpma/pkg/api"
-	"github.com/fusor/cpma/pkg/env/clusterdiscovery"
+	"github.com/konveyor/cpma/pkg/api"
+	"github.com/konveyor/cpma/pkg/env/clusterdiscovery"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
