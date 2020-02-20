@@ -5,11 +5,11 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/transform"
-	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
-	"github.com/fusor/cpma/pkg/transform/reportoutput"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform"
+	cpmatest "github.com/konveyor/cpma/pkg/transform/internal/test"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

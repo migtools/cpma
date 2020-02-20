@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/fusor/cpma/cmd"
-	"github.com/fusor/cpma/pkg/env"
+	_ "github.com/konveyor/cpma/cmd"
+	"github.com/konveyor/cpma/pkg/env"
 	"github.com/stretchr/testify/assert"
 )
 

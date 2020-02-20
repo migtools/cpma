@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fusor/cpma/pkg/decode"
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/transform/apicert"
-	"github.com/fusor/cpma/pkg/transform/reportoutput"
+	"github.com/konveyor/cpma/pkg/decode"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform/apicert"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
 	"github.com/sirupsen/logrus"
 
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"

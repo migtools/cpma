@@ -1,7 +1,7 @@
 package reportoutput
 
 import (
-	"github.com/fusor/cpma/pkg/transform/cluster"
+	"github.com/konveyor/cpma/pkg/transform/cluster"
 )
 
 // ReportOutput holds a collection of reports to be written to file

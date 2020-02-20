@@ -43,11 +43,11 @@ CPMA can be configured using either:
 ![prompt](https://user-images.githubusercontent.com/20123872/60581251-c0f57100-9d86-11e9-9ab3-7681b840731a.gif)
 
 
-2. CLI parameters. All configuration values can be passed using CLI parameters. For example: `./cpma --source cluster.example.com --work-dir ./dir` Refer to CPMA's [README.md](https://github.com/fusor/cpma#usage) for full list of parameters.
+2. CLI parameters. All configuration values can be passed using CLI parameters. For example: `./cpma --source cluster.example.com --work-dir ./dir` Refer to CPMA's [README.md](https://github.com/konveyor/cpma#usage) for full list of parameters.
 
-3. Predefined configuration file. You can manually create a yaml configuration based on this [example](https://github.com/fusor/cpma/blob/master/examples/cpma-config.example.yaml). Configuration file path can be passed using `--config` parameter, or place `cpma.yaml` in your home directory.
+3. Predefined configuration file. You can manually create a yaml configuration based on this [example](https://github.com/konveyor/cpma/blob/master/examples/cpma-config.example.yaml). Configuration file path can be passed using `--config` parameter, or place `cpma.yaml` in your home directory.
 
-4. Environmental variables. It is also possible to pass all configuration values as environmental variables. List of variables can be found in [README.md](https://github.com/fusor/cpma#e2e-tests)
+4. Environmental variables. It is also possible to pass all configuration values as environmental variables. List of variables can be found in [README.md](https://github.com/konveyor/cpma#e2e-tests)
 
 ---
 

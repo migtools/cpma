@@ -3,7 +3,7 @@ package reportoutput
 import (
 	"encoding/json"
 
-	"github.com/fusor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/io"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )

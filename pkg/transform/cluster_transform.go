@@ -3,11 +3,11 @@ package transform
 import (
 	"fmt"
 
-	"github.com/fusor/cpma/pkg/api"
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/transform/cluster"
-	"github.com/fusor/cpma/pkg/transform/clusterquota"
-	"github.com/fusor/cpma/pkg/transform/quota"
+	"github.com/konveyor/cpma/pkg/api"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/transform/cluster"
+	"github.com/konveyor/cpma/pkg/transform/clusterquota"
+	"github.com/konveyor/cpma/pkg/transform/quota"
 	o7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiquota "github.com/openshift/api/quota/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
