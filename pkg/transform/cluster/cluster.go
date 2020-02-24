@@ -532,7 +532,11 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 					return clusterReport.Namespaces[i].Name >= splitUsername[2]
 				})
 
-				clusterReport.Namespaces[idx].SecurityContextConstraints = append(clusterReport.Namespaces[idx].SecurityContextConstraints, scc.Name)
+				if idx < len(clusterReport.Namespaces) {
+					clusterReport.Namespaces[idx].SecurityContextConstraints = append(clusterReport.Namespaces[idx].SecurityContextConstraints, scc.Name)
+				} else {
+					continue
+				}
 			}
 		}
 
