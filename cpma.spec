@@ -4,9 +4,9 @@
 %global __os_install_post %{_rpmconfigdir}/brp-compress
 
 %global gopath      %{_datadir}/gocode
-%global import_path github.com/fusor/cpma
+%global import_path github.com/konveyor/cpma
 
-Source0: https://github.com/fusor/cpma/archive/release-1.0.tar.gz#/%{name}-%{version}.tar.gz
+Source0: https://github.com/konveyor/cpma/archive/release-1.0.tar.gz#/%{name}-%{version}.tar.gz
 Name:           cpma
 Version:        1.0.0
 Release:        1%{?dist}
