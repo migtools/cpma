@@ -183,7 +183,9 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		extraction.DstGroupVersions = <-chanDstGVs
 		extraction.NewGVs = NewGroupVersions(extraction.GroupVersions, extraction.DstGroupVersions)
 	}
-
+	for _, GVs := range extraction.GroupVersions.Groups {
+		fmt.Printf("%+v\n", GVs)
+	}
 	return *extraction, nil
 }
 
