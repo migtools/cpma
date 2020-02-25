@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/api/apps/v1beta1"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	storagev1 "k8s.io/api/storage/v1"
@@ -19,7 +18,6 @@ import (
 
 // Resources represent api resources used in report
 type Resources struct {
-	HPAList              *autoscalingv1.HorizontalPodAutoscalerList
 	GroupVersions        *metav1.APIGroupList
 	DstGroupVersions     *metav1.APIGroupList
 	QuotaList            *o7tquotav1.ClusterResourceQuotaList
@@ -61,15 +59,6 @@ func ListGroupVersions(client *kubernetes.Clientset, ch chan<- *metav1.APIGroupL
 		logrus.Fatal(err)
 	}
 	ch <- groupVersions
-}
-
-// ListHPAs gets Horizontal Pod Autoscaler objects
-func ListHPAs(client *kubernetes.Clientset, namespace string, ch chan<- *autoscalingv1.HorizontalPodAutoscalerList) {
-	hpas, err := client.AutoscalingV1().HorizontalPodAutoscalers(namespace).List(listOptions)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	ch <- hpas
 }
 
 // ListNamespaces list all namespaces, wrapper around client-go
