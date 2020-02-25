@@ -23,8 +23,6 @@ var (
 	ClusterNames = make(map[string]string)
 	// K8sClient k8s api client for source cluster
 	K8sClient *kubernetes.Clientset
-	// K8sDstClient k8s api client for target cluster
-	K8sDstClient *kubernetes.Clientset
 	// O7tClient openshift api client for source cluster
 	O7tClient *OpenshiftClient
 
