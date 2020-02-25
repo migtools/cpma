@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -28,8 +27,6 @@ var (
 	K8sDstClient *kubernetes.Clientset
 	// O7tClient openshift api client for source cluster
 	O7tClient *OpenshiftClient
-	// Discovery client
-	Discovery *discovery.DiscoveryClient
 
 	kubeConfigGetter = func() (*clientcmdapi.Config, error) {
 		return KubeConfig, nil
@@ -78,21 +75,6 @@ func getKubeConfigPath() (string, error) {
 	return kubeConfigPath, nil
 }
 
-// CreateDiscoveryClient create api client using cluster from kubeconfig context
-func CreateDiscoveryClient(contextCluster string) error {
-	config, err := buildConfig(contextCluster)
-	if err != nil {
-		return err
-	}
-
-	if Discovery == nil {
-		Discovery = NewDiscoveryOrDie(config)
-		logrus.Debugf("Discovery API client initialized for %s", contextCluster)
-	}
-
-	return nil
-}
-
 // CreateK8sClient create api client using cluster from kubeconfig context
 func CreateK8sClient(contextCluster string) error {
 	if K8sClient == nil {
@@ -104,7 +86,6 @@ func CreateK8sClient(contextCluster string) error {
 		K8sClient = NewK8SOrDie(config)
 		logrus.Debugf("Kubernetes API client initialized for %s", contextCluster)
 	}
-
 	return nil
 }
 
