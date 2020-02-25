@@ -19,7 +19,6 @@ import (
 	k8sapicore "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
 	k8sapistorage "k8s.io/api/storage/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ClusterTransformName is the cluster report name
@@ -57,7 +56,6 @@ func (e ClusterExtraction) Transform() ([]Output, error) {
 			PersistentVolumeList: e.PersistentVolumeList,
 			RBACResources:        e.RBACResources,
 			StorageClassList:     e.StorageClassList,
-			NewGVs:               e.NewGVs,
 		})
 
 		FinalReportOutput.Report.ClusterReport = clusterReport
@@ -103,8 +101,6 @@ func (e ClusterExtraction) Validate() (err error) { return }
 
 // Extract collects data for cluster report
 func (e ClusterTransform) Extract() (Extraction, error) {
-	chanDstGVs := make(chan *metav1.APIGroupList)
-	chanGVs := make(chan *metav1.APIGroupList)
 	chanNodes := make(chan *k8sapicore.NodeList)
 	chanClusterQuotas := make(chan *o7tapiquota.ClusterResourceQuotaList)
 	chanNamespaces := make(chan *k8sapicore.NamespaceList)
@@ -116,11 +112,6 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	chanStorageClassList := make(chan *k8sapistorage.StorageClassList)
 	chanSecurityContextConstraints := make(chan *o7tapisecurity.SecurityContextConstraintsList)
 
-	if api.K8sDstClient != nil {
-		go api.ListGroupVersions(api.K8sDstClient, chanDstGVs)
-	}
-
-	go api.ListGroupVersions(api.K8sClient, chanGVs)
 	go api.ListNamespaces(api.K8sClient, chanNamespaces)
 	go api.ListNodes(api.K8sClient, chanNodes)
 	go api.ListQuotas(api.O7tClient, chanClusterQuotas)
@@ -168,7 +159,6 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		extraction.NamespaceList[i] = namespaceResources
 	}
 
-	extraction.GroupVersions = <-chanGVs
 	extraction.NodeList = <-chanNodes
 	extraction.QuotaList = <-chanClusterQuotas
 	extraction.PersistentVolumeList = <-chanPVs
@@ -179,42 +169,10 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	extraction.RBACResources.SecurityContextConstraintsList = <-chanSecurityContextConstraints
 	extraction.StorageClassList = <-chanStorageClassList
 
-	if api.K8sDstClient != nil {
-		extraction.DstGroupVersions = <-chanDstGVs
-		extraction.NewGVs = NewGroupVersions(extraction.GroupVersions, extraction.DstGroupVersions)
-	}
-
 	return *extraction, nil
-}
-
-// NewGroupVersions returns the list of new GroupVersions available in destination but in source
-func NewGroupVersions(src *metav1.APIGroupList, dst *metav1.APIGroupList) []string {
-	list := []string{}
-	for _, dstGV := range filterGVs(dst) {
-		found := false
-		for _, srcGV := range filterGVs(src) {
-			if dstGV == srcGV {
-				found = true
-			}
-		}
-		if found == false {
-			list = append(list, dstGV)
-		}
-	}
-	return list
 }
 
 // Name returns a human readable name for the transform
 func (e ClusterTransform) Name() string {
 	return ClusterTransformName
-}
-
-func filterGVs(gvs *metav1.APIGroupList) []string {
-	list := []string{}
-	for _, group := range gvs.Groups {
-		for _, version := range group.Versions {
-			list = append(list, version.GroupVersion)
-		}
-	}
-	return list
 }

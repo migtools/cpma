@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/konveyor/cpma/pkg/api"
-	"github.com/konveyor/cpma/pkg/transform"
 	"github.com/konveyor/cpma/pkg/transform/cluster"
 	cpmatest "github.com/konveyor/cpma/pkg/transform/internal/test"
 	o7tapiauth "github.com/openshift/api/authorization/v1"
@@ -15,7 +14,7 @@ import (
 	k8sapicore "k8s.io/api/core/v1"
 	k8sapistorage "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8smachinery "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestReportQuotas(t *testing.T) {
@@ -128,7 +127,7 @@ func TestReportNodes(t *testing.T) {
 	// Init fake nodes
 	nodes := make([]k8sapicore.Node, 0)
 	nodes = append(nodes, k8sapicore.Node{
-		ObjectMeta: metav1.ObjectMeta{
+		ObjectMeta: k8smachinery.ObjectMeta{
 			Name:   "test-master",
 			Labels: masterNodeLabels,
 		},
@@ -373,7 +372,7 @@ func TestRBACReport(t *testing.T) {
 	roleList.Items = make([]o7tapiauth.Role, 0)
 
 	roleList.Items = append(roleList.Items, o7tapiauth.Role{
-		ObjectMeta: metav1.ObjectMeta{
+		ObjectMeta: k8smachinery.ObjectMeta{
 			Name: "testrole1",
 		},
 	})
@@ -482,33 +481,4 @@ func TestRBACReport(t *testing.T) {
 		})
 	}
 
-}
-
-func TestReportMisssingGVs(t *testing.T) {
-	expectedMissingGVs := make([]cluster.NewGVsReport, 0)
-	expectedMissingGVs = append(expectedMissingGVs, cluster.NewGVsReport{
-		GroupVersion: "testgroupversion/v1",
-	})
-
-	testCases := []struct {
-		name                  string
-		inputGroupVersions    *metav1.APIGroupList
-		inputDstGroupVersions *metav1.APIGroupList
-		expectedNewGVs        []cluster.NewGVsReport
-	}{
-		{
-			name:                  "generate missing groupversions report",
-			inputGroupVersions:    cpmatest.CreateTestClusterGroupVersions("testgroupversion", "v1beta1"),
-			inputDstGroupVersions: cpmatest.CreateTestClusterGroupVersions("testgroupversion", "v1"),
-			expectedNewGVs:        expectedMissingGVs,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			clusterNewGVs := &cluster.Report{}
-			clusterNewGVs.ReportNewGVs(transform.NewGroupVersions(tc.inputGroupVersions, tc.inputDstGroupVersions))
-			assert.Equal(t, tc.expectedNewGVs, clusterNewGVs.NewGVs)
-		})
-	}
 }

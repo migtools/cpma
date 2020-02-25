@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/api/apps/v1beta1"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	storagev1 "k8s.io/api/storage/v1"
@@ -19,16 +18,12 @@ import (
 
 // Resources represent api resources used in report
 type Resources struct {
-	HPAList              *autoscalingv1.HorizontalPodAutoscalerList
-	GroupVersions        *metav1.APIGroupList
-	DstGroupVersions     *metav1.APIGroupList
 	QuotaList            *o7tquotav1.ClusterResourceQuotaList
 	NodeList             *corev1.NodeList
 	PersistentVolumeList *corev1.PersistentVolumeList
 	StorageClassList     *storagev1.StorageClassList
 	NamespaceList        []NamespaceResources
 	RBACResources        RBACResources
-	NewGVs               []string
 }
 
 // RBACResources contains all resources related to RBAC report
@@ -53,24 +48,6 @@ type NamespaceResources struct {
 }
 
 var listOptions metav1.ListOptions
-
-// ListGroupVersions list all GV
-func ListGroupVersions(client *kubernetes.Clientset, ch chan<- *metav1.APIGroupList) {
-	groupVersions, err := client.ServerGroups()
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	ch <- groupVersions
-}
-
-// ListHPAs gets Horizontal Pod Autoscaler objects
-func ListHPAs(client *kubernetes.Clientset, namespace string, ch chan<- *autoscalingv1.HorizontalPodAutoscalerList) {
-	hpas, err := client.AutoscalingV1().HorizontalPodAutoscalers(namespace).List(listOptions)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	ch <- hpas
-}
 
 // ListNamespaces list all namespaces, wrapper around client-go
 func ListNamespaces(client *kubernetes.Clientset, ch chan<- *corev1.NamespaceList) {
