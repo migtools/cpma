@@ -53,7 +53,7 @@ var listOptions metav1.ListOptions
 
 // ListGroupVersions list all GV
 func ListGroupVersions(client *kubernetes.Clientset, ch chan<- *metav1.APIGroupList) {
-	groupVersions, err := client.ServerGroups()
+	groupVersions, err := Discovery.ServerGroups()
 	if err != nil {
 		logrus.Fatal(err)
 	}
