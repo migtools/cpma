@@ -19,8 +19,6 @@ func TestInitConfig(t *testing.T) {
 	os.Setenv("CPMA_MASTERCONFIGFILE", "dummy")
 	os.Setenv("CPMA_NODECONFIGFILE", "dummy")
 	os.Setenv("CPMA_REGISTRIESCONFIGFILE", "dummy")
-	os.Setenv("CPMA_TARGETCLUSTER", "false")
-	os.Setenv("CPMA_TARGETCLUSTERNAME", "")
 
 	ConfigFile = "testdata/cpma-config.yml"
 	api.K8sClient = &kubernetes.Clientset{}
@@ -121,8 +119,6 @@ func TestInitFromEnv(t *testing.T) {
 			os.Setenv("CPMA_SAVECONFIG", "false")
 			os.Setenv("CPMA_SILENT", "false")
 			os.Setenv("CPMA_WORKDIR", "testdata/out")
-			os.Setenv("CPMA_TARGETCLUSTER", "false")
-			os.Setenv("CPMA_TARGETCLUSTERNAME", "")
 
 			os.Setenv("CPMA_CRIOCONFIGFILE", "/etc/crio/crio.conf")
 			os.Setenv("CPMA_ETCDCONFIGFILE", "/etc/etcd/etcd.conf")

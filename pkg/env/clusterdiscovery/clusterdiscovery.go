@@ -9,12 +9,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// DiscoverDstCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
-// parse kubeconfig and select targeted cluster from available contexts
-func DiscoverDstCluster() (string, error) {
-	return SurveyClusters(), nil
-}
-
 // DiscoverCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
 // parse kubeconfig and select source cluster from available contexts
 // query k8s api for nodes, get node urls from api response and survey master node

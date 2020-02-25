@@ -1,6 +1,5 @@
 clustername: "somename"
 configsource: remote
-targetclustername: ""
 hostname: "master-0.test.example.com"
 manifests: true
 reporting: true
