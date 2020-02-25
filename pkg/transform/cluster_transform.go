@@ -112,16 +112,16 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	chanStorageClassList := make(chan *k8sapistorage.StorageClassList)
 	chanSecurityContextConstraints := make(chan *o7tapisecurity.SecurityContextConstraintsList)
 
-	go api.ListNamespaces(chanNamespaces)
-	go api.ListNodes(chanNodes)
-	go api.ListQuotas(chanClusterQuotas)
-	go api.ListPVs(chanPVs)
-	go api.ListUsers(chanUsers)
-	go api.ListGroups(chanGroups)
-	go api.ListClusterRoles(chanClusterRoles)
-	go api.ListClusterRolesBindings(chanClusterRolesListBindings)
-	go api.ListSCC(chanSecurityContextConstraints)
-	go api.ListStorageClasses(chanStorageClassList)
+	go api.ListNamespaces(api.K8sClient, chanNamespaces)
+	go api.ListNodes(api.K8sClient, chanNodes)
+	go api.ListQuotas(api.O7tClient, chanClusterQuotas)
+	go api.ListPVs(api.K8sClient, chanPVs)
+	go api.ListUsers(api.O7tClient, chanUsers)
+	go api.ListGroups(api.O7tClient, chanGroups)
+	go api.ListClusterRoles(api.O7tClient, chanClusterRoles)
+	go api.ListClusterRolesBindings(api.O7tClient, chanClusterRolesListBindings)
+	go api.ListSCC(api.O7tClient, chanSecurityContextConstraints)
+	go api.ListStorageClasses(api.K8sClient, chanStorageClassList)
 
 	extraction := &ClusterExtraction{}
 
@@ -140,13 +140,13 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		chanRoles := make(chan *o7tapiauth.RoleList)
 		chanPVCs := make(chan *k8sapicore.PersistentVolumeClaimList)
 
-		go api.ListResourceQuotas(namespace.Name, chanQuotas)
-		go api.ListPods(namespace.Name, chanPods)
-		go api.ListRoutes(namespace.Name, chanRoutes)
-		go api.ListDeployments(namespace.Name, chanDeployments)
-		go api.ListDaemonSets(namespace.Name, chanDaemonSets)
-		go api.ListRoles(namespace.Name, chanRoles)
-		go api.ListPVCs(namespace.Name, chanPVCs)
+		go api.ListResourceQuotas(api.K8sClient, namespace.Name, chanQuotas)
+		go api.ListPods(api.K8sClient, namespace.Name, chanPods)
+		go api.ListRoutes(api.O7tClient, namespace.Name, chanRoutes)
+		go api.ListDeployments(api.K8sClient, namespace.Name, chanDeployments)
+		go api.ListDaemonSets(api.K8sClient, namespace.Name, chanDaemonSets)
+		go api.ListRoles(api.O7tClient, namespace.Name, chanRoles)
+		go api.ListPVCs(api.K8sClient, namespace.Name, chanPVCs)
 
 		namespaceResources.ResourceQuotaList = <-chanQuotas
 		namespaceResources.PodList = <-chanPods

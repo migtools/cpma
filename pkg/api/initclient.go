@@ -21,9 +21,9 @@ var (
 	KubeConfig *clientcmdapi.Config
 	// ClusterNames contains names of contexts and cluster
 	ClusterNames = make(map[string]string)
-	// K8sClient api client used for connecting to k8s api
+	// K8sClient k8s api client for source cluster
 	K8sClient *kubernetes.Clientset
-	// O7tClient api client used for connecting to Openshift api
+	// O7tClient openshift api client for source cluster
 	O7tClient *OpenshiftClient
 
 	kubeConfigGetter = func() (*clientcmdapi.Config, error) {
@@ -75,12 +75,12 @@ func getKubeConfigPath() (string, error) {
 
 // CreateK8sClient create api client using cluster from kubeconfig context
 func CreateK8sClient(contextCluster string) error {
-	config, err := buildConfig(contextCluster)
-	if err != nil {
-		return err
-	}
-
 	if K8sClient == nil {
+		config, err := buildConfig(contextCluster)
+		if err != nil {
+			return err
+		}
+
 		K8sClient = NewK8SOrDie(config)
 		logrus.Debugf("Kubernetes API client initialized for %s", contextCluster)
 	}
@@ -89,12 +89,12 @@ func CreateK8sClient(contextCluster string) error {
 
 // CreateO7tClient create api client using cluster from kubeconfig context
 func CreateO7tClient(contextCluster string) error {
-	config, err := buildConfig(contextCluster)
-	if err != nil {
-		return err
-	}
-
 	if O7tClient == nil {
+		config, err := buildConfig(contextCluster)
+		if err != nil {
+			return err
+		}
+
 		O7tClient = NewO7tOrDie(config)
 		logrus.Debugf("Openshift API client initialized for %s", contextCluster)
 	}
