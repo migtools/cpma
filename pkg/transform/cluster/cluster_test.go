@@ -3,9 +3,9 @@ package cluster_test
 import (
 	"testing"
 
-	"github.com/fusor/cpma/pkg/api"
-	"github.com/fusor/cpma/pkg/transform/cluster"
-	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
+	"github.com/konveyor/cpma/pkg/api"
+	"github.com/konveyor/cpma/pkg/transform/cluster"
+	cpmatest "github.com/konveyor/cpma/pkg/transform/internal/test"
 	o7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiquota "github.com/openshift/api/quota/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"

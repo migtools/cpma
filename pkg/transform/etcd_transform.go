@@ -7,9 +7,9 @@ import (
 
 	"gopkg.in/go-ini/ini.v1"
 
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/transform/reportoutput"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
 	"github.com/sirupsen/logrus"
 )
 
