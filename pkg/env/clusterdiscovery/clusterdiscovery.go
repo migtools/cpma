@@ -12,11 +12,7 @@ import (
 // DiscoverDstCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
 // parse kubeconfig and select targeted cluster from available contexts
 func DiscoverDstCluster() (string, error) {
-	selectedCluster := SurveyClusters()
-	if selectedCluster != "" {
-		return "", nil
-	}
-	return selectedCluster, nil
+	return SurveyClusters(), nil
 }
 
 // DiscoverCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
