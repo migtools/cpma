@@ -57,7 +57,6 @@ func (e ClusterExtraction) Transform() ([]Output, error) {
 			PersistentVolumeList: e.PersistentVolumeList,
 			RBACResources:        e.RBACResources,
 			StorageClassList:     e.StorageClassList,
-			NewGVs:               e.NewGVs,
 		})
 
 		FinalReportOutput.Report.ClusterReport = clusterReport
@@ -103,7 +102,6 @@ func (e ClusterExtraction) Validate() (err error) { return }
 
 // Extract collects data for cluster report
 func (e ClusterTransform) Extract() (Extraction, error) {
-	chanDstGVs := make(chan *metav1.APIGroupList)
 	chanGVs := make(chan *metav1.APIGroupList)
 	chanNodes := make(chan *k8sapicore.NodeList)
 	chanClusterQuotas := make(chan *o7tapiquota.ClusterResourceQuotaList)
@@ -115,10 +113,6 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	chanClusterRolesListBindings := make(chan *o7tapiauth.ClusterRoleBindingList)
 	chanStorageClassList := make(chan *k8sapistorage.StorageClassList)
 	chanSecurityContextConstraints := make(chan *o7tapisecurity.SecurityContextConstraintsList)
-
-	if api.K8sDstClient != nil {
-		go api.ListGroupVersions(api.K8sDstClient, chanDstGVs)
-	}
 
 	go api.ListGroupVersions(api.K8sClient, chanGVs)
 	go api.ListNamespaces(api.K8sClient, chanNamespaces)
@@ -168,7 +162,7 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 		extraction.NamespaceList[i] = namespaceResources
 	}
 
-	extraction.GroupVersions = <-chanGVs
+	extraction.GroupVersions = filterGVs(<-chanGVs)
 	extraction.NodeList = <-chanNodes
 	extraction.QuotaList = <-chanClusterQuotas
 	extraction.PersistentVolumeList = <-chanPVs
@@ -179,36 +173,7 @@ func (e ClusterTransform) Extract() (Extraction, error) {
 	extraction.RBACResources.SecurityContextConstraintsList = <-chanSecurityContextConstraints
 	extraction.StorageClassList = <-chanStorageClassList
 
-	if api.K8sDstClient != nil {
-		extraction.DstGroupVersions = <-chanDstGVs
-		extraction.NewGVs = NewGroupVersions(extraction.GroupVersions, extraction.DstGroupVersions)
-	}
-	for _, GVs := range extraction.GroupVersions.Groups {
-		fmt.Printf("%+v\n", GVs)
-	}
 	return *extraction, nil
-}
-
-// NewGroupVersions returns the list of new GroupVersions available in destination but in source
-func NewGroupVersions(src *metav1.APIGroupList, dst *metav1.APIGroupList) []string {
-	list := []string{}
-	for _, dstGV := range filterGVs(dst) {
-		found := false
-		for _, srcGV := range filterGVs(src) {
-			if dstGV == srcGV {
-				found = true
-			}
-		}
-		if found == false {
-			list = append(list, dstGV)
-		}
-	}
-	return list
-}
-
-// Name returns a human readable name for the transform
-func (e ClusterTransform) Name() string {
-	return ClusterTransformName
 }
 
 func filterGVs(gvs *metav1.APIGroupList) []string {
@@ -219,4 +184,9 @@ func filterGVs(gvs *metav1.APIGroupList) []string {
 		}
 	}
 	return list
+}
+
+// Name returns a human readable name for the transform
+func (e ClusterTransform) Name() string {
+	return ClusterTransformName
 }
