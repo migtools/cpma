@@ -18,8 +18,6 @@ import (
 
 // Resources represent api resources used in report
 type Resources struct {
-	GroupVersions        []string
-	DstGroupVersions     *metav1.APIGroupList
 	QuotaList            *o7tquotav1.ClusterResourceQuotaList
 	NodeList             *corev1.NodeList
 	PersistentVolumeList *corev1.PersistentVolumeList
@@ -50,15 +48,6 @@ type NamespaceResources struct {
 }
 
 var listOptions metav1.ListOptions
-
-// ListGroupVersions list all GV
-func ListGroupVersions(client *kubernetes.Clientset, ch chan<- *metav1.APIGroupList) {
-	groupVersions, err := Discovery.ServerGroups()
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	ch <- groupVersions
-}
 
 // ListNamespaces list all namespaces, wrapper around client-go
 func ListNamespaces(client *kubernetes.Clientset, ch chan<- *corev1.NamespaceList) {

@@ -152,13 +152,6 @@ func surveyMissingValues() error {
 		return errors.Wrap(err, "OpenShift api client failed to create")
 	}
 
-	dstClusterName := viperConfig.GetString("TargetClusterName")
-	if viperConfig.GetString("TargetCluster") == "true" && dstClusterName != "" {
-		api.KubeConfig.CurrentContext = api.ClusterNames[dstClusterName]
-		if err := api.CreateDiscoveryClient(dstClusterName); err != nil {
-			return errors.Wrap(err, "k8s api client failed to create for destination cluster")
-		}
-	}
 	return nil
 }
 
@@ -406,9 +399,6 @@ func surveyConfigPaths() error {
 func createAPIClients() error {
 	if api.O7tClient != nil && api.K8sClient != nil {
 		return nil
-	}
-	if err := api.CreateDiscoveryClient(viperConfig.GetString("ClusterName")); err != nil {
-		return errors.Wrap(err, "discovery api client failed to create")
 	}
 
 	if err := api.CreateK8sClient(viperConfig.GetString("ClusterName")); err != nil {
