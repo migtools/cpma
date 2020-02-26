@@ -237,7 +237,7 @@ func surveyHostname() error {
 			prompt := &survey.Input{
 				Message: "OCP3 Cluster hostname",
 			}
-			if err := survey.AskOne(prompt, &hostname, survey.ComposeValidators(survey.Required)); err != nil {
+			if err := survey.AskOne(prompt, &hostname, nil); err != nil {
 				return err
 			}
 
@@ -291,7 +291,7 @@ func surveySSHConfigValues() error {
 		prompt := &survey.Input{
 			Message: "Path to private SSH key",
 		}
-		if err := survey.AskOne(prompt, &privatekey, survey.ComposeValidators(survey.Required)); err != nil {
+		if err := survey.AskOne(prompt, &privatekey, nil); err != nil {
 			return err
 		}
 
