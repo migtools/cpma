@@ -198,7 +198,7 @@ func runCpma() error {
 }
 
 // readReport reads and unmarshal the report into report struceture from transform
-func readReport(pathToReport string) (report *transform.ReportOutput, err error) {
+func readReport(pathToReport string) (report *transform.Report, err error) {
 	srcReport, err := ioutil.ReadFile(pathToReport)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error while reading report")
