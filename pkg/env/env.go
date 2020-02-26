@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/fusor/cpma/pkg/api"
-	"github.com/fusor/cpma/pkg/env/clusterdiscovery"
+	"github.com/konveyor/cpma/pkg/api"
+	"github.com/konveyor/cpma/pkg/env/clusterdiscovery"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -237,7 +237,7 @@ func surveyHostname() error {
 			prompt := &survey.Input{
 				Message: "OCP3 Cluster hostname",
 			}
-			if err := survey.AskOne(prompt, &hostname, survey.ComposeValidators(survey.Required)); err != nil {
+			if err := survey.AskOne(prompt, &hostname, nil); err != nil {
 				return err
 			}
 
@@ -291,7 +291,7 @@ func surveySSHConfigValues() error {
 		prompt := &survey.Input{
 			Message: "Path to private SSH key",
 		}
-		if err := survey.AskOne(prompt, &privatekey, survey.ComposeValidators(survey.Required)); err != nil {
+		if err := survey.AskOne(prompt, &privatekey, nil); err != nil {
 			return err
 		}
 

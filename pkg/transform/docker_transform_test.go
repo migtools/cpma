@@ -3,9 +3,9 @@ package transform_test
 import (
 	"testing"
 
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/transform"
-	"github.com/fusor/cpma/pkg/transform/reportoutput"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/transform"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
