@@ -1,12 +1,12 @@
 package oauth
 
 import (
-	"encoding/base64"
-
-	"github.com/fusor/cpma/pkg/transform/secrets"
+	"github.com/konveyor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -14,7 +14,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 	var (
 		err             error
 		idP             = &configv1.IdentityProvider{}
-		providerSecrets []*secrets.Secret
+		providerSecrets []*corev1.Secret
 		htpasswd        legacyconfigv1.HTPasswdPasswordIdentityProvider
 	)
 
@@ -30,9 +30,7 @@ func buildHTPasswdIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 	idP.HTPasswd = &configv1.HTPasswdIdentityProvider{}
 	idP.HTPasswd.FileData.Name = secretName
 
-	encoded := base64.StdEncoding.EncodeToString(p.HTFileData)
-
-	secret, err := secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.HtpasswdSecretType)
+	secret, err := secrets.Opaque(secretName, p.HTFileData, OAuthNamespace, "htpasswd")
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to generate secret for htpasswd, see error")
 	}

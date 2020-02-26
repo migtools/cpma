@@ -2,3 +2,5 @@ kind: MasterConfig
 apiVersion: v1
 servingInfo:
   bindAddress: 0.0.0.0:8443
+  certFile: ./testdata/master.server.crt
+  keyFile: ./testdata/master.server.key

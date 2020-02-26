@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fusor/cpma/pkg/api"
+	"github.com/konveyor/cpma/pkg/api"
 	"github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -14,6 +14,12 @@ import (
 
 func TestInitConfig(t *testing.T) {
 	t.Parallel()
+	os.Setenv("CPMA_CRIOCONFIGFILE", "dummy")
+	os.Setenv("CPMA_ETCDCONFIGFILE", "dummy")
+	os.Setenv("CPMA_MASTERCONFIGFILE", "dummy")
+	os.Setenv("CPMA_NODECONFIGFILE", "dummy")
+	os.Setenv("CPMA_REGISTRIESCONFIGFILE", "dummy")
+
 	ConfigFile = "testdata/cpma-config.yml"
 	api.K8sClient = &kubernetes.Clientset{}
 	api.O7tClient = &api.OpenshiftClient{}
@@ -99,31 +105,6 @@ func TestInitFromEnv(t *testing.T) {
 					envValue:         "local",
 					configEquivalent: "configsource",
 				},
-				configAsset{
-					envKey:           "CPMA_CRIOCONFIGFILE",
-					envValue:         "test-crio",
-					configEquivalent: "crioconfigfile",
-				},
-				configAsset{
-					envKey:           "CPMA_ETCDCONFIGFILE",
-					envValue:         "test-etcd",
-					configEquivalent: "etcdconfigfile",
-				},
-				configAsset{
-					envKey:           "CPMA_MASTERCONFIGFILE",
-					envValue:         "test-master",
-					configEquivalent: "masterconfigfile",
-				},
-				configAsset{
-					envKey:           "CPMA_NODECONFIGFILE",
-					envValue:         "test-node",
-					configEquivalent: "nodeconfigfile",
-				},
-				configAsset{
-					envKey:           "CPMA_REGISTRIESCONFIGFILE",
-					envValue:         "test-registries",
-					configEquivalent: "registriesconfigfile",
-				},
 			},
 		},
 	}
@@ -131,10 +112,19 @@ func TestInitFromEnv(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			os.Setenv("CPMA_CLUSTERNAME", "somename")
+			os.Setenv("CPMA_DEBUG", "false")
+			os.Setenv("CPMA_HOSTNAME", "master.example.org")
 			os.Setenv("CPMA_MANIFESTS", "true")
 			os.Setenv("CPMA_REPORTING", "true")
 			os.Setenv("CPMA_SAVECONFIG", "false")
+			os.Setenv("CPMA_SILENT", "false")
 			os.Setenv("CPMA_WORKDIR", "testdata/out")
+
+			os.Setenv("CPMA_CRIOCONFIGFILE", "/etc/crio/crio.conf")
+			os.Setenv("CPMA_ETCDCONFIGFILE", "/etc/etcd/etcd.conf")
+			os.Setenv("CPMA_MASTERCONFIGFILE", "/etc/origin/master/master-config.yaml")
+			os.Setenv("CPMA_NODECONFIGFILE", "/etc/origin/node/node-config.yaml")
+			os.Setenv("CPMA_REGISTRIESCONFIGFILE", "/etc/containers/registries.conf")
 
 			api.K8sClient = &kubernetes.Clientset{}
 			api.O7tClient = &api.OpenshiftClient{}
@@ -234,7 +224,6 @@ func TestInitLogger(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			viperConfig.Set("debug", tc.debugLevel)
-			viperConfig.Set("verbose", true)
 			InitLogger()
 			logger := logrus.StandardLogger()
 			if tc.debugLevel {

@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/fusor/cpma/cmd"
-	"github.com/fusor/cpma/pkg/env"
+	_ "github.com/konveyor/cpma/cmd"
+	"github.com/konveyor/cpma/pkg/env"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,7 +25,7 @@ func TestInitDefaults(t *testing.T) {
 	assert.Equal(t, "", env.Config().GetString("SSHPrivateKey"))
 	assert.Equal(t, "", env.Config().GetString("SSHLogin"))
 	assert.Equal(t, "0", env.Config().GetString("SSHPort"))
-	assert.Equal(t, false, env.Config().Get("Verbose"))
+	assert.Equal(t, false, env.Config().Get("Silent"))
 	assert.Equal(t, "", env.Config().GetString("WorkDIr"))
 }
 
@@ -46,7 +46,7 @@ func TestInitSetValues(t *testing.T) {
 		os.Unsetenv("CPMA_SSHPRIVATEKEY")
 		os.Unsetenv("CPMA_SSHLOGIN")
 		os.Unsetenv("CPMA_SSHPORT")
-		os.Unsetenv("CPMA_VERBOSE")
+		os.Unsetenv("CPMA_SILENT")
 		os.Unsetenv("CPMA_WORKDIR")
 	}()
 
@@ -65,7 +65,7 @@ func TestInitSetValues(t *testing.T) {
 	os.Setenv("CPMA_SSHPRIVATEKEY", "/test/.ssh/test")
 	os.Setenv("CPMA_SSHLOGIN", "testuser")
 	os.Setenv("CPMA_SSHPORT", "8080")
-	os.Setenv("CPMA_VERBOSE", "true")
+	os.Setenv("CPMA_SILENT", "true")
 	os.Setenv("CPMA_WORKDIR", "./testdir")
 	env.InitConfig()
 
@@ -84,6 +84,6 @@ func TestInitSetValues(t *testing.T) {
 	assert.Equal(t, "/test/.ssh/test", env.Config().GetString("SSHPrivateKey"))
 	assert.Equal(t, "testuser", env.Config().GetString("SSHLogin"))
 	assert.Equal(t, "8080", env.Config().GetString("SSHPort"))
-	assert.Equal(t, true, env.Config().GetBool("Verbose"))
+	assert.Equal(t, true, env.Config().GetBool("Silent"))
 	assert.Equal(t, "./testdir", env.Config().GetString("WorkDIr"))
 }

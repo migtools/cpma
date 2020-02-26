@@ -1,13 +1,13 @@
 package oauth
 
 import (
-	"encoding/base64"
-
-	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/transform/secrets"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -15,7 +15,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 	var (
 		err             error
 		idP             = &configv1.IdentityProvider{}
-		providerSecrets []*secrets.Secret
+		providerSecrets []*corev1.Secret
 		google          legacyconfigv1.GoogleIdentityProvider
 	)
 
@@ -37,8 +37,7 @@ func buildGoogleIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 		return nil, errors.Wrap(err, "Failed to fetch client secret for google, see error")
 	}
 
-	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
-	secret, err := secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
+	secret, err := secrets.Opaque(secretName, []byte(secretContent), OAuthNamespace, "clientSecret")
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to generate client secret for google, see error")
 	}

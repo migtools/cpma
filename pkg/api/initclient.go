@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"sync"
+	"runtime"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
@@ -21,24 +21,13 @@ var (
 	KubeConfig *clientcmdapi.Config
 	// ClusterNames contains names of contexts and cluster
 	ClusterNames = make(map[string]string)
-	// K8sClient api client used for connecting to k8s api
+	// K8sClient k8s api client for source cluster
 	K8sClient *kubernetes.Clientset
-	// O7tClient api client used for connecting to Openshift api
+	// O7tClient openshift api client for source cluster
 	O7tClient *OpenshiftClient
 
 	kubeConfigGetter = func() (*clientcmdapi.Config, error) {
 		return KubeConfig, nil
-	}
-
-	// singleton instances
-	instances struct {
-		Openshift *OpenshiftClient
-		K8S       *kubernetes.Clientset
-	}
-
-	once struct {
-		Openshift sync.Once
-		K8S       sync.Once
 	}
 )
 
@@ -86,26 +75,29 @@ func getKubeConfigPath() (string, error) {
 
 // CreateK8sClient create api client using cluster from kubeconfig context
 func CreateK8sClient(contextCluster string) error {
-	config, err := buildConfig(contextCluster)
-	if err != nil {
-		return err
+	if K8sClient == nil {
+		config, err := buildConfig(contextCluster)
+		if err != nil {
+			return err
+		}
+
+		K8sClient = NewK8SOrDie(config)
+		logrus.Debugf("Kubernetes API client initialized for %s", contextCluster)
 	}
-
-	K8sClient = InitK8SOrDie(config)
-	logrus.Debugf("Kubernetes API client initialized for %s", contextCluster)
-
 	return nil
 }
 
 // CreateO7tClient create api client using cluster from kubeconfig context
 func CreateO7tClient(contextCluster string) error {
-	config, err := buildConfig(contextCluster)
-	if err != nil {
-		return err
-	}
+	if O7tClient == nil {
+		config, err := buildConfig(contextCluster)
+		if err != nil {
+			return err
+		}
 
-	O7tClient = InitO7tOrDie(config)
-	logrus.Debugf("Openshift API client initialized for %s", contextCluster)
+		O7tClient = NewO7tOrDie(config)
+		logrus.Debugf("Openshift API client initialized for %s", contextCluster)
+	}
 
 	return nil
 }
@@ -120,6 +112,12 @@ func buildConfig(contextCluster string) (*rest.Config, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Error in KUBECONFIG")
 	}
+
+	config.AcceptContentTypes = "application/vnd.kubernetes.protobuf,application/json"
+	config.UserAgent = fmt.Sprintf(
+		"cpma/v1.0 (%s/%s) kubernetes/v1.0",
+		runtime.GOOS, runtime.GOARCH,
+	)
 
 	return config, nil
 }

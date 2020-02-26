@@ -1,15 +1,14 @@
 package oauth
 
 import (
-	"encoding/base64"
-
-	"github.com/pkg/errors"
-
-	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/transform/configmaps"
-	"github.com/fusor/cpma/pkg/transform/secrets"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform/configmaps"
+	"github.com/konveyor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/pkg/errors"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -17,8 +16,8 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 	var (
 		err                error
 		idP                = &configv1.IdentityProvider{}
-		providerSecrets    []*secrets.Secret
-		providerConfigMaps []*configmaps.ConfigMap
+		providerSecrets    []*corev1.Secret
+		providerConfigMaps []*corev1.ConfigMap
 		github             legacyconfigv1.GitHubIdentityProvider
 	)
 
@@ -35,9 +34,13 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 	idP.GitHub.Organizations = github.Organizations
 	idP.GitHub.Teams = github.Teams
 
+	if github.Hostname == "" && len(github.Organizations) == 0 && len(github.Teams) == 0 {
+		return nil, errors.New("GitHub provider ignored: OCP 4 requires at least one of 'organizations' or 'teams' field present")
+	}
+
 	if github.CA != "" {
 		caConfigmap := configmaps.GenConfigMap("github-configmap", OAuthNamespace, p.CAData)
-		idP.GitHub.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		idP.GitHub.CA = configv1.ConfigMapNameReference{Name: caConfigmap.ObjectMeta.Name}
 		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 
@@ -48,8 +51,7 @@ func buildGitHubIP(serializer *json.Serializer, p IdentityProvider) (*ProviderRe
 		return nil, errors.Wrap(err, "Failed to fetch client secret for for github, see error")
 	}
 
-	encoded := base64.StdEncoding.EncodeToString([]byte(secretContent))
-	secret, err := secrets.GenSecret(secretName, encoded, OAuthNamespace, secrets.LiteralSecretType)
+	secret, err := secrets.Opaque(secretName, []byte(secretContent), OAuthNamespace, "clientSecret")
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to generate client secret for for github, see error")
 	}
@@ -73,8 +75,10 @@ func validateGithubProvider(serializer *json.Serializer, p IdentityProvider) err
 		return errors.New("Name can't be empty")
 	}
 
-	if err := validateMappingMethod(p.MappingMethod); err != nil {
-		return err
+	if p.MappingMethod != "" {
+		if err := validateMappingMethod(p.MappingMethod); err != nil {
+			return err
+		}
 	}
 
 	if github.ClientSecret.KeyFile != "" {

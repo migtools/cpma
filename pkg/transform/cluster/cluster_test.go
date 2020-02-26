@@ -3,9 +3,9 @@ package cluster_test
 import (
 	"testing"
 
-	"github.com/fusor/cpma/pkg/api"
-	"github.com/fusor/cpma/pkg/transform/cluster"
-	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
+	"github.com/konveyor/cpma/pkg/api"
+	"github.com/konveyor/cpma/pkg/transform/cluster"
+	cpmatest "github.com/konveyor/cpma/pkg/transform/internal/test"
 	o7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiquota "github.com/openshift/api/quota/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
@@ -40,7 +40,7 @@ func TestReportQuotas(t *testing.T) {
 	}{
 		{
 			name:                 "generate cluster quota report",
-			inputQuotaList:       cpmatest.CreateTestQuotaList(),
+			inputQuotaList:       cpmatest.CreateTestClusterQuotaList(),
 			expectedQuotaReports: expectedQuotaReports,
 		},
 	}
@@ -298,11 +298,12 @@ func TestPVReport(t *testing.T) {
 
 	expectedPVReport := make([]cluster.PVReport, 0)
 	expectedPVReport = append(expectedPVReport, cluster.PVReport{
-		Name:         "testpv",
-		Driver:       driver,
-		StorageClass: "testclass",
-		Capacity:     resources,
-		Phase:        k8sapicore.VolumePending,
+		Name:          "testpv",
+		Driver:        driver,
+		StorageClass:  "testclass",
+		Capacity:      resources,
+		Phase:         k8sapicore.VolumePending,
+		ReclaimPolicy: k8sapicore.PersistentVolumeReclaimPolicy("testpolicy"),
 	})
 
 	testCases := []struct {
@@ -431,9 +432,10 @@ func TestRBACReport(t *testing.T) {
 
 	expectedSCC := make([]cluster.OpenshiftSecurityContextConstraints, 0)
 	expectedSCC = append(expectedSCC, cluster.OpenshiftSecurityContextConstraints{
-		Name:   "testscc1",
-		Users:  []string{"testuser1"},
-		Groups: []string{"testgroup1"},
+		Name:       "testscc1",
+		Users:      []string{"testuser1", "testrole:serviceaccount:testnamespace1:testsa"},
+		Groups:     []string{"testgroup1"},
+		Namespaces: []string{"testnamespace1"},
 	})
 
 	expectedRBACReport := &cluster.RBACReport{
@@ -441,7 +443,7 @@ func TestRBACReport(t *testing.T) {
 		Groups:                     expectedGroups,
 		Roles:                      expectedNamespaceRoles,
 		ClusterRoles:               expectedClusterRoles,
-		ClusterRoleBinding:         expectedClusterRoleBindings,
+		ClusterRoleBindings:        expectedClusterRoleBindings,
 		SecurityContextConstraints: expectedSCC,
 	}
 
@@ -469,6 +471,10 @@ func TestRBACReport(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			clusterReport := &cluster.Report{}
+			clusterReport.Namespaces = make([]cluster.NamespaceReport, 0)
+			clusterReport.Namespaces = append(clusterReport.Namespaces, cluster.NamespaceReport{
+				Name: "testnamespace1",
+			})
 			clusterReport.ReportRBAC(tc.inputRBAC)
 
 			assert.Equal(t, tc.expectedRBACReport, clusterReport.RBACReport)

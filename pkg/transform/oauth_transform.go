@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/fusor/cpma/pkg/decode"
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/transform/oauth"
-	configv1 "github.com/openshift/api/legacyconfig/v1"
+	"github.com/konveyor/cpma/pkg/decode"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform/oauth"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -20,7 +21,7 @@ const OAuthComponentName = "OAuth"
 type OAuthExtraction struct {
 	IdentityProviders []oauth.IdentityProvider
 	TokenConfig       oauth.TokenConfig
-	Templates         configv1.OAuthTemplates
+	Templates         legacyconfigv1.OAuthTemplates
 }
 
 // OAuthTransform is an OAuth specific transform
@@ -42,11 +43,7 @@ func (e OAuthExtraction) Transform() ([]Output, error) {
 
 	if env.Config().GetBool("Reporting") {
 		logrus.Info("OAuthTransform::Transform:Reports")
-		reports, err := e.buildReportOutput()
-		if err != nil {
-			return nil, err
-		}
-		outputs = append(outputs, reports)
+		e.buildReportOutput()
 	}
 
 	return outputs, nil
@@ -80,7 +77,7 @@ func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 				return nil, err
 			}
 
-			filename := "100_CPMA-cluster-config-secret-" + secret.Metadata.Name + ".yaml"
+			filename := "100_CPMA-cluster-config-secret-" + secret.Name + ".yaml"
 			m := Manifest{Name: filename, CRD: secretCR}
 			manifests = append(manifests, m)
 		}
@@ -91,7 +88,7 @@ func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 				return nil, err
 			}
 
-			filename := "100_CPMA-cluster-config-configmap-" + configMap.Metadata.Name + ".yaml"
+			filename := "100_CPMA-cluster-config-configmap-" + configMap.ObjectMeta.Name + ".yaml"
 			m := Manifest{Name: filename, CRD: configMapYAML}
 			manifests = append(manifests, m)
 		}
@@ -100,8 +97,8 @@ func (e OAuthExtraction) buildManifestOutput() (Output, error) {
 	return ManifestOutput{Manifests: manifests}, nil
 }
 
-func (e OAuthExtraction) buildReportOutput() (Output, error) {
-	componentReport := ComponentReport{
+func (e OAuthExtraction) buildReportOutput() {
+	componentReport := reportoutput.ComponentReport{
 		Component: OAuthComponentName,
 	}
 
@@ -117,16 +114,26 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			"KeystonePasswordIdentityProvider",
 			"BasicAuthPasswordIdentityProvider":
 			componentReport.Reports = append(componentReport.Reports,
-				Report{
+				reportoutput.Report{
 					Name:       p.Kind,
 					Kind:       "IdentityProviders",
 					Supported:  true,
 					Confidence: HighConfidence,
 					Comment:    fmt.Sprintf("Identity provider %s is supported in OCP4", p.Name),
 				})
+			if p.Kind == "OpenIDIdentityProvider" {
+				componentReport.Reports = append(componentReport.Reports,
+					reportoutput.Report{
+						Name:       "Issuer",
+						Kind:       fmt.Sprintf("IdentityProviders:%s", p.Kind),
+						Supported:  true,
+						Confidence: HighConfidence,
+						Comment:    "OCP4 requires an 'issuer' URL, please edit OAuth manifest file and configure this field",
+					})
+			}
 		default:
 			componentReport.Reports = append(componentReport.Reports,
-				Report{
+				reportoutput.Report{
 					Name:       p.Kind,
 					Kind:       "IdentityProviders",
 					Supported:  false,
@@ -137,7 +144,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 	}
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "AccessTokenMaxAgeSeconds",
 			Kind:       "TokenConfig",
 			Supported:  true,
@@ -145,7 +152,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "AuthorizeTokenMaxAgeSeconds",
 			Kind:       "TokenConfig",
 			Supported:  false,
@@ -154,7 +161,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "",
 			Kind:       "AssetPublicURL",
 			Supported:  false,
@@ -163,7 +170,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "",
 			Kind:       "MasterPublicURL",
 			Supported:  false,
@@ -172,7 +179,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "",
 			Kind:       "MasterCA",
 			Supported:  false,
@@ -181,7 +188,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "",
 			Kind:       "MasterURL",
 			Supported:  false,
@@ -190,7 +197,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "",
 			Kind:       "GrantConfig",
 			Supported:  false,
@@ -199,7 +206,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "",
 			Kind:       "SessionConfig",
 			Supported:  false,
@@ -207,11 +214,7 @@ func (e OAuthExtraction) buildReportOutput() (Output, error) {
 			Comment:    "Translation of SessionConfig is not supported",
 		})
 
-	reportOutput := ReportOutput{
-		ComponentReports: []ComponentReport{componentReport},
-	}
-
-	return reportOutput, nil
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects OAuth configuration from an OCP3 cluster

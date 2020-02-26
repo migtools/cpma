@@ -1,15 +1,19 @@
 package cluster
 
 import (
-	"github.com/fusor/cpma/pkg/api"
+	"sort"
+	"strings"
+
+	"github.com/konveyor/cpma/pkg/api"
 	o7tapiauth "github.com/openshift/api/authorization/v1"
 	o7tapiquota "github.com/openshift/api/quota/v1"
 	o7tapiroute "github.com/openshift/api/route/v1"
 	"github.com/sirupsen/logrus"
 
-	k8sapiapps "k8s.io/api/apps/v1"
+	"k8s.io/api/apps/v1beta1"
 	k8sapicore "k8s.io/api/core/v1"
 	k8scorev1 "k8s.io/api/core/v1"
+	extv1b1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -42,14 +46,16 @@ type NodeResources struct {
 
 // NamespaceReport represents json report of k8s namespaces
 type NamespaceReport struct {
-	Name         string                   `json:"name"`
-	LatestChange k8sMeta.Time             `json:"latestChange,omitempty"`
-	Resources    ContainerResourcesReport `json:"resources,omitempty"`
-	Pods         []PodReport              `json:"pods,omitempty"`
-	Routes       []RouteReport            `json:"routes,omitempty"`
-	DaemonSets   []DaemonSetReport        `json:"daemonSets,omitempty"`
-	Deployments  []DeploymentReport       `json:"deployments,omitempty"`
-	Quotas       []ResourceQuotaReport    `json:"quotas,omitempty"`
+	Name                       string                   `json:"name"`
+	LatestChange               k8sMeta.Time             `json:"latestChange,omitempty"`
+	Resources                  ContainerResourcesReport `json:"resources,omitempty"`
+	Pods                       []PodReport              `json:"pods,omitempty"`
+	Routes                     []RouteReport            `json:"routes,omitempty"`
+	DaemonSets                 []DaemonSetReport        `json:"daemonSets,omitempty"`
+	Deployments                []DeploymentReport       `json:"deployments,omitempty"`
+	Quotas                     []ResourceQuotaReport    `json:"quotas,omitempty"`
+	SecurityContextConstraints []string                 `json:"securityContextConstraints,omitempty"`
+	PVCs                       []PVСReport              `json:"persistentVolumeClaims,omitempty"`
 }
 
 // PodReport represents json report of k8s pods
@@ -104,11 +110,12 @@ type ContainerResourcesReport struct {
 
 // PVReport represents json report of k8s PVs
 type PVReport struct {
-	Name         string                            `json:"name"`
-	Driver       k8sapicore.PersistentVolumeSource `json:"driver"`
-	StorageClass string                            `json:"storageClass,omitempty"`
-	Capacity     k8sapicore.ResourceList           `json:"capacity,omitempty"`
-	Phase        k8sapicore.PersistentVolumePhase  `json:"phase,omitempty"`
+	Name          string                                   `json:"name"`
+	Driver        k8sapicore.PersistentVolumeSource        `json:"driver"`
+	StorageClass  string                                   `json:"storageClass,omitempty"`
+	Capacity      k8sapicore.ResourceList                  `json:"capacity,omitempty"`
+	Phase         k8sapicore.PersistentVolumePhase         `json:"phase,omitempty"`
+	ReclaimPolicy k8sapicore.PersistentVolumeReclaimPolicy `json:"persistentVolumeReclaimPolicy,omitempty" protobuf:"bytes,5,opt,name=persistentVolumeReclaimPolicy,casttype=PersistentVolumeReclaimPolicy"`
 }
 
 // StorageClassReport represents json report of k8s storage classes
@@ -123,7 +130,7 @@ type RBACReport struct {
 	Groups                     []OpenshiftGroup                      `json:"group"`
 	Roles                      []OpenshiftNamespaceRole              `json:"roles"`
 	ClusterRoles               []OpenshiftClusterRole                `json:"clusterRoles"`
-	ClusterRoleBinding         []OpenshiftClusterRoleBinding         `json:"clusterRoleBindings"`
+	ClusterRoleBindings        []OpenshiftClusterRoleBinding         `json:"clusterRoleBindings"`
 	SecurityContextConstraints []OpenshiftSecurityContextConstraints `json:"securityContextConstraints"`
 }
 
@@ -170,17 +177,28 @@ type OpenshiftClusterRoleBinding struct {
 
 // OpenshiftSecurityContextConstraints wrapper aroung opeshift scc
 type OpenshiftSecurityContextConstraints struct {
-	Name   string   `json:"name"`
-	Users  []string `json:"users" protobuf:"bytes,18,rep,name=users"`
-	Groups []string `json:"groups" protobuf:"bytes,19,rep,name=groups"`
+	Name       string   `json:"name"`
+	Users      []string `json:"users" protobuf:"bytes,18,rep,name=users"`
+	Groups     []string `json:"groups" protobuf:"bytes,19,rep,name=groups"`
+	Namespaces []string `json:"namespaces,omitempty"`
+}
+
+// PVСReport represents json report of k8s PVs
+type PVСReport struct {
+	Name          string                                   `json:"name"`
+	PVName        string                                   `json:"pvname"`
+	AccessModes   []k8scorev1.PersistentVolumeAccessMode   `json:"accessModes,omitempty" protobuf:"bytes,1,rep,name=accessModes,casttype=PersistentVolumeAccessMode"`
+	StorageClass  string                                   `json:"storageClass"`
+	Capacity      k8sapicore.ResourceList                  `json:"capacity,omitempty"`
+	ReclaimPolicy k8sapicore.PersistentVolumeReclaimPolicy `json:"persistentVolumeReclaimPolicy,omitempty" protobuf:"bytes,5,opt,name=persistentVolumeReclaimPolicy,casttype=PersistentVolumeReclaimPolicy"`
 }
 
 // GenClusterReport inserts report values into structures for json output
 func GenClusterReport(apiResources api.Resources) (clusterReport Report) {
 	clusterReport.ReportQuotas(apiResources)
+	clusterReport.ReportPVs(apiResources)
 	clusterReport.ReportNamespaces(apiResources)
 	clusterReport.ReportNodes(apiResources)
-	clusterReport.ReportPVs(apiResources)
 	clusterReport.ReportRBAC(apiResources)
 	clusterReport.ReportStorageClasses(apiResources)
 	return
@@ -201,7 +219,7 @@ func ReportContainerResources(reportedNamespace *NamespaceReport, pod *k8sapicor
 }
 
 // ReportDaemonSets generate DaemonSet report
-func ReportDaemonSets(reporeportedNamespace *NamespaceReport, dsList *k8sapiapps.DaemonSetList) {
+func ReportDaemonSets(reporeportedNamespace *NamespaceReport, dsList *extv1b1.DaemonSetList) {
 	for _, ds := range dsList.Items {
 		reportedDS := DaemonSetReport{
 			Name:         ds.Name,
@@ -213,7 +231,7 @@ func ReportDaemonSets(reporeportedNamespace *NamespaceReport, dsList *k8sapiapps
 }
 
 // ReportDeployments generate Deployments report
-func ReportDeployments(reportedNamespace *NamespaceReport, deploymentList *k8sapiapps.DeploymentList) {
+func ReportDeployments(reportedNamespace *NamespaceReport, deploymentList *v1beta1.DeploymentList) {
 	for _, deployment := range deploymentList.Items {
 		reportedDeployment := DeploymentReport{
 			Name:         deployment.Name,
@@ -226,7 +244,7 @@ func ReportDeployments(reportedNamespace *NamespaceReport, deploymentList *k8sap
 
 // ReportNamespaces fills in information about Namespaces
 func (clusterReport *Report) ReportNamespaces(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportNamespaces")
+	logrus.Info("ClusterReport::ReportNamespaces")
 
 	for _, resources := range apiResources.NamespaceList {
 		reportedNamespace := NamespaceReport{Name: resources.NamespaceName}
@@ -237,13 +255,19 @@ func (clusterReport *Report) ReportNamespaces(apiResources api.Resources) {
 		ReportRoutes(&reportedNamespace, resources.RouteList)
 		ReportDeployments(&reportedNamespace, resources.DeploymentList)
 		ReportDaemonSets(&reportedNamespace, resources.DaemonSetList)
+		ReportPVCs(&reportedNamespace, resources.PVCList, clusterReport.PVs)
 		clusterReport.Namespaces = append(clusterReport.Namespaces, reportedNamespace)
 	}
+
+	// we need to sort this for binary search later
+	sort.Slice(clusterReport.Namespaces, func(i, j int) bool {
+		return clusterReport.Namespaces[i].Name <= clusterReport.Namespaces[j].Name
+	})
 }
 
 // ReportNodes fills in information about nodes
 func (clusterReport *Report) ReportNodes(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportNodes")
+	logrus.Info("ClusterReport::ReportNodes")
 
 	for _, node := range apiResources.NodeList.Items {
 		nodeReport := NodeReport{
@@ -289,7 +313,7 @@ func ReportNodeResources(repotedNode *NodeReport, nodeStatus k8sapicore.NodeStat
 
 // ReportQuotas creates report about cluster quotas
 func (clusterReport *Report) ReportQuotas(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportQuotas")
+	logrus.Info("ClusterReport::ReportQuotas")
 
 	for _, quota := range apiResources.QuotaList.Items {
 		quotaReport := QuotaReport{
@@ -360,26 +384,63 @@ func ReportRoutes(reportedNamespace *NamespaceReport, routeList *o7tapiroute.Rou
 
 // ReportPVs create report oabout pvs
 func (clusterReport *Report) ReportPVs(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportPVs")
+	logrus.Info("ClusterReport::ReportPVs")
 	pvList := apiResources.PersistentVolumeList
 
 	// Go through all PV and save required information to report
 	for _, pv := range pvList.Items {
 		reportedPV := PVReport{
-			Name:         pv.Name,
-			Driver:       pv.Spec.PersistentVolumeSource,
-			StorageClass: pv.Spec.StorageClassName,
-			Capacity:     pv.Spec.Capacity,
-			Phase:        pv.Status.Phase,
+			Name:          pv.Name,
+			Driver:        pv.Spec.PersistentVolumeSource,
+			StorageClass:  pv.Spec.StorageClassName,
+			Capacity:      pv.Spec.Capacity,
+			Phase:         pv.Status.Phase,
+			ReclaimPolicy: pv.Spec.PersistentVolumeReclaimPolicy,
 		}
 
 		clusterReport.PVs = append(clusterReport.PVs, reportedPV)
+	}
+
+	// we need to sort this for binary search later
+	sort.Slice(clusterReport.PVs, func(i, j int) bool {
+		return clusterReport.PVs[i].Name <= clusterReport.PVs[j].Name
+	})
+}
+
+// ReportPVCs generate PVC report
+func ReportPVCs(reporeportedNamespace *NamespaceReport, pvcList *k8scorev1.PersistentVolumeClaimList, pvList []PVReport) {
+	for _, pvc := range pvcList.Items {
+		if len(pvList) == 0 {
+			return
+		}
+		idx := sort.Search(len(pvList), func(i int) bool {
+			return pvList[i].Name >= pvc.Spec.VolumeName
+		})
+		pv := pvList[idx]
+
+		var storageClass string
+		if pvc.Spec.StorageClassName != nil {
+			storageClass = *pvc.Spec.StorageClassName
+		} else {
+			storageClass = "None"
+		}
+
+		reportedPVC := PVСReport{
+			Name:          pvc.Name,
+			PVName:        pvc.Spec.VolumeName,
+			AccessModes:   pvc.Spec.AccessModes,
+			StorageClass:  storageClass,
+			Capacity:      pv.Capacity,
+			ReclaimPolicy: pv.ReclaimPolicy,
+		}
+
+		reporeportedNamespace.PVCs = append(reporeportedNamespace.PVCs, reportedPVC)
 	}
 }
 
 // ReportRBAC create report about RBAC policy
 func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportRBAC")
+	logrus.Info("ClusterReport::ReportRBAC")
 
 	clusterReport.RBACReport.Users = make([]OpenshiftUser, 0)
 	for _, user := range apiResources.RBACResources.UsersList.Items {
@@ -404,6 +465,10 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 
 	clusterReport.RBACReport.Roles = make([]OpenshiftNamespaceRole, 0)
 	for _, namespace := range apiResources.NamespaceList {
+		if len(namespace.RolesList.Items) == 0 {
+			continue
+		}
+
 		reportedNamespaceRoles := OpenshiftNamespaceRole{Namespace: namespace.NamespaceName}
 
 		reportedNamespaceRoles.Roles = make([]OpenshiftRole, 0)
@@ -426,7 +491,7 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 		clusterReport.RBACReport.ClusterRoles = append(clusterReport.RBACReport.ClusterRoles, reportedClusterRole)
 	}
 
-	clusterReport.RBACReport.ClusterRoleBinding = make([]OpenshiftClusterRoleBinding, 0)
+	clusterReport.RBACReport.ClusterRoleBindings = make([]OpenshiftClusterRoleBinding, 0)
 	for _, clusterRoleBinding := range apiResources.RBACResources.ClusterRolesBindingsList.Items {
 		reportedClusterRoleBinding := OpenshiftClusterRoleBinding{
 			Name:       clusterRoleBinding.Name,
@@ -436,7 +501,7 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 			RoleRef:    clusterRoleBinding.RoleRef,
 		}
 
-		clusterReport.RBACReport.ClusterRoleBinding = append(clusterReport.RBACReport.ClusterRoleBinding, reportedClusterRoleBinding)
+		clusterReport.RBACReport.ClusterRoleBindings = append(clusterReport.RBACReport.ClusterRoleBindings, reportedClusterRoleBinding)
 	}
 
 	clusterReport.RBACReport.SecurityContextConstraints = make([]OpenshiftSecurityContextConstraints, 0)
@@ -448,13 +513,44 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 			Groups: scc.Groups,
 		}
 
+		// we need to create a dependency between scc and namespace, the only way is to do it
+		// using service accounts. Service accounts are listed in SCC's users list.
+		var idx int
+		for _, user := range scc.Users {
+			// Service account username format role:serviceaccount:namespace:serviceaccountname
+			splitUsername := strings.Split(user, ":")
+			if len(splitUsername) <= 1 { // safety check
+				continue
+			}
+
+			// if second element is serviceaccount then next element is namespace name
+			if splitUsername[1] == "serviceaccount" {
+				reportedSCC.Namespaces = append(reportedSCC.Namespaces, splitUsername[2])
+
+				// binary search for namespace in report and add current SCC name to it
+				idx = sort.Search(len(clusterReport.Namespaces), func(i int) bool {
+					return clusterReport.Namespaces[i].Name >= splitUsername[2]
+				})
+
+				clusterReport.Namespaces[idx].SecurityContextConstraints = append(clusterReport.Namespaces[idx].SecurityContextConstraints, scc.Name)
+			}
+		}
+
+		// deduplicate namespace names
+		reportedSCC.Namespaces = deduplicate(reportedSCC.Namespaces)
+
 		clusterReport.RBACReport.SecurityContextConstraints = append(clusterReport.RBACReport.SecurityContextConstraints, reportedSCC)
+	}
+
+	// deduplicate scc names
+	for i := range clusterReport.Namespaces {
+		clusterReport.Namespaces[i].SecurityContextConstraints = deduplicate(clusterReport.Namespaces[i].SecurityContextConstraints)
 	}
 }
 
 // ReportStorageClasses create report about storage classes
 func (clusterReport *Report) ReportStorageClasses(apiResources api.Resources) {
-	logrus.Debug("ClusterReport::ReportStorageClasses")
+	logrus.Info("ClusterReport::ReportStorageClasses")
 	// Go through all storage classes and save required information to report
 	storageClassList := apiResources.StorageClassList
 	for _, storageClass := range storageClassList.Items {
@@ -465,4 +561,20 @@ func (clusterReport *Report) ReportStorageClasses(apiResources api.Resources) {
 
 		clusterReport.StorageClasses = append(clusterReport.StorageClasses, reportedStorageClass)
 	}
+}
+
+func deduplicate(s []string) []string {
+	if len(s) <= 1 {
+		return s
+	}
+
+	result := []string{}
+	seen := make(map[string]struct{})
+	for _, val := range s {
+		if _, ok := seen[val]; !ok {
+			result = append(result, val)
+			seen[val] = struct{}{}
+		}
+	}
+	return result
 }

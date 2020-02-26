@@ -66,6 +66,13 @@
           "supported": true,
           "confidence": 2,
           "comment": "Identity provider my_openid_connect is supported in OCP4"
+        }, 
+        {
+          "name": "Issuer",
+          "kind": "IdentityProviders:OpenIDIdentityProvider",
+          "supported": true,
+          "confidence": 2,
+          "comment": "OCP4 requires an 'issuer' URL, please edit OAuth manifest file and configure this field"
         },
         {
           "name": "AccessTokenMaxAgeSeconds",

@@ -12,7 +12,25 @@ There are to 2 ways for cpma to obtain desired configurations:
 
 1. Remotely retrieve configuration files using SSH, which are then stored locally (directory determined by `<workdir>` parameter) and under remote hostname sub directory. Proper SSH credentials (user, port and ssh key) are required with user having access to configuration files (sudo access might be necessary).
 
-2. Locally stored configuration files. If option 1 is not possible, files can be retrieved prior to executing CPMA. The configuration files are expected to be located in `<workdir>` parameter and under the FQDN target hostname.
+2. Locally stored configuration files. If option 1 is not possible, files can be retrieved prior to executing CPMA. The configuration files are expected to be located in `<workdir>` parameter and under the FQDN target hostname. When configuration requires a file, it should be placed in `<workDir>/<cluster hostname>/<relative path>/`. For example: 
+
+```
+oauthConfig:
+  assetPublicURL: https://example.com/console/
+  grantConfig:
+    method: auto
+  identityProviders:
+  - challenge: true
+    login: true
+    mappingMethod: claim
+    name: htpasswd_auth
+    provider:
+      apiVersion: v1
+      file: /etc/origin/master/htpasswd
+      kind: HTPasswdPasswordIdentityProvider
+```
+
+OAuth configuration requires `htpasswd` file, you can see it's path `/etc/origin/master/htpasswd`. To be found by CPMA this file must be located in` <workDir>/<cluster-hostname>/etc/origin/master/htpasswd`.
 
 ---
 
@@ -25,11 +43,11 @@ CPMA can be configured using either:
 ![prompt](https://user-images.githubusercontent.com/20123872/60581251-c0f57100-9d86-11e9-9ab3-7681b840731a.gif)
 
 
-2. CLI parameters. All configuration values can be passed using CLI parameters. For example: `./cpma --source cluster.example.com --work-dir ./dir` Refer to CPMA's [README.md](https://github.com/fusor/cpma#usage) for full list of parameters.
+2. CLI parameters. All configuration values can be passed using CLI parameters. For example: `./cpma --source cluster.example.com --work-dir ./dir` Refer to CPMA's [README.md](https://github.com/konveyor/cpma#usage) for full list of parameters.
 
-3. Predefined configuration file. You can manually create a yaml configuration based on this [example](https://github.com/fusor/cpma/blob/master/examples/cpma-config.example.yaml). Configuration file path can be passed using `--config` parameter, or place `cpma.yaml` in your home directory.
+3. Predefined configuration file. You can manually create a yaml configuration based on this [example](https://github.com/konveyor/cpma/blob/master/examples/cpma-config.example.yaml). Configuration file path can be passed using `--config` parameter, or place `cpma.yaml` in your home directory.
 
-4. Environmental variables. It is also possible to pass all configuration values as environmental variables. List of variables can be found in [README.md](https://github.com/fusor/cpma#e2e-tests)
+4. Environmental variables. It is also possible to pass all configuration values as environmental variables. List of variables can be found in [README.md](https://github.com/konveyor/cpma#e2e-tests)
 
 ---
 

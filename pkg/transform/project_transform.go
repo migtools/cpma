@@ -3,10 +3,11 @@ package transform
 import (
 	"fmt"
 
-	"github.com/fusor/cpma/pkg/decode"
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/transform/project"
+	"github.com/konveyor/cpma/pkg/decode"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform/project"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/sirupsen/logrus"
 )
@@ -38,11 +39,7 @@ func (e ProjectExtraction) Transform() ([]Output, error) {
 
 	if env.Config().GetBool("Reporting") {
 		logrus.Info("ProjectTransform::Transform:Reports")
-		reports, err := e.buildReportOutput()
-		if err != nil {
-			return nil, err
-		}
-		outputs = append(outputs, reports)
+		e.buildReportOutput()
 	}
 
 	return outputs, nil
@@ -69,13 +66,13 @@ func (e ProjectExtraction) buildManifestOutput() (Output, error) {
 	}, nil
 }
 
-func (e ProjectExtraction) buildReportOutput() (Output, error) {
-	componentReport := ComponentReport{
+func (e ProjectExtraction) buildReportOutput() {
+	componentReport := reportoutput.ComponentReport{
 		Component: ProjectComponentName,
 	}
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "ProjectRequestMessage",
 			Kind:       "ProjectConfig",
 			Supported:  true,
@@ -84,7 +81,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "ProjectRequestTemplate",
 			Kind:       "ProjectConfig",
 			Supported:  true,
@@ -93,7 +90,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "DefaultNodeSelector",
 			Kind:       "ProjectConfig",
 			Supported:  false,
@@ -102,7 +99,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "SecurityAllocator.mcsAllocatorRange",
 			Kind:       "ProjectConfig",
 			Supported:  false,
@@ -111,7 +108,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "SecurityAllocator.mcsLabelsPerProject",
 			Kind:       "ProjectConfig",
 			Supported:  false,
@@ -120,7 +117,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 		})
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "SecurityAllocator.uidAllocatorRange",
 			Kind:       "ProjectConfig",
 			Supported:  false,
@@ -128,11 +125,7 @@ func (e ProjectExtraction) buildReportOutput() (Output, error) {
 			Comment:    fmt.Sprintf("Not supported in OCP4: %s", e.ProjectConfig.SecurityAllocator.UIDAllocatorRange),
 		})
 
-	reportOutput := ReportOutput{
-		ComponentReports: []ComponentReport{componentReport},
-	}
-
-	return reportOutput, nil
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects Project configuration information from an OCP3 cluster

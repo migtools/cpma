@@ -3,12 +3,12 @@ package oauth
 import (
 	"errors"
 
-	"github.com/fusor/cpma/pkg/transform/configmaps"
-	"github.com/fusor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -53,15 +53,15 @@ type IdentityProvider struct {
 // ResultResources stores all oAuth config parts
 type ResultResources struct {
 	OAuthCRD   *configv1.OAuth
-	Secrets    []*secrets.Secret
-	ConfigMaps []*configmaps.ConfigMap
+	Secrets    []*corev1.Secret
+	ConfigMaps []*corev1.ConfigMap
 }
 
 // ProviderResources stores all resources related to one provider
 type ProviderResources struct {
 	IDP        *configv1.IdentityProvider
-	Secrets    []*secrets.Secret
-	ConfigMaps []*configmaps.ConfigMap
+	Secrets    []*corev1.Secret
+	ConfigMaps []*corev1.ConfigMap
 }
 
 // TokenConfig store internal OAuth tokens duration
@@ -80,8 +80,8 @@ const (
 // Translate converts OCPv3 OAuth to OCPv4 OAuth Custom Resources
 func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, templates legacyconfigv1.OAuthTemplates) (*ResultResources, error) {
 	var err error
-	var secretsSlice []*secrets.Secret
-	var сonfigMapSlice []*configmaps.ConfigMap
+	var secretsSlice []*corev1.Secret
+	var сonfigMapSlice []*corev1.ConfigMap
 	var providerResources *ProviderResources
 
 	// Translate configuration of diffent oAuth providers to CRD, secrets and config maps
@@ -119,7 +119,7 @@ func Translate(identityProviders []IdentityProvider, tokenConfig TokenConfig, te
 		case "BasicAuthPasswordIdentityProvider":
 			providerResources, err = buildBasicAuthIP(serializer, p)
 		default:
-			logrus.Infof("Can't handle %s OAuth kind", kind)
+			logrus.Warnf("Can't handle %s OAuth kind", kind)
 			continue
 		}
 

@@ -3,7 +3,9 @@ package transform_test
 import (
 	"testing"
 
-	"github.com/fusor/cpma/pkg/transform"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/transform"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,12 +16,12 @@ func loadDockerExtraction() (transform.DockerExtraction, error) {
 }
 
 func TestDockerExtractionTransform(t *testing.T) {
-	expectedReport := transform.ComponentReport{
+	expectedReport := reportoutput.ComponentReport{
 		Component: "Docker",
 	}
 
 	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
+		reportoutput.Report{
 			Name:       "Docker",
 			Kind:       "Container Runtime",
 			Supported:  false,
@@ -27,13 +29,13 @@ func TestDockerExtractionTransform(t *testing.T) {
 			Comment:    "The Docker runtime has been replaced with CRI-O",
 		})
 
-	expectedReportOutput := transform.ReportOutput{
-		ComponentReports: []transform.ComponentReport{expectedReport},
+	expectedReportOutput := reportoutput.ReportOutput{
+		ComponentReports: []reportoutput.ComponentReport{expectedReport},
 	}
 
 	testCases := []struct {
 		name            string
-		expectedReports transform.ReportOutput
+		expectedReports reportoutput.ReportOutput
 	}{
 		{
 			name:            "transform crio extraction",
@@ -43,11 +45,12 @@ func TestDockerExtractionTransform(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actualReportsChan := make(chan transform.ReportOutput)
+			actualReportsChan := make(chan reportoutput.ReportOutput)
+			transform.FinalReportOutput = transform.Report{}
 
 			// Override flush method
-			transform.ReportOutputFlush = func(reports transform.ReportOutput) error {
-				actualReportsChan <- reports
+			transform.ReportOutputFlush = func(reports transform.Report) error {
+				actualReportsChan <- reports.Report
 				return nil
 			}
 
@@ -55,17 +58,17 @@ func TestDockerExtractionTransform(t *testing.T) {
 			require.NoError(t, err)
 
 			go func() {
-				transformOutput, err := testExtraction.Transform()
+				env.Config().Set("Reporting", true)
+				env.Config().Set("Manifests", true)
+				_, err := testExtraction.Transform()
 				if err != nil {
 					t.Error(err)
 				}
-				for _, output := range transformOutput {
-					output.Flush()
-				}
+				transform.FinalReportOutput.Flush()
 			}()
 
 			actualReports := <-actualReportsChan
-			assert.Equal(t, actualReports, tc.expectedReports)
+			assert.Equal(t, actualReports.ComponentReports, tc.expectedReports.ComponentReports)
 		})
 
 	}

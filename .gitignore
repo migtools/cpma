@@ -30,3 +30,5 @@ coverage.*
 *.log
 
 cpma-config.yaml
+
+assets_vfsdata.go

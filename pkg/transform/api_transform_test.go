@@ -1,13 +1,18 @@
 package transform_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/decode"
-	"github.com/fusor/cpma/pkg/transform"
+	"github.com/konveyor/cpma/pkg/decode"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var loadAPIExtraction = func() transform.APIExtraction {
@@ -18,52 +23,62 @@ var loadAPIExtraction = func() transform.APIExtraction {
 		fmt.Printf("Error decoding file: %s\n", file)
 	}
 	var extraction transform.APIExtraction
-	extraction.HTTPServingInfo.BindAddress = masterConfig.ServingInfo.BindAddress
+	extraction.ServingInfo.BindAddress = masterConfig.ServingInfo.BindAddress
+	extraction.ServingInfo.CertInfo = masterConfig.ServingInfo.CertInfo
 
 	return extraction
 }()
 
 func TestAPIExtractionTransform(t *testing.T) {
-	expectedReport := transform.ComponentReport{
-		Component: "API",
-	}
+	var expectedManifests []transform.Manifest
 
-	expectedReport.Reports = append(expectedReport.Reports,
-		transform.Report{
-			Name:       "API",
-			Kind:       "Port",
-			Supported:  false,
-			Confidence: 0,
-			Comment:    "The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port 8443",
-		})
+	expectedAPISecretCRYAML, err := ioutil.ReadFile("testdata/expected-CR-API-cert-secret.yaml")
+	require.NoError(t, err)
 
-	expectedReportOutput := transform.ReportOutput{
-		ComponentReports: []transform.ComponentReport{expectedReport},
-	}
+	expectedManifests = append(expectedManifests,
+		transform.Manifest{Name: "100_CPMA-cluster-config-API-certificate-secret.yaml", CRD: expectedAPISecretCRYAML})
+
+	expectedReport := reportoutput.ReportOutput{}
+	jsonData, err := io.ReadFile("testdata/expected-report-api.json")
+	require.NoError(t, err)
+
+	err = json.Unmarshal(jsonData, &expectedReport)
+	require.NoError(t, err)
 
 	testCases := []struct {
-		name            string
-		expectedReports transform.ReportOutput
+		name              string
+		expectedManifests []transform.Manifest
+		expectedReports   reportoutput.ReportOutput
 	}{
 		{
-			name:            "transform API extraction",
-			expectedReports: expectedReportOutput,
+			name:              "transform API extraction",
+			expectedManifests: expectedManifests,
+			expectedReports:   expectedReport,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actualReportsChan := make(chan transform.ReportOutput)
+			actualManifestsChan := make(chan []transform.Manifest)
+			actualReportsChan := make(chan reportoutput.ReportOutput)
+			transform.FinalReportOutput = transform.Report{}
 
 			// Override flush method
-			transform.ReportOutputFlush = func(reports transform.ReportOutput) error {
-				actualReportsChan <- reports
+			transform.ManifestOutputFlush = func(manifests []transform.Manifest) error {
+				actualManifestsChan <- manifests
+				return nil
+			}
+			transform.ReportOutputFlush = func(reports transform.Report) error {
+				actualReportsChan <- reports.Report
 				return nil
 			}
 
 			testExtraction := loadAPIExtraction
 
 			go func() {
+				env.Config().Set("Manifests", true)
+				env.Config().Set("Reporting", true)
+
 				transformOutput, err := testExtraction.Transform()
 				if err != nil {
 					t.Error(err)
@@ -71,10 +86,13 @@ func TestAPIExtractionTransform(t *testing.T) {
 				for _, output := range transformOutput {
 					output.Flush()
 				}
+				transform.FinalReportOutput.Flush()
 			}()
 
+			actualManifests := <-actualManifestsChan
+			assert.Equal(t, actualManifests, tc.expectedManifests)
 			actualReports := <-actualReportsChan
-			assert.Equal(t, actualReports, tc.expectedReports)
+			assert.Equal(t, actualReports.ComponentReports, tc.expectedReports.ComponentReports)
 		})
 
 	}

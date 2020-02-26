@@ -2,29 +2,23 @@ package clusterdiscovery
 
 import (
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/fusor/cpma/pkg/api"
+	"github.com/konveyor/cpma/pkg/api"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
+	k8sapicore "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
 // DiscoverCluster Get kubeconfig using $KUBECONFIG, if not try ~/.kube/config
-// parse kubeconfig and select cluster from available contexts
+// parse kubeconfig and select source cluster from available contexts
 // query k8s api for nodes, get node urls from api response and survey master node
 func DiscoverCluster() (string, string, error) {
 	selectedCluster := SurveyClusters()
-
-	// set current context to selected cluster for connecting to cluster using client-go
-	api.KubeConfig.CurrentContext = api.ClusterNames[selectedCluster]
-
 	if err := api.CreateK8sClient(selectedCluster); err != nil {
 		return "", "", errors.Wrap(err, "k8s api client failed to create")
 	}
 
-	if err := api.CreateO7tClient(selectedCluster); err != nil {
-		return "", "", errors.Wrap(err, "openshift api client failed to create")
-	}
-
-	clusterNodes, err := queryNodes(api.K8sClient.CoreV1())
+	clusterNodes, err := queryNodes(api.K8sClient)
 	if err != nil {
 		return "", "", errors.Wrap(err, "cluster node query failed")
 	}
@@ -41,6 +35,7 @@ func SurveyClusters() string {
 	// It's better to have current context's cluster first, because
 	// it will be easier to select it using survey
 	currentContext := api.KubeConfig.CurrentContext
+
 	currentContextCluster := api.KubeConfig.Contexts[currentContext].Cluster
 	clusters = append(clusters, currentContextCluster)
 
@@ -55,16 +50,15 @@ func SurveyClusters() string {
 		Message: "Select cluster obtained from KUBECONFIG contexts",
 		Options: clusters,
 	}
-	survey.AskOne(prompt, &selectedCluster, nil)
+	survey.AskOne(prompt, &selectedCluster)
 
 	return selectedCluster
 }
 
-func queryNodes(apiClient corev1.CoreV1Interface) ([]string, error) {
-	nodeList, err := api.ListNodes()
-	if err != nil {
-		return nil, err
-	}
+func queryNodes(client *kubernetes.Clientset) ([]string, error) {
+	chanNodes := make(chan *k8sapicore.NodeList)
+	go api.ListNodes(client, chanNodes)
+	nodeList := <-chanNodes
 
 	nodes := make([]string, 0, len(nodeList.Items))
 	for _, node := range nodeList.Items {
@@ -80,7 +74,7 @@ func surveyNodes(nodes []string) string {
 		Message: "Select master node",
 		Options: nodes,
 	}
-	survey.AskOne(prompt, &selectedNode, nil)
+	survey.AskOne(prompt, &selectedNode)
 
 	return selectedNode
 }

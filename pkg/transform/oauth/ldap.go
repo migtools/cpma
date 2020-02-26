@@ -1,11 +1,13 @@
 package oauth
 
 import (
-	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/transform/configmaps"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform/configmaps"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -13,7 +15,7 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*ProviderReso
 	var (
 		err                error
 		idP                = &configv1.IdentityProvider{}
-		providerConfigMaps []*configmaps.ConfigMap
+		providerConfigMaps []*corev1.ConfigMap
 		ldap               legacyconfigv1.LDAPPasswordIdentityProvider
 	)
 
@@ -42,7 +44,7 @@ func buildLdapIP(serializer *json.Serializer, p IdentityProvider) (*ProviderReso
 
 	if ldap.CA != "" {
 		caConfigmap := configmaps.GenConfigMap("ldap-configmap", OAuthNamespace, p.CAData)
-		idP.LDAP.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		idP.LDAP.CA = configv1.ConfigMapNameReference{Name: caConfigmap.ObjectMeta.Name}
 		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 

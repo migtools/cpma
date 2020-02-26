@@ -1,0 +1,46 @@
+{{ define "quotas" }}
+{{ template "report-object-btn" "Quotas" }}
+<div class="collapse" id="QuotasCollapse">
+    <div class="card card-body">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col" class="string-th" sorted="false">Name</th>
+                    <th scope="col">Hard Quota</th>
+                    <th scope="col">Label Selector</th>
+                    <th scope="col">Annotation Selector</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range $index, $quota := .ClusterReport.Quotas }}
+                <tr>
+                    <th scope="row">{{ incrementIndex $index }}</th>
+                    <td class="string-td">{{ $quota.Name }}</td>
+                    <td>
+                        {{ range $key, $value := $quota.Quota.Hard }}
+                        <li class="list-group">{{ $key }}: {{ formatQuantity $value }}</li>
+                        {{ end }}
+                    </td>
+                    </ul>
+                    <td>
+                        {{if $quota.Selector.LabelSelector}}
+                          {{ range $key, $value := $quota.Selector.LabelSelector.MatchLabels }}
+                            <li class="list-group">{{ $key }}: {{ $value }}</li>
+                          {{ end }}
+                        {{ else }}
+                          None
+                        {{ end }}
+                    </td>
+                    <td>
+                        {{ range $key, $value := $quota.Selector.AnnotationSelector }}
+                        <li class="list-group">{{ $key }}: {{ $value }}</li>
+                        {{ end }}
+                    </td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{ end }}

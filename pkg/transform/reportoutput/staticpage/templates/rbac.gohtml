@@ -1,0 +1,183 @@
+{{ define "rbac" }}
+{{ template "report-object-btn" "RBAC" }}
+<div class="collapse" id="RBACCollapse">
+    <div class="card card-body">
+        {{ template "report-object-btn" "Users" }}
+        <div class="collapse" id="UsersCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
+                        <th scope="col" class="string-th" sorted="false">Full Name</th>
+                        <th scope="col">Identities</th>
+                        <th scope="col">Groups</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $user := .ClusterReport.RBACReport.Users }}
+                    <tr>
+                        <th scope="row">{{ incrementIndex $index }}</th>
+                        <td class="string-td">{{ $user.Name }}</td>
+                        <td class="string-td">{{ $user.FullName }}</td>
+                        <td>
+                            {{ range $user.Identities }}
+                            <li class="list-group"> {{ . }} </li>
+                            {{ end }}
+                        </td>
+                        <td>
+                            {{ range $user.Groups }}
+                            <li class="list-group"> {{ . }} </li>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "Groups" }}
+        <div class="collapse" id="GroupsCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
+                        <th scope="col">Users</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $group := .ClusterReport.RBACReport.Groups }}
+                    <tr>
+                        <th scope="row">{{incrementIndex $index}}</th>
+                        <td class="string-td">{{ $group.Name }}</td>
+                        <td>
+                            {{ range $group.Users }}
+                            <li class="list-group"> {{ . }} </li>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "Roles" }}
+        <div class="collapse" id="RolesCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col" class="string-th" sorted="false">Namespace</th>
+                        <th scope="col">Roles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $role := .ClusterReport.RBACReport.Roles }}
+                    <tr>
+                        <th scope="row">{{ incrementIndex $index }}</th>
+                        <td class="string-td">{{ $role.Namespace }}</td>
+                        <td>
+                            {{ range $role.Roles }}
+                            <li class="list-group"> Name: {{ .Name }} </li>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "ClusterRoles" }}
+        <div class="collapse" id="ClusterRolesCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $user := .ClusterReport.RBACReport.ClusterRoles }}
+                    <tr>
+                        <th scope="row">{{ incrementIndex $index }}</th>
+                        <td class="string-td">{{ $user.Name }}</td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "ClusterRoleBindings" }}
+        <div class="collapse" id="ClusterRoleBindingsCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
+                        <th scope="col">Usernames</th>
+                        <th scope="col">Group Names</th>
+                        <th scope="col">Subjects</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $clusterRole := .ClusterReport.RBACReport.ClusterRoleBindings }}
+                    <tr>
+                        <th scope="row">{{incrementIndex $index}}</th>
+                        <td class="string-td">{{ $clusterRole.Name}}</td>
+                        <td>
+                            {{ range $clusterRole.UserNames }}
+                            <li class="list-group"> {{ . }} </li>
+                            {{ end }}
+                        </td>
+                        <td>
+                            {{ range $clusterRole.GroupNames }}
+                            <li class="list-group"> {{ . }} </li>
+                            {{ end }}
+                        </td>
+                        <td>
+                            {{ range $clusterRole.Subjects }}
+                            <li class="list-group"> Subject: {{ .Kind }} {{ .Namespace }} {{ .Name }} </li>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{  end  }}
+                </tbody>
+            </table>
+        </div>
+        {{ template "report-object-btn" "SCCs" }}
+        <div class="collapse" id="SCCsCollapse">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col" class="string-th" sorted="false">Name</th>
+                        <th scope="col">Users</th>
+                        <th scope="col">Groups</th>
+                        <th scope="col">Namespaces</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range $index, $scc := .ClusterReport.RBACReport.SecurityContextConstraints }}
+                    <tr>
+                        <th scope="row">{{ incrementIndex $index }}</th>
+                        <td class="string-td">{{ $scc.Name }}</td>
+                        <td>
+                            {{ range $scc.Users }}
+                            <li class="list-group"> {{ . }} </li>
+                            {{ end }}
+                        </td>
+                        <td>
+                            {{ range $scc.Groups }}
+                            <li class="list-group"> {{ . }} </li>
+                            {{ end }}
+                        </td>
+                        <td>
+                            {{ range $scc.Namespaces }}
+                            <li class="list-group"> {{ . }} </li>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{ end }}

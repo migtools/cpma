@@ -5,16 +5,18 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/api"
-	"github.com/fusor/cpma/pkg/transform"
-	cpmatest "github.com/fusor/cpma/pkg/transform/internal/test"
+	"github.com/konveyor/cpma/pkg/api"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/transform"
+	cpmatest "github.com/konveyor/cpma/pkg/transform/internal/test"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClusterExtractionTransform(t *testing.T) {
 	apiResources := api.Resources{
-		QuotaList:            cpmatest.CreateTestQuotaList(),
+		QuotaList:            cpmatest.CreateTestClusterQuotaList(),
 		PersistentVolumeList: cpmatest.CreateTestPVList(),
 		NodeList:             cpmatest.CreateTestNodeList(),
 		StorageClassList:     cpmatest.CreateStorageClassList(),
@@ -28,6 +30,11 @@ func TestClusterExtractionTransform(t *testing.T) {
 		},
 	}
 	clusterExtraction := transform.ClusterExtraction{apiResources}
+
+	transform.FinalReportOutput = transform.Report{}
+	env.Config().Set("Reporting", true)
+	env.Config().Set("Manifests", true)
+
 	actualClusterOutput, err := clusterExtraction.Transform()
 	require.NoError(t, err)
 
@@ -41,8 +48,8 @@ func TestClusterExtractionTransform(t *testing.T) {
 	assert.Equal(t, "100_CPMA-namespacetest1-resource-quota-resourcequota1.yaml", manifests[1].Name)
 	assert.Equal(t, expectedResourceQuotaCRD, manifests[1].CRD)
 
-	report := transform.ReportOutput{
-		ClusterReport: actualClusterOutput[1].(transform.ReportOutput).ClusterReport,
+	report := reportoutput.ReportOutput{
+		ClusterReport: transform.FinalReportOutput.Report.ClusterReport,
 	}
 	actualClusterReportJSON, err := json.MarshalIndent(report, "", " ")
 	require.NoError(t, err)

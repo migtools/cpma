@@ -52,8 +52,7 @@ func TranslateClusterNetworks(clusterNeworkEntries []legacyconfigv1.ClusterNetwo
 		var translatedClusterNetwork configv1.ClusterNetworkEntry
 
 		translatedClusterNetwork.CIDR = networkConfig.CIDR
-		// host prefix is missing in OCP3 config, default is 23
-		translatedClusterNetwork.HostPrefix = 23
+		translatedClusterNetwork.HostPrefix = 32 - networkConfig.HostSubnetLength
 
 		translatedClusterNetworks = append(translatedClusterNetworks, translatedClusterNetwork)
 	}

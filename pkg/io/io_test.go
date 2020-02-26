@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io/remotehost"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/io/remotehost"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -65,17 +65,33 @@ func TestFetchEnv(t *testing.T) {
 		host     string
 		env      string
 		expected string
+		remote   bool
 	}{
 		{
 			name:     "Fetch remote ENV variable",
 			host:     "remote.test.com",
 			env:      "CPMA_TEST_ENV",
 			expected: "remote value",
+			remote:   true,
+		},
+		{
+			name:     "Fetch local ENV variable",
+			host:     "",
+			env:      "CPMA_TEST_ENV",
+			expected: "local value",
+			remote:   false,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.remote {
+				env.Config().Set("FetchFromRemote", true)
+			} else {
+				env.Config().Set("FetchFromRemote", false)
+				os.Setenv("CPMA_TEST_ENV", "local value")
+			}
+
 			defer func() { remotehost.RunCMD = _RunCMD }()
 			remotehost.RunCMD = mockRunCMD
 

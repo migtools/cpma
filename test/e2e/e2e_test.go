@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/transform"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/transform"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -33,8 +33,13 @@ func TestReport(t *testing.T) {
 
 	os.Chdir("../..")
 	os.Setenv("CPMA_CONFIGSOURCE", "remote")
+	os.Setenv("CPMA_CRIOCONFIGFILE", "/etc/crio/crio.conf")
+	os.Setenv("CPMA_ETCDCONFIGFILE", "/etc/etcd/etcd.conf")
 	os.Setenv("CPMA_INSECUREHOSTKEY", "true")
 	os.Setenv("CPMA_MANIFESTS", "true")
+	os.Setenv("CPMA_MASTERCONFIGFILE", "/etc/origin/master/master-config.yaml")
+	os.Setenv("CPMA_NODECONFIGFILE", "/etc/origin/node/node-config.yaml")
+	os.Setenv("CPMA_REGISTRIESCONFIGFILE", "/etc/containers/registries.conf")
 	os.Setenv("CPMA_REPORTING", "true")
 	os.Setenv("CPMA_SAVECONFIG", "false")
 	os.Setenv("CPMA_WORKDIR", e2eTestOut)
@@ -71,8 +76,13 @@ func TestManifestsReporting(t *testing.T) {
 
 	os.Chdir("../..")
 	os.Setenv("CPMA_CONFIGSOURCE", "remote")
+	os.Setenv("CPMA_CRIOCONFIGFILE", "/etc/crio/crio.conf")
+	os.Setenv("CPMA_ETCDCONFIGFILE", "/etc/etcd/etcd.conf")
 	os.Setenv("CPMA_INSECUREHOSTKEY", "true")
-	os.Setenv("CPMA_SAVECONFIG", "no")
+	os.Setenv("CPMA_MASTERCONFIGFILE", "/etc/origin/master/master-config.yaml")
+	os.Setenv("CPMA_NODECONFIGFILE", "/etc/origin/node/node-config.yaml")
+	os.Setenv("CPMA_REGISTRIESCONFIGFILE", "/etc/containers/registries.conf")
+	os.Setenv("CPMA_SAVECONFIG", "false")
 	os.Setenv("CPMA_WORKDIR", e2eTestOut)
 
 	err = runCpma()
@@ -188,7 +198,7 @@ func runCpma() error {
 }
 
 // readReport reads and unmarshal the report into report struceture from transform
-func readReport(pathToReport string) (report *transform.ReportOutput, err error) {
+func readReport(pathToReport string) (report *transform.Report, err error) {
 	srcReport, err := ioutil.ReadFile(pathToReport)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error while reading report")

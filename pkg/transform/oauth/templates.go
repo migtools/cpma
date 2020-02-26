@@ -1,11 +1,11 @@
 package oauth
 
 import (
-	"encoding/base64"
-
-	"github.com/fusor/cpma/pkg/transform/secrets"
+	"github.com/konveyor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -14,14 +14,13 @@ const (
 	providerSelectionSecret = "templates-providerselect-secret"
 )
 
-func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAuthTemplates, []*secrets.Secret, error) {
-	var templateSecrets []*secrets.Secret
+func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAuthTemplates, []*corev1.Secret, error) {
+	var templateSecrets []*corev1.Secret
 
 	translatedTemplates := &configv1.OAuthTemplates{}
 
 	if templates.Login != "" {
-		encoded := base64.StdEncoding.EncodeToString([]byte(templates.Login))
-		secret, err := secrets.GenSecret(loginSecret, encoded, OAuthNamespace, secrets.LiteralSecretType)
+		secret, err := secrets.Opaque(loginSecret, []byte(templates.Login), OAuthNamespace, "clientSecret")
 		if err != nil {
 			return nil, nil, err
 		}
@@ -30,8 +29,7 @@ func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAut
 	}
 
 	if templates.Error != "" {
-		encoded := base64.StdEncoding.EncodeToString([]byte(templates.Error))
-		secret, err := secrets.GenSecret(errorSecret, encoded, OAuthNamespace, secrets.LiteralSecretType)
+		secret, err := secrets.Opaque(errorSecret, []byte(templates.Error), OAuthNamespace, "clientSecret")
 		if err != nil {
 			return nil, nil, err
 		}
@@ -40,8 +38,7 @@ func translateTemplates(templates legacyconfigv1.OAuthTemplates) (*configv1.OAut
 	}
 
 	if templates.ProviderSelection != "" {
-		encoded := base64.StdEncoding.EncodeToString([]byte(templates.ProviderSelection))
-		secret, err := secrets.GenSecret(providerSelectionSecret, encoded, OAuthNamespace, secrets.LiteralSecretType)
+		secret, err := secrets.Opaque(providerSelectionSecret, []byte(templates.ProviderSelection), OAuthNamespace, "clientSecret")
 		if err != nil {
 			return nil, nil, err
 		}

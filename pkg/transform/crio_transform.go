@@ -2,9 +2,10 @@ package transform
 
 import (
 	"github.com/BurntSushi/toml"
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io"
 	"github.com/ghodss/yaml"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -14,15 +15,22 @@ const CrioComponentName = "Crio"
 
 // CrioExtraction holds Crio data extracted from OCP3
 type CrioExtraction struct {
-	Crio Crio `toml:"crio"`
+	Runtime runtimeConf
+}
+
+// Crios is TOML representation of crio config file
+type Crios map[string]crio
+
+type crio struct {
+	Version string      `toml:"version_file"`
+	Runtime runtimeConf `toml:"runtime"`
 }
 
 // Crio holds transformable/reportable content from crio.conf
-type Crio struct {
-	PidsLimit  int64  `toml:"pidsLimit"`
-	LogLevel   string `toml:"logLevel"`
-	LogSizeMax int64  `toml:"logSizeMax"`
-	InfraImage string `toml:"infraImage"`
+type runtimeConf struct {
+	PidsLimit  int64  `toml:"pids_limit"`
+	LogLevel   string `toml:"log_level"`
+	LogSizeMax int64  `toml:"log_size_max"`
 }
 
 // CrioCR is a is a Crio Cluster Resource
@@ -80,11 +88,7 @@ func (e CrioExtraction) Transform() ([]Output, error) {
 
 	if env.Config().GetBool("Reporting") {
 		logrus.Info("CrioTransform::Transform:Reports")
-		reports, err := e.buildReportOutput()
-		if err != nil {
-			return nil, err
-		}
-		outputs = append(outputs, reports)
+		e.buildReportOutput()
 	}
 
 	return outputs, nil
@@ -102,14 +106,14 @@ func (e CrioExtraction) buildManifestOutput() (Output, error) {
 	)
 
 	var crioCR CrioCR
+
 	crioCR.APIVersion = apiVersion
 	crioCR.Kind = kind
 	crioCR.Metadata.Name = name
 	crioCR.Spec.MachineConfigPoolSelector.MatchLabels.CustomCrio = name
-	crioCR.Spec.ContainerRuntimeConfig.PidsLimit = e.Crio.PidsLimit
-	crioCR.Spec.ContainerRuntimeConfig.LogLevel = e.Crio.LogLevel
-	crioCR.Spec.ContainerRuntimeConfig.LogSizeMax = e.Crio.LogSizeMax
-	crioCR.Spec.ContainerRuntimeConfig.InfraImage = e.Crio.InfraImage
+	crioCR.Spec.ContainerRuntimeConfig.PidsLimit = e.Runtime.PidsLimit
+	crioCR.Spec.ContainerRuntimeConfig.LogLevel = e.Runtime.LogLevel
+	crioCR.Spec.ContainerRuntimeConfig.LogSizeMax = e.Runtime.LogSizeMax
 
 	crioCRYAML, err := yaml.Marshal(&crioCR)
 	if err != nil {
@@ -124,56 +128,43 @@ func (e CrioExtraction) buildManifestOutput() (Output, error) {
 	}, nil
 }
 
-func (e CrioExtraction) buildReportOutput() (Output, error) {
-	componentReport := ComponentReport{
+func (e CrioExtraction) buildReportOutput() {
+	componentReport := reportoutput.ComponentReport{
 		Component: CrioComponentName,
 	}
 
 	var confidence = HighConfidence
 	var supported = true
 
-	if e.Crio.PidsLimit != 0 {
+	if e.Runtime.PidsLimit != 0 {
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "pidsLimit",
 				Kind:       "Configuration",
 				Supported:  supported,
 				Confidence: confidence,
 			})
 	}
-	if e.Crio.LogLevel != "" {
+	if e.Runtime.LogLevel != "" {
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "logLevel",
 				Kind:       "Configuration",
 				Supported:  supported,
 				Confidence: confidence,
 			})
 	}
-	if e.Crio.LogSizeMax != 0 {
+	if e.Runtime.LogSizeMax != 0 {
 		componentReport.Reports = append(componentReport.Reports,
-			Report{
+			reportoutput.Report{
 				Name:       "logSizeMax",
 				Kind:       "Configuration",
 				Supported:  supported,
 				Confidence: confidence,
 			})
 	}
-	if e.Crio.InfraImage != "" {
-		componentReport.Reports = append(componentReport.Reports,
-			Report{
-				Name:       "infrImage",
-				Kind:       "Configuration",
-				Supported:  supported,
-				Confidence: confidence,
-			})
-	}
 
-	reportOutput := ReportOutput{
-		ComponentReports: []ComponentReport{componentReport},
-	}
-
-	return reportOutput, nil
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
 }
 
 // Extract collects Crio configuration from an OCP3 cluster
@@ -181,22 +172,25 @@ func (e CrioTransform) Extract() (Extraction, error) {
 	logrus.Info("CrioTransform::Extract")
 	content, err := io.FetchFile(env.Config().GetString("CrioConfigFile"))
 	if err != nil {
-		return nil, err
+		return nil, errors.New("No configuration file available")
+	}
+
+	var config Crios
+	if _, err := toml.Decode(string(content), &config); err != nil {
+		return nil, errors.Wrap(err, "Failed to decode crio, see error")
 	}
 
 	var extraction CrioExtraction
-	if _, err := toml.Decode(string(content), &extraction); err != nil {
-		return nil, errors.Wrap(err, "Failed to decode crio, see error")
-	}
+	// Only fields defined in Runtime table are supported
+	extraction.Runtime = config["crio"].Runtime
 	return extraction, nil
 }
 
 // Validate confirms we have recieved good Crio configuration data during Extract
 func (e CrioExtraction) Validate() error {
-	if e.Crio.PidsLimit == 0 &&
-		e.Crio.LogSizeMax == 0 &&
-		e.Crio.LogLevel == "" &&
-		e.Crio.InfraImage == "" {
+	if e.Runtime.PidsLimit == 0 &&
+		e.Runtime.LogSizeMax == 0 &&
+		e.Runtime.LogLevel == "" {
 		return errors.New("no supported crio configuration found")
 	}
 

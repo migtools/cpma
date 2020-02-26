@@ -1,13 +1,11 @@
 package transform
 
 import (
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io"
-	"github.com/fusor/cpma/pkg/transform/configmaps"
-	"github.com/fusor/cpma/pkg/transform/secrets"
 	"github.com/ghodss/yaml"
 	configv1 "github.com/openshift/api/config/v1"
 	"github.com/sirupsen/logrus"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -29,6 +27,9 @@ const (
 './openshift-install --dir $INSTALL_DIR  create cluster'`
 )
 
+// FinalReportOutput represents final output
+var FinalReportOutput Report
+
 // Cluster contains a cluster
 type Cluster struct {
 	Master Master
@@ -37,23 +38,14 @@ type Cluster struct {
 // Master is a cluster Master
 type Master struct {
 	OAuth      configv1.OAuth
-	Secrets    []*secrets.Secret
-	ConfigMaps []*configmaps.ConfigMap
+	Secrets    []*corev1.Secret
+	ConfigMaps []*corev1.ConfigMap
 }
 
 // Manifest to be exported for use with OCP 4
 type Manifest struct {
 	Name string
 	CRD  []byte
-}
-
-// Report of OCP 4 component configuration compatibility
-type Report struct {
-	Name       string `json:"name"`
-	Kind       string `json:"kind"`
-	Supported  bool   `json:"supported"`
-	Confidence int    `json:"confidence"`
-	Comment    string `json:"comment"`
 }
 
 // Runner a generic transform runner
@@ -79,9 +71,8 @@ type Output interface {
 
 //Start generating manifests to be used with Openshift 4
 func Start() {
+	logrus.Info("Starting manifest and report generation")
 	runner := NewRunner()
-
-	openReports()
 
 	runner.Transform([]Transform{
 		APITransform{},
@@ -98,13 +89,15 @@ func Start() {
 
 // Transform is the process run to complete a transform
 func (r Runner) Transform(transforms []Transform) {
-	logrus.Info("TransformRunner::Transform")
+	logrus.Debug("TransformRunner::Transform")
 
 	// For each transform, extract the data, validate it, and run the transform.
 	// Handle any errors, and finally flush the output to it's desired destination
 	// NOTE: This should be parallelized with channels unless the transforms have
 	// some dependency on the outputs of others
 	for _, transform := range transforms {
+		logrus.Infof("Transform:Starting for - %s", transform.Name())
+
 		extraction, err := transform.Extract()
 		if err != nil {
 			HandleError(err, transform.Name())
@@ -121,13 +114,24 @@ func (r Runner) Transform(transforms []Transform) {
 			HandleError(err, transform.Name())
 			continue
 		}
+
 		for _, output := range outputs {
-			if err := output.Flush(); err != nil {
-				HandleError(err, transform.Name())
-				continue
+			switch output.(type) {
+			case ManifestOutput:
+				if err := output.Flush(); err != nil {
+					HandleError(err, transform.Name())
+					continue
+				}
 			}
 		}
 	}
+
+	err := FinalReportOutput.Flush()
+	if err != nil {
+		HandleError(err, "Report")
+	}
+
+	logrus.Info("Succesfully finished transformations")
 }
 
 // NewRunner creates a new Runner
@@ -137,7 +141,7 @@ func NewRunner() *Runner {
 
 // HandleError handles errors
 func HandleError(err error, transformType string) error {
-	logrus.Warnf("Skipping %s - %s\n", transformType, err)
+	logrus.Warnf("Skipping %s: %s\n", transformType, err)
 	return err
 }
 
@@ -149,15 +153,4 @@ func GenYAML(CR interface{}) ([]byte, error) {
 	}
 
 	return yamlBytes, nil
-}
-
-func openReports() {
-	if env.Config().GetBool("Reporting") {
-		jsonfile := "report.json"
-		emptyReport := []byte("{}")
-
-		if err := io.WriteFile(emptyReport, jsonfile); err != nil {
-			logrus.Errorf("unable to open report file: %s", jsonfile)
-		}
-	}
 }

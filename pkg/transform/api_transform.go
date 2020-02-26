@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fusor/cpma/pkg/decode"
-	"github.com/fusor/cpma/pkg/env"
-	"github.com/fusor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/decode"
+	"github.com/konveyor/cpma/pkg/env"
+	"github.com/konveyor/cpma/pkg/io"
+	"github.com/konveyor/cpma/pkg/transform/apicert"
+	"github.com/konveyor/cpma/pkg/transform/reportoutput"
 	"github.com/sirupsen/logrus"
+
+	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 )
 
 // APIComponentName is the API component string
@@ -16,12 +20,7 @@ const APIComponentName = "API"
 
 // APIExtraction holds API data extracted from OCP3
 type APIExtraction struct {
-	HTTPServingInfo ServingInfo
-}
-
-// ServingInfo contains information to serve a service
-type ServingInfo struct {
-	BindAddress string
+	ServingInfo legacyconfigv1.ServingInfo
 }
 
 // APITransform is an API specific transform
@@ -31,23 +30,55 @@ type APITransform struct {
 // Transform converts data collected from an OCP3 into a useful output
 func (e APIExtraction) Transform() ([]Output, error) {
 	outputs := []Output{}
-	if env.Config().GetBool("Reporting") {
-		logrus.Info("APITransform::Transform:Reports")
-		reports, err := e.buildReportOutput()
+
+	if env.Config().GetBool("Manifests") {
+		logrus.Info("APITransform::Transform:Manifests")
+		manifests, err := e.buildManifestOutput()
 		if err != nil {
 			return nil, err
 		}
-		outputs = append(outputs, reports)
+		outputs = append(outputs, manifests)
 	}
+
+	if env.Config().GetBool("Reporting") {
+		logrus.Info("APITransform::Transform:Reports")
+		e.buildReportOutput()
+	}
+
 	return outputs, nil
 }
 
-func (e APIExtraction) buildReportOutput() (Output, error) {
-	componentReport := ComponentReport{
+func (e APIExtraction) buildManifestOutput() (Output, error) {
+	var manifests []Manifest
+
+	APISecretCR, err := apicert.Translate(e.ServingInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	if APISecretCR == nil {
+		return nil, nil
+	}
+
+	APISecretCRYAML, err := GenYAML(APISecretCR)
+	if err != nil {
+		return nil, err
+	}
+
+	manifest := Manifest{Name: "100_CPMA-cluster-config-API-certificate-secret.yaml", CRD: APISecretCRYAML}
+	manifests = append(manifests, manifest)
+
+	return ManifestOutput{
+		Manifests: manifests,
+	}, nil
+}
+
+func (e APIExtraction) buildReportOutput() {
+	componentReport := reportoutput.ComponentReport{
 		Component: APIComponentName,
 	}
 
-	portArray := strings.Split(e.HTTPServingInfo.BindAddress, ":")
+	portArray := strings.Split(e.ServingInfo.BindAddress, ":")
 	port := portArray[len(portArray)-1]
 
 	var confidence = NoConfidence
@@ -56,7 +87,7 @@ func (e APIExtraction) buildReportOutput() (Output, error) {
 	}
 
 	componentReport.Reports = append(componentReport.Reports,
-		Report{
+		reportoutput.Report{
 			Name:       "API",
 			Kind:       "Port",
 			Supported:  false,
@@ -64,11 +95,28 @@ func (e APIExtraction) buildReportOutput() (Output, error) {
 			Comment:    fmt.Sprintf("The API Port for Openshift 4 is 6443 and is non-configurable. Your OCP 3 cluster is currently configured to use port %v", port),
 		})
 
-	reportOutput := ReportOutput{
-		ComponentReports: []ComponentReport{componentReport},
+	if apicert.OCPSigned(e.ServingInfo.CertFile) {
+		componentReport.Reports = append(componentReport.Reports,
+			reportoutput.Report{
+				Name:       "API",
+				Kind:       "Certficate",
+				Supported:  false,
+				Confidence: HighConfidence,
+				Comment:    "API certificate is OpenShift signed, no porting required",
+			})
+	} else {
+		componentReport.Reports = append(componentReport.Reports,
+			reportoutput.Report{
+				Name:       "API",
+				Kind:       "Certficate",
+				Supported:  true,
+				Confidence: HighConfidence,
+				Comment:    "API certificate has been ported",
+			})
 	}
 
-	return reportOutput, nil
+	FinalReportOutput.Report.ComponentReports = append(FinalReportOutput.Report.ComponentReports, componentReport)
+
 }
 
 // Extract collects API configuration from an OCP3 cluster
@@ -87,16 +135,24 @@ func (e APITransform) Extract() (Extraction, error) {
 	var extraction APIExtraction
 
 	if masterConfig.ServingInfo.BindAddress != "" {
-		extraction.HTTPServingInfo.BindAddress = masterConfig.ServingInfo.BindAddress
+		extraction.ServingInfo.BindAddress = masterConfig.ServingInfo.BindAddress
+	}
+
+	if masterConfig.ServingInfo.CertInfo.CertFile != "" && masterConfig.ServingInfo.CertInfo.KeyFile != "" {
+		extraction.ServingInfo.CertInfo = masterConfig.ServingInfo.CertInfo
 	}
 
 	return extraction, nil
 }
 
-// Validate confirms we have recieved good API configuration data during Extract
+// Validate confirms we have recieved API configuration data during Extract
 func (e APIExtraction) Validate() error {
-	if e.HTTPServingInfo.BindAddress == "" {
+	if e.ServingInfo.BindAddress == "" {
 		return errors.New("could not determine API Port")
+	}
+
+	if e.ServingInfo.CertInfo.CertFile == "" && e.ServingInfo.CertInfo.KeyFile == "" {
+		return errors.New("could not determine API Certificate")
 	}
 
 	return nil

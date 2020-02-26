@@ -1,22 +1,22 @@
 package oauth
 
 import (
-	"encoding/base64"
-
-	"github.com/fusor/cpma/pkg/transform/configmaps"
-	"github.com/fusor/cpma/pkg/transform/secrets"
+	"github.com/konveyor/cpma/pkg/transform/configmaps"
+	"github.com/konveyor/cpma/pkg/transform/secrets"
 	configv1 "github.com/openshift/api/config/v1"
 	legacyconfigv1 "github.com/openshift/api/legacyconfig/v1"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*ProviderResources, error) {
 	var (
 		idP                = &configv1.IdentityProvider{}
-		providerSecrets    []*secrets.Secret
-		providerConfigMaps []*configmaps.ConfigMap
+		providerSecrets    []*corev1.Secret
+		providerConfigMaps []*corev1.ConfigMap
 		err                error
 		keystone           legacyconfigv1.KeystonePasswordIdentityProvider
 	)
@@ -34,7 +34,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 
 	if keystone.CA != "" {
 		caConfigmap := configmaps.GenConfigMap("keystone-configmap", OAuthNamespace, p.CAData)
-		idP.Keystone.CA = configv1.ConfigMapNameReference{Name: caConfigmap.Metadata.Name}
+		idP.Keystone.CA = configv1.ConfigMapNameReference{Name: caConfigmap.ObjectMeta.Name}
 		providerConfigMaps = append(providerConfigMaps, caConfigmap)
 	}
 
@@ -45,8 +45,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 	if keystone.CertFile != "" {
 		certSecretName := "keystone-client-cert-secret"
 		idP.Keystone.TLSClientCert.Name = certSecretName
-		encoded := base64.StdEncoding.EncodeToString(p.CrtData)
-		certSecret, err := secrets.GenSecret(certSecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType)
+		certSecret, err := secrets.Opaque(certSecretName, p.CrtData, OAuthNamespace, "keystone")
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to generate cert secret for keystone, see error")
 		}
@@ -54,8 +53,7 @@ func buildKeystoneIP(serializer *json.Serializer, p IdentityProvider) (*Provider
 
 		keySecretName := "keystone-client-key-secret"
 		idP.Keystone.TLSClientKey.Name = keySecretName
-		encoded = base64.StdEncoding.EncodeToString(p.KeyData)
-		keySecret, err := secrets.GenSecret(keySecretName, encoded, OAuthNamespace, secrets.KeystoneSecretType)
+		keySecret, err := secrets.Opaque(keySecretName, p.KeyData, OAuthNamespace, "keystone")
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to generate key secret for keystone, see error")
 		}
