@@ -523,18 +523,17 @@ func (clusterReport *Report) ReportRBAC(apiResources api.Resources) {
 				continue
 			}
 
-			// if second element is serviceaccount then next element is namespace name
-			if splitUsername[1] == "serviceaccount" {
+			// if second element is serviceaccount then next element, if exists, is namespace name
+			if splitUsername[1] == "serviceaccount" && len(splitUsername) > 2 {
 				reportedSCC.Namespaces = append(reportedSCC.Namespaces, splitUsername[2])
 
 				// binary search for namespace in report and add current SCC name to it
 				idx = sort.Search(len(clusterReport.Namespaces), func(i int) bool {
 					return clusterReport.Namespaces[i].Name >= splitUsername[2]
 				})
+
 				if idx < len(clusterReport.Namespaces) {
 					clusterReport.Namespaces[idx].SecurityContextConstraints = append(clusterReport.Namespaces[idx].SecurityContextConstraints, scc.Name)
-				} else {
-					continue
 				}
 			}
 		}
