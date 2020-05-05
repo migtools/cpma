@@ -13,19 +13,18 @@ type KubeControllerManager struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
 
+	// spec is the specification of the desired behavior of the Kubernetes Controller Manager
+	// +kubebuilder:validation:Required
 	// +required
-	Spec   KubeControllerManagerSpec   `json:"spec"`
+	Spec KubeControllerManagerSpec `json:"spec"`
+
+	// status is the most recently observed status of the Kubernetes Controller Manager
 	// +optional
 	Status KubeControllerManagerStatus `json:"status"`
 }
 
 type KubeControllerManagerSpec struct {
 	StaticPodOperatorSpec `json:",inline"`
-
-	// forceRedeploymentReason can be used to force the redeployment of the kube-controller-manager by providing a unique string.
-	// This provides a mechanism to kick a previously failed deployment and provide a reason why you think it will work
-	// this time instead of failing again on the same config.
-	ForceRedeploymentReason string `json:"forceRedeploymentReason"`
 }
 
 type KubeControllerManagerStatus struct {
@@ -37,8 +36,8 @@ type KubeControllerManagerStatus struct {
 // KubeControllerManagerList is a collection of items
 type KubeControllerManagerList struct {
 	metav1.TypeMeta `json:",inline"`
-	// Standard object's metadata.
 	metav1.ListMeta `json:"metadata"`
+
 	// Items contains the items
 	Items []KubeControllerManager `json:"items"`
 }
